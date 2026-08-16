@@ -1564,6 +1564,23 @@ tr:hover td{
 }
 </style>
 
+
+<style id="civil-master-default-login-style">
+.cm-default-login{
+  margin-top:16px;
+  padding:13px 16px;
+  border:1px solid #dce7f5;
+  border-radius:12px;
+  background:#f4f8ff;
+  color:#334b68;
+  font-size:12px;
+  line-height:1.7;
+  text-align:left;
+}
+.cm-default-login b{color:#20354f}
+.cm-default-login span{color:#2f76d0;font-weight:600}
+</style>
+
 </head>
 <body>
 
@@ -1608,8 +1625,8 @@ tr:hover td{
       <div class="sub">Enter your credentials to access your account</div>
 
       <div class="field">
-        <label>User ID</label>
-        <input id="loginUser" autocomplete="username" placeholder="Enter your user ID">
+        <label>Email Address</label>
+        <input id="loginUser" type="email" autocomplete="username" placeholder="admin@civilmastergm.com">
       </div>
 
       <div class="field">
@@ -1633,6 +1650,11 @@ tr:hover td{
 
       <button type="button" class="login-btn" id="signInBtn" onclick="login()">Sign In</button>
       <div class="rg-login-security">🔒 Your data is secured with enterprise-grade protection</div>
+      <div class="cm-default-login">
+        <b>Default Login Credentials</b><br>
+        Email: <span>admin@civilmastergm.com</span><br>
+        Password: <span>Civil123@2024</span>
+      </div>
       <div id="loginMsg" class="login-msg"></div>
     </div>
   </section>
@@ -2301,10 +2323,31 @@ async function login(){
   const password=document.getElementById('loginPass').value;
   const msg=document.getElementById('loginMsg');
   const signInBtn=document.getElementById('signInBtn');
-  if(!email || !password){ msg.textContent='Please enter username/email and password.'; return; }
+
+  const DEFAULT_EMAIL='admin@civilmastergm.com';
+  const DEFAULT_PASSWORD='Civil123@2024';
+
+  if(!email || !password){
+    msg.textContent='Please enter email and password.';
+    return;
+  }
+
+  if(email!==DEFAULT_EMAIL || password!==DEFAULT_PASSWORD){
+    msg.textContent='Invalid email or password.';
+    return;
+  }
+
   if(signInBtn){ signInBtn.disabled=true; signInBtn.textContent='Signing In...'; }
+
   try{
-    currentUser={username:email,email,name:(email.split('@')[0]||email||'User').replace(/[._-]+/g,' '),role:'Admin',uid:'local-user'};
+    currentUser={
+      username:email,
+      email:email,
+      name:'Administrator',
+      role:'Admin',
+      uid:'local-admin'
+    };
+
     if(document.getElementById('rememberMe').checked){
       localStorage.setItem('rg_saved_username',email);
       localStorage.setItem('rg_remember_me','true');
@@ -2312,16 +2355,24 @@ async function login(){
       localStorage.removeItem('rg_saved_username');
       localStorage.removeItem('rg_remember_me');
     }
+
     const keep=document.getElementById('keepSignedIn').checked;
     const sessionValue=JSON.stringify(currentUser);
-    if(keep) localStorage.setItem('rg_local_current_user',sessionValue);
-    else sessionStorage.setItem('rg_current_user',sessionValue);
+
+    if(keep){
+      localStorage.setItem('rg_local_current_user',sessionValue);
+      sessionStorage.removeItem('rg_current_user');
+    }else{
+      sessionStorage.setItem('rg_current_user',sessionValue);
+      localStorage.removeItem('rg_local_current_user');
+    }
+
     document.getElementById('loginPass').value='';
     msg.textContent='';
     applyUser();
   }catch(error){
     console.error(error);
-    msg.textContent='Local login failed: '+error.message;
+    msg.textContent='Login failed: '+error.message;
   }finally{
     if(signInBtn){ signInBtn.disabled=false; signInBtn.textContent='Sign In'; }
   }
