@@ -9,13 +9,15 @@
 :root{
   --blue:#79a9eb; --blue-dark:#17375c; --blue-soft:#eef5ff;
   --orange:#f7a15f; --orange-dark:#ea7c2e; --ink:#25384d; --muted:#70839a;
-  --line:#d8e4f2; --white:#fff; --bg:#f6f9fd;
+  --line:#d8e4f2; --white:#fff; --bg:#f6f9fd; --danger:#d9534f; --ok:#2f8f5b;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 .hidden{display:none!important}
-button,input,select{font:inherit}
+button,input,select,textarea{font:inherit}
 button{cursor:pointer}
+input,select,textarea{outline:none}
+img{max-width:100%}
 
 /* LOGIN */
 .login{min-height:100vh;display:grid;grid-template-columns:60% 40%;background:white}
@@ -40,14 +42,14 @@ linear-gradient(145deg,#fff 0%,#fbfdff 58%,#eff6ff 100%)}
 .features{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;margin-top:44px}
 .feature{text-align:center;font-size:13px;font-weight:700}
 .iconbox{height:70px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:11px}
-
 .login-right{display:flex;align-items:center;justify-content:center;padding:44px;background:linear-gradient(145deg,#f7faff,#eef5ff)}
 .login-card{width:min(590px,96%);background:#fff;border:1px solid #dbe6f4;border-radius:28px;padding:42px;box-shadow:0 25px 65px rgba(69,107,153,.10)}
 .card-brand{text-align:center;margin-bottom:30px}.card-brand .brand-main{font-size:44px}.card-brand .brand-sub{font-size:10px}
 .login-card h2{text-align:center;font-size:38px;margin:0 0 8px;color:#193454}.login-card .sub{text-align:center;color:var(--muted);margin-bottom:34px}
-.field{margin-bottom:19px}.field label{display:block;font-size:14px;font-weight:750;margin-bottom:8px;color:#1b3047}
-.field input,.field select{width:100%;height:58px;border:1px solid #c9d8ea;border-radius:12px;padding:0 18px;font-size:16px;background:white;outline:none}
-.field input:focus,.field select:focus{border-color:#8bb5eb;box-shadow:0 0 0 4px rgba(120,170,235,.12)}
+.field{margin-bottom:16px}.field label{display:block;font-size:13px;font-weight:750;margin-bottom:7px;color:#1b3047}
+.field input,.field select,.field textarea{width:100%;min-height:44px;border:1px solid #c9d8ea;border-radius:10px;padding:10px 12px;font-size:14px;background:white}
+.login-card .field input{height:58px;font-size:16px;padding:0 18px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#8bb5eb;box-shadow:0 0 0 4px rgba(120,170,235,.10)}
 .password-wrap{position:relative}.password-wrap input{padding-right:54px}.eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);border:0;background:transparent;font-size:18px}
 .options{display:flex;justify-content:space-between;margin:10px 0 24px;color:#3f5268;font-size:14px}.options label{display:flex;gap:8px;align-items:center}
 .signin{width:100%;height:58px;border:0;border-radius:12px;background:linear-gradient(90deg,#ffbd7c,#f89a67);color:white;font-weight:800;font-size:16px}
@@ -57,29 +59,40 @@ linear-gradient(145deg,#fff 0%,#fbfdff 58%,#eff6ff 100%)}
 
 /* APP */
 .app{min-height:100vh;display:flex}
-.sidebar{width:250px;background:#fff;border-right:1px solid var(--line);padding:22px 16px;position:fixed;inset:0 auto 0 0}
+.sidebar{width:245px;background:#fff;border-right:1px solid var(--line);padding:22px 16px;position:fixed;inset:0 auto 0 0}
 .side-brand{padding:6px 8px 20px;border-bottom:1px solid var(--line);margin-bottom:18px}.side-brand .brand-main{font-size:22px}.side-brand .brand-sub{font-size:8px}
 .navbtn{width:100%;border:0;background:transparent;text-align:left;padding:12px 14px;border-radius:10px;margin:4px 0;color:var(--ink);font-weight:650}
 .navbtn:hover,.navbtn.active{background:var(--blue-soft);color:#316f9d}.navbtn.master{border-left:4px solid var(--orange)}
 .logout{position:absolute;bottom:20px;left:16px;right:16px;background:#f5f7fa!important}
-.content{margin-left:250px;width:calc(100% - 250px);padding:28px}
+.content{margin-left:245px;width:calc(100% - 245px);padding:28px}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.topbar h1{margin:0;font-size:26px}.pill{background:#fff1e5;color:#9c5b1c;border-radius:20px;padding:8px 12px;font-size:12px}
 .page{display:none}.page.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px}.card span{font-size:12px;color:var(--muted)}.card b{display:block;font-size:26px;margin-top:7px}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px}.card span{font-size:12px;color:var(--muted)}.card b{display:block;font-size:26px;margin-top:7px}
 .panel{background:white;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px}.panel h3{margin:0 0 15px}
 .note{background:#fff3e8;border-left:4px solid var(--orange);padding:12px 14px;font-size:13px;margin-bottom:15px}
-.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:15px}.btn{border:0;border-radius:9px;padding:10px 14px;background:#5f91b4;color:white;font-weight:650}.btn.orange{background:var(--orange)}.btn.light{background:#eef3f7;color:#34475b}.btn.danger{background:#d95858}
-.search{height:40px!important;max-width:320px}
-.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}.formgrid .field{margin:0}.formgrid .field input,.formgrid .field select{height:43px;font-size:14px}
-table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;border-bottom:1px solid #e8eef3;text-align:left}th{background:#f7f9fb;color:#53687d}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:15px}.btn{border:0;border-radius:9px;padding:10px 14px;background:#5f91b4;color:white;font-weight:650}.btn.orange{background:var(--orange)}.btn.light{background:#eef3f7;color:#34475b}.btn.danger{background:#d95858}.btn.green{background:#4f9b73}
+.search{height:40px!important;max-width:320px;border:1px solid #cdd8e4;border-radius:9px;padding:0 11px}
+.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}.formgrid.two{grid-template-columns:repeat(2,1fr)}.formgrid.four{grid-template-columns:repeat(4,1fr)}.formgrid .field{margin:0}
+.section-title{margin:20px 0 12px;font-size:15px;color:#24435f;border-left:4px solid var(--blue);padding-left:9px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;border-bottom:1px solid #e8eef3;text-align:left;vertical-align:top}th{background:#f7f9fb;color:#53687d;position:sticky;top:0}
+.table-wrap{overflow:auto;max-height:520px;border:1px solid #edf1f5;border-radius:10px}
 .master-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.master-card{border:1px solid var(--line);border-radius:12px;padding:16px}.master-card h4{margin:0 0 6px}.master-card p{font-size:12px;color:var(--muted);min-height:34px}.inline{display:flex;gap:8px}.inline input{width:100%;height:40px;border:1px solid #ccd9e7;border-radius:8px;padding:0 10px}.tags{margin-top:12px}.tag{display:inline-flex;gap:6px;align-items:center;background:#edf5fb;border-radius:16px;padding:5px 8px;margin:3px;font-size:12px}.tag button{border:0;background:none;color:#b84040;font-weight:800}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}.tab{border:1px solid #d8e4f2;background:#f8fbfe;color:#415a72;padding:9px 12px;border-radius:9px;font-weight:700}.tab.active{background:#eaf3ff;color:#2e6d99;border-color:#bdd5ef}.tab-panel{display:none}.tab-panel.active{display:block}
+.status-reason{display:none;background:#fff6f4;border:1px solid #f2c9c2;border-radius:10px;padding:12px;margin-top:10px}.status-reason.show{display:block}
+.photo-box{display:flex;gap:12px;align-items:center}.photo-preview{width:90px;height:90px;border-radius:12px;border:1px dashed #b9c9d9;object-fit:cover;background:#fafcfe}
+.doc-card{border:1px solid #dfe8f0;border-radius:12px;padding:14px;margin:10px 0;background:#fbfdff}.doc-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.doc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.doc-grid .field{margin:0}.doc-file{font-size:12px;color:#60758a}
+.alert-row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #edf1f5}.alert-row:last-child{border-bottom:0}.alert-badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:800}.a30{background:#ffe2df;color:#b33f34}.a60{background:#fff0d8;color:#9a661b}.a90{background:#e8f0ff;color:#416ba9}.expired{background:#fbd7d7;color:#a52121}
+.small{font-size:12px;color:var(--muted)}
+.attach-list{display:grid;gap:8px}.attach-item{display:flex;justify-content:space-between;gap:10px;border:1px solid #e2eaf1;border-radius:9px;padding:10px;background:#fbfdff}
+.save-bar{position:sticky;bottom:0;background:rgba(255,255,255,.95);border-top:1px solid var(--line);padding:12px 0 0;margin-top:15px}
+.empty{text-align:center;color:#8290a0;padding:20px}
 
-@media(max-width:1000px){.login{grid-template-columns:1fr}.login-left{display:none}.login-right{min-height:100vh}.cards{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr 1fr}.master-grid{grid-template-columns:1fr}.sidebar{width:200px}.content{margin-left:200px;width:calc(100% - 200px)}}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.formgrid,.formgrid.four,.doc-grid{grid-template-columns:repeat(2,1fr)}.master-grid{grid-template-columns:1fr}}
+@media(max-width:800px){.login{grid-template-columns:1fr}.login-left{display:none}.login-right{min-height:100vh}.sidebar{width:200px}.content{margin-left:200px;width:calc(100% - 200px)}.formgrid,.formgrid.two,.formgrid.four,.doc-grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginView" class="login">
   <section class="login-left">
     <div class="small-brand">
@@ -95,16 +108,15 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       <h1>Civil Master ERP</h1>
       <h2>Employee Portal</h2>
       <div class="orange-line"></div>
-      <p>Streamline employee records, manage workforce information efficiently, and keep document expiry details organized in one secure portal.</p>
+      <p>Employee information, documents, bank, emergency contacts and attachments — all in one clean employee profile.</p>
       <div class="features">
         <div class="feature"><div class="iconbox">🛡️</div>Secure<br>Access</div>
         <div class="feature"><div class="iconbox">👥</div>Employee<br>Management</div>
-        <div class="feature"><div class="iconbox">📊</div>Real-time<br>Reports</div>
-        <div class="feature"><div class="iconbox">⚙️</div>Smart<br>Operations</div>
+        <div class="feature"><div class="iconbox">📄</div>Document<br>Expiry</div>
+        <div class="feature"><div class="iconbox">⚙️</div>Smart<br>Masters</div>
       </div>
     </div>
   </section>
-
   <section class="login-right">
     <div class="login-card">
       <div class="card-brand">
@@ -113,22 +125,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       </div>
       <h2>Sign In</h2>
       <div class="sub">Enter your credentials to access your account</div>
-
-      <div class="field">
-        <label>Email Address</label>
-        <input id="loginEmail" type="email" value="admin@civilmastergm.com" autocomplete="username">
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <div class="password-wrap">
-          <input id="loginPassword" type="password" value="Civil123@2024" autocomplete="current-password">
-          <button class="eye" type="button" id="eyeBtn">👁️</button>
-        </div>
-      </div>
-      <div class="options">
-        <label><input id="rememberMe" type="checkbox" checked> Remember me</label>
-        <label><input id="keepSignedIn" type="checkbox"> Keep me signed in</label>
-      </div>
+      <div class="field"><label>Email Address</label><input id="loginEmail" type="email" value="admin@civilmastergm.com"></div>
+      <div class="field"><label>Password</label><div class="password-wrap"><input id="loginPassword" type="password" value="Civil123@2024"><button class="eye" type="button" id="eyeBtn">👁️</button></div></div>
+      <div class="options"><label><input id="rememberMe" type="checkbox" checked> Remember me</label><label><input id="keepSignedIn" type="checkbox"> Keep me signed in</label></div>
       <button id="loginButton" class="signin" type="button">Sign In</button>
       <div id="loginMessage" class="login-msg"></div>
       <div class="security">🔒 Your data is secured with enterprise-grade protection</div>
@@ -137,7 +136,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   </section>
 </div>
 
-<!-- EMPLOYEE APP -->
 <div id="appView" class="app hidden">
   <aside class="sidebar">
     <div class="side-brand">
@@ -146,14 +144,13 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     </div>
     <button class="navbtn active" data-page="dashboard">Dashboard</button>
     <button class="navbtn" data-page="employees">Employees</button>
-    <button class="navbtn" data-page="documents">Employee Documents</button>
     <button class="navbtn master" data-page="masters">Masters</button>
     <button id="logoutButton" class="navbtn logout">Sign Out</button>
   </aside>
 
   <main class="content">
     <div class="topbar">
-      <div><h1 id="pageTitle">Employee Portal</h1><div style="color:var(--muted);font-size:13px">Civil Master General Maintenance LLC - OPC</div></div>
+      <div><h1 id="pageTitle">Employee Portal</h1><div class="small">Civil Master General Maintenance LLC - OPC</div></div>
       <div class="pill">Administrator</div>
     </div>
 
@@ -161,82 +158,140 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       <div class="cards">
         <div class="card"><span>Total Employees</span><b id="totalEmployees">0</b></div>
         <div class="card"><span>Active Employees</span><b id="activeEmployees">0</b></div>
-        <div class="card"><span>Expiring in 60 Days</span><b id="expiringDocs">0</b></div>
-        <div class="card"><span>Expired Documents</span><b id="expiredDocs">0</b></div>
+        <div class="card"><span>Expiry ≤ 30 Days</span><b id="exp30">0</b></div>
+        <div class="card"><span>Expiry ≤ 60 Days</span><b id="exp60">0</b></div>
+        <div class="card"><span>Expiry ≤ 90 Days</span><b id="exp90">0</b></div>
       </div>
+
       <div class="panel">
-        <h3>Employee Management</h3>
-        <div class="note">This clean version contains only Employee Portal, Employee Documents, and Masters. Masters control the dropdown lists used in employee and document forms.</div>
+        <h3>Document Expiry Alerts</h3>
+        <div id="expiryAlerts"></div>
       </div>
     </section>
 
     <section id="employees" class="page">
       <div class="panel">
         <div class="toolbar">
-          <button id="addEmployeeBtn" class="btn">+ Add Employee</button>
+          <button id="newEmployeeBtn" class="btn">+ Add Employee</button>
           <input id="employeeSearch" class="search" placeholder="Search employee...">
         </div>
-        <div id="employeeFormWrap" class="hidden">
-          <h3>Add Employee</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Code</th><th>Name</th><th>Actual Designation</th><th>Nationality</th><th>Company</th><th>ID Card Designation</th><th>Status</th><th>Current Site</th><th></th></tr></thead>
+            <tbody id="employeeRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="employeeEditor" class="panel hidden">
+        <div class="toolbar" style="justify-content:space-between">
+          <h3 id="employeeEditorTitle" style="margin:0">Add Employee</h3>
+          <button id="closeEditorBtn" class="btn light">Close</button>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="personal">Employee Information</button>
+          <button class="tab" data-tab="employment">Employment</button>
+          <button class="tab" data-tab="documents">Documents</button>
+          <button class="tab" data-tab="bank">Bank</button>
+          <button class="tab" data-tab="emergency">Emergency Contact</button>
+          <button class="tab" data-tab="attachments">Attachments</button>
+        </div>
+
+        <div id="tab-personal" class="tab-panel active">
+          <div class="section-title">1. Personal Information</div>
           <div class="formgrid">
-            <div class="field"><label>Employee Code</label><input id="empCode"></div>
-            <div class="field"><label>Full Name</label><input id="empName"></div>
-            <div class="field"><label>Designation</label><select id="empDesignation"></select></div>
-            <div class="field"><label>Nationality</label><select id="empNationality"></select></div>
-            <div class="field"><label>Mobile</label><input id="empMobile"></div>
-            <div class="field"><label>Status</label><select id="empStatus"><option>Active</option><option>Inactive</option></select></div>
+            <div class="field"><label>Employee Code</label><input id="fEmployeeCode"></div>
+            <div class="field"><label>Employee Name</label><input id="fEmployeeName"></div>
+            <div class="field"><label>Employee Name in Arabic</label><input id="fEmployeeNameArabic"></div>
+            <div class="field"><label>Actual Designation</label><select id="fActualDesignation"></select></div>
+            <div class="field"><label>Father Name</label><input id="fFatherName"></div>
+            <div class="field"><label>Nationality</label><select id="fNationality"></select></div>
+            <div class="field"><label>Gender</label><select id="fGender"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
+            <div class="field"><label>Date of Birth</label><input id="fDOB" type="date"></div>
+            <div class="field"><label>Marital Status</label><select id="fMaritalStatus"><option value="">Select</option><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select></div>
+            <div class="field"><label>Mobile</label><input id="fMobile"></div>
+            <div class="field"><label>Photo</label><input id="fPhoto" type="file" accept="image/*"></div>
+            <div class="field"><label>Photo Preview</label><div class="photo-box"><img id="photoPreview" class="photo-preview" alt=""><button type="button" id="clearPhotoBtn" class="btn light">Clear</button></div></div>
           </div>
+        </div>
+
+        <div id="tab-employment" class="tab-panel">
+          <div class="section-title">2. Employment Information</div>
+          <div class="formgrid">
+            <div class="field"><label>Company</label><select id="fCompany"></select></div>
+            <div class="field"><label>Designation as per ID Card</label><select id="fIdDesignation"></select></div>
+            <div class="field"><label>Joining Date</label><input id="fJoiningDate" type="date"></div>
+            <div class="field"><label>Current Site</label><select id="fCurrentSite"></select></div>
+            <div class="field"><label>Employee Status</label><select id="fEmployeeStatus"><option>Active</option><option>Inactive</option></select></div>
+          </div>
+          <div id="inactiveReasonBox" class="status-reason">
+            <div class="formgrid two">
+              <div class="field"><label>Inactive Reason</label><input id="fInactiveReason" placeholder="Reason for inactivation"></div>
+              <div class="field"><label>Inactive Date</label><input id="fInactiveDate" type="date"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-documents" class="tab-panel">
+          <div class="section-title">3. UAE Documents</div>
+          <div class="note">Document Type fixed nahi hai. Masters → Document Types se list aati hai. Actual PDF/image database mein store nahi hogi; yahan sirf Document URL save hoga.</div>
+          <button id="addDocumentBtn" class="btn orange" type="button">+ Add Document</button>
+          <div id="documentsEditor"></div>
+        </div>
+
+        <div id="tab-bank" class="tab-panel">
+          <div class="section-title">Bank Information</div>
+          <div class="formgrid">
+            <div class="field"><label>Bank Name</label><input id="fBankName"></div>
+            <div class="field"><label>Account Name</label><input id="fAccountName"></div>
+            <div class="field"><label>Account Number</label><input id="fAccountNumber"></div>
+            <div class="field"><label>IBAN</label><input id="fIBAN"></div>
+            <div class="field"><label>SWIFT Code</label><input id="fSwift"></div>
+          </div>
+        </div>
+
+        <div id="tab-emergency" class="tab-panel">
+          <div class="section-title">Emergency Contact</div>
+          <div class="formgrid">
+            <div class="field"><label>Contact Name</label><input id="fEmergencyName"></div>
+            <div class="field"><label>Relationship</label><input id="fEmergencyRelationship"></div>
+            <div class="field"><label>Mobile</label><input id="fEmergencyMobile"></div>
+            <div class="field"><label>Country</label><input id="fEmergencyCountry"></div>
+          </div>
+        </div>
+
+        <div id="tab-attachments" class="tab-panel">
+          <div class="section-title">Attachments</div>
+          <div class="formgrid two">
+            <div class="field"><label>Attachment Name</label><input id="fAttachmentName" placeholder="e.g. CV, Certificate, Offer Letter"></div>
+            <div class="field"><label>Upload File</label><input id="fAttachmentFile" type="file"></div>
+          </div>
+          <button id="addAttachmentBtn" type="button" class="btn orange">+ Add Attachment</button>
+          <div id="attachmentList" class="attach-list" style="margin-top:12px"></div>
+        </div>
+
+        <div class="save-bar">
           <div class="toolbar">
-            <button id="saveEmployeeBtn" class="btn orange">Save Employee</button>
+            <button id="saveEmployeeBtn" class="btn green">Save Employee</button>
             <button id="cancelEmployeeBtn" class="btn light">Cancel</button>
           </div>
         </div>
-        <table>
-          <thead><tr><th>Code</th><th>Name</th><th>Designation</th><th>Nationality</th><th>Mobile</th><th>Status</th><th></th></tr></thead>
-          <tbody id="employeeRows"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="documents" class="page">
-      <div class="panel">
-        <h3>Employee Documents</h3>
-        <div class="note">Document Type dropdown comes from Masters.</div>
-        <div class="formgrid">
-          <div class="field"><label>Employee</label><select id="docEmployee"></select></div>
-          <div class="field"><label>Document Type</label><select id="docType"></select></div>
-          <div class="field"><label>Document Number</label><input id="docNumber"></div>
-          <div class="field"><label>Issue Date</label><input id="docIssue" type="date"></div>
-          <div class="field"><label>Expiry Date</label><input id="docExpiry" type="date"></div>
-        </div>
-        <div class="toolbar"><button id="saveDocumentBtn" class="btn orange">Save Document</button></div>
-        <table>
-          <thead><tr><th>Employee</th><th>Document</th><th>Number</th><th>Issue Date</th><th>Expiry Date</th><th></th></tr></thead>
-          <tbody id="documentRows"></tbody>
-        </table>
       </div>
     </section>
 
     <section id="masters" class="page">
       <div class="panel">
         <h3>Masters</h3>
-        <div class="note"><b>Master kaise create karna hai:</b> neeche field mein naya naam likhein aur Add press karein. Woh item automatically related dropdown mein show ho jayega.</div>
+        <div class="note"><b>Master kaise create karna hai:</b> naya item type karein aur Add press karein. Employee form ke dropdowns automatically update ho jayenge.</div>
         <div class="master-grid">
-          <div class="master-card">
-            <h4>Document Types</h4><p>Passport, Emirates ID, Visa, Labour Card etc.</p>
-            <div class="inline"><input id="masterDocumentInput" placeholder="New document type"><button class="btn orange" data-master-add="documents">Add</button></div>
-            <div id="masterDocumentsList" class="tags"></div>
-          </div>
-          <div class="master-card">
-            <h4>Designations</h4><p>Mason, Carpenter, Electrician, Engineer etc.</p>
-            <div class="inline"><input id="masterDesignationInput" placeholder="New designation"><button class="btn orange" data-master-add="designations">Add</button></div>
-            <div id="masterDesignationsList" class="tags"></div>
-          </div>
-          <div class="master-card">
-            <h4>Nationalities</h4><p>Pakistani, Indian, Bangladeshi, Nepali etc.</p>
-            <div class="inline"><input id="masterNationalityInput" placeholder="New nationality"><button class="btn orange" data-master-add="nationalities">Add</button></div>
-            <div id="masterNationalitiesList" class="tags"></div>
-          </div>
+          <div class="master-card"><h4>Document Types</h4><p>Passport, Visa, Emirates ID, Work Permit, Labour Contract, Insurance, Driving Licence, Medical Card etc.</p><div class="inline"><input id="mDocumentTypes"><button class="btn orange" data-add-master="documentTypes">Add</button></div><div id="listDocumentTypes" class="tags"></div></div>
+          <div class="master-card"><h4>Actual Designations</h4><p>Real working designation.</p><div class="inline"><input id="mActualDesignations"><button class="btn orange" data-add-master="actualDesignations">Add</button></div><div id="listActualDesignations" class="tags"></div></div>
+          <div class="master-card"><h4>ID Card Designations</h4><p>Designation printed on ID / labour card.</p><div class="inline"><input id="mIdDesignations"><button class="btn orange" data-add-master="idDesignations">Add</button></div><div id="listIdDesignations" class="tags"></div></div>
+          <div class="master-card"><h4>Nationalities</h4><p>Country / nationality list.</p><div class="inline"><input id="mNationalities"><button class="btn orange" data-add-master="nationalities">Add</button></div><div id="listNationalities" class="tags"></div></div>
+          <div class="master-card"><h4>Companies</h4><p>Company / employer list.</p><div class="inline"><input id="mCompanies"><button class="btn orange" data-add-master="companies">Add</button></div><div id="listCompanies" class="tags"></div></div>
+          <div class="master-card"><h4>Sites</h4><p>Current Site dropdown list.</p><div class="inline"><input id="mSites"><button class="btn orange" data-add-master="sites">Add</button></div><div id="listSites" class="tags"></div></div>
         </div>
       </div>
     </section>
@@ -249,26 +304,32 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
   const ADMIN_EMAIL = "admin@civilmastergm.com";
   const ADMIN_PASSWORD = "Civil123@2024";
-  const DATA_KEY = "cm_employee_portal_v1";
-  const SESSION_KEY = "cm_logged_in";
-
+  const DATA_KEY = "cm_employee_portal_v3";
+  const SESSION_KEY = "cm_logged_in_v3";
   const $ = id => document.getElementById(id);
 
-  const defaultData = () => ({
+  const freshData = () => ({
     masters:{
-      documents:["Passport","Emirates ID","Visa","Labour Card"],
-      designations:[],
-      nationalities:[]
+      documentTypes:["Passport","Visa","Emirates ID","Labour Card / Work Permit","Labour Contract"],
+      actualDesignations:[],
+      idDesignations:[],
+      nationalities:["Pakistani","Indian","Bangladeshi","Nepali","Filipino","Sri Lankan","Egyptian"],
+      companies:["Civil Master General Maintenance LLC - OPC"],
+      sites:[]
     },
-    employees:[],
-    documents:[]
+    employees:[]
   });
 
   let data;
-  try { data = JSON.parse(localStorage.getItem(DATA_KEY)) || defaultData(); }
-  catch { data = defaultData(); }
+  try{ data = JSON.parse(localStorage.getItem(DATA_KEY)) || freshData(); }
+  catch{ data = freshData(); }
 
-  function persist(){
+  let editingIndex = null;
+  let workingDocuments = [];
+  let workingAttachments = [];
+  let workingPhoto = "";
+
+  function saveData(){
     localStorage.setItem(DATA_KEY, JSON.stringify(data));
     renderAll();
   }
@@ -279,200 +340,360 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     }[c]));
   }
 
+  function fileToDataURL(file, cb){
+    if(!file) return cb("");
+    const r = new FileReader();
+    r.onload = () => cb(r.result);
+    r.readAsDataURL(file);
+  }
+
   function openApp(){
     $("loginView").classList.add("hidden");
     $("appView").classList.remove("hidden");
-    sessionStorage.setItem(SESSION_KEY, "1");
+    sessionStorage.setItem(SESSION_KEY,"1");
     renderAll();
   }
-
   function closeApp(){
     $("appView").classList.add("hidden");
     $("loginView").classList.remove("hidden");
     sessionStorage.removeItem(SESSION_KEY);
   }
-
   function doLogin(){
-    const email = $("loginEmail").value.trim().toLowerCase();
-    const password = $("loginPassword").value;
-    $("loginMessage").textContent = "";
-
-    if(email === ADMIN_EMAIL && password === ADMIN_PASSWORD){
-      if($("keepSignedIn").checked) localStorage.setItem(SESSION_KEY,"1");
-      else localStorage.removeItem(SESSION_KEY);
-      if($("rememberMe").checked) localStorage.setItem("cm_saved_email", email);
-      else localStorage.removeItem("cm_saved_email");
+    const e=$("loginEmail").value.trim().toLowerCase(), p=$("loginPassword").value;
+    $("loginMessage").textContent="";
+    if(e===ADMIN_EMAIL && p===ADMIN_PASSWORD){
+      if($("keepSignedIn").checked) localStorage.setItem(SESSION_KEY,"1"); else localStorage.removeItem(SESSION_KEY);
+      if($("rememberMe").checked) localStorage.setItem("cm_saved_email",e); else localStorage.removeItem("cm_saved_email");
       openApp();
-    } else {
-      $("loginMessage").textContent = "Invalid email or password.";
-    }
+    }else $("loginMessage").textContent="Invalid email or password.";
   }
 
-  $("loginButton").addEventListener("click", doLogin);
-  $("loginEmail").addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
-  $("loginPassword").addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
-  $("eyeBtn").addEventListener("click", () => {
-    const p = $("loginPassword");
-    p.type = p.type === "password" ? "text" : "password";
-    $("eyeBtn").textContent = p.type === "password" ? "👁️" : "🙈";
-  });
-  $("logoutButton").addEventListener("click", () => {
-    localStorage.removeItem(SESSION_KEY);
-    closeApp();
-  });
+  $("loginButton").addEventListener("click",doLogin);
+  $("loginEmail").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+  $("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+  $("eyeBtn").addEventListener("click",()=>{const p=$("loginPassword");p.type=p.type==="password"?"text":"password";$("eyeBtn").textContent=p.type==="password"?"👁️":"🙈"});
+  $("logoutButton").addEventListener("click",()=>{localStorage.removeItem(SESSION_KEY);closeApp()});
 
-  document.querySelectorAll(".navbtn[data-page]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-      $(btn.dataset.page).classList.add("active");
-      document.querySelectorAll(".navbtn[data-page]").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      $("pageTitle").textContent = btn.dataset.page === "dashboard" ? "Employee Portal" :
-        btn.dataset.page === "employees" ? "Employees" :
-        btn.dataset.page === "documents" ? "Employee Documents" : "Masters";
-    });
-  });
+  document.querySelectorAll(".navbtn[data-page]").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    $(btn.dataset.page).classList.add("active");
+    document.querySelectorAll(".navbtn[data-page]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    $("pageTitle").textContent=btn.dataset.page==="dashboard"?"Employee Portal":btn.dataset.page==="employees"?"Employees":"Masters";
+  }));
 
-  function fillSelect(id, values, label){
-    const el=$(id);
-    el.innerHTML = `<option value="">${esc(label)}</option>` + values.map(v=>`<option>${esc(v)}</option>`).join("");
+  document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    $("tab-"+btn.dataset.tab).classList.add("active");
+  }));
+
+  function fillSelect(id,arr,label){
+    $(id).innerHTML='<option value="">'+esc(label)+'</option>'+arr.map(v=>'<option>'+esc(v)+'</option>').join("");
   }
+
+  const masterMap = {
+    documentTypes:["mDocumentTypes","listDocumentTypes"],
+    actualDesignations:["mActualDesignations","listActualDesignations"],
+    idDesignations:["mIdDesignations","listIdDesignations"],
+    nationalities:["mNationalities","listNationalities"],
+    companies:["mCompanies","listCompanies"],
+    sites:["mSites","listSites"]
+  };
 
   function renderMasters(){
-    const configs = [
-      ["documents","masterDocumentsList"],
-      ["designations","masterDesignationsList"],
-      ["nationalities","masterNationalitiesList"]
-    ];
-    configs.forEach(([type,id]) => {
-      $(id).innerHTML = data.masters[type].map((v,i)=>
-        `<span class="tag">${esc(v)} <button data-master-delete="${type}" data-index="${i}" title="Delete">×</button></span>`
-      ).join("");
+    Object.entries(masterMap).forEach(([type,[inputId,listId]])=>{
+      $(listId).innerHTML=(data.masters[type]||[]).map((v,i)=>`<span class="tag">${esc(v)} <button data-del-master="${type}" data-index="${i}">×</button></span>`).join("");
     });
   }
 
-  document.addEventListener("click", e => {
-    const addType = e.target.dataset.masterAdd;
-    if(addType){
-      const inputId = addType==="documents" ? "masterDocumentInput" : addType==="designations" ? "masterDesignationInput" : "masterNationalityInput";
-      const input=$(inputId), value=input.value.trim();
+  document.addEventListener("click",e=>{
+    const type=e.target.dataset.addMaster;
+    if(type){
+      const [inputId]=masterMap[type], input=$(inputId), value=input.value.trim();
       if(!value) return alert("Please enter a value.");
-      if(data.masters[addType].some(v=>v.toLowerCase()===value.toLowerCase())) return alert("This item already exists.");
-      data.masters[addType].push(value);
-      input.value="";
-      persist();
+      if((data.masters[type]||[]).some(v=>v.toLowerCase()===value.toLowerCase())) return alert("This item already exists.");
+      data.masters[type].push(value); input.value=""; saveData();
     }
-    const delType = e.target.dataset.masterDelete;
-    if(delType){
-      data.masters[delType].splice(Number(e.target.dataset.index),1);
-      persist();
+    const del=e.target.dataset.delMaster;
+    if(del){
+      data.masters[del].splice(Number(e.target.dataset.index),1); saveData();
     }
   });
 
-  $("addEmployeeBtn").addEventListener("click", () => $("employeeFormWrap").classList.remove("hidden"));
-  $("cancelEmployeeBtn").addEventListener("click", () => $("employeeFormWrap").classList.add("hidden"));
-  $("saveEmployeeBtn").addEventListener("click", () => {
-    const employee = {
-      code:$("empCode").value.trim(),
-      name:$("empName").value.trim(),
-      designation:$("empDesignation").value,
-      nationality:$("empNationality").value,
-      mobile:$("empMobile").value.trim(),
-      status:$("empStatus").value
+  function employeeDefaults(){
+    return {
+      employeeCode:"",employeeName:"",employeeNameArabic:"",actualDesignation:"",fatherName:"",nationality:"",
+      gender:"",dob:"",maritalStatus:"",mobile:"",photo:"",
+      company:"",idDesignation:"",joiningDate:"",currentSite:"",status:"Active",inactiveReason:"",inactiveDate:"",
+      documents:[],
+      bank:{bankName:"",accountName:"",accountNumber:"",iban:"",swift:""},
+      emergency:{name:"",relationship:"",mobile:"",country:""},
+      attachments:[]
     };
-    if(!employee.code || !employee.name) return alert("Employee Code and Full Name are required.");
-    if(data.employees.some(e=>e.code.toLowerCase()===employee.code.toLowerCase())) return alert("Employee Code already exists.");
-    data.employees.push(employee);
-    ["empCode","empName","empMobile"].forEach(id=>$(id).value="");
-    $("employeeFormWrap").classList.add("hidden");
-    persist();
+  }
+
+  function openEditor(index=null){
+    editingIndex=index;
+    const e=index===null?employeeDefaults():JSON.parse(JSON.stringify(data.employees[index]));
+    $("employeeEditorTitle").textContent=index===null?"Add Employee":"Edit Employee";
+    $("employeeEditor").classList.remove("hidden");
+
+    $("fEmployeeCode").value=e.employeeCode||"";
+    $("fEmployeeName").value=e.employeeName||"";
+    $("fEmployeeNameArabic").value=e.employeeNameArabic||"";
+    $("fActualDesignation").value=e.actualDesignation||"";
+    $("fFatherName").value=e.fatherName||"";
+    $("fNationality").value=e.nationality||"";
+    $("fGender").value=e.gender||"";
+    $("fDOB").value=e.dob||"";
+    $("fMaritalStatus").value=e.maritalStatus||"";
+    $("fMobile").value=e.mobile||"";
+    workingPhoto=e.photo||"";
+    $("photoPreview").src=workingPhoto||"";
+
+    $("fCompany").value=e.company||"";
+    $("fIdDesignation").value=e.idDesignation||"";
+    $("fJoiningDate").value=e.joiningDate||"";
+    $("fCurrentSite").value=e.currentSite||"";
+    $("fEmployeeStatus").value=e.status||"Active";
+    $("fInactiveReason").value=e.inactiveReason||"";
+    $("fInactiveDate").value=e.inactiveDate||"";
+    updateInactiveBox();
+
+    workingDocuments=e.documents||[];
+    workingAttachments=e.attachments||[];
+    renderDocumentEditor();
+    renderAttachmentList();
+
+    $("fBankName").value=e.bank?.bankName||"";
+    $("fAccountName").value=e.bank?.accountName||"";
+    $("fAccountNumber").value=e.bank?.accountNumber||"";
+    $("fIBAN").value=e.bank?.iban||"";
+    $("fSwift").value=e.bank?.swift||"";
+
+    $("fEmergencyName").value=e.emergency?.name||"";
+    $("fEmergencyRelationship").value=e.emergency?.relationship||"";
+    $("fEmergencyMobile").value=e.emergency?.mobile||"";
+    $("fEmergencyCountry").value=e.emergency?.country||"";
+
+    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    document.querySelector('.tab[data-tab="personal"]').classList.add("active");
+    $("tab-personal").classList.add("active");
+    $("employeeEditor").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  function closeEditor(){ $("employeeEditor").classList.add("hidden"); editingIndex=null; }
+
+  $("newEmployeeBtn").addEventListener("click",()=>openEditor(null));
+  $("closeEditorBtn").addEventListener("click",closeEditor);
+  $("cancelEmployeeBtn").addEventListener("click",closeEditor);
+
+  $("fEmployeeStatus").addEventListener("change",updateInactiveBox);
+  function updateInactiveBox(){
+    const inactive=$("fEmployeeStatus").value==="Inactive";
+    $("inactiveReasonBox").classList.toggle("show",inactive);
+  }
+
+  $("fPhoto").addEventListener("change",e=>fileToDataURL(e.target.files[0],url=>{workingPhoto=url;$("photoPreview").src=url||""}));
+  $("clearPhotoBtn").addEventListener("click",()=>{workingPhoto="";$("photoPreview").src="";$("fPhoto").value=""});
+
+  function addDocument(){
+    workingDocuments.push({type:"",number:"",issueDate:"",expiryDate:"",url:""});
+    renderDocumentEditor();
+  }
+  $("addDocumentBtn").addEventListener("click",addDocument);
+
+  function renderDocumentEditor(){
+    if(!workingDocuments.length){
+      $("documentsEditor").innerHTML='<div class="empty">No documents added yet.</div>';
+      return;
+    }
+    $("documentsEditor").innerHTML=workingDocuments.map((d,i)=>`
+      <div class="doc-card">
+        <div class="doc-head"><b>Document ${i+1}</b><button type="button" class="btn danger" data-remove-doc="${i}">Remove</button></div>
+        <div class="doc-grid">
+          <div class="field"><label>Document Type</label><select data-doc-field="type" data-index="${i}">${docTypeOptions(d.type)}</select></div>
+          <div class="field"><label>Number</label><input data-doc-field="number" data-index="${i}" value="${esc(d.number)}"></div>
+          <div class="field"><label>Issue Date</label><input type="date" data-doc-field="issueDate" data-index="${i}" value="${esc(d.issueDate)}"></div>
+          <div class="field"><label>Expiry Date</label><input type="date" data-doc-field="expiryDate" data-index="${i}" value="${esc(d.expiryDate)}"></div>
+          <div class="field"><label>Document URL</label><input type="url" data-doc-field="url" data-index="${i}" value="${esc(d.url||"")}" placeholder="https://..."><div class="doc-file">${d.url?`<a href="${esc(d.url)}" target="_blank" rel="noopener">Open Document</a>`:"URL not added"}</div></div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function docTypeOptions(selected){
+    return '<option value="">Select</option>'+data.masters.documentTypes.map(v=>`<option ${v===selected?"selected":""}>${esc(v)}</option>`).join("");
+  }
+
+  document.addEventListener("input",e=>{
+    const field=e.target.dataset.docField;
+    if(field!==undefined){
+      workingDocuments[Number(e.target.dataset.index)][field]=e.target.value;
+    }
+  });
+  document.addEventListener("change",e=>{
+    const field=e.target.dataset.docField;
+    if(field!==undefined){
+      workingDocuments[Number(e.target.dataset.index)][field]=e.target.value;
+    }
+    if(e.target.dataset.docFile!==undefined){
+      const i=Number(e.target.dataset.docFile), file=e.target.files[0];
+      if(!file) return;
+      fileToDataURL(file,url=>{
+        workingDocuments[i].fileName=file.name;
+        workingDocuments[i].fileData=url;
+        renderDocumentEditor();
+      });
+    }
+  });
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.removeDoc!==undefined){
+      workingDocuments.splice(Number(e.target.dataset.removeDoc),1);renderDocumentEditor();
+    }
   });
 
-  $("employeeSearch").addEventListener("input", renderEmployees);
+  $("addAttachmentBtn").addEventListener("click",()=>{
+    const name=$("fAttachmentName").value.trim(), file=$("fAttachmentFile").files[0];
+    if(!name || !file) return alert("Attachment name and file are required.");
+    fileToDataURL(file,url=>{
+      workingAttachments.push({name,fileName:file.name,fileData:url});
+      $("fAttachmentName").value="";$("fAttachmentFile").value="";
+      renderAttachmentList();
+    });
+  });
 
+  function renderAttachmentList(){
+    $("attachmentList").innerHTML=workingAttachments.length?workingAttachments.map((a,i)=>`
+      <div class="attach-item"><div><b>${esc(a.name)}</b><div class="small">${esc(a.fileName)}</div></div><button type="button" class="btn danger" data-remove-attachment="${i}">Remove</button></div>
+    `).join(""):'<div class="empty">No attachments added yet.</div>';
+  }
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.removeAttachment!==undefined){
+      workingAttachments.splice(Number(e.target.dataset.removeAttachment),1);renderAttachmentList();
+    }
+  });
+
+  $("saveEmployeeBtn").addEventListener("click",()=>{
+    const code=$("fEmployeeCode").value.trim(), name=$("fEmployeeName").value.trim();
+    if(!code || !name) return alert("Employee Code and Employee Name are required.");
+    const duplicate=data.employees.findIndex((e,i)=>i!==editingIndex && String(e.employeeCode).toLowerCase()===code.toLowerCase());
+    if(duplicate>=0) return alert("Employee Code already exists.");
+    if($("fEmployeeStatus").value==="Inactive" && (!$("fInactiveReason").value.trim() || !$("fInactiveDate").value)){
+      return alert("Inactive Reason and Inactive Date are required.");
+    }
+
+    const e={
+      employeeCode:code,
+      employeeName:name,
+      employeeNameArabic:$("fEmployeeNameArabic").value.trim(),
+      actualDesignation:$("fActualDesignation").value,
+      fatherName:$("fFatherName").value.trim(),
+      nationality:$("fNationality").value,
+      gender:$("fGender").value,
+      dob:$("fDOB").value,
+      maritalStatus:$("fMaritalStatus").value,
+      mobile:$("fMobile").value.trim(),
+      photo:workingPhoto,
+
+      company:$("fCompany").value,
+      idDesignation:$("fIdDesignation").value,
+      joiningDate:$("fJoiningDate").value,
+      currentSite:$("fCurrentSite").value,
+      status:$("fEmployeeStatus").value,
+      inactiveReason:$("fEmployeeStatus").value==="Inactive"?$("fInactiveReason").value.trim():"",
+      inactiveDate:$("fEmployeeStatus").value==="Inactive"?$("fInactiveDate").value:"",
+
+      documents:workingDocuments,
+      bank:{
+        bankName:$("fBankName").value.trim(),
+        accountName:$("fAccountName").value.trim(),
+        accountNumber:$("fAccountNumber").value.trim(),
+        iban:$("fIBAN").value.trim(),
+        swift:$("fSwift").value.trim()
+      },
+      emergency:{
+        name:$("fEmergencyName").value.trim(),
+        relationship:$("fEmergencyRelationship").value.trim(),
+        mobile:$("fEmergencyMobile").value.trim(),
+        country:$("fEmergencyCountry").value.trim()
+      },
+      attachments:workingAttachments,
+      updatedAt:new Date().toISOString()
+    };
+
+    if(editingIndex===null) data.employees.push(e); else data.employees[editingIndex]=e;
+    saveData(); closeEditor(); alert("Employee data saved successfully.");
+  });
+
+  $("employeeSearch").addEventListener("input",renderEmployees);
   function renderEmployees(){
     const q=$("employeeSearch").value.trim().toLowerCase();
-    $("employeeRows").innerHTML = data.employees
-      .map((e,i)=>({...e,_i:i}))
-      .filter(e=>(e.code+" "+e.name+" "+e.designation+" "+e.nationality).toLowerCase().includes(q))
-      .map(e=>`<tr>
-        <td>${esc(e.code)}</td><td>${esc(e.name)}</td><td>${esc(e.designation)}</td>
-        <td>${esc(e.nationality)}</td><td>${esc(e.mobile)}</td><td>${esc(e.status)}</td>
-        <td><button class="btn danger" data-delete-employee="${e._i}">Delete</button></td>
-      </tr>`).join("");
+    const rows=data.employees.map((e,i)=>({...e,_i:i})).filter(e=>
+      [e.employeeCode,e.employeeName,e.actualDesignation,e.nationality,e.company,e.idDesignation,e.currentSite,e.status]
+      .join(" ").toLowerCase().includes(q)
+    );
+    $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>
+      <td>${esc(e.employeeCode)}</td><td>${esc(e.employeeName)}</td><td>${esc(e.actualDesignation)}</td>
+      <td>${esc(e.nationality)}</td><td>${esc(e.company)}</td><td>${esc(e.idDesignation)}</td>
+      <td>${esc(e.status)}${e.status==="Inactive"?`<div class="small">${esc(e.inactiveReason)} · ${esc(e.inactiveDate)}</div>`:""}</td>
+      <td>${esc(e.currentSite)}</td>
+      <td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td>
+    </tr>`).join(""):'<tr><td colspan="9" class="empty">No employee records.</td></tr>';
   }
-
-  $("saveDocumentBtn").addEventListener("click", () => {
-    const d={
-      employee:$("docEmployee").value,
-      type:$("docType").value,
-      number:$("docNumber").value.trim(),
-      issue:$("docIssue").value,
-      expiry:$("docExpiry").value
-    };
-    if(!d.employee || !d.type) return alert("Employee and Document Type are required.");
-    data.documents.push(d);
-    ["docNumber","docIssue","docExpiry"].forEach(id=>$(id).value="");
-    persist();
-  });
-
-  function renderDocuments(){
-    $("documentRows").innerHTML = data.documents.map((d,i)=>`<tr>
-      <td>${esc(d.employee)}</td><td>${esc(d.type)}</td><td>${esc(d.number)}</td>
-      <td>${esc(d.issue)}</td><td>${esc(d.expiry)}</td>
-      <td><button class="btn danger" data-delete-document="${i}">Delete</button></td>
-    </tr>`).join("");
-  }
-
-  document.addEventListener("click", e => {
-    if(e.target.dataset.deleteEmployee !== undefined){
-      const i=Number(e.target.dataset.deleteEmployee);
-      const code=data.employees[i]?.code;
-      data.employees.splice(i,1);
-      data.documents=data.documents.filter(d=>!d.employee.startsWith(code+" - "));
-      persist();
-    }
-    if(e.target.dataset.deleteDocument !== undefined){
-      data.documents.splice(Number(e.target.dataset.deleteDocument),1);
-      persist();
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.editEmployee!==undefined) openEditor(Number(e.target.dataset.editEmployee));
+    if(e.target.dataset.deleteEmployee!==undefined){
+      if(confirm("Delete this employee record?")){
+        data.employees.splice(Number(e.target.dataset.deleteEmployee),1);saveData();
+      }
     }
   });
 
-  function docStats(){
-    const today=new Date(); today.setHours(0,0,0,0);
-    let expiring=0, expired=0;
-    data.documents.forEach(d=>{
-      if(!d.expiry) return;
-      const dt=new Date(d.expiry+"T00:00:00");
+  function renderDashboard(){
+    $("totalEmployees").textContent=data.employees.length;
+    $("activeEmployees").textContent=data.employees.filter(e=>e.status==="Active").length;
+    const today=new Date();today.setHours(0,0,0,0);
+    const alerts=[];
+    data.employees.forEach(e=>(e.documents||[]).forEach(d=>{
+      if(!d.expiryDate) return;
+      const dt=new Date(d.expiryDate+"T00:00:00");
       const days=Math.ceil((dt-today)/86400000);
-      if(days<0) expired++;
-      else if(days<=60) expiring++;
-    });
-    $("expiringDocs").textContent=expiring;
-    $("expiredDocs").textContent=expired;
+      alerts.push({employee:e.employeeName,code:e.employeeCode,type:d.type,expiry:d.expiryDate,days});
+    }));
+    const within=n=>alerts.filter(a=>a.days>=0&&a.days<=n).length;
+    $("exp30").textContent=within(30);
+    $("exp60").textContent=within(60);
+    $("exp90").textContent=within(90);
+
+    const important=alerts.filter(a=>a.days<=90).sort((a,b)=>a.days-b.days);
+    $("expiryAlerts").innerHTML=important.length?important.map(a=>{
+      let cls=a.days<0?"expired":a.days<=30?"a30":a.days<=60?"a60":"a90";
+      let label=a.days<0?`Expired ${Math.abs(a.days)} days ago`:`${a.days} days left`;
+      return `<div class="alert-row"><div><b>${esc(a.employee)} (${esc(a.code)})</b><div class="small">${esc(a.type)} · Expiry: ${esc(a.expiry)}</div></div><span class="alert-badge ${cls}">${label}</span></div>`;
+    }).join(""):'<div class="empty">No document expiry alerts within 90 days.</div>';
   }
 
   function renderAll(){
     renderMasters();
-    fillSelect("empDesignation",data.masters.designations,"Select designation");
-    fillSelect("empNationality",data.masters.nationalities,"Select nationality");
-    fillSelect("docType",data.masters.documents,"Select document type");
-    fillSelect("docEmployee",data.employees.map(e=>`${e.code} - ${e.name}`),"Select employee");
+    fillSelect("fActualDesignation",data.masters.actualDesignations,"Select actual designation");
+    fillSelect("fIdDesignation",data.masters.idDesignations,"Select ID card designation");
+    fillSelect("fNationality",data.masters.nationalities,"Select nationality");
+    fillSelect("fCompany",data.masters.companies,"Select company");
+    fillSelect("fCurrentSite",data.masters.sites,"Select current site");
     renderEmployees();
-    renderDocuments();
-    $("totalEmployees").textContent=data.employees.length;
-    $("activeEmployees").textContent=data.employees.filter(e=>e.status==="Active").length;
-    docStats();
+    renderDashboard();
+    if(!$("employeeEditor").classList.contains("hidden")){
+      renderDocumentEditor();
+    }
   }
 
-  const savedEmail=localStorage.getItem("cm_saved_email");
-  if(savedEmail) $("loginEmail").value=savedEmail;
-
+  const savedEmail=localStorage.getItem("cm_saved_email"); if(savedEmail) $("loginEmail").value=savedEmail;
   renderAll();
-
-  if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1"){
-    openApp();
-  }
+  if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1") openApp();
 })();
 </script>
 </body>
