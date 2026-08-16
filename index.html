@@ -1648,7 +1648,7 @@ tr:hover td{
         </label>
       </div>
 
-      <button type="button" class="login-btn" id="signInBtn" onclick="login()">Sign In</button>
+      <button type="button" class="login-btn" id="signInBtn" onclick="cmLogin()">Sign In</button>
       <div class="rg-login-security">🔒 Your data is secured with enterprise-grade protection</div>
       <div class="cm-default-login">
         <b>Default Login Credentials</b><br>
@@ -2425,7 +2425,7 @@ function togglePassword(){
   p.type=showing?'password':'text';
   if(btn){btn.textContent=showing?'👁️':'🙈';btn.setAttribute('aria-label',showing?'Show password':'Hide password');}
 }
-document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')cmLogin()});
 (function restoreLoginState(){
   if(localStorage.getItem('rg_remember_me')==='true'){
     document.getElementById('loginUser').value=localStorage.getItem('rg_saved_username')||'';
@@ -3368,6 +3368,113 @@ function exportExcel(){
 
 
 
+
+
+<script id="civil-master-login-fix-v2">
+(function(){
+  const ADMIN_EMAIL = 'admin@civilmastergm.com';
+  const ADMIN_PASSWORD = 'Civil123@2024';
+
+  window.cmLogin = function(){
+    const emailEl = document.getElementById('loginUser');
+    const passEl = document.getElementById('loginPass');
+    const msg = document.getElementById('loginMsg');
+    const btn = document.getElementById('signInBtn');
+
+    const email = String(emailEl?.value || '').trim().toLowerCase();
+    const password = String(passEl?.value || '');
+
+    if(msg) msg.textContent = '';
+
+    if(email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD){
+      if(msg) msg.textContent = 'Invalid email or password.';
+      return false;
+    }
+
+    if(btn){
+      btn.disabled = true;
+      btn.textContent = 'Signing In...';
+    }
+
+    try{
+      window.currentUser = {
+        username: ADMIN_EMAIL,
+        email: ADMIN_EMAIL,
+        name: 'Administrator',
+        role: 'Admin',
+        uid: 'local-admin'
+      };
+
+      const remember = !!document.getElementById('rememberMe')?.checked;
+      const keep = !!document.getElementById('keepSignedIn')?.checked;
+
+      if(remember){
+        localStorage.setItem('rg_saved_username', ADMIN_EMAIL);
+        localStorage.setItem('rg_remember_me', 'true');
+      }else{
+        localStorage.removeItem('rg_saved_username');
+        localStorage.removeItem('rg_remember_me');
+      }
+
+      const sessionValue = JSON.stringify(window.currentUser);
+      if(keep){
+        localStorage.setItem('rg_local_current_user', sessionValue);
+        sessionStorage.removeItem('rg_current_user');
+      }else{
+        sessionStorage.setItem('rg_current_user', sessionValue);
+        localStorage.removeItem('rg_local_current_user');
+      }
+
+      // Show portal directly first, so login cannot be blocked by another old function.
+      const loginScreen = document.getElementById('loginScreen');
+      const portalApp = document.getElementById('portalApp');
+      if(loginScreen){
+        loginScreen.classList.add('hidden');
+        loginScreen.style.display = 'none';
+      }
+      if(portalApp){
+        portalApp.classList.remove('hidden');
+        portalApp.style.display = '';
+      }
+
+      // Then apply the existing ERP user/UI setup where available.
+      try{
+        if(typeof window.applyUser === 'function') window.applyUser();
+      }catch(err){
+        console.warn('Portal opened; optional applyUser setup had an error:', err);
+      }
+
+      if(passEl) passEl.value = '';
+      return false;
+    }finally{
+      if(btn){
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    }
+  };
+
+  // Make Enter key reliable even if older scripts fail.
+  document.addEventListener('DOMContentLoaded', function(){
+    const emailEl = document.getElementById('loginUser');
+    const passEl = document.getElementById('loginPass');
+
+    if(emailEl && !emailEl.value){
+      emailEl.value = localStorage.getItem('rg_saved_username') || '';
+    }
+
+    [emailEl, passEl].forEach(function(el){
+      if(!el) return;
+      el.addEventListener('keydown', function(e){
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          window.cmLogin();
+        }
+      });
+    });
+  });
+})();
+</script>
 
 </body></html>`;
   downloadBlob(new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8;'}),'Reliance_Gulf_Employee_All_Data.xls');
