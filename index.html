@@ -89,6 +89,269 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
 @media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.formgrid,.formgrid.four,.doc-grid{grid-template-columns:repeat(2,1fr)}.master-grid{grid-template-columns:1fr}}
 @media(max-width:800px){.login{grid-template-columns:1fr}.login-left{display:none}.login-right{min-height:100vh}.sidebar{width:200px}.content{margin-left:200px;width:calc(100% - 200px)}.formgrid,.formgrid.two,.formgrid.four,.doc-grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr}}
+
+/* Attractive Master Builder */
+#masters .panel{
+  border:1px solid #e4ebf5;
+  border-radius:22px;
+  background:linear-gradient(145deg,#ffffff,#f8fbff);
+  box-shadow:0 12px 35px rgba(34,78,121,.08);
+}
+#masters .panel > .toolbar:first-child{
+  padding:8px 4px 18px;
+  border-bottom:1px solid #edf2f8;
+}
+#masters h3{
+  color:#163b65;
+  font-size:24px;
+  letter-spacing:-.3px;
+}
+#masters .note{
+  margin:18px 0;
+  padding:15px 18px;
+  border:1px solid #dceaff;
+  border-left:4px solid #f4a261;
+  border-radius:14px;
+  background:linear-gradient(90deg,#f4f9ff,#fffaf5);
+  color:#52677d;
+}
+#createMasterBtn{
+  border-radius:12px;
+  padding:11px 18px;
+  box-shadow:0 7px 18px rgba(244,162,97,.22);
+}
+#masterBuilderForm{
+  margin:18px 0 22px;
+  border:1px solid #dce8f6 !important;
+  border-radius:18px !important;
+  padding:22px !important;
+  background:linear-gradient(135deg,#f7fbff,#fff9f4) !important;
+  box-shadow:0 10px 25px rgba(31,77,121,.07);
+}
+#masterBuilderForm h3{
+  font-size:19px;
+  margin-bottom:16px;
+}
+#masterBuilderForm input,
+#masterBuilderForm select{
+  border:1px solid #cfdef0;
+  border-radius:11px;
+  background:#fff;
+  min-height:44px;
+  transition:.2s ease;
+}
+#masterBuilderForm input:focus,
+#masterBuilderForm select:focus{
+  border-color:#79a9e8;
+  box-shadow:0 0 0 3px rgba(121,169,232,.13);
+  outline:none;
+}
+#masterCards.master-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:18px;
+  margin-top:20px;
+}
+#masterCards .master-card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid #dfe9f5;
+  border-radius:18px;
+  padding:19px;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(38,76,115,.07);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+#masterCards .master-card:before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:5px;
+  background:linear-gradient(#79aaf0,#ffad6f);
+}
+#masterCards .master-card:hover{
+  transform:translateY(-2px);
+  border-color:#c9daf0;
+  box-shadow:0 12px 30px rgba(38,76,115,.12);
+}
+#masterCards .master-card h4{
+  margin:0 0 4px;
+  color:#1c568f;
+  font-size:18px;
+}
+#masterCards .inline{
+  display:flex;
+  gap:8px;
+  margin-top:14px;
+}
+#masterCards .inline input{
+  flex:1;
+  min-width:0;
+  border:1px solid #d7e3f0;
+  border-radius:10px;
+  padding:10px 12px;
+}
+#masterCards .tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+#masterCards .tag{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 10px;
+  border:1px solid #dbe9fb;
+  border-radius:999px;
+  background:#f1f7ff;
+  color:#255f98;
+  font-size:13px;
+  font-weight:600;
+}
+#masterCards .tag button{
+  border:0;
+  background:transparent;
+  color:#e17855;
+  cursor:pointer;
+  font-size:17px;
+  line-height:1;
+  padding:0;
+}
+#masterCards .btn{
+  border-radius:9px;
+}
+#masterCards .empty{
+  grid-column:1/-1;
+  text-align:center;
+  padding:42px 20px;
+  border:2px dashed #d8e5f4;
+  border-radius:18px;
+  background:#fbfdff;
+  color:#70869d;
+}
+@media(max-width:700px){
+  #masters .panel > .toolbar:first-child{align-items:flex-start;gap:14px}
+  #masterCards.master-grid{grid-template-columns:1fr}
+}
+
+
+/* Professional Employee Profile & Audit History */
+.employee-link{
+  border:0;background:none;padding:0;color:#236da7;font-weight:750;
+  cursor:pointer;text-decoration:none;
+}
+.employee-link:hover{text-decoration:underline}
+.profile-modal{
+  position:fixed;inset:0;z-index:9999;background:rgba(18,38,58,.48);
+  display:flex;align-items:center;justify-content:center;padding:26px;
+}
+.profile-modal.hidden{display:none!important}
+.profile-shell{
+  width:min(1180px,96vw);max-height:92vh;overflow:hidden;
+  background:#fff;border-radius:22px;border:1px solid #dce7f3;
+  box-shadow:0 30px 80px rgba(21,49,76,.22);
+  display:flex;flex-direction:column;
+}
+.profile-head{
+  display:flex;justify-content:space-between;gap:18px;align-items:center;
+  padding:20px 22px;border-bottom:1px solid #e9eff5;
+  background:linear-gradient(135deg,#f7fbff,#fffaf5);
+}
+.profile-person{display:flex;align-items:center;gap:15px}
+.profile-photo{
+  width:72px;height:72px;border-radius:16px;object-fit:cover;
+  background:#eef4fa;border:1px solid #dce6ef;
+}
+.profile-photo.placeholder{
+  display:flex;align-items:center;justify-content:center;font-size:28px;color:#7e93a8;
+}
+.profile-name{font-size:22px;font-weight:800;color:#173a5c}
+.profile-meta{font-size:12px;color:#71859a;margin-top:4px}
+.profile-actions{display:flex;gap:8px;flex-wrap:wrap}
+.profile-tabs{
+  display:flex;gap:8px;flex-wrap:wrap;padding:14px 18px;
+  border-bottom:1px solid #edf2f7;background:#fff;
+}
+.profile-tab{
+  border:1px solid #d8e4f1;background:#f8fbfe;color:#415b73;
+  padding:8px 12px;border-radius:9px;font-weight:700;cursor:pointer;
+}
+.profile-tab.active{background:#eaf3ff;color:#2d6d9b;border-color:#bdd4ee}
+.profile-body{padding:20px;overflow:auto;background:#f8fafc}
+.profile-panel{display:none}
+.profile-panel.active{display:block}
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.profile-info{
+  background:#fff;border:1px solid #e1e9f1;border-radius:12px;padding:13px 14px;
+}
+.profile-info small{display:block;color:#7b8da0;font-size:11px;margin-bottom:5px}
+.profile-info b{color:#243f58;font-size:13px;word-break:break-word}
+.profile-section-title{
+  font-size:15px;font-weight:800;color:#234a6c;margin:4px 0 12px;
+  padding-left:9px;border-left:4px solid #79a9eb
+}
+.profile-doc{
+  background:#fff;border:1px solid #e1e9f1;border-radius:12px;padding:14px;
+  margin-bottom:10px
+}
+.profile-doc-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.profile-doc-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.profile-doc-meta div{font-size:12px;color:#607387}
+.profile-doc-meta b{display:block;color:#263f56;margin-top:2px}
+.history-timeline{position:relative;padding-left:24px}
+.history-item{position:relative;background:#fff;border:1px solid #e1e8ef;border-radius:12px;padding:13px 15px;margin-bottom:12px}
+.history-item:before{
+  content:"";position:absolute;left:-22px;top:18px;width:10px;height:10px;border-radius:50%;
+  background:#79a9eb;border:3px solid #edf5ff;
+}
+.history-item:after{
+  content:"";position:absolute;left:-17px;top:31px;bottom:-18px;width:2px;background:#dce7f1
+}
+.history-item:last-child:after{display:none}
+.history-title{font-weight:800;color:#23435f;font-size:13px}
+.history-meta{font-size:11px;color:#8190a0;margin-top:3px}
+.history-change{font-size:12px;color:#53697d;margin-top:7px;line-height:1.55}
+.history-old{color:#a34b4b}.history-new{color:#2f8158}
+.empty-history{text-align:center;color:#8392a0;padding:28px}
+@media(max-width:900px){
+  .profile-grid{grid-template-columns:1fr 1fr}
+  .profile-doc-meta{grid-template-columns:1fr 1fr}
+}
+@media(max-width:650px){
+  .profile-grid,.profile-doc-meta{grid-template-columns:1fr}
+  .profile-head{align-items:flex-start;flex-direction:column}
+}
+
+
+/* Expired Documents Follow-up */
+.followup-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.followup-filter{height:40px;border:1px solid #cdd9e6;border-radius:9px;padding:0 10px;background:#fff}
+.followup-table td{vertical-align:middle}
+.followup-status{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:800}
+.fs-open{background:#ffe4df;color:#b54a3d}
+.fs-contacted{background:#fff0d7;color:#9b6519}
+.fs-processing{background:#e8f0ff;color:#416ba9}
+.fs-completed{background:#dff3e7;color:#2f7d53}
+.fs-cancelled{background:#eceff3;color:#66727f}
+.followup-note{max-width:260px;white-space:normal;line-height:1.4}
+.followup-late{color:#b12929;font-weight:800}
+.followup-due{color:#a26417;font-weight:800}
+.followup-ok{color:#327a55;font-weight:800}
+.followup-modal{
+  position:fixed;inset:0;z-index:10050;background:rgba(15,35,54,.45);
+  display:flex;align-items:center;justify-content:center;padding:20px
+}
+.followup-modal.hidden{display:none!important}
+.followup-card{
+  width:min(620px,95vw);background:#fff;border-radius:18px;padding:22px;
+  border:1px solid #dce6ef;box-shadow:0 25px 70px rgba(20,45,68,.22)
+}
+.followup-card h3{margin:0 0 14px;color:#214661}
+.followup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.followup-card textarea{min-height:100px;resize:vertical}
+@media(max-width:650px){.followup-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -144,6 +407,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     </div>
     <button class="navbtn active" data-page="dashboard">Dashboard</button>
     <button class="navbtn" data-page="employees">Employees</button>
+    <button class="navbtn" data-page="followups">Document Follow-up</button>
     <button class="navbtn master" data-page="masters">Masters</button>
     <button id="logoutButton" class="navbtn logout">Sign Out</button>
   </aside>
@@ -194,7 +458,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
           <button class="tab active" data-tab="personal">Employee Information</button>
           <button class="tab" data-tab="employment">Employment</button>
           <button class="tab" data-tab="documents">Documents</button>
-          <button class="tab" data-tab="bank">Bank</button>
+          <button class="tab" data-tab="bank">Bank Information</button>
           <button class="tab" data-tab="emergency">Emergency Contact</button>
           <button class="tab" data-tab="attachments">Attachments</button>
         </div>
@@ -281,20 +545,99 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       </div>
     </section>
 
-    <section id="masters" class="page">
+    
+
+    <section id="followups" class="page">
       <div class="panel">
-        <h3>Masters</h3>
-        <div class="note"><b>Master kaise create karna hai:</b> naya item type karein aur Add press karein. Employee form ke dropdowns automatically update ho jayenge.</div>
-        <div class="master-grid">
-          <div class="master-card"><h4>Document Types</h4><p>Passport, Visa, Emirates ID, Work Permit, Labour Contract, Insurance, Driving Licence, Medical Card etc.</p><div class="inline"><input id="mDocumentTypes"><button class="btn orange" data-add-master="documentTypes">Add</button></div><div id="listDocumentTypes" class="tags"></div></div>
-          <div class="master-card"><h4>Actual Designations</h4><p>Real working designation.</p><div class="inline"><input id="mActualDesignations"><button class="btn orange" data-add-master="actualDesignations">Add</button></div><div id="listActualDesignations" class="tags"></div></div>
-          <div class="master-card"><h4>ID Card Designations</h4><p>Designation printed on ID / labour card.</p><div class="inline"><input id="mIdDesignations"><button class="btn orange" data-add-master="idDesignations">Add</button></div><div id="listIdDesignations" class="tags"></div></div>
-          <div class="master-card"><h4>Nationalities</h4><p>Country / nationality list.</p><div class="inline"><input id="mNationalities"><button class="btn orange" data-add-master="nationalities">Add</button></div><div id="listNationalities" class="tags"></div></div>
-          <div class="master-card"><h4>Companies</h4><p>Company / employer list.</p><div class="inline"><input id="mCompanies"><button class="btn orange" data-add-master="companies">Add</button></div><div id="listCompanies" class="tags"></div></div>
-          <div class="master-card"><h4>Sites</h4><p>Current Site dropdown list.</p><div class="inline"><input id="mSites"><button class="btn orange" data-add-master="sites">Add</button></div><div id="listSites" class="tags"></div></div>
+        <div class="toolbar" style="justify-content:space-between">
+          <div>
+            <h3 style="margin:0">Expired / Expiring Document Follow-up</h3>
+            <div class="small">Track renewal follow-ups, next action dates, notes, and completion status.</div>
+          </div>
+          <div class="followup-toolbar">
+            <select id="followupRangeFilter" class="followup-filter">
+              <option value="all">All Alerts</option>
+              <option value="expired">Expired</option>
+              <option value="30">Expiring in 30 Days</option>
+              <option value="60">Expiring in 60 Days</option>
+              <option value="90">Expiring in 90 Days</option>
+            </select>
+            <select id="followupStatusFilter" class="followup-filter">
+              <option value="all">All Follow-up Status</option>
+              <option value="Open">Open</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Processing">Processing</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="followup-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Document</th>
+                <th>Expiry</th>
+                <th>Days</th>
+                <th>Status</th>
+                <th>Next Follow-up</th>
+                <th>Last Note</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="followupRows"></tbody>
+          </table>
         </div>
       </div>
     </section>
+
+    <section id="masters" class="page">
+  <div class="panel">
+    <div class="toolbar" style="justify-content:space-between">
+      <div>
+        <h3 style="margin:0">Master Management</h3>
+        <div class="small">Create and manage your dropdown lists easily — no coding required.</div>
+      </div>
+      <button id="createMasterBtn" class="btn orange">+ Create New Master</button>
+    </div>
+
+    <div class="note">
+      <b>How it works:</b> Create a Master, assign it to a dropdown field, then add items.
+      Example: Master Name = Nationality → Assign To Field = Nationality → Items = Pakistani, Indian, Nepali.
+    </div>
+
+    <div id="masterBuilderForm" class="panel hidden" style="background:#fbfdff">
+      <h3>Create / Edit Master</h3>
+      <div class="formgrid">
+        <div class="field">
+          <label>Master Name</label>
+          <input id="builderMasterName" placeholder="e.g. Nationality">
+        </div>
+        <div class="field">
+          <label>Assign To Field</label>
+          <select id="builderAssignField">
+            <option value="">Select field</option>
+            <option value="actualDesignation">Actual Designation</option>
+            <option value="idDesignation">Designation as per ID Card</option>
+            <option value="nationality">Nationality</option>
+            <option value="company">Company</option>
+            <option value="currentSite">Current Site</option>
+            <option value="documentType">Document Type</option>
+          </select>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button id="saveMasterBtn" class="btn green">Save Master</button>
+        <button id="cancelMasterBtn" class="btn light">Cancel</button>
+      </div>
+    </div>
+
+    <div id="masterCards" class="master-grid"></div>
+  </div>
+</section>
+
   </main>
 </div>
 
@@ -309,20 +652,26 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   const $ = id => document.getElementById(id);
 
   const freshData = () => ({
-    masters:{
-      documentTypes:["Passport","Visa","Emirates ID","Labour Card / Work Permit","Labour Contract"],
-      actualDesignations:[],
-      idDesignations:[],
-      nationalities:["Pakistani","Indian","Bangladeshi","Nepali","Filipino","Sri Lankan","Egyptian"],
-      companies:["Civil Master General Maintenance LLC - OPC"],
-      sites:[]
-    },
+    masters:[],
     employees:[]
   });
 
   let data;
   try{ data = JSON.parse(localStorage.getItem(DATA_KEY)) || freshData(); }
   catch{ data = freshData(); }
+
+  if(!Array.isArray(data.masters)){
+    const old=data.masters||{};
+    data.masters=[
+      {name:"Document Types",assignField:"documentType",items:old.documentTypes||[]},
+      {name:"Actual Designations",assignField:"actualDesignation",items:old.actualDesignations||[]},
+      {name:"ID Card Designations",assignField:"idDesignation",items:old.idDesignations||[]},
+      {name:"Nationalities",assignField:"nationality",items:old.nationalities||[]},
+      {name:"Companies",assignField:"company",items:old.companies||[]},
+      {name:"Sites",assignField:"currentSite",items:old.sites||[]}
+    ].filter(m=>m.items.length);
+    localStorage.setItem(DATA_KEY,JSON.stringify(data));
+  }
 
   let editingIndex = null;
   let workingDocuments = [];
@@ -379,7 +728,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     $(btn.dataset.page).classList.add("active");
     document.querySelectorAll(".navbtn[data-page]").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
-    $("pageTitle").textContent=btn.dataset.page==="dashboard"?"Employee Portal":btn.dataset.page==="employees"?"Employees":"Masters";
+    $("pageTitle").textContent=btn.dataset.page==="dashboard"?"Employee Portal":btn.dataset.page==="employees"?"Employees":btn.dataset.page==="followups"?"Document Follow-up":"Masters";
   }));
 
   document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
@@ -393,34 +742,130 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     $(id).innerHTML='<option value="">'+esc(label)+'</option>'+arr.map(v=>'<option>'+esc(v)+'</option>').join("");
   }
 
-  const masterMap = {
-    documentTypes:["mDocumentTypes","listDocumentTypes"],
-    actualDesignations:["mActualDesignations","listActualDesignations"],
-    idDesignations:["mIdDesignations","listIdDesignations"],
-    nationalities:["mNationalities","listNationalities"],
-    companies:["mCompanies","listCompanies"],
-    sites:["mSites","listSites"]
-  };
+  
 
-  function renderMasters(){
-    Object.entries(masterMap).forEach(([type,[inputId,listId]])=>{
-      $(listId).innerHTML=(data.masters[type]||[]).map((v,i)=>`<span class="tag">${esc(v)} <button data-del-master="${type}" data-index="${i}">×</button></span>`).join("");
-    });
+  
+
+  
+
+
+  function getMasterItems(field){
+    const m=(data.masters||[]).find(x=>x.assignField===field);
+    return m ? (m.items||[]) : [];
   }
 
-  document.addEventListener("click",e=>{
-    const type=e.target.dataset.addMaster;
-    if(type){
-      const [inputId]=masterMap[type], input=$(inputId), value=input.value.trim();
-      if(!value) return alert("Please enter a value.");
-      if((data.masters[type]||[]).some(v=>v.toLowerCase()===value.toLowerCase())) return alert("This item already exists.");
-      data.masters[type].push(value); input.value=""; saveData();
+  let editingMasterIndex = null;
+
+  function renderMasters(){
+    const cards=$("masterCards");
+    if(!cards) return;
+    const masters=data.masters||[];
+    if(!masters.length){
+      cards.innerHTML='<div class="empty">No masters created yet. Click <b>+ Create New Master</b>.</div>';
+      return;
     }
-    const del=e.target.dataset.delMaster;
-    if(del){
-      data.masters[del].splice(Number(e.target.dataset.index),1); saveData();
+    cards.innerHTML=masters.map((m,i)=>`
+      <div class="master-card">
+        <div class="toolbar" style="justify-content:space-between;margin-bottom:8px">
+          <div>
+            <h4>${esc(m.name)}</h4>
+            <div class="small">Assigned to: ${esc(fieldLabel(m.assignField))}</div>
+          </div>
+          <div>
+            <button class="btn light" data-edit-master="${i}">Edit</button>
+            <button class="btn danger" data-delete-master="${i}">Delete</button>
+          </div>
+        </div>
+        <div class="inline">
+          <input data-master-item-input="${i}" placeholder="Add item">
+          <button class="btn orange" data-add-master-item="${i}">Add</button>
+        </div>
+        <div class="tags">
+          ${(m.items||[]).map((v,j)=>`<span class="tag">${esc(v)} <button data-delete-master-item="${i}" data-item-index="${j}">×</button></span>`).join("")}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function fieldLabel(v){
+    return ({
+      actualDesignation:"Actual Designation",
+      idDesignation:"Designation as per ID Card",
+      nationality:"Nationality",
+      company:"Company",
+      currentSite:"Current Site",
+      documentType:"Document Type"
+    })[v] || v || "-";
+  }
+
+  function openMasterBuilder(index=null){
+    editingMasterIndex=index;
+    $("masterBuilderForm").classList.remove("hidden");
+    if(index===null){
+      $("builderMasterName").value="";
+      $("builderAssignField").value="";
+    }else{
+      const m=data.masters[index];
+      $("builderMasterName").value=m.name||"";
+      $("builderAssignField").value=m.assignField||"";
+    }
+  }
+
+  function closeMasterBuilder(){
+    editingMasterIndex=null;
+    $("masterBuilderForm").classList.add("hidden");
+  }
+
+  $("createMasterBtn").addEventListener("click",()=>openMasterBuilder(null));
+  $("cancelMasterBtn").addEventListener("click",closeMasterBuilder);
+
+  $("saveMasterBtn").addEventListener("click",()=>{
+    const name=$("builderMasterName").value.trim();
+    const assignField=$("builderAssignField").value;
+    if(!name || !assignField) return alert("Master Name and Assign To Field are required.");
+
+    const conflict=(data.masters||[]).findIndex((m,i)=>i!==editingMasterIndex && m.assignField===assignField);
+    if(conflict>=0) return alert("A master is already assigned to this field.");
+
+    if(editingMasterIndex===null){
+      data.masters.push({name,assignField,items:[]});
+    }else{
+      data.masters[editingMasterIndex].name=name;
+      data.masters[editingMasterIndex].assignField=assignField;
+    }
+    saveData();
+    closeMasterBuilder();
+  });
+
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.editMaster!==undefined){
+      openMasterBuilder(Number(e.target.dataset.editMaster));
+    }
+    if(e.target.dataset.deleteMaster!==undefined){
+      const i=Number(e.target.dataset.deleteMaster);
+      if(confirm("Delete this master and all its items?")){
+        data.masters.splice(i,1);
+        saveData();
+      }
+    }
+    if(e.target.dataset.addMasterItem!==undefined){
+      const i=Number(e.target.dataset.addMasterItem);
+      const input=document.querySelector(`[data-master-item-input="${i}"]`);
+      const value=input?.value.trim();
+      if(!value) return alert("Please enter an item.");
+      const items=data.masters[i].items||(data.masters[i].items=[]);
+      if(items.some(v=>v.toLowerCase()===value.toLowerCase())) return alert("This item already exists.");
+      items.push(value);
+      saveData();
+    }
+    if(e.target.dataset.deleteMasterItem!==undefined){
+      const i=Number(e.target.dataset.deleteMasterItem);
+      const j=Number(e.target.dataset.itemIndex);
+      data.masters[i].items.splice(j,1);
+      saveData();
     }
   });
+
 
   function employeeDefaults(){
     return {
@@ -430,9 +875,228 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       documents:[],
       bank:{bankName:"",accountName:"",accountNumber:"",iban:"",swift:""},
       emergency:{name:"",relationship:"",mobile:"",country:""},
-      attachments:[]
+      attachments:[],history:[],documentFollowups:[]
     };
   }
+
+
+  let profileEmployeeIndex = null;
+
+  function nowLabel(){
+    return new Date().toLocaleString();
+  }
+
+  function safeHistory(e){
+    if(!Array.isArray(e.history)) e.history=[];
+    if(!Array.isArray(e.documentFollowups)) e.documentFollowups=[];
+    return e.history;
+  }
+
+  function addHistoryEvent(e, event){
+    const history=safeHistory(e);
+    history.unshift({
+      id:String(Date.now())+Math.random().toString(16).slice(2),
+      date:nowLabel(),
+      by:"Administrator",
+      ...event
+    });
+  }
+
+  function diffEmployee(oldE,newE){
+    const changes=[];
+    const fields=[
+      ["employeeName","Employee Name"],["employeeNameArabic","Arabic Name"],
+      ["actualDesignation","Actual Designation"],["fatherName","Father Name"],
+      ["nationality","Nationality"],["gender","Gender"],["dob","DOB"],
+      ["maritalStatus","Marital Status"],["mobile","Mobile"],["company","Company"],
+      ["idDesignation","ID Card Designation"],["joiningDate","Joining Date"],
+      ["currentSite","Current Site"],["status","Employee Status"],
+      ["inactiveReason","Inactive Reason"],["inactiveDate","Inactive Date"]
+    ];
+    fields.forEach(([k,label])=>{
+      const a=String(oldE?.[k]??"");
+      const b=String(newE?.[k]??"");
+      if(a!==b) changes.push({field:label,old:a,new:b});
+    });
+    return changes;
+  }
+
+  function documentKey(d){
+    return `${String(d.type||"").toLowerCase()}|${String(d.number||"").toLowerCase()}`;
+  }
+
+  function compareDocuments(oldDocs,newDocs){
+    const events=[];
+    const usedOld=new Set();
+
+    newDocs.forEach((n,ni)=>{
+      let oi=oldDocs.findIndex((o,i)=>!usedOld.has(i) && documentKey(o)===documentKey(n));
+      if(oi<0 && n.type){
+        oi=oldDocs.findIndex((o,i)=>!usedOld.has(i) && String(o.type||"").toLowerCase()===String(n.type||"").toLowerCase());
+      }
+      if(oi<0){
+        events.push({type:"Document Added",title:`${n.type||"Document"} added`,changes:[
+          {field:"Number",old:"",new:n.number||""},
+          {field:"Issue Date",old:"",new:n.issueDate||""},
+          {field:"Expiry Date",old:"",new:n.expiryDate||""},
+          {field:"URL",old:"",new:n.url||""}
+        ]});
+        return;
+      }
+
+      usedOld.add(oi);
+      const o=oldDocs[oi];
+      const changes=[];
+      [["number","Number"],["issueDate","Issue Date"],["expiryDate","Expiry Date"],["url","Document URL"]].forEach(([k,label])=>{
+        const a=String(o?.[k]??""), b=String(n?.[k]??"");
+        if(a!==b) changes.push({field:label,old:a,new:b});
+      });
+      if(changes.length){
+        const renewal = String(o.expiryDate||"") !== String(n.expiryDate||"") || String(o.number||"") !== String(n.number||"");
+        events.push({
+          type: renewal ? "Document Renewed" : "Document Updated",
+          title:`${n.type||"Document"} ${renewal?"renewed":"updated"}`,
+          changes
+        });
+      }
+    });
+
+    oldDocs.forEach((o,i)=>{
+      if(!usedOld.has(i)){
+        events.push({type:"Document Removed",title:`${o.type||"Document"} removed`,changes:[
+          {field:"Number",old:o.number||"",new:""},
+          {field:"Expiry Date",old:o.expiryDate||"",new:""}
+        ]});
+      }
+    });
+    return events;
+  }
+
+  function profileInfo(label,value){
+    return `<div class="profile-info"><small>${esc(label)}</small><b>${esc(value||"-")}</b></div>`;
+  }
+
+  function openEmployeeProfile(index){
+    profileEmployeeIndex=Number(index);
+    const e=data.employees[profileEmployeeIndex];
+    if(!e) return;
+
+    $("employeeProfileModal").classList.remove("hidden");
+    $("profileEmployeeName").textContent=e.employeeName||"Employee Profile";
+    $("profileEmployeeMeta").textContent=[e.employeeCode,e.actualDesignation,e.status].filter(Boolean).join(" · ");
+
+    $("profilePhotoWrap").innerHTML=e.photo
+      ? `<img class="profile-photo" src="${e.photo}" alt="Employee Photo">`
+      : `<div class="profile-photo placeholder">👤</div>`;
+
+    $("profile-overview").innerHTML=`
+      <div class="profile-section-title">Personal Information</div>
+      <div class="profile-grid">
+        ${profileInfo("Employee Code",e.employeeCode)}
+        ${profileInfo("Employee Name",e.employeeName)}
+        ${profileInfo("Employee Name in Arabic",e.employeeNameArabic)}
+        ${profileInfo("Actual Designation",e.actualDesignation)}
+        ${profileInfo("Father Name",e.fatherName)}
+        ${profileInfo("Nationality",e.nationality)}
+        ${profileInfo("Gender",e.gender)}
+        ${profileInfo("Date of Birth",e.dob)}
+        ${profileInfo("Marital Status",e.maritalStatus)}
+        ${profileInfo("Mobile",e.mobile)}
+      </div>`;
+
+    $("profile-employment").innerHTML=`
+      <div class="profile-section-title">Employment Information</div>
+      <div class="profile-grid">
+        ${profileInfo("Company",e.company)}
+        ${profileInfo("Designation as per ID Card",e.idDesignation)}
+        ${profileInfo("Joining Date",e.joiningDate)}
+        ${profileInfo("Current Site",e.currentSite)}
+        ${profileInfo("Employee Status",e.status)}
+        ${profileInfo("Inactive Reason",e.inactiveReason)}
+        ${profileInfo("Inactive Date",e.inactiveDate)}
+      </div>`;
+
+    const docs=e.documents||[];
+    $("profile-documents").innerHTML=docs.length?`
+      <div class="profile-section-title">Documents</div>
+      ${docs.map(d=>`
+        <div class="profile-doc">
+          <div class="profile-doc-head">
+            <b>${esc(d.type||"Document")}</b>
+            ${d.url?`<a class="btn light" href="${esc(d.url)}" target="_blank" rel="noopener">Open Document</a>`:""}
+          </div>
+          <div class="profile-doc-meta">
+            <div>Number<b>${esc(d.number||"-")}</b></div>
+            <div>Issue Date<b>${esc(d.issueDate||"-")}</b></div>
+            <div>Expiry Date<b>${esc(d.expiryDate||"-")}</b></div>
+            <div>Document URL<b>${d.url?esc(d.url):"-"}</b></div>
+          </div>
+        </div>`).join("")}`:'<div class="empty-history">No documents added.</div>';
+
+    $("profile-bank").innerHTML=`
+      <div class="profile-section-title">Bank Information</div>
+      <div class="profile-grid">
+        ${profileInfo("Bank Name",e.bank?.bankName)}
+        ${profileInfo("Account Name",e.bank?.accountName)}
+        ${profileInfo("Account Number",e.bank?.accountNumber)}
+        ${profileInfo("IBAN",e.bank?.iban)}
+        ${profileInfo("SWIFT Code",e.bank?.swift)}
+      </div>`;
+
+    $("profile-emergency").innerHTML=`
+      <div class="profile-section-title">Emergency Contact</div>
+      <div class="profile-grid">
+        ${profileInfo("Contact Name",e.emergency?.name)}
+        ${profileInfo("Relationship",e.emergency?.relationship)}
+        ${profileInfo("Mobile",e.emergency?.mobile)}
+        ${profileInfo("Country",e.emergency?.country)}
+      </div>`;
+
+    const atts=e.attachments||[];
+    $("profile-attachments").innerHTML=atts.length?`
+      <div class="profile-section-title">Attachments</div>
+      ${atts.map(a=>`<div class="attach-item"><div><b>${esc(a.name)}</b><div class="small">${esc(a.fileName||"")}</div></div></div>`).join("")}`
+      :'<div class="empty-history">No attachments added.</div>';
+
+    renderProfileHistory(e);
+
+    document.querySelectorAll(".profile-tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".profile-panel").forEach(p=>p.classList.remove("active"));
+    document.querySelector('.profile-tab[data-profile-tab="overview"]').classList.add("active");
+    $("profile-overview").classList.add("active");
+  }
+
+  function renderProfileHistory(e){
+    const h=safeHistory(e);
+    $("profile-history").innerHTML=`
+      <div class="profile-section-title">Employee Audit History</div>
+      ${h.length?`<div class="history-timeline">${h.map(item=>`
+        <div class="history-item">
+          <div class="history-title">${esc(item.title||item.type||"Update")}</div>
+          <div class="history-meta">${esc(item.date||"")} · ${esc(item.by||"Administrator")}</div>
+          ${(item.changes||[]).length?`<div class="history-change">${item.changes.map(c=>`
+            <div><b>${esc(c.field)}:</b> <span class="history-old">${esc(c.old||"-")}</span> → <span class="history-new">${esc(c.new||"-")}</span></div>
+          `).join("")}</div>`:""}
+        </div>`).join("")}</div>`:'<div class="empty-history">No history yet.</div>'}`;
+  }
+
+  document.querySelectorAll(".profile-tab").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll(".profile-tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".profile-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    $("profile-"+btn.dataset.profileTab).classList.add("active");
+  }));
+
+  $("profileCloseBtn").addEventListener("click",()=>$("employeeProfileModal").classList.add("hidden"));
+  $("employeeProfileModal").addEventListener("click",e=>{
+    if(e.target===$("employeeProfileModal")) $("employeeProfileModal").classList.add("hidden");
+  });
+  $("profileEditBtn").addEventListener("click",()=>{
+    if(profileEmployeeIndex===null) return;
+    $("employeeProfileModal").classList.add("hidden");
+    openEditor(profileEmployeeIndex);
+  });
+
 
   function openEditor(index=null){
     editingIndex=index;
@@ -462,7 +1126,10 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     $("fInactiveDate").value=e.inactiveDate||"";
     updateInactiveBox();
 
-    workingDocuments=e.documents||[];
+    workingDocuments=(e.documents||[]).map(d=>({
+      ...d,
+      id:d.id || (crypto.randomUUID?crypto.randomUUID():(Date.now()+"-"+Math.random().toString(16).slice(2)))
+    }));
     workingAttachments=e.attachments||[];
     renderDocumentEditor();
     renderAttachmentList();
@@ -501,7 +1168,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   $("clearPhotoBtn").addEventListener("click",()=>{workingPhoto="";$("photoPreview").src="";$("fPhoto").value=""});
 
   function addDocument(){
-    workingDocuments.push({type:"",number:"",issueDate:"",expiryDate:"",url:""});
+    workingDocuments.push({id:crypto.randomUUID?crypto.randomUUID():(Date.now()+"-"+Math.random().toString(16).slice(2)),type:"",number:"",issueDate:"",expiryDate:"",url:""});
     renderDocumentEditor();
   }
   $("addDocumentBtn").addEventListener("click",addDocument);
@@ -526,7 +1193,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   }
 
   function docTypeOptions(selected){
-    return '<option value="">Select</option>'+data.masters.documentTypes.map(v=>`<option ${v===selected?"selected":""}>${esc(v)}</option>`).join("");
+    return '<option value="">Select</option>'+getMasterItems("documentType").map(v=>`<option ${v===selected?"selected":""}>${esc(v)}</option>`).join("");
   }
 
   document.addEventListener("input",e=>{
@@ -625,7 +1292,46 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       updatedAt:new Date().toISOString()
     };
 
-    if(editingIndex===null) data.employees.push(e); else data.employees[editingIndex]=e;
+    if(editingIndex===null){
+      e.history=[];
+      addHistoryEvent(e,{
+        type:"Employee Created",
+        title:"Employee profile created",
+        changes:[
+          {field:"Employee Code",old:"",new:e.employeeCode},
+          {field:"Employee Name",old:"",new:e.employeeName},
+          {field:"Status",old:"",new:e.status}
+        ]
+      });
+      (e.documents||[]).forEach(d=>{
+        addHistoryEvent(e,{
+          type:"Document Added",
+          title:`${d.type||"Document"} added`,
+          changes:[
+            {field:"Number",old:"",new:d.number||""},
+            {field:"Issue Date",old:"",new:d.issueDate||""},
+            {field:"Expiry Date",old:"",new:d.expiryDate||""},
+            {field:"Document URL",old:"",new:d.url||""}
+          ]
+        });
+      });
+      data.employees.push(e);
+    }else{
+      const oldEmployee=JSON.parse(JSON.stringify(data.employees[editingIndex]||{}));
+      e.history=Array.isArray(oldEmployee.history)?oldEmployee.history:[];
+
+      const fieldChanges=diffEmployee(oldEmployee,e);
+      if(fieldChanges.length){
+        addHistoryEvent(e,{
+          type:"Employee Updated",
+          title:"Employee information updated",
+          changes:fieldChanges
+        });
+      }
+
+      compareDocuments(oldEmployee.documents||[],e.documents||[]).forEach(event=>addHistoryEvent(e,event));
+      data.employees[editingIndex]=e;
+    }
     saveData(); closeEditor(); alert("Employee data saved successfully.");
   });
 
@@ -637,7 +1343,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       .join(" ").toLowerCase().includes(q)
     );
     $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>
-      <td>${esc(e.employeeCode)}</td><td>${esc(e.employeeName)}</td><td>${esc(e.actualDesignation)}</td>
+      <td>${esc(e.employeeCode)}</td><td><button class="employee-link" data-view-employee="${e._i}">${esc(e.employeeName)}</button></td><td>${esc(e.actualDesignation)}</td>
       <td>${esc(e.nationality)}</td><td>${esc(e.company)}</td><td>${esc(e.idDesignation)}</td>
       <td>${esc(e.status)}${e.status==="Inactive"?`<div class="small">${esc(e.inactiveReason)} · ${esc(e.inactiveDate)}</div>`:""}</td>
       <td>${esc(e.currentSite)}</td>
@@ -645,6 +1351,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     </tr>`).join(""):'<tr><td colspan="9" class="empty">No employee records.</td></tr>';
   }
   document.addEventListener("click",e=>{
+    if(e.target.dataset.viewEmployee!==undefined) openEmployeeProfile(Number(e.target.dataset.viewEmployee));
     if(e.target.dataset.editEmployee!==undefined) openEditor(Number(e.target.dataset.editEmployee));
     if(e.target.dataset.deleteEmployee!==undefined){
       if(confirm("Delete this employee record?")){
@@ -652,6 +1359,190 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       }
     }
   });
+
+
+  let currentFollowupEmployeeIndex=null;
+  let currentFollowupDocumentId=null;
+
+  function ensureFollowups(e){
+    if(!Array.isArray(e.documentFollowups)) e.documentFollowups=[];
+    return e.documentFollowups;
+  }
+
+  function getFollowupRecord(e,documentId){
+    const list=ensureFollowups(e);
+    return list.find(x=>String(x.documentId)===String(documentId)) || null;
+  }
+
+  function getOrCreateFollowupRecord(e,documentId){
+    let rec=getFollowupRecord(e,documentId);
+    if(!rec){
+      rec={
+        documentId:String(documentId),
+        status:"Open",
+        nextFollowupDate:"",
+        responsible:"",
+        reference:"",
+        notes:[]
+      };
+      ensureFollowups(e).push(rec);
+    }
+    if(!Array.isArray(rec.notes)) rec.notes=[];
+    return rec;
+  }
+
+  function followupStatusClass(status){
+    return ({
+      Open:"fs-open",
+      Contacted:"fs-contacted",
+      Processing:"fs-processing",
+      Completed:"fs-completed",
+      Cancelled:"fs-cancelled"
+    })[status] || "fs-open";
+  }
+
+  function collectDocumentAlerts(){
+    const today=new Date();today.setHours(0,0,0,0);
+    const rows=[];
+    data.employees.forEach((e,ei)=>(e.documents||[]).forEach((d)=>{
+      if(!d.id) d.id=crypto.randomUUID?crypto.randomUUID():(Date.now()+"-"+Math.random().toString(16).slice(2));
+      if(!d.expiryDate) return;
+      const dt=new Date(d.expiryDate+"T00:00:00");
+      const days=Math.ceil((dt-today)/86400000);
+      if(days<=90){
+        const f=getFollowupRecord(e,d.id) || {status:"Open",nextFollowupDate:"",responsible:"",reference:"",notes:[]};
+        rows.push({employee:e,employeeIndex:ei,document:d,documentId:d.id,days,followup:f});
+      }
+    }));
+    return rows.sort((a,b)=>a.days-b.days);
+  }
+
+  function latestFollowupNote(f){
+    const notes=f?.notes||[];
+    return notes.length ? notes[0] : null;
+  }
+
+  function renderFollowups(){
+    const range=$("followupRangeFilter")?.value || "all";
+    const status=$("followupStatusFilter")?.value || "all";
+    let rows=collectDocumentAlerts();
+
+    rows=rows.filter(r=>{
+      if(range==="expired" && r.days>=0) return false;
+      if(range==="30" && !(r.days>=0&&r.days<=30)) return false;
+      if(range==="60" && !(r.days>=0&&r.days<=60)) return false;
+      if(range==="90" && !(r.days>=0&&r.days<=90)) return false;
+      if(status!=="all" && r.followup.status!==status) return false;
+      return true;
+    });
+
+    $("followupRows").innerHTML=rows.length?rows.map(r=>{
+      const f=r.followup;
+      const note=latestFollowupNote(f);
+      const today=new Date();today.setHours(0,0,0,0);
+      let followClass="followup-ok";
+      if(f.nextFollowupDate){
+        const nd=new Date(f.nextFollowupDate+"T00:00:00");
+        const dd=Math.ceil((nd-today)/86400000);
+        followClass=dd<0?"followup-late":dd<=3?"followup-due":"followup-ok";
+      }
+      const dayLabel=r.days<0?`${Math.abs(r.days)} days expired`:`${r.days} days left`;
+      return `<tr>
+        <td><button class="employee-link" data-view-employee="${r.employeeIndex}">${esc(r.employee.employeeName)}</button><div class="small">${esc(r.employee.employeeCode)}</div></td>
+        <td><b>${esc(r.document.type||"Document")}</b><div class="small">${esc(r.document.number||"")}</div></td>
+        <td>${esc(r.document.expiryDate)}</td>
+        <td class="${r.days<0?"followup-late":r.days<=30?"followup-due":"followup-ok"}">${dayLabel}</td>
+        <td><span class="followup-status ${followupStatusClass(f.status)}">${esc(f.status||"Open")}</span></td>
+        <td class="${followClass}">${esc(f.nextFollowupDate||"-")}</td>
+        <td class="followup-note">${note?esc(note.note||"-"):"-"}</td>
+        <td><button class="btn orange" data-followup-employee="${r.employeeIndex}" data-followup-document-id="${esc(r.documentId)}">Follow-up</button></td>
+      </tr>`;
+    }).join(""):'<tr><td colspan="8" class="empty">No document follow-up records for this filter.</td></tr>';
+  }
+
+  function openFollowupModal(employeeIndex,documentId){
+    currentFollowupEmployeeIndex=Number(employeeIndex);
+    currentFollowupDocumentId=String(documentId);
+    const e=data.employees[currentFollowupEmployeeIndex];
+    const d=(e?.documents||[]).find(x=>String(x.id)===currentFollowupDocumentId);
+    if(!e||!d) return;
+    const f=getOrCreateFollowupRecord(e,currentFollowupDocumentId);
+
+    $("followupModalTitle").textContent=`${e.employeeName} — ${d.type||"Document"}`;
+    $("followupStatus").value=f.status||"Open";
+    $("followupNextDate").value=f.nextFollowupDate||"";
+    $("followupResponsible").value=f.responsible||"";
+    $("followupReference").value=f.reference||"";
+    $("followupNote").value="";
+    renderFollowupHistory(f);
+    $("followupModal").classList.remove("hidden");
+  }
+
+  function renderFollowupHistory(f){
+    const notes=f?.notes||[];
+    $("followupHistoryList").innerHTML=notes.length?notes.map(n=>`
+      <div class="history-item">
+        <div class="history-title">${esc(n.status||"Follow-up")}</div>
+        <div class="history-meta">${esc(n.date||"")} · ${esc(n.by||"Administrator")}${n.responsible?` · Responsible: ${esc(n.responsible)}`:""}</div>
+        <div class="history-change">${esc(n.note||"")}${n.reference?`<div><b>Reference:</b> ${esc(n.reference)}</div>`:""}${n.nextFollowupDate?`<div><b>Next Follow-up:</b> ${esc(n.nextFollowupDate)}</div>`:""}</div>
+      </div>
+    `).join(""):'<div class="empty-history">No follow-up history yet.</div>';
+  }
+
+  $("followupCloseBtn").addEventListener("click",()=>$("followupModal").classList.add("hidden"));
+  $("followupModal").addEventListener("click",e=>{if(e.target===$("followupModal")) $("followupModal").classList.add("hidden")});
+  $("followupRangeFilter").addEventListener("change",renderFollowups);
+  $("followupStatusFilter").addEventListener("change",renderFollowups);
+
+  $("saveFollowupBtn").addEventListener("click",()=>{
+    const e=data.employees[currentFollowupEmployeeIndex];
+    const d=(e?.documents||[]).find(x=>String(x.id)===String(currentFollowupDocumentId));
+    if(!e||!d) return;
+
+    const f=getOrCreateFollowupRecord(e,currentFollowupDocumentId);
+    const note=$("followupNote").value.trim();
+
+    f.status=$("followupStatus").value;
+    f.nextFollowupDate=$("followupNextDate").value;
+    f.responsible=$("followupResponsible").value.trim();
+    f.reference=$("followupReference").value.trim();
+
+    if(note){
+      f.notes.unshift({
+        date:nowLabel(),
+        by:"Administrator",
+        status:f.status,
+        nextFollowupDate:f.nextFollowupDate,
+        responsible:f.responsible,
+        reference:f.reference,
+        note
+      });
+    }
+
+    addHistoryEvent(e,{
+      type:"Document Follow-up",
+      title:`${d.type||"Document"} follow-up updated`,
+      changes:[
+        {field:"Follow-up Status",old:"",new:f.status},
+        {field:"Next Follow-up Date",old:"",new:f.nextFollowupDate||""},
+        {field:"Responsible Person",old:"",new:f.responsible||""},
+        {field:"Reference",old:"",new:f.reference||""},
+        {field:"Note",old:"",new:note||""}
+      ]
+    });
+
+    saveData();
+    renderFollowupHistory(f);
+    renderFollowups();
+    alert("Document follow-up saved.");
+  });
+
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.followupEmployee!==undefined){
+      openFollowupModal(Number(e.target.dataset.followupEmployee),e.target.dataset.followupDocumentId);
+    }
+  });
+
 
   function renderDashboard(){
     $("totalEmployees").textContent=data.employees.length;
@@ -679,22 +1570,114 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
   function renderAll(){
     renderMasters();
-    fillSelect("fActualDesignation",data.masters.actualDesignations,"Select actual designation");
-    fillSelect("fIdDesignation",data.masters.idDesignations,"Select ID card designation");
-    fillSelect("fNationality",data.masters.nationalities,"Select nationality");
-    fillSelect("fCompany",data.masters.companies,"Select company");
-    fillSelect("fCurrentSite",data.masters.sites,"Select current site");
+    fillSelect("fActualDesignation",getMasterItems("actualDesignation"),"Select actual designation");
+    fillSelect("fIdDesignation",getMasterItems("idDesignation"),"Select ID card designation");
+    fillSelect("fNationality",getMasterItems("nationality"),"Select nationality");
+    fillSelect("fCompany",getMasterItems("company"),"Select company");
+    fillSelect("fCurrentSite",getMasterItems("currentSite"),"Select current site");
     renderEmployees();
     renderDashboard();
+    renderFollowups();
     if(!$("employeeEditor").classList.contains("hidden")){
       renderDocumentEditor();
     }
   }
+
+
+  // Keep older saved employee data compatible with the new audit-trail system.
+  (data.employees||[]).forEach(e=>{
+    if(!Array.isArray(e.history)) e.history=[];
+  });
+  localStorage.setItem(DATA_KEY,JSON.stringify(data));
 
   const savedEmail=localStorage.getItem("cm_saved_email"); if(savedEmail) $("loginEmail").value=savedEmail;
   renderAll();
   if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1") openApp();
 })();
 </script>
+
+
+<div id="followupModal" class="followup-modal hidden">
+  <div class="followup-card">
+    <div class="toolbar" style="justify-content:space-between">
+      <h3 id="followupModalTitle">Document Follow-up</h3>
+      <button id="followupCloseBtn" class="btn light" type="button">Close</button>
+    </div>
+
+    <div class="followup-grid">
+      <div class="field">
+        <label>Follow-up Status</label>
+        <select id="followupStatus">
+          <option>Open</option>
+          <option>Contacted</option>
+          <option>Processing</option>
+          <option>Completed</option>
+          <option>Cancelled</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Next Follow-up Date</label>
+        <input id="followupNextDate" type="date">
+      </div>
+      <div class="field">
+        <label>Responsible Person</label>
+        <input id="followupResponsible" placeholder="e.g. HR Admin">
+      </div>
+      <div class="field">
+        <label>Renewal Reference / Application No.</label>
+        <input id="followupReference" placeholder="Optional">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Follow-up Note</label>
+      <textarea id="followupNote" placeholder="What was done? Who was contacted? What is pending?"></textarea>
+    </div>
+
+    <div class="toolbar">
+      <button id="saveFollowupBtn" class="btn green" type="button">Save Follow-up</button>
+    </div>
+
+    <div class="section-title">Follow-up History</div>
+    <div id="followupHistoryList"></div>
+  </div>
+</div>
+
+<div id="employeeProfileModal" class="profile-modal hidden">
+  <div class="profile-shell">
+    <div class="profile-head">
+      <div class="profile-person">
+        <div id="profilePhotoWrap"></div>
+        <div>
+          <div id="profileEmployeeName" class="profile-name">Employee Profile</div>
+          <div id="profileEmployeeMeta" class="profile-meta"></div>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button id="profileEditBtn" class="btn">Edit Employee</button>
+        <button id="profileCloseBtn" class="btn light">Close</button>
+      </div>
+    </div>
+    <div class="profile-tabs">
+      <button class="profile-tab active" data-profile-tab="overview">Overview</button>
+      <button class="profile-tab" data-profile-tab="employment">Employment</button>
+      <button class="profile-tab" data-profile-tab="documents">Documents</button>
+      <button class="profile-tab" data-profile-tab="bank">Bank Information</button>
+      <button class="profile-tab" data-profile-tab="emergency">Emergency Contact</button>
+      <button class="profile-tab" data-profile-tab="attachments">Attachments</button>
+      <button class="profile-tab" data-profile-tab="history">History</button>
+    </div>
+    <div class="profile-body">
+      <div id="profile-overview" class="profile-panel active"></div>
+      <div id="profile-employment" class="profile-panel"></div>
+      <div id="profile-documents" class="profile-panel"></div>
+      <div id="profile-bank" class="profile-panel"></div>
+      <div id="profile-emergency" class="profile-panel"></div>
+      <div id="profile-attachments" class="profile-panel"></div>
+      <div id="profile-history" class="profile-panel"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
