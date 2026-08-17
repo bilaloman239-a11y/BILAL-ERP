@@ -416,7 +416,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     <section id="employees" class="page">
       <div class="panel">
         <div class="toolbar">
-          <button id="newEmployeeBtn" class="btn">+ Add Employee</button>
+          <button id="newEmployeeBtn" class="btn" type="button" onclick="window.cmOpenNewEmployee && window.cmOpenNewEmployee()">+ Add Employee</button>
           <input id="employeeSearch" class="search" placeholder="Search employee...">
         </div>
 
@@ -483,17 +483,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
           <div class="note">Document Type fixed nahi hai. Masters → Document Types se list aati hai. Actual PDF/image database mein store nahi hogi; yahan sirf Document URL save hoga.</div>
           <button id="addDocumentBtn" class="btn orange" type="button">+ Add Document</button>
           <div id="documentsEditor"></div>
-        </div>
-
-        <div id="tab-bank" class="tab-panel">
-          <div class="section-title">Bank Information</div>
-          <div class="formgrid">
-            <div class="field"><label>Bank Name</label><input id="fBankName"></div>
-            <div class="field"><label>Account Name</label><input id="fAccountName"></div>
-            <div class="field"><label>Account Number</label><input id="fAccountNumber"></div>
-            <div class="field"><label>IBAN</label><input id="fIBAN"></div>
-            <div class="field"><label>SWIFT Code</label><input id="fSwift"></div>
-          </div>
         </div>
 
         <div id="tab-emergency" class="tab-panel">
@@ -806,7 +795,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       gender:"",dob:"",maritalStatus:"",mobile:"",photo:"",
       company:"",idDesignation:"",joiningDate:"",currentSite:"",status:"Active",inactiveReason:"",inactiveDate:"",
       documents:[],
-      bank:{bankName:"",accountName:"",accountNumber:"",iban:"",swift:""},
       emergency:{name:"",relationship:"",mobile:"",country:""},
       attachments:[],history:[]
     };
@@ -1053,11 +1041,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     renderDocumentEditor();
     renderAttachmentList();
 
-    $("fBankName").value=e.bank?.bankName||"";
-    $("fAccountName").value=e.bank?.accountName||"";
-    $("fAccountNumber").value=e.bank?.accountNumber||"";
-    $("fIBAN").value=e.bank?.iban||"";
-    $("fSwift").value=e.bank?.swift||"";
 
     $("fEmergencyName").value=e.emergency?.name||"";
     $("fEmergencyRelationship").value=e.emergency?.relationship||"";
@@ -1071,7 +1054,22 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     $("employeeEditor").scrollIntoView({behavior:"smooth",block:"start"});
   }
 
-  function closeEditor(){ $("employeeEditor").classList.add("hidden"); editingIndex=null; }
+  function closeEditor(){ const ed=$("employeeEditor"); ed.classList.add("hidden"); ed.style.display=""; editingIndex=null; }
+
+  window.cmOpenNewEmployee = function(){
+    try{
+      openEditor(null);
+      const editor=$("employeeEditor");
+      if(editor){
+        editor.classList.remove("hidden");
+        editor.style.display="block";
+        setTimeout(()=>editor.scrollIntoView({behavior:"smooth",block:"start"}),50);
+      }
+    }catch(err){
+      console.error("Add Employee error:",err);
+      alert("Add Employee form could not open. Please refresh the page once.");
+    }
+  };
 
   $("newEmployeeBtn").addEventListener("click",()=>openEditor(null));
   $("closeEditorBtn").addEventListener("click",closeEditor);
@@ -1194,13 +1192,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       inactiveDate:$("fEmployeeStatus").value==="Inactive"?$("fInactiveDate").value:"",
 
       documents:workingDocuments,
-      bank:{
-        bankName:$("fBankName").value.trim(),
-        accountName:$("fAccountName").value.trim(),
-        accountNumber:$("fAccountNumber").value.trim(),
-        iban:$("fIBAN").value.trim(),
-        swift:$("fSwift").value.trim()
-      },
       emergency:{
         name:$("fEmergencyName").value.trim(),
         relationship:$("fEmergencyRelationship").value.trim(),
