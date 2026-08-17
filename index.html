@@ -67,12 +67,43 @@ linear-gradient(145deg,#fff 0%,#fbfdff 58%,#eff6ff 100%)}
 .content{margin-left:245px;width:calc(100% - 245px);padding:28px}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.topbar h1{margin:0;font-size:26px}.pill{background:#fff1e5;color:#9c5b1c;border-radius:20px;padding:8px 12px;font-size:12px}
 .page{display:none}.page.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px}.card span{font-size:12px;color:var(--muted)}.card b{display:block;font-size:26px;margin-top:7px}
-.dashboard-count-card{cursor:pointer;transition:.18s ease;position:relative}
-.dashboard-count-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(38,76,115,.10);border-color:#bfd5ee}
-.dashboard-count-card:after{content:"View list";position:absolute;right:14px;bottom:11px;font-size:10px;font-weight:700;color:#7290ad;opacity:0;transition:.18s}
-.dashboard-count-card:hover:after{opacity:1}
-.dashboard-count-card.selected{border-color:#8eb9e9;box-shadow:0 0 0 3px rgba(121,169,235,.12)}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px}
+.dashboard-count-card{
+  cursor:pointer;position:relative;overflow:hidden;min-height:142px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  border:1px solid #e1eaf4;background:linear-gradient(145deg,#ffffff,#fbfdff);
+  box-shadow:0 8px 24px rgba(38,76,115,.06);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.dashboard-count-card:before{
+  content:"";position:absolute;left:0;right:0;top:0;height:4px;
+  background:var(--dash-accent,#79a9eb);
+}
+.dashboard-count-card:hover{
+  transform:translateY(-4px);box-shadow:0 15px 34px rgba(38,76,115,.13);
+  border-color:color-mix(in srgb,var(--dash-accent,#79a9eb) 45%,#dbe6f1);
+}
+.dashboard-count-card .dash-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.dashboard-count-card .dash-label{font-size:13px;font-weight:700;color:#5d7288;line-height:1.25}
+.dashboard-count-card .dash-icon{
+  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;background:var(--dash-soft,#eef5ff);color:var(--dash-accent,#79a9eb);
+  border:1px solid rgba(121,169,235,.12)
+}
+.dashboard-count-card b{display:block;font-size:34px;line-height:1;color:#17375c;margin:12px 0 7px;letter-spacing:-1px}
+.dashboard-count-card .dash-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dashboard-count-card .dash-note{font-size:10px;color:#8a9bad;font-weight:650}
+.dashboard-count-card .dash-view{font-size:10px;color:var(--dash-accent,#5f91b4);font-weight:800;opacity:.78}
+.dashboard-count-card:hover .dash-view{opacity:1}
+.dashboard-count-card.selected{border-color:var(--dash-accent,#8eb9e9);box-shadow:0 0 0 3px var(--dash-soft,#eef5ff),0 12px 28px rgba(38,76,115,.10)}
+.dashboard-count-card.total{--dash-accent:#5f91d4;--dash-soft:#edf5ff}
+.dashboard-count-card.active-emp{--dash-accent:#49a06f;--dash-soft:#edf9f2}
+.dashboard-count-card.exp30{--dash-accent:#df665d;--dash-soft:#fff0ee}
+.dashboard-count-card.exp60{--dash-accent:#e39a43;--dash-soft:#fff6e9}
+.dashboard-count-card.exp90{--dash-accent:#6f9fd4;--dash-soft:#eff6ff}
+@media(max-width:1100px){.dashboard-count-card{min-height:128px}}
+
 .dashboard-list-row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 14px;border-bottom:1px solid #e8eef3}
 .dashboard-list-row:last-child{border-bottom:0}
 .dashboard-list-main b{display:block;color:#173a5c;margin-bottom:3px}
@@ -401,6 +432,259 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
 @media(max-width:760px){#exportColumnChoices{grid-template-columns:1fr!important}}
 </style>
+<style>
+/* ============================================================
+   VISUAL POLISH LAYER — purely cosmetic, no IDs/structure touched
+   ============================================================ */
+
+::selection{background:#bcd9ff;color:#123256}
+*{scrollbar-width:thin;scrollbar-color:#c3d5ea #f2f6fb}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:#f2f6fb}
+::-webkit-scrollbar-thumb{background:#c3d5ea;border-radius:20px}
+::-webkit-scrollbar-thumb:hover{background:#9fbde0}
+
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* ---- Sidebar ---- */
+.sidebar{
+  background:linear-gradient(180deg,#ffffff 0%,#fbfdff 60%,#f7fbff 100%);
+  box-shadow:2px 0 24px rgba(38,76,115,.045);
+  border-right:1px solid #e7eef7;
+}
+.side-brand{position:relative}
+.side-brand:after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
+  background:linear-gradient(90deg,#79a9eb,#f7a15f);opacity:.55;
+}
+.navbtn{
+  transition:background .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.navbtn:not(.logout):hover{transform:translateX(2px)}
+.navbtn.active{
+  position:relative;
+  background:linear-gradient(90deg,#eaf3ff,#f3f9ff);
+  color:#1c568f;
+  box-shadow:inset 0 0 0 1px rgba(121,169,235,.25),0 4px 12px rgba(121,169,235,.18);
+  font-weight:800;
+}
+.navbtn.active:before{
+  content:"";position:absolute;left:-16px;top:8px;bottom:8px;width:4px;border-radius:4px;
+  background:linear-gradient(180deg,#79a9eb,#5f91d4);
+}
+.navbtn.master{position:relative}
+.logout{
+  transition:background .18s ease,box-shadow .18s ease,color .18s ease;
+}
+.logout:hover{background:#fdeeee!important;color:#b23b3b;box-shadow:0 4px 12px rgba(217,88,88,.14)}
+
+/* ---- Topbar / pill ---- */
+.topbar h1{
+  background:linear-gradient(90deg,#1a3352,#2f5478);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  letter-spacing:-.4px;
+}
+.pill{
+  background:linear-gradient(135deg,#fff1e5,#ffe6d1);
+  box-shadow:0 4px 12px rgba(234,124,46,.14);
+  font-weight:750;
+}
+
+/* ---- Buttons ---- */
+.btn{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#6ea0c4,#5f91b4);
+  box-shadow:0 4px 12px rgba(95,145,180,.28),inset 0 1px 0 rgba(255,255,255,.18);
+  transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;
+  letter-spacing:.1px;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(95,145,180,.36);filter:brightness(1.04)}
+.btn:active{transform:translateY(0);box-shadow:0 3px 8px rgba(95,145,180,.3)}
+.btn.orange{
+  background:linear-gradient(180deg,#f9b47f,var(--orange));
+  box-shadow:0 4px 12px rgba(234,124,46,.3),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.btn.orange:hover{box-shadow:0 8px 20px rgba(234,124,46,.4)}
+.btn.light{
+  background:linear-gradient(180deg,#f5f8fb,#eef3f7);
+  color:#34475b;box-shadow:0 2px 8px rgba(52,71,91,.08),inset 0 0 0 1px #e3eaf1;
+}
+.btn.light:hover{background:linear-gradient(180deg,#eef4f9,#e6edf4);box-shadow:0 6px 14px rgba(52,71,91,.12)}
+.btn.danger{
+  background:linear-gradient(180deg,#e37975,var(--danger));
+  box-shadow:0 4px 12px rgba(217,83,79,.3),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.btn.danger:hover{box-shadow:0 8px 20px rgba(217,83,79,.4)}
+.btn.green{
+  background:linear-gradient(180deg,#69b28c,var(--ok));
+  box-shadow:0 4px 12px rgba(47,143,91,.3),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.btn.green:hover{box-shadow:0 8px 20px rgba(47,143,91,.4)}
+
+/* ---- Panels ---- */
+.panel{
+  box-shadow:0 6px 22px rgba(38,76,115,.055);
+  transition:box-shadow .2s ease;
+}
+.panel h3{
+  color:#173a5c;letter-spacing:-.2px;
+  position:relative;padding-left:12px;
+}
+.panel h3:before{
+  content:"";position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:4px;
+  background:linear-gradient(180deg,#79a9eb,#f7a15f);
+}
+
+/* ---- Search / inputs on toolbars ---- */
+.search{
+  transition:box-shadow .18s ease,border-color .18s ease;
+  background:#fff;
+}
+.search:focus{border-color:#8bb5eb;box-shadow:0 0 0 4px rgba(120,170,235,.12)}
+
+/* ---- Tables ---- */
+.table-wrap{box-shadow:0 4px 14px rgba(38,76,115,.05)}
+table thead th{
+  background:linear-gradient(180deg,#f9fbfd,#f2f6fa);
+  font-weight:750;letter-spacing:.2px;text-transform:uppercase;font-size:11px;
+  color:#4d6382;
+}
+table tbody tr{transition:background .12s ease}
+table tbody tr:hover{background:#f7fbff}
+table tbody tr:nth-child(even){background:#fbfdff}
+table tbody tr:nth-child(even):hover{background:#f4f9ff}
+
+/* ---- Tabs ---- */
+.tab{
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.tab:hover{transform:translateY(-1px)}
+.tab.active{
+  background:linear-gradient(135deg,#eaf3ff,#f3f9ff);
+  box-shadow:0 4px 12px rgba(121,169,235,.18);
+  font-weight:800;
+}
+
+/* ---- Alert badges ---- */
+.alert-badge{letter-spacing:.3px}
+.a30{box-shadow:0 2px 6px rgba(179,63,52,.12)}
+.a60{box-shadow:0 2px 6px rgba(154,102,27,.12)}
+.a90{box-shadow:0 2px 6px rgba(65,107,169,.12)}
+.expired{box-shadow:0 2px 6px rgba(165,33,33,.14)}
+
+/* ---- Empty states ---- */
+.empty{
+  padding:34px 20px;color:#96a5b8;font-weight:600;
+}
+.empty:before{
+  content:"🗂";display:block;font-size:26px;margin-bottom:8px;opacity:.55;
+}
+
+/* ---- Login polish ---- */
+.signin{
+  box-shadow:0 10px 26px rgba(234,124,46,.28),inset 0 1px 0 rgba(255,255,255,.25);
+  transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;
+}
+.signin:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(234,124,46,.36);filter:brightness(1.03)}
+.login-card{transition:box-shadow .2s ease}
+.iconbox{transition:transform .18s ease,box-shadow .18s ease}
+.feature:hover .iconbox{transform:translateY(-3px);box-shadow:0 10px 20px rgba(121,169,235,.18)}
+
+/* ---- Master cards / doc cards already styled; light extra lift ---- */
+.doc-card{transition:box-shadow .18s ease,border-color .18s ease}
+.doc-card:hover{box-shadow:0 8px 20px rgba(38,76,115,.08);border-color:#d5e3f2}
+
+/* ---- Misc ---- */
+.tag{transition:transform .15s ease}
+.tag:hover{transform:translateY(-1px)}
+
+/* ============================================================
+   ROUND 2 — Masters cards, expiry alerts, profile modal, follow-up drawer
+   ============================================================ */
+
+/* ---- Masters cards ---- */
+.master-card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#ffffff,#fbfdff);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.master-card:before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,#79aaf0,#ffad6f);opacity:.9;
+}
+.master-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 30px rgba(38,76,115,.12);
+  border-color:#c9daf0;
+}
+.master-card h4{color:#1c568f;letter-spacing:-.2px}
+
+/* ---- Document expiry alert list (actual rendered classes) ---- */
+.expiry-list{box-shadow:0 4px 16px rgba(38,76,115,.05)}
+.expiry-item{
+  transition:background .18s ease,box-shadow .18s ease;
+  position:relative;
+}
+.expiry-item:hover{background:#f8fbff}
+.expiry-days{letter-spacing:.2px}
+.expiry-action-btn{padding:8px 12px;font-size:12px}
+.followup-status{
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+  letter-spacing:.2px;
+}
+.expiry-filter{
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.expiry-filter:hover{transform:translateY(-1px)}
+.expiry-filter.active{box-shadow:0 4px 12px rgba(121,169,235,.18);font-weight:800}
+
+/* ---- Employee profile modal ---- */
+.profile-modal{backdrop-filter:blur(2px)}
+.profile-shell{
+  box-shadow:0 40px 90px rgba(15,35,60,.28),0 4px 14px rgba(15,35,60,.08);
+  animation:profilePop .22s ease;
+}
+@keyframes profilePop{
+  from{opacity:0;transform:translateY(10px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.profile-head{
+  background:linear-gradient(90deg,#fbfdff,#f6faff);
+  position:relative;
+}
+.profile-head:after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;
+  background:linear-gradient(90deg,#79a9eb,#f7a15f);opacity:.55;
+}
+.profile-name{
+  background:linear-gradient(90deg,#173a5c,#2f5478);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  font-weight:850;letter-spacing:-.3px;
+}
+.profile-tabs{gap:6px}
+.profile-tab{
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease;
+  border-radius:9px;
+}
+.profile-tab:hover{transform:translateY(-1px)}
+.profile-tab.active{
+  background:linear-gradient(135deg,#eaf3ff,#f3f9ff);
+  box-shadow:0 4px 12px rgba(121,169,235,.18);
+  font-weight:800;
+}
+
+/* ---- Follow-up drawer ---- */
+.followup-drawer{backdrop-filter:blur(2px)}
+.followup-sheet{
+  box-shadow:0 40px 90px rgba(15,35,60,.28),0 4px 14px rgba(15,35,60,.08);
+  animation:profilePop .22s ease;
+}
+.followup-sheet-title{
+  background:linear-gradient(90deg,#173a5c,#2f5478);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+</style>
+
 </head>
 <body>
 
@@ -467,11 +751,26 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
     <section id="dashboard" class="page active">
       <div class="cards">
-        <div class="card dashboard-count-card" data-dashboard-filter="total" role="button" tabindex="0" title="Click to view all employees"><span>Total Employees</span><b id="totalEmployees">0</b></div>
-        <div class="card dashboard-count-card" data-dashboard-filter="active" role="button" tabindex="0" title="Click to view active employees"><span>Active Employees</span><b id="activeEmployees">0</b></div>
-        <div class="card dashboard-count-card" data-dashboard-filter="exp30" role="button" tabindex="0" title="Click to view documents expiring within 30 days"><span>Expiry ≤ 30 Days</span><b id="exp30">0</b></div>
-        <div class="card dashboard-count-card" data-dashboard-filter="exp60" role="button" tabindex="0" title="Click to view documents expiring within 60 days"><span>Expiry ≤ 60 Days</span><b id="exp60">0</b></div>
-        <div class="card dashboard-count-card" data-dashboard-filter="exp90" role="button" tabindex="0" title="Click to view documents expiring within 90 days"><span>Expiry ≤ 90 Days</span><b id="exp90">0</b></div>
+        <div class="card dashboard-count-card total" data-dashboard-filter="total" role="button" tabindex="0" title="Click to view all employees">
+          <div class="dash-top"><span class="dash-label">Total Employees</span><span class="dash-icon">👥</span></div>
+          <b id="totalEmployees">0</b><div class="dash-foot"><span class="dash-note">Employee records</span><span class="dash-view">View list →</span></div>
+        </div>
+        <div class="card dashboard-count-card active-emp" data-dashboard-filter="active" role="button" tabindex="0" title="Click to view active employees">
+          <div class="dash-top"><span class="dash-label">Active Employees</span><span class="dash-icon">✓</span></div>
+          <b id="activeEmployees">0</b><div class="dash-foot"><span class="dash-note">Currently active</span><span class="dash-view">View list →</span></div>
+        </div>
+        <div class="card dashboard-count-card exp30" data-dashboard-filter="exp30" role="button" tabindex="0" title="Click to view documents expiring within 30 days">
+          <div class="dash-top"><span class="dash-label">Expiry ≤ 30 Days</span><span class="dash-icon">!</span></div>
+          <b id="exp30">0</b><div class="dash-foot"><span class="dash-note">Urgent attention</span><span class="dash-view">View docs →</span></div>
+        </div>
+        <div class="card dashboard-count-card exp60" data-dashboard-filter="exp60" role="button" tabindex="0" title="Click to view documents expiring within 60 days">
+          <div class="dash-top"><span class="dash-label">Expiry ≤ 60 Days</span><span class="dash-icon">◷</span></div>
+          <b id="exp60">0</b><div class="dash-foot"><span class="dash-note">Upcoming expiry</span><span class="dash-view">View docs →</span></div>
+        </div>
+        <div class="card dashboard-count-card exp90" data-dashboard-filter="exp90" role="button" tabindex="0" title="Click to view documents expiring within 90 days">
+          <div class="dash-top"><span class="dash-label">Expiry ≤ 90 Days</span><span class="dash-icon">▣</span></div>
+          <b id="exp90">0</b><div class="dash-foot"><span class="dash-note">Plan renewals</span><span class="dash-view">View docs →</span></div>
+        </div>
       </div>
 
       <div id="dashboardCountListPanel" class="panel hidden">
@@ -1880,34 +2179,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function exportPdfSelected(){
     const c=chosenCols(),r=exportRows();if(!c.length)return alert("Please select at least one column.");if(!r.length)return alert("No employee records available.");
     const w=window.open("","_blank");if(!w)return alert("Please allow pop-ups for PDF export.");
-    w.document.write(`<!doctype html><html><head><title>Employee List</title><style>@page{size:landscape;margin:8mm}body{font-family:Arial;font-size:9px;color:#173a5c}table{width:100%;border-collapse:collapse}th{background:#eef5fb}th,td{border:1px solid #ccd9e6;padding:5px;vertical-align:top;word-break:break-word}h2{margin-bottom:4px}
-/* ===== Civil Buddy Cartoon Assistant ===== */
-#cmBuddy{position:fixed;z-index:12000;left:270px;bottom:20px;width:105px;height:145px;pointer-events:none;transition:left 1.1s ease,transform .35s ease}
-#cmBuddy.cm-walk{animation:cmBob .55s infinite alternate ease-in-out}
-#cmBuddy.cm-sit{transform:translateY(25px)}
-@keyframes cmBob{to{transform:translateY(-7px)}}
-.cm-b-head{position:absolute;left:25px;top:7px;width:58px;height:52px;border-radius:20px;background:#f8fbff;border:3px solid #79a9eb}
-.cm-b-cap{position:absolute;left:21px;top:0;width:67px;height:18px;border-radius:18px 18px 6px 6px;background:#f7a15f}
-.cm-b-eye{position:absolute;top:19px;width:8px;height:9px;border-radius:50%;background:#17375c}.cm-b-eye.l{left:13px}.cm-b-eye.r{right:13px}
-.cm-b-mouth{position:absolute;left:18px;top:33px;width:19px;height:8px;border-bottom:3px solid #f39755;border-radius:50%}
-.cm-b-body{position:absolute;left:34px;top:61px;width:41px;height:47px;border-radius:11px;background:#79a9eb;border:3px solid #5b8fc8}
-.cm-b-body:after{content:"CM";position:absolute;top:11px;left:0;right:0;text-align:center;color:white;font-size:11px;font-weight:900}
-.cm-b-arm,.cm-b-leg{position:absolute;border-radius:8px;transform-origin:top center}
-.cm-b-arm{top:67px;width:12px;height:42px;background:#efbd97}.cm-b-arm.l{left:23px;transform:rotate(13deg)}.cm-b-arm.r{right:23px;transform:rotate(-13deg)}
-.cm-b-leg{top:105px;width:13px;height:35px;background:#314e68}.cm-b-leg.l{left:37px}.cm-b-leg.r{right:37px}
-.cm-walk .cm-b-arm.l{animation:cmAL .55s infinite alternate}.cm-walk .cm-b-arm.r{animation:cmAR .55s infinite alternate}
-.cm-walk .cm-b-leg.l{animation:cmLL .55s infinite alternate}.cm-walk .cm-b-leg.r{animation:cmLR .55s infinite alternate}
-@keyframes cmAL{to{transform:rotate(-28deg)}}@keyframes cmAR{to{transform:rotate(28deg)}}@keyframes cmLL{to{transform:rotate(20deg)}}@keyframes cmLR{to{transform:rotate(-20deg)}}
-.cm-sit .cm-b-leg{top:98px;height:22px}.cm-sit .cm-b-leg.l{transform:rotate(72deg)}.cm-sit .cm-b-leg.r{transform:rotate(-72deg)}
-#cmBuddyBubble{position:fixed;z-index:12001;left:370px;bottom:120px;max-width:300px;background:white;border:1px solid #d8e4f2;border-radius:13px;padding:10px 13px;box-shadow:0 10px 28px rgba(30,65,100,.14);font-size:12px;color:#35506a;display:none}
-#cmBuddyBubble.show{display:block}
-#cmBuddyPanel{position:fixed;z-index:12002;right:18px;bottom:18px;width:min(420px,calc(100vw - 36px));padding:9px;background:rgba(255,255,255,.97);border:1px solid #d8e4f2;border-radius:14px;box-shadow:0 12px 32px rgba(30,65,100,.14)}
-#cmBuddyPanel .row{display:flex;gap:7px}#cmBuddyCommand{flex:1;min-width:0;height:39px;border:1px solid #cbd9e7;border-radius:9px;padding:0 10px}
-#cmBuddyMic,#cmBuddyDo{border:0;border-radius:9px;color:white;font-weight:800}#cmBuddyMic{width:42px;background:#f7a15f}#cmBuddyDo{padding:0 13px;background:#5f91b4}
-#cmBuddyHelp{font-size:10px;color:#7a8da0;margin-top:5px}
-.cmBuddyHidden{display:none!important}
-
-</style></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
+    w.document.write(`<!doctype html><html><head><title>Employee List</title></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
   }
   $("exportEmployeeListBtn")?.addEventListener("click",openExportEmployee);
   $("closeExportEmployeeModal")?.addEventListener("click",()=>$("exportEmployeeModal").classList.add("hidden"));
@@ -1980,112 +2252,13 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
-<div id="cmBuddy" class="cm-walk cmBuddyHidden">
- <div class="cm-b-cap"></div><div class="cm-b-head"><i class="cm-b-eye l"></i><i class="cm-b-eye r"></i><i class="cm-b-mouth"></i></div>
- <div class="cm-b-arm l"></div><div class="cm-b-arm r"></div><div class="cm-b-body"></div><div class="cm-b-leg l"></div><div class="cm-b-leg r"></div>
-</div>
-<div id="cmBuddyBubble" class="cmBuddyHidden"></div>
-<div id="cmBuddyPanel" class="cmBuddyHidden">
- <div class="row"><input id="cmBuddyCommand" placeholder="Command: active employee dikhao..."><button id="cmBuddyMic" type="button">🎤</button><button id="cmBuddyDo" type="button">Do</button></div>
- <div id="cmBuddyHelp">“aram se betho” · “chal ghoom ke check” · “active employee dikhao” · “Pakistani filter karo”</div>
-</div>
 
 
-<script>
-document.addEventListener("DOMContentLoaded",function(){
- const buddy=document.getElementById("cmBuddy"), bubble=document.getElementById("cmBuddyBubble"), panel=document.getElementById("cmBuddyPanel");
- const input=document.getElementById("cmBuddyCommand"), mic=document.getElementById("cmBuddyMic"), go=document.getElementById("cmBuddyDo");
- const app=document.getElementById("appView");
- let timer=null,bubbleTimer=null,dir=1;
-
- function appOpen(){return app && !app.classList.contains("hidden")}
- function visibility(){[buddy,bubble,panel].forEach(x=>x&&x.classList.toggle("cmBuddyHidden",!appOpen()))}
- if(app){new MutationObserver(visibility).observe(app,{attributes:true,attributeFilter:["class"]});visibility()}
-
- function say(t,ms=3500){if(!appOpen())return;bubble.textContent=t;bubble.classList.add("show");clearTimeout(bubbleTimer);bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),ms)}
- function walk(){buddy.classList.remove("cm-sit");buddy.classList.add("cm-walk")}
- function sit(){clearInterval(timer);timer=null;buddy.classList.remove("cm-walk");buddy.classList.add("cm-sit");buddy.style.left="265px";say("Theek hai boss, araam se side par baith gaya 😌")}
- function employees(){
-   try{let d=JSON.parse(localStorage.getItem("cm_employee_portal_v3")||"{}");return Array.isArray(d.employees)?d.employees:[]}catch(e){return[]}
- }
- function patrol(){
-   walk();clearInterval(timer);let x=parseInt(getComputedStyle(buddy).left)||265;
-   say("Ji boss, ghoom kar records check kar raha hoon 👀");
-   timer=setInterval(()=>{let max=Math.max(275,innerWidth-550);x+=dir*160;if(x>=max){x=max;dir=-1}if(x<=265){x=265;dir=1}buddy.style.left=x+"px"},1200);
-   setTimeout(()=>{clearInterval(timer);timer=null;let es=employees(),a=es.filter(e=>String(e.status||"").toLowerCase()==="active").length;say(`Check complete: ${es.length} total, ${a} active.`,5000)},6000)
- }
- function empPage(){document.querySelector('.navbtn[data-page="employees"]')?.click()}
- function filter(term,label){empPage();let s=document.getElementById("employeeSearch");if(!s)return say("Search field nahi mila.");s.value=term;s.dispatchEvent(new Event("input",{bubbles:true}));say((label||term||"All employees")+" filter laga diya ✅")}
- function norm(v){return String(v||"").toLowerCase().replace(/[^\w\s-]/g," ").replace(/\s+/g," ").trim()}
- function run(raw){
-   let q=norm(raw);input.value="";if(!q)return;
-   if(/\b(aram|araam|beth|baith|sit|rest)\b/.test(q))return sit();
-   if(/\b(ghoom|ghum|patrol)\b/.test(q)||(/\bchal\b/.test(q)&&/\bcheck\b/.test(q)))return patrol();
-   if(/\binactive\b/.test(q))return filter("Inactive","Inactive employees");
-   if(/\bactive\b/.test(q))return filter("Active","Active employees");
-   if(/\b(clear|reset|all employees|sab dikhao)\b/.test(q))return filter("","All employees");
-   let vals=[];employees().forEach(e=>[e.nationality,e.company,e.actualDesignation,e.idDesignation,e.employeeCode,e.employeeName].forEach(v=>v&&vals.push(String(v))));
-   let found=[...new Set(vals)].sort((a,b)=>b.length-a.length).find(v=>q.includes(norm(v)));
-   if(found)return filter(found,found);
-   let m=q.match(/^(.+?)\s+(?:filter|dikhao|show|search)(?:\s+karo)?$/)||q.match(/(?:filter|search)\s+(.+)/);
-   if(m)return filter(m[1].replace(/\b(karo|please|employee|employees)\b/g," ").trim());
-   say("Try: Active employee dikhao, Pakistani filter karo, aram se betho, ya chal ghoom ke check.",5500)
- }
- go.addEventListener("click",()=>run(input.value));input.addEventListener("keydown",e=>{if(e.key==="Enter")run(input.value)});
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(SR){const r=new SR();r.lang="en-US";r.interimResults=false;r.onstart=()=>say("Sun raha hoon... 🎤",2200);r.onresult=e=>{let t=e.results[0][0].transcript;input.value=t;setTimeout(()=>run(t),250)};r.onerror=()=>say("Mic command nahi mili. Type command use karein.");mic.addEventListener("click",()=>{try{r.start()}catch(e){}})}
- else mic.addEventListener("click",()=>say("Voice recognition available nahi. Type command use karein."));
- setInterval(()=>{if(appOpen()&&!buddy.classList.contains("cm-sit")&&!timer){let max=Math.max(275,innerWidth-550);buddy.style.left=Math.round(265+Math.random()*Math.max(10,max-265))+"px"}},5500);
-});
-</script>
 
 
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-  const loginView=document.getElementById("loginView");
-  const appView=document.getElementById("appView");
-  const buddy=document.getElementById("cmBuddy");
-  const bubble=document.getElementById("cmBuddyBubble");
-  const panel=document.getElementById("cmBuddyPanel");
-  if(!buddy || !panel) return;
-
-  function forceBuddyState(){
-    const loggedIn = appView && !appView.classList.contains("hidden");
-    buddy.classList.toggle("cmBuddyHidden", !loggedIn);
-    panel.classList.toggle("cmBuddyHidden", !loggedIn);
-    if(bubble && !loggedIn) bubble.classList.add("cmBuddyHidden");
-    if(bubble && loggedIn) bubble.classList.remove("cmBuddyHidden");
-
-    if(loggedIn){
-      buddy.style.display="block";
-      panel.style.display="block";
-      buddy.style.left="270px";
-      buddy.style.bottom="24px";
-    }else{
-      buddy.style.display="none";
-      panel.style.display="none";
-      if(bubble) bubble.style.display="none";
-    }
-  }
-
-  if(appView) new MutationObserver(forceBuddyState).observe(appView,{attributes:true,attributeFilter:["class"]});
-  if(loginView) new MutationObserver(forceBuddyState).observe(loginView,{attributes:true,attributeFilter:["class"]});
-
-  // Catch the existing Sign In / Sign Out flow without changing its original handlers.
-  document.getElementById("loginButton")?.addEventListener("click",()=>setTimeout(forceBuddyState,80));
-  document.getElementById("logoutButton")?.addEventListener("click",()=>setTimeout(forceBuddyState,80));
-
-  forceBuddyState();
-  setTimeout(forceBuddyState,250);
-});
-</script>
 
 
-<style>
-#cmBuddy{z-index:2147483000!important;filter:drop-shadow(0 8px 8px rgba(23,55,92,.18))}
-#cmBuddyPanel{z-index:2147483001!important}
-#cmBuddyBubble{z-index:2147483002!important}
-</style>
+
 
 </body>
 </html>
