@@ -563,6 +563,40 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   </main>
 </div>
 
+<div id="employeeProfileModal" class="profile-modal hidden">
+  <div class="profile-shell">
+    <div class="profile-head">
+      <div class="profile-person">
+        <div id="profilePhotoWrap"></div>
+        <div>
+          <div id="profileEmployeeName" class="profile-name">Employee Profile</div>
+          <div id="profileEmployeeMeta" class="profile-meta"></div>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button id="profileEditBtn" class="btn">Edit Employee</button>
+        <button id="profileCloseBtn" class="btn light">Close</button>
+      </div>
+    </div>
+    <div class="profile-tabs">
+      <button class="profile-tab active" data-profile-tab="overview">Overview</button>
+      <button class="profile-tab" data-profile-tab="employment">Employment</button>
+      <button class="profile-tab" data-profile-tab="documents">Documents</button>
+      <button class="profile-tab" data-profile-tab="emergency">Emergency Contact</button>
+      <button class="profile-tab" data-profile-tab="attachments">Attachments</button>
+      <button class="profile-tab" data-profile-tab="history">History</button>
+    </div>
+    <div class="profile-body">
+      <div id="profile-overview" class="profile-panel active"></div>
+      <div id="profile-employment" class="profile-panel"></div>
+      <div id="profile-documents" class="profile-panel"></div>
+      <div id="profile-emergency" class="profile-panel"></div>
+      <div id="profile-attachments" class="profile-panel"></div>
+      <div id="profile-history" class="profile-panel"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 (() => {
   "use strict";
@@ -1373,40 +1407,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1") openApp();
 })();
 </script>
-
-<div id="employeeProfileModal" class="profile-modal hidden">
-  <div class="profile-shell">
-    <div class="profile-head">
-      <div class="profile-person">
-        <div id="profilePhotoWrap"></div>
-        <div>
-          <div id="profileEmployeeName" class="profile-name">Employee Profile</div>
-          <div id="profileEmployeeMeta" class="profile-meta"></div>
-        </div>
-      </div>
-      <div class="profile-actions">
-        <button id="profileEditBtn" class="btn">Edit Employee</button>
-        <button id="profileCloseBtn" class="btn light">Close</button>
-      </div>
-    </div>
-    <div class="profile-tabs">
-      <button class="profile-tab active" data-profile-tab="overview">Overview</button>
-      <button class="profile-tab" data-profile-tab="employment">Employment</button>
-      <button class="profile-tab" data-profile-tab="documents">Documents</button>
-      <button class="profile-tab" data-profile-tab="emergency">Emergency Contact</button>
-      <button class="profile-tab" data-profile-tab="attachments">Attachments</button>
-      <button class="profile-tab" data-profile-tab="history">History</button>
-    </div>
-    <div class="profile-body">
-      <div id="profile-overview" class="profile-panel active"></div>
-      <div id="profile-employment" class="profile-panel"></div>
-      <div id="profile-documents" class="profile-panel"></div>
-      <div id="profile-emergency" class="profile-panel"></div>
-      <div id="profile-attachments" class="profile-panel"></div>
-      <div id="profile-history" class="profile-panel"></div>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
