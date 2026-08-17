@@ -400,64 +400,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
 
 @media(max-width:760px){#exportColumnChoices{grid-template-columns:1fr!important}}
-
-/* ===== Civil Buddy - Entertainment + Voice Assistant ===== */
-#civilBuddy{
-  position:fixed;z-index:12000;left:265px;bottom:18px;width:112px;height:150px;
-  transition:left 1.2s ease,bottom .5s ease,transform .4s ease;user-select:none;
-  pointer-events:none;
-}
-#civilBuddy.walking{animation:buddyBob .55s infinite alternate ease-in-out}
-#civilBuddy.sitting{height:108px;transform:translateY(18px)}
-#civilBuddy.checking{animation:buddyCheck .55s infinite alternate}
-@keyframes buddyBob{from{transform:translateY(0) rotate(-1deg)}to{transform:translateY(-7px) rotate(1deg)}}
-@keyframes buddyCheck{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
-.buddy-head{
-  position:absolute;left:26px;top:6px;width:60px;height:54px;border-radius:20px;
-  background:linear-gradient(145deg,#eef6ff,#fff);border:3px solid #6f9fcf;
-  box-shadow:0 7px 18px rgba(38,76,115,.13)
-}
-.buddy-eye{position:absolute;top:19px;width:8px;height:10px;border-radius:50%;background:#17375c}
-.buddy-eye.l{left:14px}.buddy-eye.r{right:14px}
-.buddy-smile{position:absolute;left:19px;top:33px;width:20px;height:9px;border-bottom:3px solid #f39755;border-radius:0 0 18px 18px}
-.buddy-cap{position:absolute;left:22px;top:-5px;width:67px;height:20px;border-radius:20px 20px 7px 7px;background:#f7a15f;border:2px solid #e68c48}
-.buddy-cap:after{content:"";position:absolute;right:-14px;bottom:-2px;width:27px;height:7px;background:#f7a15f;border-radius:0 8px 8px 0}
-.buddy-body{position:absolute;left:35px;top:61px;width:43px;height:50px;border-radius:12px 12px 8px 8px;background:#79a9eb;border:3px solid #5b8fc8}
-.buddy-body:after{content:"CM";position:absolute;inset:12px 0 auto;text-align:center;color:#fff;font-weight:900;font-size:12px}
-.buddy-arm{position:absolute;top:67px;width:13px;height:46px;background:#f0bd96;border-radius:10px;transform-origin:top center}
-.buddy-arm.l{left:23px;transform:rotate(13deg)}.buddy-arm.r{right:23px;transform:rotate(-13deg)}
-.walking .buddy-arm.l{animation:armL .55s infinite alternate}.walking .buddy-arm.r{animation:armR .55s infinite alternate}
-@keyframes armL{to{transform:rotate(-28deg)}}@keyframes armR{to{transform:rotate(28deg)}}
-.buddy-leg{position:absolute;top:106px;width:14px;height:38px;background:#314e68;border-radius:7px;transform-origin:top center}
-.buddy-leg.l{left:38px}.buddy-leg.r{right:38px}
-.walking .buddy-leg.l{animation:legL .55s infinite alternate}.walking .buddy-leg.r{animation:legR .55s infinite alternate}
-@keyframes legL{to{transform:rotate(22deg)}}@keyframes legR{to{transform:rotate(-22deg)}}
-.sitting .buddy-leg{top:96px;height:22px}.sitting .buddy-leg.l{transform:rotate(75deg)}.sitting .buddy-leg.r{transform:rotate(-75deg)}
-#buddyBubble{
-  position:fixed;z-index:12001;left:365px;bottom:120px;max-width:300px;padding:10px 13px;
-  background:#fff;border:1px solid #d8e4f2;border-radius:14px;box-shadow:0 10px 30px rgba(38,76,115,.13);
-  font-size:12px;color:#35506a;display:none
-}
-#buddyBubble.show{display:block}
-#buddyControl{
-  position:fixed;z-index:12002;right:20px;bottom:20px;width:min(430px,calc(100vw - 40px));
-  background:rgba(255,255,255,.97);border:1px solid #d9e5f2;border-radius:16px;padding:10px;
-  box-shadow:0 14px 38px rgba(27,63,98,.15)
-}
-.buddy-control-row{display:flex;gap:7px;align-items:center}
-#buddyCommand{
-  flex:1;min-width:0;height:40px;border:1px solid #cad9e8;border-radius:10px;padding:0 11px
-}
-#buddyMicBtn{width:42px;height:40px;border:0;border-radius:10px;background:#f7a15f;color:#fff;font-size:18px}
-#buddyRunBtn{height:40px;border:0;border-radius:10px;background:#5f91b4;color:white;font-weight:800;padding:0 13px}
-#buddyHint{font-size:10px;color:#7b8da0;margin-top:6px;padding-left:2px}
-#buddyMicBtn.listening{box-shadow:0 0 0 4px rgba(247,161,95,.2);animation:micPulse .8s infinite alternate}
-@keyframes micPulse{to{transform:scale(1.07)}}
-@media(max-width:800px){
-  #civilBuddy{left:205px;transform:scale(.8);transform-origin:bottom left}
-  #buddyControl{right:10px;bottom:10px;width:calc(100vw - 20px)}
-}
-
 </style>
 </head>
 <body>
@@ -747,7 +689,55 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   </div>
 </div>
 
+<div id="exportEmployeeModal" class="profile-modal hidden">
+ <div class="profile-shell" style="max-width:780px">
+  <div class="profile-head"><div><div class="profile-name">Export Employee List</div><div class="profile-meta">Select the cells/columns you want to export.</div></div><button id="closeExportEmployeeModal" class="btn light">Close</button></div>
+  <div class="profile-body">
+   <div style="display:flex;gap:8px;margin-bottom:12px"><button id="selectAllExportCols" class="btn light">Select All</button><button id="clearAllExportCols" class="btn light">Clear All</button></div>
+   <div id="exportColumnChoices" style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px"></div>
+   <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button id="exportSelectedExcel" class="btn">Export Excel</button><button id="exportSelectedPdf" class="btn orange">Export PDF</button></div>
+  </div>
+ </div>
+</div>
+
+<div id="followupDrawer" class="followup-drawer hidden">
+  <div class="followup-sheet">
+    <div class="followup-sheet-head">
+      <div>
+        <div id="followupDrawerTitle" class="followup-sheet-title">Update Follow-up</div>
+        <div id="followupDrawerSub" class="followup-sheet-sub"></div>
+      </div>
+      <button id="closeFollowupDrawer" class="btn light" type="button">Close</button>
+    </div>
+    <div class="followup-sheet-grid">
+      <div class="field">
+        <label>Follow-up Status</label>
+        <select id="drawerFollowupStatus">
+          <option>Pending</option>
+          <option>Contacted</option>
+          <option>Renewal In Process</option>
+          <option>Completed</option>
+          <option>On Hold</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Next Follow-up Date</label>
+        <input id="drawerFollowupDate" type="date">
+      </div>
+      <div class="field full">
+        <label>Remarks</label>
+        <textarea id="drawerFollowupRemarks" rows="3" placeholder="e.g. employee informed / renewal submitted"></textarea>
+      </div>
+    </div>
+    <div class="followup-sheet-actions">
+      <button id="cancelFollowupDrawer" class="btn light" type="button">Cancel</button>
+      <button id="saveFollowupDrawer" class="btn orange" type="button">Save Follow-up</button>
+    </div>
+  </div>
+</div>
+
 <script>
+document.addEventListener("DOMContentLoaded", () => {
 (() => {
   "use strict";
 
@@ -1890,177 +1880,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   function exportPdfSelected(){
     const c=chosenCols(),r=exportRows();if(!c.length)return alert("Please select at least one column.");if(!r.length)return alert("No employee records available.");
     const w=window.open("","_blank");if(!w)return alert("Please allow pop-ups for PDF export.");
-    w.document.write(`<!doctype html><html><head><title>Employee List</title><style>@page{size:landscape;margin:8mm}body{font-family:Arial;font-size:9px;color:#173a5c}table{width:100%;border-collapse:collapse}th{background:#eef5fb}th,td{border:1px solid #ccd9e6;padding:5px;vertical-align:top;word-break:break-word}h2{margin-bottom:4px}</style></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script>
-<!-- Civil Buddy: playful on-screen helper -->
-<div id="civilBuddy" class="walking" aria-hidden="true">
-  <div class="buddy-cap"></div>
-  <div class="buddy-head"><span class="buddy-eye l"></span><span class="buddy-eye r"></span><span class="buddy-smile"></span></div>
-  <div class="buddy-arm l"></div><div class="buddy-arm r"></div>
-  <div class="buddy-body"></div>
-  <div class="buddy-leg l"></div><div class="buddy-leg r"></div>
-</div>
-<div id="buddyBubble"></div>
-<div id="buddyControl">
-  <div class="buddy-control-row">
-    <input id="buddyCommand" placeholder="Bolo ya type karo: active employee dikhao...">
-    <button id="buddyMicBtn" type="button" title="Voice command">🎤</button>
-    <button id="buddyRunBtn" type="button">Do</button>
-  </div>
-  <div id="buddyHint">Examples: “please aram se betho” · “chal ghoom ke check” · “active employee dikhao” · “Pakistani filter karo”</div>
-</div>
-
-
-<script>
-(() => {
-  "use strict";
-  const buddy = document.getElementById("civilBuddy");
-  const bubble = document.getElementById("buddyBubble");
-  const cmd = document.getElementById("buddyCommand");
-  const micBtn = document.getElementById("buddyMicBtn");
-  const runBtn = document.getElementById("buddyRunBtn");
-  if(!buddy || !cmd) return;
-
-  let patrolTimer=null, bubbleTimer=null, patrolDir=1;
-
-  function say(msg, ms=3500){
-    bubble.textContent=msg;
-    bubble.classList.add("show");
-    clearTimeout(bubbleTimer);
-    bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),ms);
-  }
-  function buddyWalk(){
-    buddy.classList.remove("sitting","checking");
-    buddy.classList.add("walking");
-  }
-  function buddySit(){
-    clearInterval(patrolTimer); patrolTimer=null;
-    buddy.classList.remove("walking","checking");
-    buddy.classList.add("sitting");
-    buddy.style.left="260px";
-    say("Theek hai boss, main side par araam se baith gaya 😌");
-  }
-  function buddyPatrol(){
-    buddy.classList.remove("sitting"); buddy.classList.add("walking","checking");
-    clearInterval(patrolTimer);
-    let x=parseInt(getComputedStyle(buddy).left)||260;
-    patrolTimer=setInterval(()=>{
-      const max=Math.max(270,window.innerWidth-560);
-      x += patrolDir*170;
-      if(x>=max){x=max;patrolDir=-1}
-      if(x<=260){x=260;patrolDir=1}
-      buddy.style.left=x+"px";
-    },1350);
-    say("Ji boss! Main ghoom kar records check kar raha hoon 👀",4500);
-    setTimeout(()=>{
-      clearInterval(patrolTimer); patrolTimer=null;
-      buddy.classList.remove("checking"); buddyWalk();
-      const employees = window.cmBuddyGetEmployees ? window.cmBuddyGetEmployees() : [];
-      const active=employees.filter(e=>String(e.status||"").toLowerCase()==="active").length;
-      say(`Check complete: ${employees.length} total employee, ${active} active.`,5000);
-    },6500);
-  }
-
-  function showEmployeesPage(){
-    const btn=document.querySelector('.navbtn[data-page="employees"]');
-    if(btn) btn.click();
-  }
-
-  function normalize(s){return String(s||"").toLowerCase().replace(/[^\w\s-]/g," ").replace(/\s+/g," ").trim()}
-
-  function applySearch(term, label){
-    showEmployeesPage();
-    const search=document.getElementById("employeeSearch");
-    if(!search){say("Employee search field nahi mila.");return}
-    search.value=term;
-    search.dispatchEvent(new Event("input",{bubbles:true}));
-    say(`${label||term} ka filter laga diya ✅`);
-    buddyWalk();
-  }
-
-  function commandFilter(q){
-    const employees=window.cmBuddyGetEmployees ? window.cmBuddyGetEmployees() : [];
-
-    if(/\b(active|active employee|active employees)\b/.test(q)) return applySearch("Active","Active employees");
-    if(/\b(inactive|inactive employee|inactive employees)\b/.test(q)) return applySearch("Inactive","Inactive employees");
-
-    // Match known values from employee data: nationality, company, designation, code or name.
-    const candidates=[];
-    employees.forEach(e=>{
-      [e.nationality,e.company,e.actualDesignation,e.idDesignation,e.employeeCode,e.employeeName].forEach(v=>{
-        if(v && String(v).trim().length>1) candidates.push(String(v).trim());
-      });
-    });
-    const unique=[...new Set(candidates)].sort((a,b)=>b.length-a.length);
-    const found=unique.find(v=>q.includes(normalize(v)));
-    if(found) return applySearch(found,found);
-
-    // Natural phrases: "filter pakistani", "pakistani filter karo", "search Ali"
-    let m=q.match(/(?:filter|search|dikhao|show)\s+(?:karo\s+)?(.+)/);
-    if(!m) m=q.match(/^(.+?)\s+(?:filter|dikhao|show|search)(?:\s+karo)?$/);
-    if(m){
-      let term=m[1].replace(/\b(karo|kar do|employees?|employee|wala|wali|ke|ki|ko|please)\b/g," ").replace(/\s+/g," ").trim();
-      if(term) return applySearch(term,term);
-    }
-    return false;
-  }
-
-  function runCommand(raw){
-    const q=normalize(raw);
-    if(!q) return;
-    cmd.value="";
-
-    if(/\b(aram|araam|rest|beth|baith|sit)\b/.test(q)){buddySit();return}
-    if((/\b(ghoom|ghum|patrol|walk|chal|check)\b/.test(q)) && /\b(check|ghoom|ghum|patrol)\b/.test(q)){buddyPatrol();return}
-    if(/\b(chal|walk|utho|uth)\b/.test(q)){buddyWalk();say("Ji boss, main chal raha hoon 🙂");return}
-    if(/\b(clear|reset|sab dikhao|all employees)\b/.test(q)){applySearch("","All employees");return}
-    if(commandFilter(q)!==false) return;
-
-    say("Command samajh nahi aayi. Aap bol sakte hain: “Active employee dikhao”, “Pakistani filter karo”, “aram se betho”, ya “ghoom ke check”.",6000);
-  }
-
-  runBtn.addEventListener("click",()=>runCommand(cmd.value));
-  cmd.addEventListener("keydown",e=>{if(e.key==="Enter")runCommand(cmd.value)});
-
-  // Browser speech recognition (Chrome/Edge). Microphone permission is requested by the browser.
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(SR){
-    const rec=new SR();
-    rec.lang="en-US";
-    rec.interimResults=false;
-    rec.continuous=false;
-    rec.onstart=()=>{micBtn.classList.add("listening");say("Sun raha hoon... 🎤",2500)};
-    rec.onend=()=>micBtn.classList.remove("listening");
-    rec.onerror=e=>{micBtn.classList.remove("listening");say("Mic command nahi mili. Type karke bhi command de sakte hain.",4000)};
-    rec.onresult=e=>{
-      const heard=e.results?.[0]?.[0]?.transcript||"";
-      cmd.value=heard;
-      say(`Suna: ${heard}`,1800);
-      setTimeout(()=>runCommand(heard),300);
-    };
-    micBtn.addEventListener("click",()=>{try{rec.start()}catch(e){}});
-  }else{
-    micBtn.addEventListener("click",()=>say("Is browser mein voice recognition available nahi. Command type karke Do press karein.",5000));
-  }
-
-  // Gentle roaming for entertainment while app is open.
-  setInterval(()=>{
-    if(!buddy.classList.contains("sitting") && !patrolTimer){
-      buddyWalk();
-      const max=Math.max(270,window.innerWidth-560);
-      const x=260+Math.random()*Math.max(10,max-260);
-      buddy.style.left=Math.round(x)+"px";
-    }
-  },5500);
-
-  window.addEventListener("resize",()=>{
-    const max=Math.max(260,window.innerWidth-560);
-    const cur=parseInt(buddy.style.left||"260");
-    if(cur>max) buddy.style.left=max+"px";
-  });
-})();
-</script>
-
-</body></html>`);w.document.close();
+    w.document.write(`<!doctype html><html><head><title>Employee List</title><style>@page{size:landscape;margin:8mm}body{font-family:Arial;font-size:9px;color:#173a5c}table{width:100%;border-collapse:collapse}th{background:#eef5fb}th,td{border:1px solid #ccd9e6;padding:5px;vertical-align:top;word-break:break-word}h2{margin-bottom:4px}</style></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
   }
   $("exportEmployeeListBtn")?.addEventListener("click",openExportEmployee);
   $("closeExportEmployeeModal")?.addEventListener("click",()=>$("exportEmployeeModal").classList.add("hidden"));
@@ -2128,59 +1948,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   const savedEmail=localStorage.getItem("cm_saved_email"); if(savedEmail) $("loginEmail").value=savedEmail;
   renderAll();
   if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1") openApp();
-
-  window.cmBuddyGetEmployees = ()=>Array.isArray(data?.employees)?data.employees:[];
 })();
+});
 </script>
-
-
-
-<div id="exportEmployeeModal" class="profile-modal hidden">
- <div class="profile-shell" style="max-width:780px">
-  <div class="profile-head"><div><div class="profile-name">Export Employee List</div><div class="profile-meta">Select the cells/columns you want to export.</div></div><button id="closeExportEmployeeModal" class="btn light">Close</button></div>
-  <div class="profile-body">
-   <div style="display:flex;gap:8px;margin-bottom:12px"><button id="selectAllExportCols" class="btn light">Select All</button><button id="clearAllExportCols" class="btn light">Clear All</button></div>
-   <div id="exportColumnChoices" style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px"></div>
-   <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button id="exportSelectedExcel" class="btn">Export Excel</button><button id="exportSelectedPdf" class="btn orange">Export PDF</button></div>
-  </div>
- </div>
-</div>
-
-<div id="followupDrawer" class="followup-drawer hidden">
-  <div class="followup-sheet">
-    <div class="followup-sheet-head">
-      <div>
-        <div id="followupDrawerTitle" class="followup-sheet-title">Update Follow-up</div>
-        <div id="followupDrawerSub" class="followup-sheet-sub"></div>
-      </div>
-      <button id="closeFollowupDrawer" class="btn light" type="button">Close</button>
-    </div>
-    <div class="followup-sheet-grid">
-      <div class="field">
-        <label>Follow-up Status</label>
-        <select id="drawerFollowupStatus">
-          <option>Pending</option>
-          <option>Contacted</option>
-          <option>Renewal In Process</option>
-          <option>Completed</option>
-          <option>On Hold</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Next Follow-up Date</label>
-        <input id="drawerFollowupDate" type="date">
-      </div>
-      <div class="field full">
-        <label>Remarks</label>
-        <textarea id="drawerFollowupRemarks" rows="3" placeholder="e.g. employee informed / renewal submitted"></textarea>
-      </div>
-    </div>
-    <div class="followup-sheet-actions">
-      <button id="cancelFollowupDrawer" class="btn light" type="button">Cancel</button>
-      <button id="saveFollowupDrawer" class="btn orange" type="button">Save Follow-up</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
