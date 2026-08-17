@@ -2039,5 +2039,53 @@ document.addEventListener("DOMContentLoaded",function(){
 });
 </script>
 
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  const loginView=document.getElementById("loginView");
+  const appView=document.getElementById("appView");
+  const buddy=document.getElementById("cmBuddy");
+  const bubble=document.getElementById("cmBuddyBubble");
+  const panel=document.getElementById("cmBuddyPanel");
+  if(!buddy || !panel) return;
+
+  function forceBuddyState(){
+    const loggedIn = appView && !appView.classList.contains("hidden");
+    buddy.classList.toggle("cmBuddyHidden", !loggedIn);
+    panel.classList.toggle("cmBuddyHidden", !loggedIn);
+    if(bubble && !loggedIn) bubble.classList.add("cmBuddyHidden");
+    if(bubble && loggedIn) bubble.classList.remove("cmBuddyHidden");
+
+    if(loggedIn){
+      buddy.style.display="block";
+      panel.style.display="block";
+      buddy.style.left="270px";
+      buddy.style.bottom="24px";
+    }else{
+      buddy.style.display="none";
+      panel.style.display="none";
+      if(bubble) bubble.style.display="none";
+    }
+  }
+
+  if(appView) new MutationObserver(forceBuddyState).observe(appView,{attributes:true,attributeFilter:["class"]});
+  if(loginView) new MutationObserver(forceBuddyState).observe(loginView,{attributes:true,attributeFilter:["class"]});
+
+  // Catch the existing Sign In / Sign Out flow without changing its original handlers.
+  document.getElementById("loginButton")?.addEventListener("click",()=>setTimeout(forceBuddyState,80));
+  document.getElementById("logoutButton")?.addEventListener("click",()=>setTimeout(forceBuddyState,80));
+
+  forceBuddyState();
+  setTimeout(forceBuddyState,250);
+});
+</script>
+
+
+<style>
+#cmBuddy{z-index:2147483000!important;filter:drop-shadow(0 8px 8px rgba(23,55,92,.18))}
+#cmBuddyPanel{z-index:2147483001!important}
+#cmBuddyBubble{z-index:2147483002!important}
+</style>
+
 </body>
 </html>
