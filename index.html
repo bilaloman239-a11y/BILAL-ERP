@@ -1880,7 +1880,34 @@ document.addEventListener("DOMContentLoaded", () => {
   function exportPdfSelected(){
     const c=chosenCols(),r=exportRows();if(!c.length)return alert("Please select at least one column.");if(!r.length)return alert("No employee records available.");
     const w=window.open("","_blank");if(!w)return alert("Please allow pop-ups for PDF export.");
-    w.document.write(`<!doctype html><html><head><title>Employee List</title><style>@page{size:landscape;margin:8mm}body{font-family:Arial;font-size:9px;color:#173a5c}table{width:100%;border-collapse:collapse}th{background:#eef5fb}th,td{border:1px solid #ccd9e6;padding:5px;vertical-align:top;word-break:break-word}h2{margin-bottom:4px}</style></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
+    w.document.write(`<!doctype html><html><head><title>Employee List</title><style>@page{size:landscape;margin:8mm}body{font-family:Arial;font-size:9px;color:#173a5c}table{width:100%;border-collapse:collapse}th{background:#eef5fb}th,td{border:1px solid #ccd9e6;padding:5px;vertical-align:top;word-break:break-word}h2{margin-bottom:4px}
+/* ===== Civil Buddy Cartoon Assistant ===== */
+#cmBuddy{position:fixed;z-index:12000;left:270px;bottom:20px;width:105px;height:145px;pointer-events:none;transition:left 1.1s ease,transform .35s ease}
+#cmBuddy.cm-walk{animation:cmBob .55s infinite alternate ease-in-out}
+#cmBuddy.cm-sit{transform:translateY(25px)}
+@keyframes cmBob{to{transform:translateY(-7px)}}
+.cm-b-head{position:absolute;left:25px;top:7px;width:58px;height:52px;border-radius:20px;background:#f8fbff;border:3px solid #79a9eb}
+.cm-b-cap{position:absolute;left:21px;top:0;width:67px;height:18px;border-radius:18px 18px 6px 6px;background:#f7a15f}
+.cm-b-eye{position:absolute;top:19px;width:8px;height:9px;border-radius:50%;background:#17375c}.cm-b-eye.l{left:13px}.cm-b-eye.r{right:13px}
+.cm-b-mouth{position:absolute;left:18px;top:33px;width:19px;height:8px;border-bottom:3px solid #f39755;border-radius:50%}
+.cm-b-body{position:absolute;left:34px;top:61px;width:41px;height:47px;border-radius:11px;background:#79a9eb;border:3px solid #5b8fc8}
+.cm-b-body:after{content:"CM";position:absolute;top:11px;left:0;right:0;text-align:center;color:white;font-size:11px;font-weight:900}
+.cm-b-arm,.cm-b-leg{position:absolute;border-radius:8px;transform-origin:top center}
+.cm-b-arm{top:67px;width:12px;height:42px;background:#efbd97}.cm-b-arm.l{left:23px;transform:rotate(13deg)}.cm-b-arm.r{right:23px;transform:rotate(-13deg)}
+.cm-b-leg{top:105px;width:13px;height:35px;background:#314e68}.cm-b-leg.l{left:37px}.cm-b-leg.r{right:37px}
+.cm-walk .cm-b-arm.l{animation:cmAL .55s infinite alternate}.cm-walk .cm-b-arm.r{animation:cmAR .55s infinite alternate}
+.cm-walk .cm-b-leg.l{animation:cmLL .55s infinite alternate}.cm-walk .cm-b-leg.r{animation:cmLR .55s infinite alternate}
+@keyframes cmAL{to{transform:rotate(-28deg)}}@keyframes cmAR{to{transform:rotate(28deg)}}@keyframes cmLL{to{transform:rotate(20deg)}}@keyframes cmLR{to{transform:rotate(-20deg)}}
+.cm-sit .cm-b-leg{top:98px;height:22px}.cm-sit .cm-b-leg.l{transform:rotate(72deg)}.cm-sit .cm-b-leg.r{transform:rotate(-72deg)}
+#cmBuddyBubble{position:fixed;z-index:12001;left:370px;bottom:120px;max-width:300px;background:white;border:1px solid #d8e4f2;border-radius:13px;padding:10px 13px;box-shadow:0 10px 28px rgba(30,65,100,.14);font-size:12px;color:#35506a;display:none}
+#cmBuddyBubble.show{display:block}
+#cmBuddyPanel{position:fixed;z-index:12002;right:18px;bottom:18px;width:min(420px,calc(100vw - 36px));padding:9px;background:rgba(255,255,255,.97);border:1px solid #d8e4f2;border-radius:14px;box-shadow:0 12px 32px rgba(30,65,100,.14)}
+#cmBuddyPanel .row{display:flex;gap:7px}#cmBuddyCommand{flex:1;min-width:0;height:39px;border:1px solid #cbd9e7;border-radius:9px;padding:0 10px}
+#cmBuddyMic,#cmBuddyDo{border:0;border-radius:9px;color:white;font-weight:800}#cmBuddyMic{width:42px;background:#f7a15f}#cmBuddyDo{padding:0 13px;background:#5f91b4}
+#cmBuddyHelp{font-size:10px;color:#7a8da0;margin-top:5px}
+.cmBuddyHidden{display:none!important}
+
+</style></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
   }
   $("exportEmployeeListBtn")?.addEventListener("click",openExportEmployee);
   $("closeExportEmployeeModal")?.addEventListener("click",()=>$("exportEmployeeModal").classList.add("hidden"));
@@ -1949,6 +1976,66 @@ document.addEventListener("DOMContentLoaded", () => {
   renderAll();
   if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1") openApp();
 })();
+});
+</script>
+
+
+<div id="cmBuddy" class="cm-walk cmBuddyHidden">
+ <div class="cm-b-cap"></div><div class="cm-b-head"><i class="cm-b-eye l"></i><i class="cm-b-eye r"></i><i class="cm-b-mouth"></i></div>
+ <div class="cm-b-arm l"></div><div class="cm-b-arm r"></div><div class="cm-b-body"></div><div class="cm-b-leg l"></div><div class="cm-b-leg r"></div>
+</div>
+<div id="cmBuddyBubble" class="cmBuddyHidden"></div>
+<div id="cmBuddyPanel" class="cmBuddyHidden">
+ <div class="row"><input id="cmBuddyCommand" placeholder="Command: active employee dikhao..."><button id="cmBuddyMic" type="button">🎤</button><button id="cmBuddyDo" type="button">Do</button></div>
+ <div id="cmBuddyHelp">“aram se betho” · “chal ghoom ke check” · “active employee dikhao” · “Pakistani filter karo”</div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+ const buddy=document.getElementById("cmBuddy"), bubble=document.getElementById("cmBuddyBubble"), panel=document.getElementById("cmBuddyPanel");
+ const input=document.getElementById("cmBuddyCommand"), mic=document.getElementById("cmBuddyMic"), go=document.getElementById("cmBuddyDo");
+ const app=document.getElementById("appView");
+ let timer=null,bubbleTimer=null,dir=1;
+
+ function appOpen(){return app && !app.classList.contains("hidden")}
+ function visibility(){[buddy,bubble,panel].forEach(x=>x&&x.classList.toggle("cmBuddyHidden",!appOpen()))}
+ if(app){new MutationObserver(visibility).observe(app,{attributes:true,attributeFilter:["class"]});visibility()}
+
+ function say(t,ms=3500){if(!appOpen())return;bubble.textContent=t;bubble.classList.add("show");clearTimeout(bubbleTimer);bubbleTimer=setTimeout(()=>bubble.classList.remove("show"),ms)}
+ function walk(){buddy.classList.remove("cm-sit");buddy.classList.add("cm-walk")}
+ function sit(){clearInterval(timer);timer=null;buddy.classList.remove("cm-walk");buddy.classList.add("cm-sit");buddy.style.left="265px";say("Theek hai boss, araam se side par baith gaya 😌")}
+ function employees(){
+   try{let d=JSON.parse(localStorage.getItem("cm_employee_portal_v3")||"{}");return Array.isArray(d.employees)?d.employees:[]}catch(e){return[]}
+ }
+ function patrol(){
+   walk();clearInterval(timer);let x=parseInt(getComputedStyle(buddy).left)||265;
+   say("Ji boss, ghoom kar records check kar raha hoon 👀");
+   timer=setInterval(()=>{let max=Math.max(275,innerWidth-550);x+=dir*160;if(x>=max){x=max;dir=-1}if(x<=265){x=265;dir=1}buddy.style.left=x+"px"},1200);
+   setTimeout(()=>{clearInterval(timer);timer=null;let es=employees(),a=es.filter(e=>String(e.status||"").toLowerCase()==="active").length;say(`Check complete: ${es.length} total, ${a} active.`,5000)},6000)
+ }
+ function empPage(){document.querySelector('.navbtn[data-page="employees"]')?.click()}
+ function filter(term,label){empPage();let s=document.getElementById("employeeSearch");if(!s)return say("Search field nahi mila.");s.value=term;s.dispatchEvent(new Event("input",{bubbles:true}));say((label||term||"All employees")+" filter laga diya ✅")}
+ function norm(v){return String(v||"").toLowerCase().replace(/[^\w\s-]/g," ").replace(/\s+/g," ").trim()}
+ function run(raw){
+   let q=norm(raw);input.value="";if(!q)return;
+   if(/\b(aram|araam|beth|baith|sit|rest)\b/.test(q))return sit();
+   if(/\b(ghoom|ghum|patrol)\b/.test(q)||(/\bchal\b/.test(q)&&/\bcheck\b/.test(q)))return patrol();
+   if(/\binactive\b/.test(q))return filter("Inactive","Inactive employees");
+   if(/\bactive\b/.test(q))return filter("Active","Active employees");
+   if(/\b(clear|reset|all employees|sab dikhao)\b/.test(q))return filter("","All employees");
+   let vals=[];employees().forEach(e=>[e.nationality,e.company,e.actualDesignation,e.idDesignation,e.employeeCode,e.employeeName].forEach(v=>v&&vals.push(String(v))));
+   let found=[...new Set(vals)].sort((a,b)=>b.length-a.length).find(v=>q.includes(norm(v)));
+   if(found)return filter(found,found);
+   let m=q.match(/^(.+?)\s+(?:filter|dikhao|show|search)(?:\s+karo)?$/)||q.match(/(?:filter|search)\s+(.+)/);
+   if(m)return filter(m[1].replace(/\b(karo|please|employee|employees)\b/g," ").trim());
+   say("Try: Active employee dikhao, Pakistani filter karo, aram se betho, ya chal ghoom ke check.",5500)
+ }
+ go.addEventListener("click",()=>run(input.value));input.addEventListener("keydown",e=>{if(e.key==="Enter")run(input.value)});
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(SR){const r=new SR();r.lang="en-US";r.interimResults=false;r.onstart=()=>say("Sun raha hoon... 🎤",2200);r.onresult=e=>{let t=e.results[0][0].transcript;input.value=t;setTimeout(()=>run(t),250)};r.onerror=()=>say("Mic command nahi mili. Type command use karein.");mic.addEventListener("click",()=>{try{r.start()}catch(e){}})}
+ else mic.addEventListener("click",()=>say("Voice recognition available nahi. Type command use karein."));
+ setInterval(()=>{if(appOpen()&&!buddy.classList.contains("cm-sit")&&!timer){let max=Math.max(275,innerWidth-550);buddy.style.left=Math.round(265+Math.random()*Math.max(10,max-265))+"px"}},5500);
 });
 </script>
 
