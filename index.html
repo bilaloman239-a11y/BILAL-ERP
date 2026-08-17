@@ -418,11 +418,14 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
         <div class="toolbar">
           <button id="newEmployeeBtn" class="btn" type="button" onclick="window.cmOpenNewEmployee && window.cmOpenNewEmployee()">+ Add Employee</button>
           <input id="employeeSearch" class="search" placeholder="Search employee...">
+          <button id="exportBackupBtn" class="btn light" type="button">Export Backup</button>
+          <button id="importBackupBtn" class="btn light" type="button">Restore Backup</button>
+          <input id="importBackupFile" type="file" accept="application/json,.json" class="hidden">
         </div>
 
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Code</th><th>Name</th><th>Actual Designation</th><th>Nationality</th><th>Company</th><th>ID Card Designation</th><th>Status</th><th>Current Site</th><th></th></tr></thead>
+            <thead><tr><th>Code</th><th>Name</th><th>Actual Designation</th><th>Nationality</th><th>Company</th><th>ID Card Designation</th><th>Status</th><th></th></tr></thead>
             <tbody id="employeeRows"></tbody>
           </table>
         </div>
@@ -449,8 +452,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
             <div class="field"><label>Employee Code</label><input id="fEmployeeCode"></div>
             <div class="field"><label>Employee Name</label><input id="fEmployeeName"></div>
             <div class="field"><label>Employee Name in Arabic</label><input id="fEmployeeNameArabic"></div>
+            <div class="field"><label>Unified Number</label><input id="fUnifiedNumber"></div>
             <div class="field"><label>Actual Designation</label><select id="fActualDesignation"></select></div>
-            <div class="field"><label>Father Name</label><input id="fFatherName"></div>
             <div class="field"><label>Nationality</label><select id="fNationality"></select></div>
             <div class="field"><label>Gender</label><select id="fGender"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
             <div class="field"><label>Date of Birth</label><input id="fDOB" type="date"></div>
@@ -467,7 +470,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
             <div class="field"><label>Company</label><select id="fCompany"></select></div>
             <div class="field"><label>Designation as per ID Card</label><select id="fIdDesignation"></select></div>
             <div class="field"><label>Joining Date</label><input id="fJoiningDate" type="date"></div>
-            <div class="field"><label>Current Site</label><select id="fCurrentSite"></select></div>
             <div class="field"><label>Employee Status</label><select id="fEmployeeStatus"><option>Active</option><option>Inactive</option></select></div>
           </div>
           <div id="inactiveReasonBox" class="status-reason">
@@ -545,7 +547,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
             <option value="idDesignation">Designation as per ID Card</option>
             <option value="nationality">Nationality</option>
             <option value="company">Company</option>
-            <option value="currentSite">Current Site</option>
             <option value="documentType">Document Type</option>
           </select>
         </div>
@@ -612,9 +613,32 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     employees:[]
   });
 
-  let data;
-  try{ data = JSON.parse(localStorage.getItem(DATA_KEY)) || freshData(); }
-  catch{ data = freshData(); }
+  const BACKUP_KEY = DATA_KEY + "_backup";
+
+  function parseStored(raw){
+    if(!raw) return null;
+    try{
+      const obj=JSON.parse(raw);
+      if(!obj || typeof obj!=="object") return null;
+      if(!Array.isArray(obj.employees)) obj.employees=[];
+      if(!Array.isArray(obj.masters)) obj.masters=[];
+      return obj;
+    }catch(err){ return null; }
+  }
+
+  function loadDataSafely(){
+    const main=parseStored(localStorage.getItem(DATA_KEY));
+    const backup=parseStored(localStorage.getItem(BACKUP_KEY));
+    // Never replace a populated backup with an empty/corrupt main store.
+    if(main && (main.employees.length || main.masters.length)) return main;
+    if(backup && (backup.employees.length || backup.masters.length)){
+      try{ localStorage.setItem(DATA_KEY,JSON.stringify(backup)); }catch(err){}
+      return backup;
+    }
+    return main || backup || freshData();
+  }
+
+  let data = loadDataSafely();
 
   if(!Array.isArray(data.masters)){
     const old=data.masters||{};
@@ -635,8 +659,23 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   let workingPhoto = "";
 
   function saveData(){
-    localStorage.setItem(DATA_KEY, JSON.stringify(data));
-    renderAll();
+    try{
+      const previous=localStorage.getItem(DATA_KEY);
+      if(previous){
+        const previousObj=parseStored(previous);
+        if(previousObj && (previousObj.employees.length || previousObj.masters.length)){
+          localStorage.setItem(BACKUP_KEY, previous);
+        }
+      }
+      data._savedAt=new Date().toISOString();
+      localStorage.setItem(DATA_KEY, JSON.stringify(data));
+      renderAll();
+      return true;
+    }catch(err){
+      console.error("Save failed",err);
+      alert("Data save nahi hua. Browser storage full/block ho sakti hai. Employee data ko close nahi kiya gaya. Export Backup use karein, ya permanent storage ke liye PostgreSQL backend use karein.");
+      return false;
+    }
   }
 
   function esc(v){
@@ -825,9 +864,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
   function employeeDefaults(){
     return {
-      employeeCode:"",employeeName:"",employeeNameArabic:"",actualDesignation:"",fatherName:"",nationality:"",
+      employeeCode:"",employeeName:"",employeeNameArabic:"",unifiedNumber:"",actualDesignation:"",nationality:"",
       gender:"",dob:"",maritalStatus:"",mobile:"",photo:"",
-      company:"",idDesignation:"",joiningDate:"",currentSite:"",status:"Active",inactiveReason:"",inactiveDate:"",
+      company:"",idDesignation:"",joiningDate:"",status:"Active",inactiveReason:"",inactiveDate:"",
       documents:[],
       emergency:{name:"",relationship:"",mobile:"",country:""},
       attachments:[],history:[]
@@ -859,12 +898,12 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   function diffEmployee(oldE,newE){
     const changes=[];
     const fields=[
-      ["employeeName","Employee Name"],["employeeNameArabic","Arabic Name"],
-      ["actualDesignation","Actual Designation"],["fatherName","Father Name"],
+      ["employeeName","Employee Name"],["employeeNameArabic","Arabic Name"],["unifiedNumber","Unified Number"],
+      ["actualDesignation","Actual Designation"],
       ["nationality","Nationality"],["gender","Gender"],["dob","DOB"],
       ["maritalStatus","Marital Status"],["mobile","Mobile"],["company","Company"],
       ["idDesignation","ID Card Designation"],["joiningDate","Joining Date"],
-      ["currentSite","Current Site"],["status","Employee Status"],
+      ["status","Employee Status"],
       ["inactiveReason","Inactive Reason"],["inactiveDate","Inactive Date"]
     ];
     fields.forEach(([k,label])=>{
@@ -901,7 +940,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       usedOld.add(oi);
       const o=oldDocs[oi];
       const changes=[];
-      [["number","Number"],["issueDate","Issue Date"],["expiryDate","Expiry Date"],["url","Document URL"]].forEach(([k,label])=>{
+      [["number","Number"],["issueDate","Issue Date"],["expiryDate","Expiry Date"],["url","Document URL"],["remarks","Remarks"]].forEach(([k,label])=>{
         const a=String(o?.[k]??""), b=String(n?.[k]??"");
         if(a!==b) changes.push({field:label,old:a,new:b});
       });
@@ -949,8 +988,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
         ${profileInfo("Employee Code",e.employeeCode)}
         ${profileInfo("Employee Name",e.employeeName)}
         ${profileInfo("Employee Name in Arabic",e.employeeNameArabic)}
+        ${profileInfo("Unified Number",e.unifiedNumber)}
         ${profileInfo("Actual Designation",e.actualDesignation)}
-        ${profileInfo("Father Name",e.fatherName)}
         ${profileInfo("Nationality",e.nationality)}
         ${profileInfo("Gender",e.gender)}
         ${profileInfo("Date of Birth",e.dob)}
@@ -964,7 +1003,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
         ${profileInfo("Company",e.company)}
         ${profileInfo("Designation as per ID Card",e.idDesignation)}
         ${profileInfo("Joining Date",e.joiningDate)}
-        ${profileInfo("Current Site",e.currentSite)}
         ${profileInfo("Employee Status",e.status)}
         ${profileInfo("Inactive Reason",e.inactiveReason)}
         ${profileInfo("Inactive Date",e.inactiveDate)}
@@ -1051,8 +1089,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     $("fEmployeeCode").value=e.employeeCode||"";
     $("fEmployeeName").value=e.employeeName||"";
     $("fEmployeeNameArabic").value=e.employeeNameArabic||"";
+    $("fUnifiedNumber").value=e.unifiedNumber||"";
     $("fActualDesignation").value=e.actualDesignation||"";
-    $("fFatherName").value=e.fatherName||"";
     $("fNationality").value=e.nationality||"";
     $("fGender").value=e.gender||"";
     $("fDOB").value=e.dob||"";
@@ -1064,7 +1102,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     $("fCompany").value=e.company||"";
     $("fIdDesignation").value=e.idDesignation||"";
     $("fJoiningDate").value=e.joiningDate||"";
-    $("fCurrentSite").value=e.currentSite||"";
     $("fEmployeeStatus").value=e.status||"Active";
     $("fInactiveReason").value=e.inactiveReason||"";
     $("fInactiveDate").value=e.inactiveDate||"";
@@ -1138,6 +1175,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
           <div class="field"><label>Issue Date</label><input type="date" data-doc-field="issueDate" data-index="${i}" value="${esc(d.issueDate)}"></div>
           <div class="field"><label>Expiry Date</label><input type="date" data-doc-field="expiryDate" data-index="${i}" value="${esc(d.expiryDate)}"></div>
           <div class="field"><label>Document URL</label><input type="url" data-doc-field="url" data-index="${i}" value="${esc(d.url||"")}" placeholder="https://..."><div class="doc-file">${d.url?`<a href="${esc(d.url)}" target="_blank" rel="noopener">Open Document</a>`:"URL not added"}</div></div>
+          <div class="field"><label>Remarks</label><input data-doc-field="remarks" data-index="${i}" value="${esc(d.remarks||"")}" placeholder="Remarks"></div>
         </div>
       </div>
     `).join("");
@@ -1208,8 +1246,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       employeeCode:code,
       employeeName:name,
       employeeNameArabic:$("fEmployeeNameArabic").value.trim(),
+      unifiedNumber:$("fUnifiedNumber").value.trim(),
       actualDesignation:$("fActualDesignation").value,
-      fatherName:$("fFatherName").value.trim(),
       nationality:$("fNationality").value,
       gender:$("fGender").value,
       dob:$("fDOB").value,
@@ -1220,7 +1258,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       company:$("fCompany").value,
       idDesignation:$("fIdDesignation").value,
       joiningDate:$("fJoiningDate").value,
-      currentSite:$("fCurrentSite").value,
       status:$("fEmployeeStatus").value,
       inactiveReason:$("fEmployeeStatus").value==="Inactive"?$("fInactiveReason").value.trim():"",
       inactiveDate:$("fEmployeeStatus").value==="Inactive"?$("fInactiveDate").value:"",
@@ -1276,7 +1313,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       compareDocuments(oldEmployee.documents||[],e.documents||[]).forEach(event=>addHistoryEvent(e,event));
       data.employees[editingIndex]=e;
     }
-    saveData(); closeEditor(); alert("Employee data saved successfully.");
+    if(saveData()){ closeEditor(); alert("Employee data saved successfully."); }
   });
 
   $("employeeSearch").addEventListener("input",renderEmployees);
@@ -1386,7 +1423,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     fillSelect("fIdDesignation",getMasterItems("idDesignation"),"Select ID card designation");
     fillSelect("fNationality",getMasterItems("nationality"),"Select nationality");
     fillSelect("fCompany",getMasterItems("company"),"Select company");
-    fillSelect("fCurrentSite",getMasterItems("currentSite"),"Select current site");
     renderEmployees();
     renderDashboard();
     if(!$("employeeEditor").classList.contains("hidden")){
@@ -1400,7 +1436,42 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     if(!Array.isArray(e.history)) e.history=[];
     (e.documents||[]).forEach(d=>ensureDocFollowup(d));
   });
-  localStorage.setItem(DATA_KEY,JSON.stringify(data));
+  try{
+    const mainNow=parseStored(localStorage.getItem(DATA_KEY));
+    if(!mainNow || (!mainNow.employees.length && !mainNow.masters.length && (data.employees.length || data.masters.length))){
+      localStorage.setItem(DATA_KEY,JSON.stringify(data));
+    }
+  }catch(err){ console.warn("Initial persistence skipped",err); }
+
+  // Manual backup/restore so browser cleanup or a new HTML version cannot silently cost data.
+  $("exportBackupBtn").addEventListener("click",()=>{
+    const payload={...data,_exportedAt:new Date().toISOString(),_app:"Civil Master ERP Employee Portal"};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    const stamp=new Date().toISOString().slice(0,10);
+    a.href=url; a.download=`civil-master-employee-backup-${stamp}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+
+  $("importBackupBtn").addEventListener("click",()=>$("importBackupFile").click());
+  $("importBackupFile").addEventListener("change",e=>{
+    const file=e.target.files?.[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const restored=parseStored(String(reader.result||""));
+      if(!restored) return alert("Invalid backup file.");
+      if(!confirm(`Restore backup? ${restored.employees.length} employee record(s) milay hain. Current data replace ho ga.`)) return;
+      const current=localStorage.getItem(DATA_KEY);
+      try{ if(current) localStorage.setItem(BACKUP_KEY,current); }catch(err){}
+      data=restored;
+      if(saveData()) alert("Backup restored successfully.");
+      e.target.value="";
+    };
+    reader.readAsText(file);
+  });
 
   const savedEmail=localStorage.getItem("cm_saved_email"); if(savedEmail) $("loginEmail").value=savedEmail;
   renderAll();
