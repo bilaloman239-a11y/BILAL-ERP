@@ -323,6 +323,16 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   .profile-head{align-items:flex-start;flex-direction:column}
 }
 
+
+.followup-box{margin-top:10px;padding:10px 12px;border-radius:10px;background:#f8fbfe;border:1px solid #e1eaf3}
+.followup-grid{display:grid;grid-template-columns:1.2fr 1fr 1.6fr auto;gap:8px;align-items:end}
+.followup-grid input,.followup-grid select{width:100%;min-height:38px;border:1px solid #cedbe8;border-radius:8px;padding:7px 9px;background:#fff}
+.followup-status{font-size:11px;font-weight:800;padding:4px 8px;border-radius:20px;display:inline-block}
+.fs-pending{background:#fff0d8;color:#966318}.fs-contacted{background:#e7f0ff;color:#3d68a0}
+.fs-renewal{background:#e5f6ec;color:#28714b}.fs-completed{background:#e2f5e8;color:#277044}.fs-hold{background:#f1e9ff;color:#6d4b9c}
+.followup-history{margin-top:8px;font-size:11px;color:#6f8295}
+@media(max-width:900px){.followup-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.followup-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1269,27 +1279,79 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     }
   });
 
+
+  function ensureDocFollowup(d){
+    if(!d.followup || typeof d.followup!=="object") d.followup={status:"Pending",nextDate:"",remarks:"",history:[]};
+    if(!Array.isArray(d.followup.history)) d.followup.history=[];
+    return d.followup;
+  }
+  function followupClass(status){
+    return ({"Pending":"fs-pending","Employee Contacted":"fs-contacted","Renewal In Process":"fs-renewal","Completed":"fs-completed","On Hold":"fs-hold"})[status]||"fs-pending";
+  }
+  function saveDocumentFollowup(employeeIndex,docIndex){
+    const e=data.employees[employeeIndex], d=e?.documents?.[docIndex];
+    if(!d) return;
+    const f=ensureDocFollowup(d);
+    const status=document.querySelector(`[data-fu-status="${employeeIndex}-${docIndex}"]`)?.value||"Pending";
+    const nextDate=document.querySelector(`[data-fu-date="${employeeIndex}-${docIndex}"]`)?.value||"";
+    const remarks=document.querySelector(`[data-fu-remarks="${employeeIndex}-${docIndex}"]`)?.value.trim()||"";
+    const oldStatus=f.status||"", oldDate=f.nextDate||"", oldRemarks=f.remarks||"";
+    if(status!==oldStatus || nextDate!==oldDate || remarks!==oldRemarks){
+      f.status=status; f.nextDate=nextDate; f.remarks=remarks;
+      f.history.unshift({date:nowLabel(),by:"Administrator",status,nextDate,remarks});
+      addHistoryEvent(e,{type:"Document Follow-up",title:`${d.type||"Document"} follow-up updated`,changes:[
+        {field:"Follow-up Status",old:oldStatus,new:status},
+        {field:"Next Follow-up Date",old:oldDate,new:nextDate},
+        {field:"Remarks",old:oldRemarks,new:remarks}
+      ]});
+      saveData();
+      renderDashboard();
+      alert("Follow-up saved.");
+    }
+  }
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.saveFollowup!==undefined){
+      const parts=e.target.dataset.saveFollowup.split("-");
+      saveDocumentFollowup(Number(parts[0]),Number(parts[1]));
+    }
+  });
+
   function renderDashboard(){
     $("totalEmployees").textContent=data.employees.length;
     $("activeEmployees").textContent=data.employees.filter(e=>e.status==="Active").length;
-    const today=new Date();today.setHours(0,0,0,0);
+    const today=new Date(); today.setHours(0,0,0,0);
     const alerts=[];
-    data.employees.forEach(e=>(e.documents||[]).forEach(d=>{
+    data.employees.forEach((e,employeeIndex)=>(e.documents||[]).forEach((d,docIndex)=>{
       if(!d.expiryDate) return;
+      const f=ensureDocFollowup(d);
       const dt=new Date(d.expiryDate+"T00:00:00");
       const days=Math.ceil((dt-today)/86400000);
-      alerts.push({employee:e.employeeName,code:e.employeeCode,type:d.type,expiry:d.expiryDate,days});
+      alerts.push({employee:e.employeeName,code:e.employeeCode,type:d.type,expiry:d.expiryDate,days,employeeIndex,docIndex,followup:f});
     }));
     const within=n=>alerts.filter(a=>a.days>=0&&a.days<=n).length;
-    $("exp30").textContent=within(30);
-    $("exp60").textContent=within(60);
-    $("exp90").textContent=within(90);
-
+    $("exp30").textContent=within(30); $("exp60").textContent=within(60); $("exp90").textContent=within(90);
     const important=alerts.filter(a=>a.days<=90).sort((a,b)=>a.days-b.days);
     $("expiryAlerts").innerHTML=important.length?important.map(a=>{
-      let cls=a.days<0?"expired":a.days<=30?"a30":a.days<=60?"a60":"a90";
-      let label=a.days<0?`Expired ${Math.abs(a.days)} days ago`:`${a.days} days left`;
-      return `<div class="alert-row"><div><b>${esc(a.employee)} (${esc(a.code)})</b><div class="small">${esc(a.type)} · Expiry: ${esc(a.expiry)}</div></div><span class="alert-badge ${cls}">${label}</span></div>`;
+      const cls=a.days<0?"expired":a.days<=30?"a30":a.days<=60?"a60":"a90";
+      const label=a.days<0?`Expired ${Math.abs(a.days)} days ago`:`${a.days} days left`;
+      const f=a.followup;
+      return `<div class="alert-row" style="display:block">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+          <div><b>${esc(a.employee)} (${esc(a.code)})</b><div class="small">${esc(a.type)} · Expiry: ${esc(a.expiry)}</div></div>
+          <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap"><span class="followup-status ${followupClass(f.status)}">${esc(f.status)}</span><span class="alert-badge ${cls}">${label}</span></div>
+        </div>
+        <div class="followup-box">
+          <div class="followup-grid">
+            <div><div class="small">Follow-up Status</div><select data-fu-status="${a.employeeIndex}-${a.docIndex}">
+              ${["Pending","Employee Contacted","Renewal In Process","Completed","On Hold"].map(v=>`<option ${v===f.status?"selected":""}>${v}</option>`).join("")}
+            </select></div>
+            <div><div class="small">Next Follow-up Date</div><input type="date" data-fu-date="${a.employeeIndex}-${a.docIndex}" value="${esc(f.nextDate||"")}"></div>
+            <div><div class="small">Remarks</div><input data-fu-remarks="${a.employeeIndex}-${a.docIndex}" value="${esc(f.remarks||"")}" placeholder="e.g. employee informed / renewal submitted"></div>
+            <div><button class="btn orange" data-save-followup="${a.employeeIndex}-${a.docIndex}">Save Follow-up</button></div>
+          </div>
+          ${f.history.length?`<div class="followup-history">Last update: ${esc(f.history[0].date)} · ${esc(f.history[0].by)}${f.history[0].remarks?` · ${esc(f.history[0].remarks)}`:""}</div>`:""}
+        </div>
+      </div>`;
     }).join(""):'<div class="empty">No document expiry alerts within 90 days.</div>';
   }
 
@@ -1311,6 +1373,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   // Keep older saved employee data compatible with the new audit-trail system.
   (data.employees||[]).forEach(e=>{
     if(!Array.isArray(e.history)) e.history=[];
+    (e.documents||[]).forEach(d=>ensureDocFollowup(d));
   });
   localStorage.setItem(DATA_KEY,JSON.stringify(data));
 
