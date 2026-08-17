@@ -68,6 +68,17 @@ linear-gradient(145deg,#fff 0%,#fbfdff 58%,#eff6ff 100%)}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.topbar h1{margin:0;font-size:26px}.pill{background:#fff1e5;color:#9c5b1c;border-radius:20px;padding:8px 12px;font-size:12px}
 .page{display:none}.page.active{display:block}
 .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px}.card span{font-size:12px;color:var(--muted)}.card b{display:block;font-size:26px;margin-top:7px}
+.dashboard-count-card{cursor:pointer;transition:.18s ease;position:relative}
+.dashboard-count-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(38,76,115,.10);border-color:#bfd5ee}
+.dashboard-count-card:after{content:"View list";position:absolute;right:14px;bottom:11px;font-size:10px;font-weight:700;color:#7290ad;opacity:0;transition:.18s}
+.dashboard-count-card:hover:after{opacity:1}
+.dashboard-count-card.selected{border-color:#8eb9e9;box-shadow:0 0 0 3px rgba(121,169,235,.12)}
+.dashboard-list-row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 14px;border-bottom:1px solid #e8eef3}
+.dashboard-list-row:last-child{border-bottom:0}
+.dashboard-list-main b{display:block;color:#173a5c;margin-bottom:3px}
+.dashboard-list-meta{font-size:12px;color:#70839a}
+.dashboard-list-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+
 .panel{background:white;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px}.panel h3{margin:0 0 15px}
 .note{background:#fff3e8;border-left:4px solid var(--orange);padding:12px 14px;font-size:13px;margin-bottom:15px}
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:15px}.btn{border:0;border-radius:9px;padding:10px 14px;background:#5f91b4;color:white;font-weight:650}.btn.orange{background:var(--orange)}.btn.light{background:#eef3f7;color:#34475b}.btn.danger{background:#d95858}.btn.green{background:#4f9b73}
@@ -333,6 +344,60 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 .followup-history{margin-top:8px;font-size:11px;color:#6f8295}
 @media(max-width:900px){.followup-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.followup-grid{grid-template-columns:1fr}}
+
+/* Compact Document Expiry Action Dashboard */
+.expiry-toolbar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px;
+}
+.expiry-filter{
+  border:1px solid #d8e4f2;background:#f8fbfe;color:#49637a;
+  padding:8px 11px;border-radius:999px;font-size:12px;font-weight:800;
+}
+.expiry-filter.active{background:#eaf3ff;color:#2d6d9b;border-color:#bdd4ee}
+.expiry-list{border:1px solid #e4ecf4;border-radius:14px;overflow:hidden;background:#fff}
+.expiry-item{
+  display:grid;grid-template-columns:1.7fr 1fr .8fr 1fr 1fr auto;
+  gap:12px;align-items:center;padding:13px 14px;border-bottom:1px solid #edf2f6;
+}
+.expiry-item:last-child{border-bottom:0}
+.expiry-item.expired-row{border-left:4px solid #df6b61}
+.expiry-item.d30-row{border-left:4px solid #f0a15f}
+.expiry-item.d60-row{border-left:4px solid #e4bd5a}
+.expiry-item.d90-row{border-left:4px solid #79a9eb}
+.expiry-employee b{display:block;color:#173a5c;font-size:13px}
+.expiry-employee small,.expiry-doc small,.expiry-next small{display:block;color:#7b8da0;font-size:11px;margin-top:3px}
+.expiry-doc b{color:#35506a;font-size:12px}
+.expiry-days{font-weight:800;font-size:12px}
+.expiry-days.bad{color:#b33f34}.expiry-days.warn{color:#a66b17}.expiry-days.ok{color:#416ba9}
+.expiry-action-btn{white-space:nowrap}
+.followup-drawer{
+  position:fixed;inset:0;z-index:10020;background:rgba(18,38,58,.44);
+  display:flex;align-items:flex-end;justify-content:center;padding:20px;
+}
+.followup-drawer.hidden{display:none!important}
+.followup-sheet{
+  width:min(720px,96vw);background:#fff;border-radius:20px 20px 14px 14px;
+  border:1px solid #dce7f3;box-shadow:0 25px 70px rgba(20,45,72,.25);padding:20px;
+}
+.followup-sheet-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px}
+.followup-sheet-title{font-size:20px;font-weight:850;color:#173a5c}
+.followup-sheet-sub{font-size:12px;color:#71859a;margin-top:4px}
+.followup-sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.followup-sheet-grid .field{margin:0}
+.followup-sheet-grid .field.full{grid-column:1/-1}
+.followup-sheet-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+@media(max-width:1000px){
+  .expiry-item{grid-template-columns:1.5fr 1fr .8fr 1fr auto}
+  .expiry-item .expiry-next{display:none}
+}
+@media(max-width:760px){
+  .expiry-item{grid-template-columns:1fr auto;gap:8px}
+  .expiry-doc,.expiry-status,.expiry-next{grid-column:1}
+  .expiry-days,.expiry-action-btn{grid-column:2}
+  .followup-sheet-grid{grid-template-columns:1fr}
+  .followup-sheet-grid .field.full{grid-column:auto}
+}
+
 </style>
 </head>
 <body>
@@ -400,15 +465,38 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
     <section id="dashboard" class="page active">
       <div class="cards">
-        <div class="card"><span>Total Employees</span><b id="totalEmployees">0</b></div>
-        <div class="card"><span>Active Employees</span><b id="activeEmployees">0</b></div>
-        <div class="card"><span>Expiry ≤ 30 Days</span><b id="exp30">0</b></div>
-        <div class="card"><span>Expiry ≤ 60 Days</span><b id="exp60">0</b></div>
-        <div class="card"><span>Expiry ≤ 90 Days</span><b id="exp90">0</b></div>
+        <div class="card dashboard-count-card" data-dashboard-filter="total" role="button" tabindex="0" title="Click to view all employees"><span>Total Employees</span><b id="totalEmployees">0</b></div>
+        <div class="card dashboard-count-card" data-dashboard-filter="active" role="button" tabindex="0" title="Click to view active employees"><span>Active Employees</span><b id="activeEmployees">0</b></div>
+        <div class="card dashboard-count-card" data-dashboard-filter="exp30" role="button" tabindex="0" title="Click to view documents expiring within 30 days"><span>Expiry ≤ 30 Days</span><b id="exp30">0</b></div>
+        <div class="card dashboard-count-card" data-dashboard-filter="exp60" role="button" tabindex="0" title="Click to view documents expiring within 60 days"><span>Expiry ≤ 60 Days</span><b id="exp60">0</b></div>
+        <div class="card dashboard-count-card" data-dashboard-filter="exp90" role="button" tabindex="0" title="Click to view documents expiring within 90 days"><span>Expiry ≤ 90 Days</span><b id="exp90">0</b></div>
+      </div>
+
+      <div id="dashboardCountListPanel" class="panel hidden">
+        <div class="toolbar" style="justify-content:space-between;margin-bottom:10px">
+          <div>
+            <h3 id="dashboardCountListTitle" style="margin:0">Dashboard List</h3>
+            <div id="dashboardCountListSub" class="small"></div>
+          </div>
+          <button id="closeDashboardCountList" class="btn light" type="button">Close</button>
+        </div>
+        <div id="dashboardCountList"></div>
       </div>
 
       <div class="panel">
-        <h3>Document Expiry Alerts</h3>
+        <div class="toolbar" style="justify-content:space-between;margin-bottom:10px">
+          <div>
+            <h3 style="margin:0">Document Expiry Alerts</h3>
+            <div class="small">Compact action view for expiring documents and renewals.</div>
+          </div>
+        </div>
+        <div class="expiry-toolbar" id="expiryFilters">
+          <button class="expiry-filter active" data-expiry-filter="all" type="button">All</button>
+          <button class="expiry-filter" data-expiry-filter="expired" type="button">Expired</button>
+          <button class="expiry-filter" data-expiry-filter="30" type="button">≤ 30 Days</button>
+          <button class="expiry-filter" data-expiry-filter="renewal" type="button">Renewal In Process</button>
+          <button class="expiry-filter" data-expiry-filter="pending" type="button">Pending</button>
+        </div>
         <div id="expiryAlerts"></div>
       </div>
     </section>
@@ -1233,11 +1321,110 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     }
   });
 
+  function normalizeUniqueNumber(v){
+    return String(v||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
+  }
+
+  function documentNumberLabel(type){
+    const t=String(type||"").trim().toLowerCase();
+    if(t.includes("passport")) return "Passport Number";
+    if(t.includes("emirates") || t.includes("id card") || t==="eid" || t.includes("identity")) return "Emirates ID / ID Card Number";
+    return type ? `${type} Number` : "Document Number";
+  }
+
+  function findDuplicateUniqueNumber(code, unifiedNumber, docs){
+    const normCode=normalizeUniqueNumber(code);
+    const normUnified=normalizeUniqueNumber(unifiedNumber);
+
+    // Employee Code
+    const codeMatch=(data.employees||[]).find((emp,i)=>
+      i!==editingIndex &&
+      normCode &&
+      normalizeUniqueNumber(emp.employeeCode)===normCode
+    );
+    if(codeMatch){
+      return {
+        label:"Employee Code",
+        value:code,
+        employee:codeMatch
+      };
+    }
+
+    // Unified Number
+    if(normUnified){
+      const unifiedMatch=(data.employees||[]).find((emp,i)=>
+        i!==editingIndex &&
+        normalizeUniqueNumber(emp.unifiedNumber)===normUnified
+      );
+      if(unifiedMatch){
+        return {
+          label:"Unified Number",
+          value:unifiedNumber,
+          employee:unifiedMatch
+        };
+      }
+    }
+
+    // Duplicate document numbers inside the employee currently being entered.
+    const seen=new Map();
+    for(let i=0;i<(docs||[]).length;i++){
+      const d=docs[i]||{};
+      const n=normalizeUniqueNumber(d.number);
+      if(!n) continue;
+      if(seen.has(n)){
+        return {
+          label:documentNumberLabel(d.type),
+          value:d.number,
+          employee:null,
+          sameForm:true
+        };
+      }
+      seen.set(n,i);
+    }
+
+    // Document numbers must be unique across all employees.
+    for(const d of (docs||[])){
+      const n=normalizeUniqueNumber(d?.number);
+      if(!n) continue;
+
+      for(let i=0;i<(data.employees||[]).length;i++){
+        if(i===editingIndex) continue;
+        const emp=data.employees[i]||{};
+        const matchedDoc=(emp.documents||[]).find(oldDoc=>
+          normalizeUniqueNumber(oldDoc?.number)===n
+        );
+        if(matchedDoc){
+          return {
+            label:documentNumberLabel(d.type || matchedDoc.type),
+            value:d.number,
+            employee:emp,
+            existingType:matchedDoc.type||"Document"
+          };
+        }
+      }
+    }
+
+    return null;
+  }
+
   $("saveEmployeeBtn").addEventListener("click",()=>{
     const code=$("fEmployeeCode").value.trim(), name=$("fEmployeeName").value.trim();
     if(!code || !name) return alert("Employee Code and Employee Name are required.");
-    const duplicate=data.employees.findIndex((e,i)=>i!==editingIndex && String(e.employeeCode).toLowerCase()===code.toLowerCase());
-    if(duplicate>=0) return alert("Employee Code already exists.");
+
+    const unifiedNumber=$("fUnifiedNumber").value.trim();
+    const duplicate=findDuplicateUniqueNumber(code, unifiedNumber, workingDocuments);
+
+    if(duplicate){
+      if(duplicate.sameForm){
+        return alert(`Duplicate ${duplicate.label}: "${duplicate.value}" is entered more than once in this employee form. Please use a unique number.`);
+      }
+      const empName=duplicate.employee?.employeeName||"another employee";
+      const empCode=duplicate.employee?.employeeCode||"";
+      return alert(
+        `Duplicate ${duplicate.label}: "${duplicate.value}" already exists for ${empName}${empCode?` (${empCode})`:""}. Record cannot be saved.`
+      );
+    }
+
     if($("fEmployeeStatus").value==="Inactive" && (!$("fInactiveReason").value.trim() || !$("fInactiveDate").value)){
       return alert("Inactive Reason and Inactive Date are required.");
     }
@@ -1246,7 +1433,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       employeeCode:code,
       employeeName:name,
       employeeNameArabic:$("fEmployeeNameArabic").value.trim(),
-      unifiedNumber:$("fUnifiedNumber").value.trim(),
+      unifiedNumber:unifiedNumber,
       actualDesignation:$("fActualDesignation").value,
       nationality:$("fNationality").value,
       gender:$("fGender").value,
@@ -1378,44 +1565,231 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     }
   });
 
-  function renderDashboard(){
-    $("totalEmployees").textContent=data.employees.length;
-    $("activeEmployees").textContent=data.employees.filter(e=>e.status==="Active").length;
+  function dashboardExpiryAlerts(){
     const today=new Date(); today.setHours(0,0,0,0);
     const alerts=[];
     data.employees.forEach((e,employeeIndex)=>(e.documents||[]).forEach((d,docIndex)=>{
       if(!d.expiryDate) return;
-      const f=ensureDocFollowup(d);
       const dt=new Date(d.expiryDate+"T00:00:00");
       const days=Math.ceil((dt-today)/86400000);
-      alerts.push({employee:e.employeeName,code:e.employeeCode,type:d.type,expiry:d.expiryDate,days,employeeIndex,docIndex,followup:f});
+      alerts.push({employee:e.employeeName,code:e.employeeCode,type:d.type,number:d.number||"",expiry:d.expiryDate,days,employeeIndex,docIndex});
     }));
-    const within=n=>alerts.filter(a=>a.days>=0&&a.days<=n).length;
-    $("exp30").textContent=within(30); $("exp60").textContent=within(60); $("exp90").textContent=within(90);
-    const important=alerts.filter(a=>a.days<=90).sort((a,b)=>a.days-b.days);
-    $("expiryAlerts").innerHTML=important.length?important.map(a=>{
-      const cls=a.days<0?"expired":a.days<=30?"a30":a.days<=60?"a60":"a90";
-      const label=a.days<0?`Expired ${Math.abs(a.days)} days ago`:`${a.days} days left`;
-      const f=a.followup;
-      return `<div class="alert-row" style="display:block">
-        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
-          <div><b>${esc(a.employee)} (${esc(a.code)})</b><div class="small">${esc(a.type)} · Expiry: ${esc(a.expiry)}</div></div>
-          <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap"><span class="followup-status ${followupClass(f.status)}">${esc(f.status)}</span><span class="alert-badge ${cls}">${label}</span></div>
-        </div>
-        <div class="followup-box">
-          <div class="followup-grid">
-            <div><div class="small">Follow-up Status</div><select data-fu-status="${a.employeeIndex}-${a.docIndex}">
-              ${["Pending","Employee Contacted","Renewal In Process","Completed","On Hold"].map(v=>`<option ${v===f.status?"selected":""}>${v}</option>`).join("")}
-            </select></div>
-            <div><div class="small">Next Follow-up Date</div><input type="date" data-fu-date="${a.employeeIndex}-${a.docIndex}" value="${esc(f.nextDate||"")}"></div>
-            <div><div class="small">Remarks</div><input data-fu-remarks="${a.employeeIndex}-${a.docIndex}" value="${esc(f.remarks||"")}" placeholder="e.g. employee informed / renewal submitted"></div>
-            <div><button class="btn orange" data-save-followup="${a.employeeIndex}-${a.docIndex}">Save Follow-up</button></div>
-          </div>
-          ${f.history.length?`<div class="followup-history">Last update: ${esc(f.history[0].date)} · ${esc(f.history[0].by)}${f.history[0].remarks?` · ${esc(f.history[0].remarks)}`:""}</div>`:""}
-        </div>
-      </div>`;
-    }).join(""):'<div class="empty">No document expiry alerts within 90 days.</div>';
+    return alerts;
   }
+
+  function renderDashboardCountList(filter){
+    const panel=$("dashboardCountListPanel");
+    const box=$("dashboardCountList");
+    const title=$("dashboardCountListTitle");
+    const sub=$("dashboardCountListSub");
+    if(!panel || !box) return;
+
+    document.querySelectorAll(".dashboard-count-card").forEach(c=>c.classList.toggle("selected",c.dataset.dashboardFilter===filter));
+
+    if(filter==="total" || filter==="active"){
+      const rows=(data.employees||[])
+        .map((e,i)=>({...e,_i:i}))
+        .filter(e=>filter==="total" || e.status==="Active");
+
+      title.textContent=filter==="total"?"All Employees":"Active Employees";
+      sub.textContent=`${rows.length} employee${rows.length===1?"":"s"}`;
+
+      box.innerHTML=rows.length?rows.map(e=>`
+        <div class="dashboard-list-row">
+          <div class="dashboard-list-main">
+            <b>${esc(e.employeeName||"-")} (${esc(e.employeeCode||"-")})</b>
+            <div class="dashboard-list-meta">${esc(e.actualDesignation||"-")} · ${esc(e.company||"-")} · ${esc(e.status||"-")}</div>
+          </div>
+          <div class="dashboard-list-actions">
+            <button class="btn light" type="button" data-view-employee="${e._i}">Open Profile</button>
+          </div>
+        </div>`).join(""):'<div class="empty">No employees found.</div>';
+    }else{
+      const limit=filter==="exp30"?30:filter==="exp60"?60:90;
+      const rows=dashboardExpiryAlerts()
+        .filter(a=>a.days>=0 && a.days<=limit)
+        .sort((a,b)=>a.days-b.days);
+
+      title.textContent=`Documents Expiring Within ${limit} Days`;
+      sub.textContent=`${rows.length} document${rows.length===1?"":"s"}`;
+
+      box.innerHTML=rows.length?rows.map(a=>{
+        const cls=a.days<=30?"a30":a.days<=60?"a60":"a90";
+        const label=a.days===0?"Expires today":`${a.days} days left`;
+        return `<div class="dashboard-list-row">
+          <div class="dashboard-list-main">
+            <b>${esc(a.employee||"-")} (${esc(a.code||"-")})</b>
+            <div class="dashboard-list-meta">${esc(a.type||"Document")}${a.number?` · ${esc(a.number)}`:""} · Expiry: ${esc(a.expiry)}</div>
+          </div>
+          <div class="dashboard-list-actions">
+            <span class="alert-badge ${cls}">${label}</span>
+            <button class="btn light" type="button" data-view-employee="${a.employeeIndex}">Open Profile</button>
+          </div>
+        </div>`;
+      }).join(""):'<div class="empty">No documents found in this expiry range.</div>';
+    }
+
+    panel.classList.remove("hidden");
+    panel.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  document.addEventListener("click",e=>{
+    const card=e.target.closest?.(".dashboard-count-card");
+    if(card) renderDashboardCountList(card.dataset.dashboardFilter);
+  });
+  document.addEventListener("keydown",e=>{
+    const card=e.target.closest?.(".dashboard-count-card");
+    if(card && (e.key==="Enter" || e.key===" ")){
+      e.preventDefault();
+      renderDashboardCountList(card.dataset.dashboardFilter);
+    }
+  });
+  $("closeDashboardCountList")?.addEventListener("click",()=>{
+    $("dashboardCountListPanel")?.classList.add("hidden");
+    document.querySelectorAll(".dashboard-count-card").forEach(c=>c.classList.remove("selected"));
+  });
+
+  let currentExpiryFilter="all";
+  let followupDrawerTarget=null;
+
+  function ensureDocFollowup(d){
+    if(!d.followup || typeof d.followup!=="object") d.followup={status:"Pending",nextDate:"",remarks:"",history:[]};
+    if(!Array.isArray(d.followup.history)) d.followup.history=[];
+    if(!d.followup.status) d.followup.status="Pending";
+    return d.followup;
+  }
+
+  function expiryStatusClass(status){
+    const s=String(status||"Pending").toLowerCase();
+    if(s.includes("renewal")) return "fs-renewal";
+    if(s.includes("contacted")) return "fs-contacted";
+    if(s.includes("completed")) return "fs-completed";
+    if(s.includes("hold")) return "fs-hold";
+    return "fs-pending";
+  }
+
+  function getExpiryAlerts(){
+    const today=new Date(); today.setHours(0,0,0,0);
+    const alerts=[];
+    data.employees.forEach((e,employeeIndex)=>(e.documents||[]).forEach((d,docIndex)=>{
+      if(!d.expiryDate) return;
+      const dt=new Date(d.expiryDate+"T00:00:00");
+      const days=Math.ceil((dt-today)/86400000);
+      if(days>90) return;
+      const f=ensureDocFollowup(d);
+      alerts.push({employeeIndex,docIndex,e,d,days,f});
+    }));
+    return alerts.sort((a,b)=>a.days-b.days);
+  }
+
+  function expiryMatchesFilter(a){
+    if(currentExpiryFilter==="expired") return a.days<0;
+    if(currentExpiryFilter==="30") return a.days>=0 && a.days<=30;
+    if(currentExpiryFilter==="renewal") return a.f.status==="Renewal In Process";
+    if(currentExpiryFilter==="pending") return a.f.status==="Pending";
+    return true;
+  }
+
+  function renderExpiryAlerts(){
+    const alerts=getExpiryAlerts().filter(expiryMatchesFilter);
+
+    $("expiryAlerts").innerHTML=alerts.length?`
+      <div class="expiry-list">
+        ${alerts.map(a=>{
+          const rowClass=a.days<0?"expired-row":a.days<=30?"d30-row":a.days<=60?"d60-row":"d90-row";
+          const dayClass=a.days<0?"bad":a.days<=30?"warn":"ok";
+          const dayText=a.days<0?`Expired ${Math.abs(a.days)} day${Math.abs(a.days)===1?"":"s"} ago`:a.days===0?"Expires today":`${a.days} days left`;
+          const next=a.f.nextDate||"Not set";
+          return `<div class="expiry-item ${rowClass}">
+            <div class="expiry-employee">
+              <b>${esc(a.e.employeeName||"-")} (${esc(a.e.employeeCode||"-")})</b>
+              <small>${esc(a.e.actualDesignation||"")}</small>
+            </div>
+            <div class="expiry-doc">
+              <b>${esc(a.d.type||"Document")}</b>
+              <small>Expiry: ${esc(a.d.expiryDate)}</small>
+            </div>
+            <div class="expiry-days ${dayClass}">${dayText}</div>
+            <div class="expiry-status">
+              <span class="followup-status ${expiryStatusClass(a.f.status)}">${esc(a.f.status||"Pending")}</span>
+            </div>
+            <div class="expiry-next">
+              <b style="font-size:12px;color:#35506a">${esc(next)}</b>
+              <small>Next follow-up</small>
+            </div>
+            <div>
+              <button class="btn orange expiry-action-btn" type="button" data-open-followup="${a.employeeIndex}-${a.docIndex}">Update</button>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>`:'<div class="empty">No document alerts for this filter.</div>';
+  }
+
+  function renderDashboard(){
+    $("totalEmployees").textContent=data.employees.length;
+    $("activeEmployees").textContent=data.employees.filter(e=>e.status==="Active").length;
+
+    const alerts=getExpiryAlerts();
+    $("exp30").textContent=alerts.filter(a=>a.days>=0 && a.days<=30).length;
+    $("exp60").textContent=alerts.filter(a=>a.days>=0 && a.days<=60).length;
+    $("exp90").textContent=alerts.filter(a=>a.days>=0 && a.days<=90).length;
+
+    renderExpiryAlerts();
+  }
+
+  document.addEventListener("click",e=>{
+    if(e.target.matches?.(".expiry-filter")){
+      currentExpiryFilter=e.target.dataset.expiryFilter||"all";
+      document.querySelectorAll(".expiry-filter").forEach(b=>b.classList.toggle("active",b===e.target));
+      renderExpiryAlerts();
+    }
+
+    if(e.target.dataset.openFollowup!==undefined){
+      const [employeeIndex,docIndex]=e.target.dataset.openFollowup.split("-").map(Number);
+      const emp=data.employees[employeeIndex];
+      const doc=emp?.documents?.[docIndex];
+      if(!emp || !doc) return;
+      const f=ensureDocFollowup(doc);
+      followupDrawerTarget={employeeIndex,docIndex};
+      $("followupDrawerTitle").textContent=`Update Follow-up — ${doc.type||"Document"}`;
+      $("followupDrawerSub").textContent=`${emp.employeeName||"-"} (${emp.employeeCode||"-"}) · Expiry: ${doc.expiryDate||"-"}`;
+      $("drawerFollowupStatus").value=f.status||"Pending";
+      $("drawerFollowupDate").value=f.nextDate||"";
+      $("drawerFollowupRemarks").value=f.remarks||"";
+      $("followupDrawer").classList.remove("hidden");
+    }
+  });
+
+  function closeFollowupDrawer(){
+    followupDrawerTarget=null;
+    $("followupDrawer").classList.add("hidden");
+  }
+  $("closeFollowupDrawer").addEventListener("click",closeFollowupDrawer);
+  $("cancelFollowupDrawer").addEventListener("click",closeFollowupDrawer);
+  $("followupDrawer").addEventListener("click",e=>{if(e.target===$("followupDrawer")) closeFollowupDrawer();});
+
+  $("saveFollowupDrawer").addEventListener("click",()=>{
+    if(!followupDrawerTarget) return;
+    const {employeeIndex,docIndex}=followupDrawerTarget;
+    const emp=data.employees[employeeIndex];
+    const doc=emp?.documents?.[docIndex];
+    if(!doc) return;
+    const f=ensureDocFollowup(doc);
+
+    f.status=$("drawerFollowupStatus").value;
+    f.nextDate=$("drawerFollowupDate").value;
+    f.remarks=$("drawerFollowupRemarks").value.trim();
+    f.history.unshift({
+      date:new Date().toLocaleString(),
+      by:"Administrator",
+      status:f.status,
+      nextDate:f.nextDate,
+      remarks:f.remarks
+    });
+
+    saveData();
+    closeFollowupDrawer();
+  });
 
   function renderAll(){
     renderMasters();
@@ -1478,6 +1852,43 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1") openApp();
 })();
 </script>
+
+
+<div id="followupDrawer" class="followup-drawer hidden">
+  <div class="followup-sheet">
+    <div class="followup-sheet-head">
+      <div>
+        <div id="followupDrawerTitle" class="followup-sheet-title">Update Follow-up</div>
+        <div id="followupDrawerSub" class="followup-sheet-sub"></div>
+      </div>
+      <button id="closeFollowupDrawer" class="btn light" type="button">Close</button>
+    </div>
+    <div class="followup-sheet-grid">
+      <div class="field">
+        <label>Follow-up Status</label>
+        <select id="drawerFollowupStatus">
+          <option>Pending</option>
+          <option>Contacted</option>
+          <option>Renewal In Process</option>
+          <option>Completed</option>
+          <option>On Hold</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Next Follow-up Date</label>
+        <input id="drawerFollowupDate" type="date">
+      </div>
+      <div class="field full">
+        <label>Remarks</label>
+        <textarea id="drawerFollowupRemarks" rows="3" placeholder="e.g. employee informed / renewal submitted"></textarea>
+      </div>
+    </div>
+    <div class="followup-sheet-actions">
+      <button id="cancelFollowupDrawer" class="btn light" type="button">Cancel</button>
+      <button id="saveFollowupDrawer" class="btn orange" type="button">Save Follow-up</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
