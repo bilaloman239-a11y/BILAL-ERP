@@ -323,35 +323,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   .profile-head{align-items:flex-start;flex-direction:column}
 }
 
-
-/* Expired Documents Follow-up */
-.followup-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-.followup-filter{height:40px;border:1px solid #cdd9e6;border-radius:9px;padding:0 10px;background:#fff}
-.followup-table td{vertical-align:middle}
-.followup-status{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:800}
-.fs-open{background:#ffe4df;color:#b54a3d}
-.fs-contacted{background:#fff0d7;color:#9b6519}
-.fs-processing{background:#e8f0ff;color:#416ba9}
-.fs-completed{background:#dff3e7;color:#2f7d53}
-.fs-cancelled{background:#eceff3;color:#66727f}
-.followup-note{max-width:260px;white-space:normal;line-height:1.4}
-.followup-late{color:#b12929;font-weight:800}
-.followup-due{color:#a26417;font-weight:800}
-.followup-ok{color:#327a55;font-weight:800}
-.followup-modal{
-  position:fixed;inset:0;z-index:10050;background:rgba(15,35,54,.45);
-  display:flex;align-items:center;justify-content:center;padding:20px
-}
-.followup-modal.hidden{display:none!important}
-.followup-card{
-  width:min(620px,95vw);background:#fff;border-radius:18px;padding:22px;
-  border:1px solid #dce6ef;box-shadow:0 25px 70px rgba(20,45,68,.22)
-}
-.followup-card h3{margin:0 0 14px;color:#214661}
-.followup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.followup-card textarea{min-height:100px;resize:vertical}
-@media(max-width:650px){.followup-grid{grid-template-columns:1fr}}
-
 </style>
 </head>
 <body>
@@ -407,7 +378,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     </div>
     <button class="navbtn active" data-page="dashboard">Dashboard</button>
     <button class="navbtn" data-page="employees">Employees</button>
-    <button class="navbtn" data-page="followups">Document Follow-up</button>
     <button class="navbtn master" data-page="masters">Masters</button>
     <button id="logoutButton" class="navbtn logout">Sign Out</button>
   </aside>
@@ -458,7 +428,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
           <button class="tab active" data-tab="personal">Employee Information</button>
           <button class="tab" data-tab="employment">Employment</button>
           <button class="tab" data-tab="documents">Documents</button>
-          <button class="tab" data-tab="bank">Bank Information</button>
+          
           <button class="tab" data-tab="emergency">Emergency Contact</button>
           <button class="tab" data-tab="attachments">Attachments</button>
         </div>
@@ -546,54 +516,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     </section>
 
     
-
-    <section id="followups" class="page">
-      <div class="panel">
-        <div class="toolbar" style="justify-content:space-between">
-          <div>
-            <h3 style="margin:0">Expired / Expiring Document Follow-up</h3>
-            <div class="small">Track renewal follow-ups, next action dates, notes, and completion status.</div>
-          </div>
-          <div class="followup-toolbar">
-            <select id="followupRangeFilter" class="followup-filter">
-              <option value="all">All Alerts</option>
-              <option value="expired">Expired</option>
-              <option value="30">Expiring in 30 Days</option>
-              <option value="60">Expiring in 60 Days</option>
-              <option value="90">Expiring in 90 Days</option>
-            </select>
-            <select id="followupStatusFilter" class="followup-filter">
-              <option value="all">All Follow-up Status</option>
-              <option value="Open">Open</option>
-              <option value="Contacted">Contacted</option>
-              <option value="Processing">Processing</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table class="followup-table">
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Document</th>
-                <th>Expiry</th>
-                <th>Days</th>
-                <th>Status</th>
-                <th>Next Follow-up</th>
-                <th>Last Note</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="followupRows"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section id="masters" class="page">
+<section id="masters" class="page">
   <div class="panel">
     <div class="toolbar" style="justify-content:space-between">
       <div>
@@ -728,7 +651,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     $(btn.dataset.page).classList.add("active");
     document.querySelectorAll(".navbtn[data-page]").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
-    $("pageTitle").textContent=btn.dataset.page==="dashboard"?"Employee Portal":btn.dataset.page==="employees"?"Employees":btn.dataset.page==="followups"?"Document Follow-up":"Masters";
+    $("pageTitle").textContent=btn.dataset.page==="dashboard"?"Employee Portal":btn.dataset.page==="employees"?"Employees":"Masters";
   }));
 
   document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
@@ -875,7 +798,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       documents:[],
       bank:{bankName:"",accountName:"",accountNumber:"",iban:"",swift:""},
       emergency:{name:"",relationship:"",mobile:"",country:""},
-      attachments:[],history:[],documentFollowups:[]
+      attachments:[],history:[]
     };
   }
 
@@ -888,7 +811,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
   function safeHistory(e){
     if(!Array.isArray(e.history)) e.history=[];
-    if(!Array.isArray(e.documentFollowups)) e.documentFollowups=[];
     return e.history;
   }
 
@@ -1033,16 +955,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
           </div>
         </div>`).join("")}`:'<div class="empty-history">No documents added.</div>';
 
-    $("profile-bank").innerHTML=`
-      <div class="profile-section-title">Bank Information</div>
-      <div class="profile-grid">
-        ${profileInfo("Bank Name",e.bank?.bankName)}
-        ${profileInfo("Account Name",e.bank?.accountName)}
-        ${profileInfo("Account Number",e.bank?.accountNumber)}
-        ${profileInfo("IBAN",e.bank?.iban)}
-        ${profileInfo("SWIFT Code",e.bank?.swift)}
-      </div>`;
-
     $("profile-emergency").innerHTML=`
       <div class="profile-section-title">Emergency Contact</div>
       <div class="profile-grid">
@@ -1126,10 +1038,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     $("fInactiveDate").value=e.inactiveDate||"";
     updateInactiveBox();
 
-    workingDocuments=(e.documents||[]).map(d=>({
-      ...d,
-      id:d.id || (crypto.randomUUID?crypto.randomUUID():(Date.now()+"-"+Math.random().toString(16).slice(2)))
-    }));
+    workingDocuments=e.documents||[];
     workingAttachments=e.attachments||[];
     renderDocumentEditor();
     renderAttachmentList();
@@ -1168,7 +1077,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   $("clearPhotoBtn").addEventListener("click",()=>{workingPhoto="";$("photoPreview").src="";$("fPhoto").value=""});
 
   function addDocument(){
-    workingDocuments.push({id:crypto.randomUUID?crypto.randomUUID():(Date.now()+"-"+Math.random().toString(16).slice(2)),type:"",number:"",issueDate:"",expiryDate:"",url:""});
+    workingDocuments.push({type:"",number:"",issueDate:"",expiryDate:"",url:""});
     renderDocumentEditor();
   }
   $("addDocumentBtn").addEventListener("click",addDocument);
@@ -1360,190 +1269,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     }
   });
 
-
-  let currentFollowupEmployeeIndex=null;
-  let currentFollowupDocumentId=null;
-
-  function ensureFollowups(e){
-    if(!Array.isArray(e.documentFollowups)) e.documentFollowups=[];
-    return e.documentFollowups;
-  }
-
-  function getFollowupRecord(e,documentId){
-    const list=ensureFollowups(e);
-    return list.find(x=>String(x.documentId)===String(documentId)) || null;
-  }
-
-  function getOrCreateFollowupRecord(e,documentId){
-    let rec=getFollowupRecord(e,documentId);
-    if(!rec){
-      rec={
-        documentId:String(documentId),
-        status:"Open",
-        nextFollowupDate:"",
-        responsible:"",
-        reference:"",
-        notes:[]
-      };
-      ensureFollowups(e).push(rec);
-    }
-    if(!Array.isArray(rec.notes)) rec.notes=[];
-    return rec;
-  }
-
-  function followupStatusClass(status){
-    return ({
-      Open:"fs-open",
-      Contacted:"fs-contacted",
-      Processing:"fs-processing",
-      Completed:"fs-completed",
-      Cancelled:"fs-cancelled"
-    })[status] || "fs-open";
-  }
-
-  function collectDocumentAlerts(){
-    const today=new Date();today.setHours(0,0,0,0);
-    const rows=[];
-    data.employees.forEach((e,ei)=>(e.documents||[]).forEach((d)=>{
-      if(!d.id) d.id=crypto.randomUUID?crypto.randomUUID():(Date.now()+"-"+Math.random().toString(16).slice(2));
-      if(!d.expiryDate) return;
-      const dt=new Date(d.expiryDate+"T00:00:00");
-      const days=Math.ceil((dt-today)/86400000);
-      if(days<=90){
-        const f=getFollowupRecord(e,d.id) || {status:"Open",nextFollowupDate:"",responsible:"",reference:"",notes:[]};
-        rows.push({employee:e,employeeIndex:ei,document:d,documentId:d.id,days,followup:f});
-      }
-    }));
-    return rows.sort((a,b)=>a.days-b.days);
-  }
-
-  function latestFollowupNote(f){
-    const notes=f?.notes||[];
-    return notes.length ? notes[0] : null;
-  }
-
-  function renderFollowups(){
-    const range=$("followupRangeFilter")?.value || "all";
-    const status=$("followupStatusFilter")?.value || "all";
-    let rows=collectDocumentAlerts();
-
-    rows=rows.filter(r=>{
-      if(range==="expired" && r.days>=0) return false;
-      if(range==="30" && !(r.days>=0&&r.days<=30)) return false;
-      if(range==="60" && !(r.days>=0&&r.days<=60)) return false;
-      if(range==="90" && !(r.days>=0&&r.days<=90)) return false;
-      if(status!=="all" && r.followup.status!==status) return false;
-      return true;
-    });
-
-    $("followupRows").innerHTML=rows.length?rows.map(r=>{
-      const f=r.followup;
-      const note=latestFollowupNote(f);
-      const today=new Date();today.setHours(0,0,0,0);
-      let followClass="followup-ok";
-      if(f.nextFollowupDate){
-        const nd=new Date(f.nextFollowupDate+"T00:00:00");
-        const dd=Math.ceil((nd-today)/86400000);
-        followClass=dd<0?"followup-late":dd<=3?"followup-due":"followup-ok";
-      }
-      const dayLabel=r.days<0?`${Math.abs(r.days)} days expired`:`${r.days} days left`;
-      return `<tr>
-        <td><button class="employee-link" data-view-employee="${r.employeeIndex}">${esc(r.employee.employeeName)}</button><div class="small">${esc(r.employee.employeeCode)}</div></td>
-        <td><b>${esc(r.document.type||"Document")}</b><div class="small">${esc(r.document.number||"")}</div></td>
-        <td>${esc(r.document.expiryDate)}</td>
-        <td class="${r.days<0?"followup-late":r.days<=30?"followup-due":"followup-ok"}">${dayLabel}</td>
-        <td><span class="followup-status ${followupStatusClass(f.status)}">${esc(f.status||"Open")}</span></td>
-        <td class="${followClass}">${esc(f.nextFollowupDate||"-")}</td>
-        <td class="followup-note">${note?esc(note.note||"-"):"-"}</td>
-        <td><button class="btn orange" data-followup-employee="${r.employeeIndex}" data-followup-document-id="${esc(r.documentId)}">Follow-up</button></td>
-      </tr>`;
-    }).join(""):'<tr><td colspan="8" class="empty">No document follow-up records for this filter.</td></tr>';
-  }
-
-  function openFollowupModal(employeeIndex,documentId){
-    currentFollowupEmployeeIndex=Number(employeeIndex);
-    currentFollowupDocumentId=String(documentId);
-    const e=data.employees[currentFollowupEmployeeIndex];
-    const d=(e?.documents||[]).find(x=>String(x.id)===currentFollowupDocumentId);
-    if(!e||!d) return;
-    const f=getOrCreateFollowupRecord(e,currentFollowupDocumentId);
-
-    $("followupModalTitle").textContent=`${e.employeeName} — ${d.type||"Document"}`;
-    $("followupStatus").value=f.status||"Open";
-    $("followupNextDate").value=f.nextFollowupDate||"";
-    $("followupResponsible").value=f.responsible||"";
-    $("followupReference").value=f.reference||"";
-    $("followupNote").value="";
-    renderFollowupHistory(f);
-    $("followupModal").classList.remove("hidden");
-  }
-
-  function renderFollowupHistory(f){
-    const notes=f?.notes||[];
-    $("followupHistoryList").innerHTML=notes.length?notes.map(n=>`
-      <div class="history-item">
-        <div class="history-title">${esc(n.status||"Follow-up")}</div>
-        <div class="history-meta">${esc(n.date||"")} · ${esc(n.by||"Administrator")}${n.responsible?` · Responsible: ${esc(n.responsible)}`:""}</div>
-        <div class="history-change">${esc(n.note||"")}${n.reference?`<div><b>Reference:</b> ${esc(n.reference)}</div>`:""}${n.nextFollowupDate?`<div><b>Next Follow-up:</b> ${esc(n.nextFollowupDate)}</div>`:""}</div>
-      </div>
-    `).join(""):'<div class="empty-history">No follow-up history yet.</div>';
-  }
-
-  $("followupCloseBtn").addEventListener("click",()=>$("followupModal").classList.add("hidden"));
-  $("followupModal").addEventListener("click",e=>{if(e.target===$("followupModal")) $("followupModal").classList.add("hidden")});
-  $("followupRangeFilter").addEventListener("change",renderFollowups);
-  $("followupStatusFilter").addEventListener("change",renderFollowups);
-
-  $("saveFollowupBtn").addEventListener("click",()=>{
-    const e=data.employees[currentFollowupEmployeeIndex];
-    const d=(e?.documents||[]).find(x=>String(x.id)===String(currentFollowupDocumentId));
-    if(!e||!d) return;
-
-    const f=getOrCreateFollowupRecord(e,currentFollowupDocumentId);
-    const note=$("followupNote").value.trim();
-
-    f.status=$("followupStatus").value;
-    f.nextFollowupDate=$("followupNextDate").value;
-    f.responsible=$("followupResponsible").value.trim();
-    f.reference=$("followupReference").value.trim();
-
-    if(note){
-      f.notes.unshift({
-        date:nowLabel(),
-        by:"Administrator",
-        status:f.status,
-        nextFollowupDate:f.nextFollowupDate,
-        responsible:f.responsible,
-        reference:f.reference,
-        note
-      });
-    }
-
-    addHistoryEvent(e,{
-      type:"Document Follow-up",
-      title:`${d.type||"Document"} follow-up updated`,
-      changes:[
-        {field:"Follow-up Status",old:"",new:f.status},
-        {field:"Next Follow-up Date",old:"",new:f.nextFollowupDate||""},
-        {field:"Responsible Person",old:"",new:f.responsible||""},
-        {field:"Reference",old:"",new:f.reference||""},
-        {field:"Note",old:"",new:note||""}
-      ]
-    });
-
-    saveData();
-    renderFollowupHistory(f);
-    renderFollowups();
-    alert("Document follow-up saved.");
-  });
-
-  document.addEventListener("click",e=>{
-    if(e.target.dataset.followupEmployee!==undefined){
-      openFollowupModal(Number(e.target.dataset.followupEmployee),e.target.dataset.followupDocumentId);
-    }
-  });
-
-
   function renderDashboard(){
     $("totalEmployees").textContent=data.employees.length;
     $("activeEmployees").textContent=data.employees.filter(e=>e.status==="Active").length;
@@ -1577,7 +1302,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
     fillSelect("fCurrentSite",getMasterItems("currentSite"),"Select current site");
     renderEmployees();
     renderDashboard();
-    renderFollowups();
     if(!$("employeeEditor").classList.contains("hidden")){
       renderDocumentEditor();
     }
@@ -1595,53 +1319,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
   if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1") openApp();
 })();
 </script>
-
-
-<div id="followupModal" class="followup-modal hidden">
-  <div class="followup-card">
-    <div class="toolbar" style="justify-content:space-between">
-      <h3 id="followupModalTitle">Document Follow-up</h3>
-      <button id="followupCloseBtn" class="btn light" type="button">Close</button>
-    </div>
-
-    <div class="followup-grid">
-      <div class="field">
-        <label>Follow-up Status</label>
-        <select id="followupStatus">
-          <option>Open</option>
-          <option>Contacted</option>
-          <option>Processing</option>
-          <option>Completed</option>
-          <option>Cancelled</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Next Follow-up Date</label>
-        <input id="followupNextDate" type="date">
-      </div>
-      <div class="field">
-        <label>Responsible Person</label>
-        <input id="followupResponsible" placeholder="e.g. HR Admin">
-      </div>
-      <div class="field">
-        <label>Renewal Reference / Application No.</label>
-        <input id="followupReference" placeholder="Optional">
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Follow-up Note</label>
-      <textarea id="followupNote" placeholder="What was done? Who was contacted? What is pending?"></textarea>
-    </div>
-
-    <div class="toolbar">
-      <button id="saveFollowupBtn" class="btn green" type="button">Save Follow-up</button>
-    </div>
-
-    <div class="section-title">Follow-up History</div>
-    <div id="followupHistoryList"></div>
-  </div>
-</div>
 
 <div id="employeeProfileModal" class="profile-modal hidden">
   <div class="profile-shell">
@@ -1662,7 +1339,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       <button class="profile-tab active" data-profile-tab="overview">Overview</button>
       <button class="profile-tab" data-profile-tab="employment">Employment</button>
       <button class="profile-tab" data-profile-tab="documents">Documents</button>
-      <button class="profile-tab" data-profile-tab="bank">Bank Information</button>
       <button class="profile-tab" data-profile-tab="emergency">Emergency Contact</button>
       <button class="profile-tab" data-profile-tab="attachments">Attachments</button>
       <button class="profile-tab" data-profile-tab="history">History</button>
@@ -1671,7 +1347,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
       <div id="profile-overview" class="profile-panel active"></div>
       <div id="profile-employment" class="profile-panel"></div>
       <div id="profile-documents" class="profile-panel"></div>
-      <div id="profile-bank" class="profile-panel"></div>
       <div id="profile-emergency" class="profile-panel"></div>
       <div id="profile-attachments" class="profile-panel"></div>
       <div id="profile-history" class="profile-panel"></div>
