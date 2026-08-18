@@ -860,7 +860,7 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
           <table>
             <thead><tr>
               <th>Code</th><th>Name</th><th>Actual Designation</th><th>Nationality</th><th>Company</th><th>ID Card Designation</th><th>Status</th>
-              <th class="emp-extra-col">Arabic Name</th><th class="emp-extra-col">Unified No.</th><th class="emp-extra-col">Gender</th><th class="emp-extra-col">Date of Birth</th><th class="emp-extra-col">Marital Status</th><th class="emp-extra-col">Mobile</th><th class="emp-extra-col">Joining Date</th><th class="emp-extra-col">Inactive Reason</th><th class="emp-extra-col">Inactive Date</th><th class="emp-extra-col">Passport No.</th><th class="emp-extra-col">Passport Expiry</th><th class="emp-extra-col">Emirates ID No.</th><th class="emp-extra-col">Emirates ID Expiry</th><th class="emp-extra-col">Documents</th><th class="emp-extra-col">Emergency Contact</th><th class="emp-extra-col">Emergency Relation</th><th class="emp-extra-col">Emergency Mobile</th><th class="emp-extra-col">Emergency Country</th><th class="emp-extra-col">Attachments</th><th class="emp-extra-col">Last Updated</th>
+              <th class="emp-extra-col">Arabic Name</th><th class="emp-extra-col">Unified No.</th><th class="emp-extra-col">Gender</th><th class="emp-extra-col">Date of Birth</th><th class="emp-extra-col">Marital Status</th><th class="emp-extra-col">Mobile</th><th class="emp-extra-col">Joining Date</th><th class="emp-extra-col">Line Manager</th><th class="emp-extra-col">Inactive Reason</th><th class="emp-extra-col">Inactive Date</th><th class="emp-extra-col">Passport No.</th><th class="emp-extra-col">Passport Expiry</th><th class="emp-extra-col">Emirates ID No.</th><th class="emp-extra-col">Emirates ID Expiry</th><th class="emp-extra-col">Documents</th><th class="emp-extra-col">Emergency Contact</th><th class="emp-extra-col">Emergency Relation</th><th class="emp-extra-col">Emergency Mobile</th><th class="emp-extra-col">Emergency Country</th><th class="emp-extra-col">Attachments</th><th class="emp-extra-col">Last Updated</th>
               <th>Actions</th>
             </tr></thead>
             <tbody id="employeeRows"></tbody>
@@ -906,6 +906,7 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
           <div class="formgrid">
             <div class="field"><label>Company</label><select id="fCompany"></select></div>
             <div class="field"><label>Designation as per ID Card</label><select id="fIdDesignation"></select></div>
+            <div class="field"><label>Line Manager / Approving Manager</label><input id="fLineManager" placeholder="Enter manager name"></div>
             <div class="field"><label>Joining Date</label><input id="fJoiningDate" type="date"></div>
             <div class="field"><label>Employee Status</label><select id="fEmployeeStatus"><option>Active</option><option>Inactive</option></select></div>
           </div>
@@ -1381,7 +1382,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return {
       employeeCode:"",employeeName:"",employeeNameArabic:"",unifiedNumber:"",actualDesignation:"",nationality:"",
       gender:"",dob:"",maritalStatus:"",mobile:"",photo:"",
-      company:"",idDesignation:"",joiningDate:"",status:"Active",inactiveReason:"",inactiveDate:"",
+      company:"",idDesignation:"",lineManager:"",joiningDate:"",status:"Active",inactiveReason:"",inactiveDate:"",
       documents:[],
       emergency:{name:"",relationship:"",mobile:"",country:""},
       attachments:[],history:[]
@@ -1517,6 +1518,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="profile-grid">
         ${profileInfo("Company",e.company)}
         ${profileInfo("Designation as per ID Card",e.idDesignation)}
+        ${profileInfo("Line Manager / Approving Manager",e.lineManager)}
         ${profileInfo("Joining Date",e.joiningDate)}
         ${profileInfo("Employee Status",e.status)}
         ${profileInfo("Inactive Reason",e.inactiveReason)}
@@ -1675,6 +1677,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     $("fCompany").value=e.company||"";
     $("fIdDesignation").value=e.idDesignation||"";
+    $("fLineManager").value=e.lineManager||"";
     $("fJoiningDate").value=e.joiningDate||"";
     $("fEmployeeStatus").value=e.status||"Active";
     $("fInactiveReason").value=e.inactiveReason||"";
@@ -1930,6 +1933,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       company:$("fCompany").value,
       idDesignation:$("fIdDesignation").value,
+      lineManager:$("fLineManager").value.trim(),
       joiningDate:$("fJoiningDate").value,
       status:$("fEmployeeStatus").value,
       inactiveReason:$("fEmployeeStatus").value==="Inactive"?$("fInactiveReason").value.trim():"",
@@ -2047,6 +2051,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <td class="emp-extra-col">${esc(e.maritalStatus)}</td>
       <td class="emp-extra-col">${esc(e.mobile)}</td>
       <td class="emp-extra-col">${esc(e.joiningDate)}</td>
+      <td class="emp-extra-col">${esc(e.lineManager)}</td>
       <td class="emp-extra-col">${esc(e.inactiveReason)}</td>
       <td class="emp-extra-col">${esc(e.inactiveDate)}</td>
       <td class="emp-extra-col">${esc(expDoc(e,"passport").number||"")}</td>
@@ -2067,7 +2072,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // BULK EMPLOYEE UPLOAD — Sample Excel first, then upload filled sheet
   const BULK_HEADERS=[
     "Employee Code","Employee Name","Arabic Name","Unified Number","Actual Designation","Nationality","Gender","Date of Birth","Marital Status","Mobile",
-    "Company","ID Card Designation","Joining Date","Status","Inactive Reason","Inactive Date",
+    "Company","ID Card Designation","Line Manager","Joining Date","Status","Inactive Reason","Inactive Date",
     "Passport No.","Passport Issue Date","Passport Expiry","Emirates ID No.","Emirates ID Issue Date","Emirates ID Expiry",
     "Emergency Contact","Emergency Relation","Emergency Mobile","Emergency Country"
   ];
@@ -2114,7 +2119,7 @@ document.addEventListener("DOMContentLoaded", () => {
       unifiedNumber:csvVal(rowObj,"Unified Number","Unified No","Unified No."),
       actualDesignation:csvVal(rowObj,"Actual Designation"), nationality:csvVal(rowObj,"Nationality"), gender:csvVal(rowObj,"Gender"),
       dob:csvVal(rowObj,"Date of Birth","DOB"), maritalStatus:csvVal(rowObj,"Marital Status"), mobile:csvVal(rowObj,"Mobile","Mobile Number"), photo:"",
-      company:csvVal(rowObj,"Company"), idDesignation:csvVal(rowObj,"ID Card Designation","Designation as per ID Card"), joiningDate:csvVal(rowObj,"Joining Date"),
+      company:csvVal(rowObj,"Company"), idDesignation:csvVal(rowObj,"ID Card Designation","Designation as per ID Card"), lineManager:csvVal(rowObj,"Line Manager","Approving Manager"), joiningDate:csvVal(rowObj,"Joining Date"),
       status:csvVal(rowObj,"Status","Employee Status")||"Active", inactiveReason:csvVal(rowObj,"Inactive Reason"), inactiveDate:csvVal(rowObj,"Inactive Date"),
       documents:docs,
       emergency:{name:csvVal(rowObj,"Emergency Contact","Emergency Name"),relationship:csvVal(rowObj,"Emergency Relation","Emergency Relationship"),mobile:csvVal(rowObj,"Emergency Mobile"),country:csvVal(rowObj,"Emergency Country")},
