@@ -445,6 +445,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 .employee-filter-count{margin-right:auto;font-size:12px;color:#6f8398;font-weight:700}
 .emp-extra-col{display:none}
 .employee-list-expanded .emp-extra-col{display:table-cell}
+
+.employee-list-expanded table{min-width:3000px}
+.employee-list-expanded th,.employee-list-expanded td{white-space:nowrap}
 #expandEmployeeListBtn.active{background:linear-gradient(180deg,#f9b47f,var(--orange));color:#fff;box-shadow:0 4px 12px rgba(234,124,46,.28)}
 #advancedEmployeeFilterBtn.active{background:#eaf3ff;color:#236da7;box-shadow:inset 0 0 0 1px #c8dcf1}
 @media(max-width:1100px){.employee-filter-grid{grid-template-columns:repeat(2,1fr)}}
@@ -854,7 +857,7 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
           <table>
             <thead><tr>
               <th>Code</th><th>Name</th><th>Actual Designation</th><th>Nationality</th><th>Company</th><th>ID Card Designation</th><th>Status</th>
-              <th class="emp-extra-col">Gender</th><th class="emp-extra-col">Mobile</th><th class="emp-extra-col">Joining Date</th><th class="emp-extra-col">Unified No.</th><th class="emp-extra-col">Documents</th>
+              <th class="emp-extra-col">Arabic Name</th><th class="emp-extra-col">Unified No.</th><th class="emp-extra-col">Gender</th><th class="emp-extra-col">Date of Birth</th><th class="emp-extra-col">Marital Status</th><th class="emp-extra-col">Mobile</th><th class="emp-extra-col">Joining Date</th><th class="emp-extra-col">Inactive Reason</th><th class="emp-extra-col">Inactive Date</th><th class="emp-extra-col">Passport No.</th><th class="emp-extra-col">Passport Expiry</th><th class="emp-extra-col">Emirates ID No.</th><th class="emp-extra-col">Emirates ID Expiry</th><th class="emp-extra-col">Documents</th><th class="emp-extra-col">Emergency Contact</th><th class="emp-extra-col">Emergency Relation</th><th class="emp-extra-col">Emergency Mobile</th><th class="emp-extra-col">Emergency Country</th><th class="emp-extra-col">Attachments</th><th class="emp-extra-col">Last Updated</th>
               <th>Actions</th>
             </tr></thead>
             <tbody id="employeeRows"></tbody>
@@ -1945,13 +1948,28 @@ document.addEventListener("DOMContentLoaded", () => {
       <td>${esc(e.company)}</td>
       <td>${esc(e.idDesignation)}</td>
       <td>${esc(e.status)}${e.status==="Inactive"?`<div class="small">${esc(e.inactiveReason)} · ${esc(e.inactiveDate)}</div>`:""}</td>
+      <td class="emp-extra-col">${esc(e.employeeNameArabic)}</td>
+      <td class="emp-extra-col">${esc(e.unifiedNumber)}</td>
       <td class="emp-extra-col">${esc(e.gender)}</td>
+      <td class="emp-extra-col">${esc(e.dob)}</td>
+      <td class="emp-extra-col">${esc(e.maritalStatus)}</td>
       <td class="emp-extra-col">${esc(e.mobile)}</td>
       <td class="emp-extra-col">${esc(e.joiningDate)}</td>
-      <td class="emp-extra-col">${esc(e.unifiedNumber)}</td>
+      <td class="emp-extra-col">${esc(e.inactiveReason)}</td>
+      <td class="emp-extra-col">${esc(e.inactiveDate)}</td>
+      <td class="emp-extra-col">${esc(expDoc(e,"passport").number||"")}</td>
+      <td class="emp-extra-col">${esc(expDoc(e,"passport").expiryDate||"")}</td>
+      <td class="emp-extra-col">${esc(expDoc(e,"eid").number||"")}</td>
+      <td class="emp-extra-col">${esc(expDoc(e,"eid").expiryDate||"")}</td>
       <td class="emp-extra-col">${(e.documents||[]).length}</td>
+      <td class="emp-extra-col">${esc((e.emergency||{}).name)}</td>
+      <td class="emp-extra-col">${esc((e.emergency||{}).relationship)}</td>
+      <td class="emp-extra-col">${esc((e.emergency||{}).mobile)}</td>
+      <td class="emp-extra-col">${esc((e.emergency||{}).country)}</td>
+      <td class="emp-extra-col">${(e.attachments||[]).length}</td>
+      <td class="emp-extra-col">${esc(e.updatedAt?new Date(e.updatedAt).toLocaleString():"")}</td>
       <td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td>
-    </tr>`).join(""):'<tr><td colspan="13" class="empty">No employee records match your search / filters.</td></tr>';
+    </tr>`).join(""):'<tr><td colspan="28" class="empty">No employee records match your search / filters.</td></tr>';
   }
 
   $("employeeSearch").addEventListener("input",renderEmployees);
