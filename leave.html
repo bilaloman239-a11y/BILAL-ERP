@@ -153,7 +153,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   <div class="grid2">
     <div class="card">
       <div class="formgrid">
-        <div class="fg full"><label>Employee</label><select id="employeeSelect"><option value="">Select Employee</option><option value="EMP-014">EMP-014 - Ahmed Ali</option><option value="EMP-041">EMP-041 - Raj Kumar</option></select></div>
+        <div class="fg full"><label>Employee</label><select id="employeeSelect" onchange="refreshEmployeeSnapshot()"><option value="">Loading employees...</option></select></div>
         <div class="fg"><label>Leave Type</label><select id="leaveType"><option>Annual Leave</option><option>Sick Leave</option><option>Unpaid Leave</option><option>Emergency Leave</option></select></div>
         <div class="fg"><label>Half Day</label><select><option>No</option><option>First Half</option><option>Second Half</option></select></div>
         <div class="fg"><label>Start Date</label><input type="date" id="leaveStart"></div>
@@ -166,10 +166,10 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:13px"><button class="btn light">Save Draft</button><button class="btn primary" onclick="submitLeave()">Submit to Manager</button></div>
     </div>
     <div class="card"><h3>Employee Snapshot</h3><div class="summary">
-      <div class="sumrow"><span>Annual Leave Available</span><strong>17 Days</strong></div>
-      <div class="sumrow"><span>Current Site</span><strong>Site A</strong></div>
-      <div class="sumrow"><span>Designation</span><strong>Electrician</strong></div>
-      <div class="sumrow"><span>Line Manager</span><strong>Manager A</strong></div>
+      <div class="sumrow"><span>Annual Leave Available</span><strong id="snapBalance">Not configured</strong></div>
+      <div class="sumrow"><span>Company</span><strong id="snapCompany">-</strong></div>
+      <div class="sumrow"><span>Designation</span><strong id="snapDesignation">-</strong></div>
+      <div class="sumrow"><span>Employee Status</span><strong id="snapStatus">-</strong></div>
     </div><div class="notice ninfo show">Employee, Site, Designation, Manager and leave balance should come from the same Employee Master database used by Employee Portal.</div></div>
   </div>
 </section>
@@ -189,7 +189,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <div class="card">
       <h3>Ticket Booking & Travel Details</h3>
       <div class="formgrid">
-        <div class="fg full"><label>Employee / Approved Leave</label><select><option>EMP-014 - Ahmed Ali | 15 Aug to 17 Aug</option><option>EMP-041 - Raj Kumar | 25 Aug to 05 Sep</option></select></div>
+        <div class="fg full"><label>Employee / Approved Leave</label><select id="travelEmployeeSelect"><option value="">Select Employee</option></select></div>
         <div class="fg"><label>Approved Leave Start</label><input type="date" id="approvedStart" value="2026-08-15"></div>
         <div class="fg"><label>Approved Leave End</label><input type="date" id="approvedEnd" value="2026-08-17"></div>
         <div class="fg"><label>Ticket Entitlement</label><select><option>Company Provided</option><option>Self Booked</option></select></div>
@@ -221,7 +221,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   <div class="grid2">
     <div class="card">
       <div class="formgrid">
-        <div class="fg full"><label>Employee / Leave Request</label><select><option>EMP-014 - Ahmed Ali | LR-2026-00120</option></select></div>
+        <div class="fg full"><label>Employee / Leave Request</label><select id="rejoinEmployeeSelect"><option value="">Select Employee</option></select></div>
         <div class="fg"><label>Approved Leave End</label><input type="date" id="rLeaveEnd" value="2026-08-17"></div>
         <div class="fg"><label>Actual Return Date</label><input type="date" id="actualReturn"></div>
         <div class="fg"><label>Actual Rejoining Date</label><input type="date" id="actualRejoin" onchange="checkRejoin()"></div>
@@ -244,7 +244,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 <section class="page" id="ledger">
   <div class="pagehead"><div><h2>Leave Ledger</h2><p>Balances, usage, adjustments and encashment transactions.</p></div></div>
   <div class="card">
-    <div class="toolbar"><select><option>EMP-014 - Ahmed Ali</option></select><button class="btn orange">Adjust Balance</button></div>
+    <div class="toolbar"><select id="ledgerEmployeeSelect"><option value="">Select Employee</option></select><button class="btn orange">Adjust Balance</button></div>
     <table><thead><tr><th>Leave Type</th><th>Opening</th><th>Earned</th><th>Adjustments</th><th>Used</th><th>Encashed</th><th>Available</th></tr></thead>
     <tbody><tr><td>Annual</td><td>20</td><td>5</td><td>0</td><td>8</td><td>0</td><td><b>17</b></td></tr><tr><td>Sick</td><td>15</td><td>0</td><td>0</td><td>3</td><td>—</td><td><b>12</b></td></tr><tr><td>Unpaid</td><td>—</td><td>—</td><td>—</td><td>2</td><td>—</td><td>—</td></tr></tbody></table>
   </div>
@@ -254,7 +254,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   <div class="pagehead"><div><h2>Leave Encashment</h2><p>Authorized Annual Leave cash-out / final settlement transaction.</p></div></div>
   <div class="grid2eq">
     <div class="card"><div class="formgrid">
-      <div class="fg full"><label>Employee</label><select><option>EMP-014 - Ahmed Ali</option></select></div>
+      <div class="fg full"><label>Employee</label><select id="encashEmployeeSelect"><option value="">Select Employee</option></select></div>
       <div class="fg"><label>Leave Type</label><select><option>Annual Leave</option></select></div>
       <div class="fg"><label>Available Balance</label><input value="17 Days" readonly></div>
       <div class="fg"><label>Encashment Days</label><input type="number" min="0" max="17"></div>
@@ -306,6 +306,76 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 
 <script>
 const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',tickets:'Ticket & Travel Tracker',rejoin:'Record Rejoining',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
+
+// === CIVIL MASTER EMPLOYEE PORTAL INTEGRATION ===
+// Employee Portal saves its data under this exact key. Because index.html and leave.html
+// are served from the same Vercel domain/project, both pages can read the same localStorage.
+const EMPLOYEE_DATA_KEY = 'cm_employee_portal_v3';
+let cmEmployees = [];
+
+function loadEmployeesFromEmployeePortal(){
+  try{
+    const raw = localStorage.getItem(EMPLOYEE_DATA_KEY);
+    const store = raw ? JSON.parse(raw) : null;
+    cmEmployees = store && Array.isArray(store.employees) ? store.employees : [];
+  }catch(err){
+    console.error('Unable to read Employee Portal data', err);
+    cmEmployees = [];
+  }
+  populateEmployeeSelectors();
+}
+
+function employeeOptionLabel(e){
+  return [e.employeeCode, e.employeeName].filter(Boolean).join(' - ') || 'Unnamed Employee';
+}
+
+function activeEmployees(){
+  return cmEmployees.filter(e => String(e.status || 'Active').toLowerCase() !== 'inactive');
+}
+
+function fillEmployeeSelect(id, includeInactive=false){
+  const el=document.getElementById(id); if(!el) return;
+  const list=includeInactive ? cmEmployees : activeEmployees();
+  const current=el.value;
+  el.innerHTML='<option value="">Select Employee</option>' + list.map((e,i)=>{
+    const originalIndex=cmEmployees.indexOf(e);
+    return `<option value="${originalIndex}">${escapeHtml(employeeOptionLabel(e))}</option>`;
+  }).join('');
+  if([...el.options].some(o=>o.value===current)) el.value=current;
+}
+
+function populateEmployeeSelectors(){
+  ['employeeSelect','travelEmployeeSelect','rejoinEmployeeSelect','ledgerEmployeeSelect','encashEmployeeSelect'].forEach(id=>fillEmployeeSelect(id));
+  const n=document.getElementById('leaveNotice');
+  if(!cmEmployees.length && n){
+    n.className='notice nwarn show';
+    n.textContent='No Employee Portal data found. Open Employee Management on this same Vercel domain, add/restore employees, then return here.';
+  }
+  refreshEmployeeSnapshot();
+}
+
+function getSelectedEmployee(selectId='employeeSelect'){
+  const el=document.getElementById(selectId); if(!el || el.value==='') return null;
+  return cmEmployees[Number(el.value)] || null;
+}
+
+function refreshEmployeeSnapshot(){
+  const e=getSelectedEmployee('employeeSelect');
+  const set=(id,val)=>{const x=document.getElementById(id);if(x)x.textContent=val||'-'};
+  set('snapCompany', e?.company);
+  set('snapDesignation', e?.actualDesignation || e?.idDesignation);
+  set('snapStatus', e?.status);
+  // Leave balance is not stored in the current Employee Portal, so do not invent it.
+  set('snapBalance','Not configured');
+}
+
+function escapeHtml(v){
+  return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+
+window.addEventListener('storage', e=>{ if(e.key===EMPLOYEE_DATA_KEY) loadEmployeesFromEmployeePortal(); });
+window.addEventListener('focus', loadEmployeesFromEmployeePortal);
+document.addEventListener('DOMContentLoaded', loadEmployeesFromEmployeePortal);
 function go(id,btn){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.getElementById(id).classList.add('active');
