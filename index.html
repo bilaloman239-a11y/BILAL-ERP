@@ -1011,6 +1011,7 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
         </div>
       </div>
       <div class="profile-actions">
+        <button id="profileJoiningFormBtn" class="btn orange">🖨 Print Joining Form</button>
         <button id="profileEditBtn" class="btn">Edit Employee</button>
         <button id="profileCloseBtn" class="btn light">Close</button>
       </div>
@@ -1593,6 +1594,86 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
+  function joiningFormDate(value){
+    if(!value) return "";
+    const raw=String(value).trim();
+    const m=raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m?`${m[3]}-${m[2]}-${m[1]}`:raw;
+  }
+
+  function joiningDoc(e,keywords){
+    const keys=keywords.map(x=>x.toLowerCase());
+    return (e.documents||[]).find(d=>{
+      const t=String(d.type||"").toLowerCase();
+      return keys.some(k=>t.includes(k));
+    })||null;
+  }
+
+  function printEmployeeJoiningForm(index){
+    const e=data.employees[Number(index)];
+    if(!e) return alert("Employee record not found.");
+    const passport=joiningDoc(e,["passport"]);
+    const visa=joiningDoc(e,["visa","residence"]);
+    const eid=joiningDoc(e,["emirates","id card"]);
+    const contract=joiningDoc(e,["contract","employment contract"]);
+    const medical=joiningDoc(e,["medical"]);
+    const yesNo=(ok)=>ok?'<span class="checked">☑ Yes</span> &nbsp; ☐ No':'☐ Yes &nbsp; ☐ No';
+    const val=(v)=>esc(v||"");
+    const w=window.open("","_blank","width=1000,height=800");
+    if(!w) return alert("Please allow pop-ups to print the Joining Form.");
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Joining Form - ${val(e.employeeCode)} - ${val(e.employeeName)}</title>
+<style>
+@page{size:A4;margin:10mm 12mm}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#263f56;background:#fff;font-size:11px}.page{min-height:277mm;position:relative;padding-bottom:13mm;page-break-after:always}.page:last-child{page-break-after:auto}.header{display:grid;grid-template-columns:1fr 170px;gap:20px;align-items:start}.brand{font-family:Georgia,serif;font-size:30px;font-weight:800;color:#173a5c;letter-spacing:.5px}.sub{font-family:Georgia,serif;color:#71859a;font-weight:700;margin-top:8px}.badge{background:#f4a261;color:#fff;text-align:center;padding:20px 8px;font-family:Georgia,serif;font-size:15px;font-weight:700;line-height:1.5}.title{text-align:center;font-family:Georgia,serif;font-size:24px;font-weight:800;color:#173a5c;margin:12px 0 14px}.accent{height:9px;background:linear-gradient(90deg,#5f91d4 0 80%,#f4a261 80%);margin-bottom:18px}.section{background:#5f91d4;color:#fff;font-family:Georgia,serif;font-size:14px;font-weight:800;padding:9px 10px;margin:0 0 12px}.info{width:100%;border-collapse:collapse;margin-bottom:16px;table-layout:fixed}.info td{border:1px solid #cbd8e6;padding:9px 8px;height:35px;vertical-align:middle}.info td.label{background:#f7f9fc;color:#71859a;font-family:Georgia,serif;font-weight:700;width:25%}.info td.value{width:25%;font-weight:700;color:#263f56}.declaration{font-family:Georgia,serif;font-size:11.5px;line-height:1.45;margin:0 0 12px}.sign{width:100%;border-collapse:collapse;table-layout:fixed}.sign th,.sign td{border:1px solid #cbd8e6;padding:8px}.sign th{background:#edf5ff;color:#173a5c;font-family:Georgia,serif;font-size:12px}.sign td{height:90px;line-height:2.1}.check{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:16px}.check th,.check td{border:1px solid #cbd8e6;padding:6px 8px}.check th{background:#173a5c;color:#fff;font-family:Georgia,serif;text-align:left}.check th:nth-child(2){text-align:center}.check td:nth-child(2){text-align:center;width:28%}.check tr:nth-child(even) td{background:#fafcfe}.checked{font-weight:700;color:#2f8158}.remarks{border:1px solid #cbd8e6;padding:12px;margin:14px 0 18px;min-height:48px}.footer{position:absolute;bottom:0;left:0;right:0;text-align:center;color:#71859a;font-family:Georgia,serif;font-size:9px}.printbar{position:fixed;right:20px;top:20px;z-index:5}.printbar button{border:0;border-radius:8px;padding:10px 16px;background:#173a5c;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 14px #0002}@media print{.printbar{display:none}.page{min-height:277mm}}
+</style></head><body><div class="printbar"><button onclick="window.print()">Print / Save PDF</button></div>
+<div class="page">
+<div class="header"><div><div class="brand">CIVIL MASTER</div><div class="sub">GENERAL MAINTENANCE LLC - OPC</div></div><div class="badge">EMPLOYEE<br>JOINING</div></div>
+<div class="title">EMPLOYEE JOINING FORM</div><div class="accent"></div>
+<div class="section">EMPLOYEE INFORMATION</div>
+<table class="info">
+<tr><td class="label">Employee Code</td><td class="value">${val(e.employeeCode)}</td><td class="label">Employee Name</td><td class="value">${val(e.employeeName)}</td></tr>
+<tr><td class="label">Name in Arabic</td><td class="value" dir="rtl">${val(e.employeeNameArabic)}</td><td class="label">Nationality</td><td class="value">${val(e.nationality)}</td></tr>
+<tr><td class="label">Date of Birth</td><td class="value">${joiningFormDate(e.dob)}</td><td class="label">Gender</td><td class="value">${val(e.gender)}</td></tr>
+<tr><td class="label">Mobile No.</td><td class="value">${val(e.mobile)}</td><td class="label">Marital Status</td><td class="value">${val(e.maritalStatus)}</td></tr>
+<tr><td class="label">Designation</td><td class="value">${val(e.actualDesignation)}</td><td class="label">Unified Number</td><td class="value">${val(e.unifiedNumber)}</td></tr>
+<tr><td class="label">Company</td><td class="value">${val(e.company||"Civil Master General Maintenance LLC - OPC")}</td><td class="label">Joining Date</td><td class="value">${joiningFormDate(e.joiningDate)}</td></tr>
+</table>
+<div class="section">EMERGENCY CONTACT</div>
+<table class="info"><tr><td class="label">Contact Person</td><td class="value">${val(e.emergency?.name)}</td><td class="label">Relationship</td><td class="value">${val(e.emergency?.relationship)}</td></tr><tr><td class="label">Mobile Number</td><td class="value">${val(e.emergency?.mobile)}</td><td class="label">Country</td><td class="value">${val(e.emergency?.country)}</td></tr></table>
+<div class="section">JOINING DECLARATION</div><p class="declaration">I confirm that I have joined Civil Master General Maintenance LLC - OPC on the joining date stated above. I confirm that the information and documents provided by me are correct. I agree to comply with the company's policies, procedures, safety requirements and lawful instructions applicable to my employment.</p>
+<table class="sign"><tr><th>EMPLOYEE</th><th>HR / ADMINISTRATION</th><th>AUTHORIZED SIGNATORY</th></tr><tr><td>Name: ${val(e.employeeName)}<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Company Stamp: ______________</td></tr></table>
+<div class="footer">Civil Master General Maintenance LLC - OPC &nbsp; | &nbsp; Employee Joining Record</div></div>
+<div class="page">
+<div class="header"><div><div class="brand">CIVIL MASTER</div><div class="sub">GENERAL MAINTENANCE LLC - OPC</div></div><div class="badge">EMPLOYEE<br>JOINING</div></div>
+<div class="title">EMPLOYEE JOINING CHECKLIST</div><div class="accent"></div>
+<div class="section">EMPLOYEE REFERENCE</div>
+<table class="info"><tr><td class="label">Employee Code</td><td class="value">${val(e.employeeCode)}</td><td class="label">Employee Name</td><td class="value">${val(e.employeeName)}</td></tr><tr><td class="label">Designation</td><td class="value">${val(e.actualDesignation)}</td><td class="label">Joining Date</td><td class="value">${joiningFormDate(e.joiningDate)}</td></tr><tr><td class="label">Site / Location</td><td class="value"></td><td class="label">Prepared By</td><td class="value">Administrator</td></tr></table>
+<div class="section">JOINING REQUIREMENTS</div>
+<table class="check"><tr><th>JOINING REQUIREMENT</th><th>STATUS</th><th>REMARKS</th></tr>
+<tr><td>Passport Copy Received</td><td>${yesNo(!!passport)}</td><td>${passport?val(passport.number||""):""}</td></tr>
+<tr><td>Visa Copy Received</td><td>${yesNo(!!visa)}</td><td>${visa?val(visa.number||""):""}</td></tr>
+<tr><td>Emirates ID Copy Received</td><td>${yesNo(!!eid)}</td><td>${eid?val(eid.number||""):""}</td></tr>
+<tr><td>Photograph Received</td><td>${yesNo(!!e.photo)}</td><td></td></tr>
+<tr><td>Medical Completed</td><td>${yesNo(!!medical)}</td><td></td></tr>
+<tr><td>Employment Contract Signed</td><td>${yesNo(!!contract)}</td><td></td></tr>
+<tr><td>Safety Induction Completed</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
+<tr><td>Uniform Issued</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
+<tr><td>Safety Shoes Issued</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
+<tr><td>PPE Issued</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
+<tr><td>Accommodation Assigned</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
+<tr><td>Site Assigned</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr></table>
+<div class="remarks"><b>Remarks:</b> __________________________________________________________________________________</div>
+<table class="sign"><tr><th>EMPLOYEE</th><th>HR / ADMIN</th><th>MANAGER APPROVAL</th></tr><tr><td>Signature: __________________<br>Date: ______________________</td><td>Signature: __________________<br>Date: ______________________</td><td>Signature: __________________<br>Date: ______________________</td></tr></table>
+<div class="footer">Civil Master General Maintenance LLC - OPC &nbsp; | &nbsp; Employee Joining Record</div></div></body></html>`);
+    w.document.close();
+    w.focus();
+  }
+
+  $("profileJoiningFormBtn").addEventListener("click",()=>{
+    if(profileEmployeeIndex===null) return;
+    printEmployeeJoiningForm(profileEmployeeIndex);
+  });
+
+
   function openEditor(index=null){
     editingIndex=index;
     const e=index===null?employeeDefaults():JSON.parse(JSON.stringify(data.employees[index]));
@@ -2080,9 +2161,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const worksheets=[...doc.getElementsByTagNameNS("*","Worksheet")];
     const ws=worksheets.find(x=>x.getAttributeNS("urn:schemas-microsoft-com:office:spreadsheet","Name")==="Employees" || x.getAttribute("ss:Name")==="Employees") || worksheets[0];
     if(!ws) throw new Error("Employees sheet not found.");
-    return [...ws.getElementsByTagNameNS("*","Row")].map(row=>[...row.getElementsByTagNameNS("*","Cell")].map(cell=>{
-      const d=cell.getElementsByTagNameNS("*","Data")[0]; return d?d.textContent.trim():"";
-    })).filter(r=>r.some(Boolean));
+
+    // IMPORTANT: Excel 2003 XML can omit blank cells and use ss:Index to jump
+    // to the real column number. If ss:Index is ignored, every value after a
+    // blank cell shifts left and gets saved into the wrong field.
+    return [...ws.getElementsByTagNameNS("*","Row")].map(row=>{
+      const values=[];
+      let currentCol=1; // SpreadsheetML columns are 1-based
+      const cells=[...row.getElementsByTagNameNS("*","Cell")];
+      cells.forEach(cell=>{
+        const idxRaw=cell.getAttributeNS("urn:schemas-microsoft-com:office:spreadsheet","Index") || cell.getAttribute("ss:Index") || cell.getAttribute("Index");
+        const idx=parseInt(idxRaw||"",10);
+        if(Number.isFinite(idx) && idx>0) currentCol=idx;
+        while(values.length<currentCol-1) values.push("");
+        const d=cell.getElementsByTagNameNS("*","Data")[0];
+        values[currentCol-1]=d?String(d.textContent||"").trim():"";
+        currentCol++;
+      });
+      return values;
+    }).filter(r=>r.some(v=>String(v||"").trim()!==""));
   }
 
   function importEmployeeRows(rows){
@@ -2090,6 +2187,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const headers=rows[0].map(normHeader);
     if(!headers.includes(normHeader("Employee Code")) && !headers.includes(normHeader("Code"))) throw new Error("Employee Code column is required.");
     if(!headers.includes(normHeader("Employee Name")) && !headers.includes(normHeader("Name"))) throw new Error("Employee Name column is required.");
+
+    // Map by heading name only — column position is never trusted.
+    // Also reject duplicate headings because they can silently overwrite data.
+    const headerSeen=new Set();
+    for(const h of headers){
+      if(!h) continue;
+      if(headerSeen.has(h)) throw new Error("Duplicate heading found in Excel sheet. Please use the downloaded sample without changing heading names.");
+      headerSeen.add(h);
+    }
     const existingCodes=new Set((data.employees||[]).map(x=>String(x.employeeCode||"").trim().toLowerCase()).filter(Boolean));
     const batchCodes=new Set(); const imported=[]; let skipped=0;
     rows.slice(1).forEach(cols=>{
