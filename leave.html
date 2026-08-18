@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Civil Master ERP - Leave Management</title>
+<style>
+:root{
+  --navy:#17365d; --blue:#4f86bd; --blue2:#eaf3fb;
+  --orange:#f2a45f; --orange2:#fff3e8;
+  --bg:#f5f7fa; --card:#fff; --text:#243140; --muted:#6b7280;
+  --line:#e5e9ef; --green:#198754; --red:#c73b3b; --amber:#b86f11;
+  --shadow:0 10px 28px rgba(23,54,93,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+.app{min-height:100vh;display:flex}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:252px;padding:18px 14px;
+  background:linear-gradient(180deg,#17365d,#245282);color:#fff;overflow:auto
+}
+.brand{display:flex;gap:12px;align-items:center;padding:5px 7px 18px;border-bottom:1px solid rgba(255,255,255,.12)}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#fff,#ffd9b7);display:grid;place-items:center;color:var(--navy);font-weight:900}
+.brand h2{font-size:15px;margin:0}.brand small{font-size:10px;color:#d9e6f3}
+.nav-title{margin:18px 8px 6px;color:#bcd0e5;font-size:9px;text-transform:uppercase;letter-spacing:1.2px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button,.module-link{
+  border:0;background:transparent;color:#edf4fb;border-radius:10px;padding:11px 12px;
+  text-align:left;cursor:pointer;display:flex;gap:10px;align-items:center;text-decoration:none;font-size:12px
+}
+.nav button:hover,.nav button.active,.module-link:hover{background:rgba(255,255,255,.14)}
+.ico{width:20px;text-align:center}
+.sidebar-note{margin-top:20px;background:rgba(255,255,255,.08);border-radius:12px;padding:11px;font-size:10px;color:#dbe7f3;line-height:1.5}
+
+.main{margin-left:252px;width:calc(100% - 252px)}
+.topbar{
+  position:sticky;top:0;z-index:20;height:70px;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;padding:0 26px
+}
+.title h1{font-size:19px;margin:0;color:var(--navy)} .title p{margin:4px 0 0;font-size:10px;color:var(--muted)}
+.user{display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--orange2);color:var(--amber);font-weight:800}
+.content{padding:24px 26px 40px}
+.page{display:none}.page.active{display:block}
+.pagehead{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}
+.pagehead h2{font-size:20px;color:var(--navy);margin:0}.pagehead p{font-size:11px;color:var(--muted);margin:5px 0 0}
+.btn{border:0;border-radius:9px;padding:9px 13px;font-size:11px;font-weight:700;cursor:pointer}
+.primary{background:var(--navy);color:#fff}.orange{background:var(--orange);color:#fff}.light{background:#fff;border:1px solid var(--line);color:var(--navy)}
+.green{background:var(--green);color:#fff}.red{background:var(--red);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:13px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);cursor:pointer}
+.kpi:hover{transform:translateY(-1px)} .kpi .top{display:flex;justify-content:space-between;gap:10px}.kpi .lab{font-size:11px;color:var(--muted)}
+.kpi .num{font-size:27px;font-weight:900;color:var(--navy);margin-top:8px}.kpi .hint{font-size:9px;color:var(--muted);margin-top:3px}
+.bubble{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--blue2);color:var(--blue);font-weight:800}.bubble.o{background:var(--orange2);color:var(--amber)}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:var(--shadow)}
+.card h3{font-size:14px;margin:0 0 13px;color:var(--navy)}
+.grid2{display:grid;grid-template-columns:1.3fr .7fr;gap:15px}.grid2eq{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fg{display:flex;flex-direction:column;gap:5px}.fg.full{grid-column:1/-1}
+label{font-size:10px;font-weight:800;color:#45566c}
+input,select,textarea{border:1px solid #dce2e9;border-radius:9px;background:#fff;padding:9px 10px;font-size:11px;outline:none;width:100%}
+textarea{min-height:78px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:#7ca7d3;box-shadow:0 0 0 3px rgba(79,134,189,.08)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar .search{min-width:220px}
+table{width:100%;border-collapse:collapse;font-size:10px}th{text-align:left;background:#f1f5f9;color:var(--navy);padding:9px;border-bottom:1px solid var(--line);font-size:9px;text-transform:uppercase}
+td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
+.badge{display:inline-flex;border-radius:20px;padding:4px 7px;font-size:8px;font-weight:800}
+.pending{background:#fff3db;color:#916017}.approved{background:#e9f7ef;color:#19734c}.alert{background:#fdeceb;color:#b83a36}.info{background:#eaf3fb;color:#2c689e}
+.notice{display:none;border-radius:10px;padding:11px 12px;font-size:10px;margin-top:11px;line-height:1.45}.notice.show{display:block}.nwarn{background:#fff6e9;border:1px solid #efd4a5;color:#815315}.ndanger{background:#fdeeee;border:1px solid #efbaba;color:#9f2f2f}.ninfo{background:#edf5fc;border:1px solid #c8def2;color:#285f91}
+.summary{background:linear-gradient(135deg,#eef5fb,#fff);border:1px solid #d9e7f4;border-radius:11px;padding:12px}.sumrow{display:flex;justify-content:space-between;padding:6px 0;font-size:10px}.sumrow strong{color:var(--navy)}
+.modalwrap{display:none;position:fixed;inset:0;z-index:100;background:rgba(12,23,35,.55);align-items:center;justify-content:center;padding:20px}.modalwrap.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:min(720px,96vw);max-height:90vh;overflow:auto;padding:19px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
+.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.modalhead h3{margin:0;color:var(--navy);font-size:16px}.x{width:30px;height:30px;border:0;border-radius:8px;background:#f2f4f7;cursor:pointer}
+.timeline{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}.day{border:1px solid var(--line);border-radius:9px;padding:8px;min-height:76px;background:#fbfcfd}.day strong{font-size:9px;color:var(--navy)}.ev{margin-top:6px;padding:4px 5px;border-radius:6px;background:var(--blue2);color:var(--blue);font-size:8px}.ev.ret{background:var(--orange2);color:var(--amber)}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid2eq{grid-template-columns:1fr}}
+@media(max-width:760px){.sidebar{width:76px}.brand h2,.brand small,.nav span:not(.ico),.module-link span:not(.ico),.nav-title,.sidebar-note{display:none}.main{margin-left:76px;width:calc(100% - 76px)}.content{padding:17px}.kpis{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.fg.full{grid-column:auto}.timeline{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo">CM</div><div><h2>CIVIL MASTER</h2><small>Leave Management Module</small></div></div>
+
+  <div class="nav-title">ERP Modules</div>
+  <div class="nav">
+    <a class="module-link" href="index.html"><span class="ico">👤</span><span>Employee Management</span></a>
+    <button class="active" onclick="go('dashboard',this)"><span class="ico">⌂</span><span>Leave Dashboard</span></button>
+  </div>
+
+  <div class="nav-title">Leave Operations</div>
+  <div class="nav">
+    <button onclick="go('request',this)"><span class="ico">＋</span><span>Submit Leave Request</span></button>
+    <button onclick="go('approvals',this)"><span class="ico">✓</span><span>Manager Approvals</span></button>
+    <button onclick="go('tickets',this)"><span class="ico">✈</span><span>Ticket & Travel Tracker</span></button>
+    <button onclick="go('rejoin',this)"><span class="ico">↩</span><span>Record Rejoining</span></button>
+    <button onclick="go('ledger',this)"><span class="ico">▦</span><span>Leave Ledger</span></button>
+    <button onclick="go('encash',this)"><span class="ico">₿</span><span>Leave Encashment</span></button>
+    <button onclick="go('reports',this)"><span class="ico">↗</span><span>Reports</span></button>
+    <button onclick="go('settings',this)"><span class="ico">⚙</span><span>Rules & Escalation</span></button>
+  </div>
+
+  <div class="sidebar-note">
+    Merge-ready structure: this page expects the same Employee Master / API used by your Employee Portal.
+  </div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="title"><h1 id="pageTitle">Leave Dashboard</h1><p>Admin-assisted leave, travel, rejoining and payroll control</p></div>
+  <div class="user"><div style="text-align:right"><b style="font-size:11px">HR / Admin</b><div style="font-size:9px;color:var(--muted)">ERP User</div></div><div class="avatar">HR</div></div>
+</header>
+
+<div class="content">
+
+<section class="page active" id="dashboard">
+  <div class="pagehead"><div><h2>Leave Dashboard</h2><p>Live approval, movement, ticket, rejoining and exception overview.</p></div><button class="btn orange" onclick="goById('request')">+ New Leave</button></div>
+  <div class="kpis">
+    <div class="kpi" onclick="openKpi('Pending Approvals')"><div class="top"><span class="lab">Pending Approvals</span><span class="bubble">✓</span></div><div class="num">7</div><div class="hint">Manager action pending</div></div>
+    <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num">18</div><div class="hint">Active approved leave</div></div>
+    <div class="kpi" onclick="openKpi('Leaving Next 7 Days')"><div class="top"><span class="lab">Leaving Next 7 Days</span><span class="bubble o">✈</span></div><div class="num">9</div><div class="hint">Upcoming movement</div></div>
+    <div class="kpi" onclick="openKpi('Returning Next 7 Days')"><div class="top"><span class="lab">Returning Next 7 Days</span><span class="bubble o">↩</span></div><div class="num">11</div><div class="hint">Expected return / rejoin</div></div>
+  </div>
+  <div class="kpis">
+    <div class="kpi" onclick="openKpi('Ticket Action Required')"><div class="top"><span class="lab">Ticket Action Required</span><span class="bubble o">!</span></div><div class="num">4</div><div class="hint">Not booked / confirmed</div></div>
+    <div class="kpi" onclick="openKpi('Return Variance')"><div class="top"><span class="lab">Return Variance</span><span class="bubble o">∆</span></div><div class="num">3</div><div class="hint">Return beyond approved end</div></div>
+    <div class="kpi" onclick="openKpi('Rejoining Pending')"><div class="top"><span class="lab">Rejoining Pending</span><span class="bubble">⌛</span></div><div class="num">2</div><div class="hint">Returned but duty not resumed</div></div>
+    <div class="kpi" onclick="openKpi('Escalated Cases')"><div class="top"><span class="lab">Escalated Cases</span><span class="bubble o">⚠</span></div><div class="num">1</div><div class="hint">SLA exceeded</div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Pending Manager Approvals</h3>
+      <table><thead><tr><th>Employee</th><th>Site</th><th>Leave</th><th>Dates</th><th>Manager</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>EMP-014 • Ahmed Ali</td><td>Site A</td><td>Annual</td><td>21–30 Aug</td><td>Manager A</td><td><span class="badge pending">Pending</span></td></tr>
+        <tr><td>EMP-041 • Raj Kumar</td><td>Site B</td><td>Annual</td><td>25 Aug–05 Sep</td><td>Manager B</td><td><span class="badge pending">Pending</span></td></tr>
+      </tbody></table>
+    </div>
+    <div class="card"><h3>7-Day Movement</h3><div class="timeline">
+      <div class="day"><strong>Today</strong><div class="ev">2 Depart</div><div class="ev ret">1 Return</div></div>
+      <div class="day"><strong>+1</strong><div class="ev">1 Depart</div></div>
+      <div class="day"><strong>+2</strong><div class="ev ret">3 Return</div></div>
+      <div class="day"><strong>+3</strong><div class="ev">2 Depart</div></div>
+      <div class="day"><strong>+4</strong><div class="ev ret">2 Return</div></div>
+      <div class="day"><strong>+5</strong><div class="ev">1 Depart</div></div>
+      <div class="day"><strong>+6</strong><div class="ev ret">3 Return</div></div>
+    </div></div>
+  </div>
+</section>
+
+<section class="page" id="request">
+  <div class="pagehead"><div><h2>Submit Leave Request</h2><p>HR/Admin entry connected to Employee Master.</p></div></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="formgrid">
+        <div class="fg full"><label>Employee</label><select id="employeeSelect"><option value="">Select Employee</option><option value="EMP-014">EMP-014 - Ahmed Ali</option><option value="EMP-041">EMP-041 - Raj Kumar</option></select></div>
+        <div class="fg"><label>Leave Type</label><select id="leaveType"><option>Annual Leave</option><option>Sick Leave</option><option>Unpaid Leave</option><option>Emergency Leave</option></select></div>
+        <div class="fg"><label>Half Day</label><select><option>No</option><option>First Half</option><option>Second Half</option></select></div>
+        <div class="fg"><label>Start Date</label><input type="date" id="leaveStart"></div>
+        <div class="fg"><label>End Date</label><input type="date" id="leaveEnd"></div>
+        <div class="fg"><label>Approving Manager</label><input value="Auto from Employee Master" readonly></div>
+        <div class="fg"><label>Attachment</label><input type="file"></div>
+        <div class="fg full"><label>HR Remarks</label><textarea placeholder="Received signed leave form..."></textarea></div>
+      </div>
+      <div id="leaveNotice" class="notice nwarn"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:13px"><button class="btn light">Save Draft</button><button class="btn primary" onclick="submitLeave()">Submit to Manager</button></div>
+    </div>
+    <div class="card"><h3>Employee Snapshot</h3><div class="summary">
+      <div class="sumrow"><span>Annual Leave Available</span><strong>17 Days</strong></div>
+      <div class="sumrow"><span>Current Site</span><strong>Site A</strong></div>
+      <div class="sumrow"><span>Designation</span><strong>Electrician</strong></div>
+      <div class="sumrow"><span>Line Manager</span><strong>Manager A</strong></div>
+    </div><div class="notice ninfo show">Employee, Site, Designation, Manager and leave balance should come from the same Employee Master database used by Employee Portal.</div></div>
+  </div>
+</section>
+
+<section class="page" id="approvals">
+  <div class="pagehead"><div><h2>Manager Approvals</h2><p>Leave, amendment and return-variance decisions.</p></div></div>
+  <div class="card"><div class="toolbar"><input class="search" placeholder="Search employee"><select><option>Pending</option><option>Approved</option><option>Rejected</option><option>Escalated</option></select></div>
+  <table><thead><tr><th>Employee</th><th>Request</th><th>Type</th><th>Dates</th><th>Balance</th><th>Document</th><th>Decision</th></tr></thead><tbody>
+    <tr><td>Ahmed Ali</td><td>LR-2026-00125</td><td>Annual</td><td>21–30 Aug</td><td>17</td><td><button class="btn light">View</button></td><td><button class="btn green">Approve</button> <button class="btn red" onclick="reject()">Reject</button></td></tr>
+    <tr><td>Raj Kumar</td><td>EXT-2026-00004</td><td>Return Extension</td><td>+2 Days</td><td>8</td><td><button class="btn light">View</button></td><td><button class="btn green">Approve</button> <button class="btn red" onclick="reject()">Reject</button></td></tr>
+  </tbody></table></div>
+</section>
+
+<section class="page" id="tickets">
+  <div class="pagehead"><div><h2>Ticket & Travel Tracker</h2><p>Ticket responsibility, routing, status, departure and return validation.</p></div></div>
+  <div class="grid2eq">
+    <div class="card">
+      <h3>Ticket Booking & Travel Details</h3>
+      <div class="formgrid">
+        <div class="fg full"><label>Employee / Approved Leave</label><select><option>EMP-014 - Ahmed Ali | 15 Aug to 17 Aug</option><option>EMP-041 - Raj Kumar | 25 Aug to 05 Sep</option></select></div>
+        <div class="fg"><label>Approved Leave Start</label><input type="date" id="approvedStart" value="2026-08-15"></div>
+        <div class="fg"><label>Approved Leave End</label><input type="date" id="approvedEnd" value="2026-08-17"></div>
+        <div class="fg"><label>Ticket Entitlement</label><select><option>Company Provided</option><option>Self Booked</option></select></div>
+        <div class="fg"><label>Ticket Status</label><select><option>Requested</option><option>Booked</option><option>Confirmed</option><option>Cancelled</option></select></div>
+        <div class="fg"><label>Departure Airport</label><input placeholder="DXB"></div>
+        <div class="fg"><label>Destination City / Airport</label><input placeholder="DEL / Delhi"></div>
+        <div class="fg"><label>PNR / Ticket No.</label><input placeholder="Booking reference"></div>
+        <div class="fg"><label>Ticket Attachment</label><input type="file"></div>
+        <div class="fg"><label>Departure Ticket Date</label><input type="date" id="depTicket" onchange="checkDeparture()"></div>
+        <div class="fg"><label>Actual Departure Date</label><input type="date"></div>
+        <div class="fg"><label>Return Ticket / Arrival Date</label><input type="date" id="retTicket" onchange="checkReturn()"></div>
+        <div class="fg"><label>Expected Rejoining Date</label><input type="date" id="expectedRejoin"></div>
+        <div class="fg full"><label>Remarks</label><textarea placeholder="Ticket / site release / travel remarks"></textarea></div>
+      </div>
+      <div id="depMsg" class="notice ndanger"></div>
+      <div id="retMsg" class="notice nwarn"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary">Save Ticket / Travel</button></div>
+    </div>
+    <div class="card"><h3>Validation Rules</h3>
+      <div class="notice ninfo show">Departure ticket earlier than Approved Leave Start must be blocked unless an authorized leave amendment is initiated.</div>
+      <div class="notice ninfo show">Return ticket after Approved Leave End automatically opens Return Variance Workflow.</div>
+      <div class="notice ninfo show">Cancelled ticket must not count as confirmed departure/return until a replacement ticket is entered.</div>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="rejoin">
+  <div class="pagehead"><div><h2>Record Rejoining</h2><p>Close leave only after actual duty resumption and any variance treatment.</p></div></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="formgrid">
+        <div class="fg full"><label>Employee / Leave Request</label><select><option>EMP-014 - Ahmed Ali | LR-2026-00120</option></select></div>
+        <div class="fg"><label>Approved Leave End</label><input type="date" id="rLeaveEnd" value="2026-08-17"></div>
+        <div class="fg"><label>Actual Return Date</label><input type="date" id="actualReturn"></div>
+        <div class="fg"><label>Actual Rejoining Date</label><input type="date" id="actualRejoin" onchange="checkRejoin()"></div>
+        <div class="fg"><label>Rejoining Site / Duty Location</label><select><option>Site A</option><option>Site B</option><option>Head Office</option></select></div>
+        <div class="fg full"><label>Supporting Document</label><input type="file"></div>
+        <div class="fg full"><label>HR Remarks</label><textarea></textarea></div>
+      </div>
+      <div id="rejoinMsg" class="notice ninfo"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary" onclick="saveRejoin()">Record Rejoining</button></div>
+    </div>
+    <div class="card"><h3>Closure Logic</h3><div class="summary">
+      <div class="sumrow"><span>Returned</span><strong>Pending</strong></div>
+      <div class="sumrow"><span>Rejoined On Time?</span><strong id="ontimeValue">Pending</strong></div>
+      <div class="sumrow"><span>Variance Resolved?</span><strong>Pending</strong></div>
+      <div class="sumrow"><span>Final Status</span><strong>OPEN</strong></div>
+    </div><div class="notice nwarn show">Case cannot become CLOSED while return variance, rejoining action, escalation or payroll treatment remains unresolved.</div></div>
+  </div>
+</section>
+
+<section class="page" id="ledger">
+  <div class="pagehead"><div><h2>Leave Ledger</h2><p>Balances, usage, adjustments and encashment transactions.</p></div></div>
+  <div class="card">
+    <div class="toolbar"><select><option>EMP-014 - Ahmed Ali</option></select><button class="btn orange">Adjust Balance</button></div>
+    <table><thead><tr><th>Leave Type</th><th>Opening</th><th>Earned</th><th>Adjustments</th><th>Used</th><th>Encashed</th><th>Available</th></tr></thead>
+    <tbody><tr><td>Annual</td><td>20</td><td>5</td><td>0</td><td>8</td><td>0</td><td><b>17</b></td></tr><tr><td>Sick</td><td>15</td><td>0</td><td>0</td><td>3</td><td>—</td><td><b>12</b></td></tr><tr><td>Unpaid</td><td>—</td><td>—</td><td>—</td><td>2</td><td>—</td><td>—</td></tr></tbody></table>
+  </div>
+</section>
+
+<section class="page" id="encash">
+  <div class="pagehead"><div><h2>Leave Encashment</h2><p>Authorized Annual Leave cash-out / final settlement transaction.</p></div></div>
+  <div class="grid2eq">
+    <div class="card"><div class="formgrid">
+      <div class="fg full"><label>Employee</label><select><option>EMP-014 - Ahmed Ali</option></select></div>
+      <div class="fg"><label>Leave Type</label><select><option>Annual Leave</option></select></div>
+      <div class="fg"><label>Available Balance</label><input value="17 Days" readonly></div>
+      <div class="fg"><label>Encashment Days</label><input type="number" min="0" max="17"></div>
+      <div class="fg"><label>Rate / Amount</label><input placeholder="According to payroll policy"></div>
+      <div class="fg"><label>Reason</label><select><option>Final Settlement</option><option>Approved Encashment</option><option>Other</option></select></div>
+      <div class="fg"><label>Approval Status</label><select><option>Draft</option><option>Pending</option><option>Approved</option><option>Rejected</option><option>Posted</option></select></div>
+      <div class="fg full"><label>Payroll / Settlement Ref.</label><input></div>
+    </div><div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary">Save Encashment</button></div></div>
+    <div class="card"><h3>Control</h3><div class="notice ninfo show">Encashment must create a ledger transaction; it must never directly overwrite the balance.</div><div class="notice ninfo show">Only eligible leave types should be available according to configured company policy.</div></div>
+  </div>
+</section>
+
+<section class="page" id="reports">
+  <div class="pagehead"><div><h2>Reports</h2><p>Payroll-ready leave, movement, variance and final settlement reports.</p></div></div>
+  <div class="card"><div class="toolbar"><input type="month" value="2026-08"><select><option>All Sites</option><option>Site A</option><option>Site B</option></select><button class="btn primary">Generate</button><button class="btn light">Export Excel</button><button class="btn light">Export PDF</button></div>
+  <table><thead><tr><th>Employee</th><th>Working Days</th><th>Annual</th><th>Sick</th><th>Unpaid / LOP</th><th>Absent</th><th>Variance</th><th>Payable Days</th></tr></thead>
+  <tbody><tr><td>Ahmed Ali</td><td>26</td><td>2</td><td>0</td><td>1</td><td>0</td><td>Resolved</td><td>25</td></tr></tbody></table></div>
+</section>
+
+<section class="page" id="settings">
+  <div class="pagehead"><div><h2>Rules & Escalation</h2><p>Configurable SLA and escalation recipients.</p></div></div>
+  <div class="grid2eq">
+    <div class="card"><h3>Manager Approval SLA</h3><div class="formgrid"><div class="fg"><label>Escalate After</label><input type="number" value="48"></div><div class="fg"><label>Unit</label><select><option>Hours</option><option>Days</option></select></div><div class="fg full"><label>Escalate To</label><select><option>HR Manager</option><option>Alternate Approver</option><option>General Manager</option></select></div></div></div>
+    <div class="card"><h3>Overdue Rejoining</h3><div class="formgrid"><div class="fg"><label>Escalate After Expected Return +</label><input type="number" value="2"></div><div class="fg"><label>Unit</label><select><option>Days</option></select></div><div class="fg full"><label>Escalate To</label><select><option>HR Manager / General Manager</option></select></div></div></div>
+  </div>
+</section>
+
+</div>
+</main>
+</div>
+
+<div class="modalwrap" id="kpiModal"><div class="modal"><div class="modalhead"><h3 id="kpiTitle">Details</h3><button class="x" onclick="closeModal('kpiModal')">×</button></div>
+<div class="toolbar"><input class="search" placeholder="Search employee"><select><option>All Sites</option></select><button class="btn light">Excel</button><button class="btn light">PDF</button></div>
+<table><thead><tr><th>Employee</th><th>Site</th><th>Leave</th><th>From</th><th>To / Return</th><th>Status</th></tr></thead><tbody><tr><td>EMP-014 • Ahmed Ali</td><td>Site A</td><td>Annual</td><td>15 Aug</td><td>19 Aug</td><td><span class="badge alert">Action Required</span></td></tr><tr><td>EMP-041 • Raj Kumar</td><td>Site B</td><td>Annual</td><td>18 Aug</td><td>25 Aug</td><td><span class="badge info">On Leave</span></td></tr></tbody></table>
+</div></div>
+
+<div class="modalwrap" id="returnModal"><div class="modal"><div class="modalhead"><h3>Return Variance Workflow</h3><button class="x" onclick="closeModal('returnModal')">×</button></div>
+<div id="varianceText" class="notice ndanger show"></div>
+<div class="formgrid">
+  <div class="fg full"><label>Reason for Late Return</label><select><option>Ticket Availability</option><option>Flight Change</option><option>Employee Request</option><option>Management Instruction</option><option>Medical</option><option>Other</option></select></div>
+  <div class="fg full"><label>Treatment of Extra Days</label><select id="varianceTreatment"><option value="">Select Treatment</option><option value="extension">Leave Extension</option><option value="unpaid">Unpaid Leave / LOP</option><option value="absent">Absent / Unauthorized Extension</option><option value="pending">Pending Manager Approval</option></select></div>
+  <div class="fg"><label>Revised Expected Return</label><input type="date" id="modalReturn"></div>
+  <div class="fg"><label>Expected Rejoining Date</label><input type="date"></div>
+  <div class="fg full"><label>Remarks</label><textarea></textarea></div>
+  <div class="fg full"><label>Supporting Document / Updated Ticket</label><input type="file"></div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:13px"><button class="btn light" onclick="closeModal('returnModal')">Save HR Action Required</button><button class="btn primary" onclick="saveVariance()">Continue</button></div>
+</div></div>
+
+<script>
+const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',tickets:'Ticket & Travel Tracker',rejoin:'Record Rejoining',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
+function go(id,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('pageTitle').textContent=titles[id]||'Leave Management';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goById(id){
+  const btn=[...document.querySelectorAll('.nav button')].find(b=>b.getAttribute('onclick')?.includes("'"+id+"'"));
+  go(id,btn);
+}
+function openKpi(t){document.getElementById('kpiTitle').textContent=t;document.getElementById('kpiModal').classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+function diff(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)}
+function fmt(v){return new Date(v+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
+
+function submitLeave(){
+  const emp=document.getElementById('employeeSelect').value,s=document.getElementById('leaveStart').value,e=document.getElementById('leaveEnd').value,n=document.getElementById('leaveNotice');
+  if(!emp||!s||!e){n.className='notice ndanger show';n.textContent='Select employee and enter Start / End Date.';return}
+  if(new Date(e)<new Date(s)){n.className='notice ndanger show';n.textContent='End Date cannot be earlier than Start Date.';return}
+  n.className='notice ninfo show';n.textContent='Demo validation passed: duplicate, overlap and balance checks would run here before sending to Manager.';
+}
+
+function checkDeparture(){
+  const s=document.getElementById('approvedStart').value,d=document.getElementById('depTicket').value,n=document.getElementById('depMsg');
+  if(!s||!d){n.classList.remove('show');return}
+  const x=diff(s,d);
+  if(x<0){
+    n.className='notice ndanger show';
+    n.textContent='BLOCKED: Ticket date is earlier than approved leave start date. Correct the ticket date or initiate an authorized leave amendment.';
+  }else if(x>0){
+    n.className='notice nwarn show';
+    n.textContent='Departure is '+x+' day(s) after approved leave start. Record reason such as Site Requirement / Ticket Availability and amend leave dates if employee actually worked those days.';
+  }else n.classList.remove('show');
+}
+
+function checkReturn(){
+  const e=document.getElementById('approvedEnd').value,r=document.getElementById('retTicket').value,n=document.getElementById('retMsg');
+  if(!e||!r){n.classList.remove('show');return}
+  document.getElementById('expectedRejoin').value=r;
+  const x=diff(e,r);
+  if(x>0){
+    n.className='notice nwarn show';n.textContent='Return ticket is '+x+' day(s) after Approved Leave End. Return Variance action is required.';
+    document.getElementById('varianceText').textContent='Approved Leave End: '+fmt(e)+' • Return Ticket: '+fmt(r)+' • Variance: '+x+' day(s).';
+    document.getElementById('modalReturn').value=r;document.getElementById('returnModal').classList.add('show');
+  } else n.classList.remove('show');
+}
+function saveVariance(){
+  const t=document.getElementById('varianceTreatment').value;
+  if(!t){alert('Select treatment of extra days first.');return}
+  alert('Variance saved. Backend integration should now create the required Manager approval / payroll / ledger transaction.');
+  closeModal('returnModal');
+}
+function checkRejoin(){
+  const e=document.getElementById('rLeaveEnd').value,r=document.getElementById('actualRejoin').value,n=document.getElementById('rejoinMsg'),v=document.getElementById('ontimeValue');
+  if(!e||!r){return}
+  const x=diff(e,r);
+  if(x<=0){v.textContent='YES';n.className='notice ninfo show';n.textContent='Employee rejoined on time. If there are no unresolved items, case can be CLOSED.'}
+  else{v.textContent='NO';n.className='notice ndanger show';n.textContent='Employee rejoined '+x+' day(s) late. Return Variance Workflow must be completed before closure.'}
+}
+function saveRejoin(){
+  const r=document.getElementById('actualRejoin').value;if(!r){alert('Enter Actual Rejoining Date.');return}
+  checkRejoin();alert('Rejoining recorded in demo. Final backend version should audit user/time and close only when all pending actions are resolved.');
+}
+function reject(){const r=prompt('Rejection reason is mandatory:');if(r&&r.trim())alert('Rejection reason recorded.')}
+</script>
+</body>
+</html>
