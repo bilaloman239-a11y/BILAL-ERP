@@ -394,78 +394,14 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',tickets:'Ticket & Travel Tracker',rejoin:'Record Rejoining',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
 
-// === CIVIL MASTER EMPLOYEE PORTAL INTEGRATION ===
-// Employee Portal saves its data under this exact key. Because index.html and leave.html
-// are served from the same Vercel domain/project, both pages can read the same localStorage.
-const EMPLOYEE_DATA_KEY = 'cm_employee_portal_v3';
-let cmEmployees = [];
-
-function loadEmployeesFromEmployeePortal(){
-  try{
-    const raw = localStorage.getItem(EMPLOYEE_DATA_KEY);
-    const store = raw ? JSON.parse(raw) : null;
-    cmEmployees = store && Array.isArray(store.employees) ? store.employees : [];
-  }catch(err){
-    console.error('Unable to read Employee Portal data', err);
-    cmEmployees = [];
-  }
-  populateEmployeeSelectors();
-}
-
-function employeeOptionLabel(e){
-  return [e.employeeCode, e.employeeName].filter(Boolean).join(' - ') || 'Unnamed Employee';
-}
-
-function activeEmployees(){
-  return cmEmployees.filter(e => String(e.status || 'Active').toLowerCase() !== 'inactive');
-}
-
-function fillEmployeeSelect(id, includeInactive=false){
-  const el=document.getElementById(id); if(!el) return;
-  const list=includeInactive ? cmEmployees : activeEmployees();
-  const current=el.value;
-  el.innerHTML='<option value="">Select Employee</option>' + list.map((e,i)=>{
-    const originalIndex=cmEmployees.indexOf(e);
-    return `<option value="${originalIndex}">${escapeHtml(employeeOptionLabel(e))}</option>`;
-  }).join('');
-  if([...el.options].some(o=>o.value===current)) el.value=current;
-}
-
-function populateEmployeeSelectors(){
-  ['employeeSelect','travelEmployeeSelect','rejoinEmployeeSelect','ledgerEmployeeSelect','encashEmployeeSelect'].forEach(id=>fillEmployeeSelect(id));
-  const n=document.getElementById('leaveNotice');
-  if(!cmEmployees.length && n){
-    n.className='notice nwarn show';
-    n.textContent='No Employee Portal data found. Open Employee Management on this same Vercel domain, add/restore employees, then return here.';
-  }
-  refreshEmployeeSnapshot();
-}
-
-function getSelectedEmployee(selectId='employeeSelect'){
-  const el=document.getElementById(selectId); if(!el || el.value==='') return null;
-  return cmEmployees[Number(el.value)] || null;
-}
-
-function refreshEmployeeSnapshot(){
-  const e=getSelectedEmployee('employeeSelect');
-  const set=(id,val)=>{const x=document.getElementById(id);if(x)x.textContent=val||'-'};
-  set('snapCompany', e?.company);
-  set('snapDesignation', e?.actualDesignation || e?.idDesignation);
-  set('snapStatus', e?.status);
-  // Leave balance is not stored in the current Employee Portal, so do not invent it.
-  set('snapBalance','Not configured');
-}
-
-function escapeHtml(v){
-  return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-}
-
-window.addEventListener('storage', e=>{ if(e.key===EMPLOYEE_DATA_KEY) loadEmployeesFromEmployeePortal(); });
-window.addEventListener('focus', loadEmployeesFromEmployeePortal);
-document.addEventListener('DOMContentLoaded', loadEmployeesFromEmployeePortal);
 function go(id,btn){
+  const target=document.getElementById(id);
+  if(!target){
+    console.error('Page section not found:',id);
+    return;
+  }
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  target.classList.add('active');
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   if(btn) btn.classList.add('active');
   document.getElementById('pageTitle').textContent=titles[id]||'Leave Management';
