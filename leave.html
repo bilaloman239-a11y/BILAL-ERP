@@ -115,35 +115,32 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 <section class="page active" id="dashboard">
   <div class="pagehead"><div><h2>Leave Dashboard</h2><p>Live approval, movement, ticket, rejoining and exception overview.</p></div><button class="btn orange" onclick="goById('request')">+ New Leave</button></div>
   <div class="kpis">
-    <div class="kpi" onclick="openKpi('Pending Approvals')"><div class="top"><span class="lab">Pending Approvals</span><span class="bubble">✓</span></div><div class="num">7</div><div class="hint">Manager action pending</div></div>
-    <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num">18</div><div class="hint">Active approved leave</div></div>
-    <div class="kpi" onclick="openKpi('Leaving Next 7 Days')"><div class="top"><span class="lab">Leaving Next 7 Days</span><span class="bubble o">✈</span></div><div class="num">9</div><div class="hint">Upcoming movement</div></div>
-    <div class="kpi" onclick="openKpi('Returning Next 7 Days')"><div class="top"><span class="lab">Returning Next 7 Days</span><span class="bubble o">↩</span></div><div class="num">11</div><div class="hint">Expected return / rejoin</div></div>
+    <div class="kpi" onclick="openKpi('Pending Approvals')"><div class="top"><span class="lab">Pending Approvals</span><span class="bubble">✓</span></div><div class="num">0</div><div class="hint">Manager action pending</div></div>
+    <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num">0</div><div class="hint">Active approved leave</div></div>
+    <div class="kpi" onclick="openKpi('Leaving Next 7 Days')"><div class="top"><span class="lab">Leaving Next 7 Days</span><span class="bubble o">✈</span></div><div class="num">0</div><div class="hint">Upcoming movement</div></div>
+    <div class="kpi" onclick="openKpi('Returning Next 7 Days')"><div class="top"><span class="lab">Returning Next 7 Days</span><span class="bubble o">↩</span></div><div class="num">0</div><div class="hint">Expected return / rejoin</div></div>
   </div>
   <div class="kpis">
-    <div class="kpi" onclick="openKpi('Ticket Action Required')"><div class="top"><span class="lab">Ticket Action Required</span><span class="bubble o">!</span></div><div class="num">4</div><div class="hint">Not booked / confirmed</div></div>
-    <div class="kpi" onclick="openKpi('Return Variance')"><div class="top"><span class="lab">Return Variance</span><span class="bubble o">∆</span></div><div class="num">3</div><div class="hint">Return beyond approved end</div></div>
-    <div class="kpi" onclick="openKpi('Rejoining Pending')"><div class="top"><span class="lab">Rejoining Pending</span><span class="bubble">⌛</span></div><div class="num">2</div><div class="hint">Returned but duty not resumed</div></div>
-    <div class="kpi" onclick="openKpi('Escalated Cases')"><div class="top"><span class="lab">Escalated Cases</span><span class="bubble o">⚠</span></div><div class="num">1</div><div class="hint">SLA exceeded</div></div>
+    <div class="kpi" onclick="openKpi('Ticket Action Required')"><div class="top"><span class="lab">Ticket Action Required</span><span class="bubble o">!</span></div><div class="num">0</div><div class="hint">Not booked / confirmed</div></div>
+    <div class="kpi" onclick="openKpi('Return Variance')"><div class="top"><span class="lab">Return Variance</span><span class="bubble o">∆</span></div><div class="num">0</div><div class="hint">Return beyond approved end</div></div>
+    <div class="kpi" onclick="openKpi('Rejoining Pending')"><div class="top"><span class="lab">Rejoining Pending</span><span class="bubble">⌛</span></div><div class="num">0</div><div class="hint">Returned but duty not resumed</div></div>
+    <div class="kpi" onclick="openKpi('Escalated Cases')"><div class="top"><span class="lab">Escalated Cases</span><span class="bubble o">⚠</span></div><div class="num">0</div><div class="hint">SLA exceeded</div></div>
   </div>
 
   <div class="grid2">
     <div class="card">
       <h3>Pending Manager Approvals</h3>
       <table><thead><tr><th>Employee</th><th>Site</th><th>Leave</th><th>Dates</th><th>Manager</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>EMP-014 • Ahmed Ali</td><td>Site A</td><td>Annual</td><td>21–30 Aug</td><td>Manager A</td><td><span class="badge pending">Pending</span></td></tr>
-        <tr><td>EMP-041 • Raj Kumar</td><td>Site B</td><td>Annual</td><td>25 Aug–05 Sep</td><td>Manager B</td><td><span class="badge pending">Pending</span></td></tr>
-      </tbody></table>
+      <tbody><tr><td colspan="6" style="text-align:center;color:#7d8da0;padding:20px">No leave requests yet.</td></tr></tbody></table>
     </div>
     <div class="card"><h3>7-Day Movement</h3><div class="timeline">
-      <div class="day"><strong>Today</strong><div class="ev">2 Depart</div><div class="ev ret">1 Return</div></div>
-      <div class="day"><strong>+1</strong><div class="ev">1 Depart</div></div>
-      <div class="day"><strong>+2</strong><div class="ev ret">3 Return</div></div>
-      <div class="day"><strong>+3</strong><div class="ev">2 Depart</div></div>
-      <div class="day"><strong>+4</strong><div class="ev ret">2 Return</div></div>
-      <div class="day"><strong>+5</strong><div class="ev">1 Depart</div></div>
-      <div class="day"><strong>+6</strong><div class="ev ret">3 Return</div></div>
+      <div class="day"><strong>Today</strong></div>
+      <div class="day"><strong>+1</strong></div>
+      <div class="day"><strong>+2</strong></div>
+      <div class="day"><strong>+3</strong></div>
+      <div class="day"><strong>+4</strong></div>
+      <div class="day"><strong>+5</strong></div>
+      <div class="day"><strong>+6</strong></div>
     </div></div>
   </div>
 </section>
@@ -155,10 +152,11 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <div class="formgrid">
         <div class="fg full"><label>Employee</label><select id="employeeSelect" onchange="refreshEmployeeSnapshot()"><option value="">Loading employees...</option></select></div>
         <div class="fg"><label>Leave Type</label><select id="leaveType"><option>Annual Leave</option><option>Sick Leave</option><option>Unpaid Leave</option><option>Emergency Leave</option></select></div>
-        <div class="fg"><label>Half Day</label><select><option>No</option><option>First Half</option><option>Second Half</option></select></div>
-        <div class="fg"><label>Start Date</label><input type="date" id="leaveStart"></div>
-        <div class="fg"><label>End Date</label><input type="date" id="leaveEnd"></div>
-        <div class="fg"><label>Approving Manager</label><input value="Auto from Employee Master" readonly></div>
+        <div class="fg"><label>Half Day</label><select id="halfDay" onchange="updateLeaveDays()"><option>No</option><option>First Half</option><option>Second Half</option></select></div>
+        <div class="fg"><label>Start Date</label><input type="date" id="leaveStart" onchange="updateLeaveDays()"></div>
+        <div class="fg"><label>End Date</label><input type="date" id="leaveEnd" onchange="updateLeaveDays()"></div>
+        <div class="fg full"><label>Total Leave Days</label><input id="totalLeaveDays" value="0 Day(s)" readonly style="font-weight:800;color:#17365d;background:#f4f8fc"></div>
+        <div class="fg"><label>Approving Manager</label><input id="approvingManagerField" value="Not set in Employee Master" readonly></div>
         <div class="fg"><label>Attachment</label><input type="file"></div>
         <div class="fg full"><label>HR Remarks</label><textarea placeholder="Received signed leave form..."></textarea></div>
       </div>
@@ -177,10 +175,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 <section class="page" id="approvals">
   <div class="pagehead"><div><h2>Manager Approvals</h2><p>Leave, amendment and return-variance decisions.</p></div></div>
   <div class="card"><div class="toolbar"><input class="search" placeholder="Search employee"><select><option>Pending</option><option>Approved</option><option>Rejected</option><option>Escalated</option></select></div>
-  <table><thead><tr><th>Employee</th><th>Request</th><th>Type</th><th>Dates</th><th>Balance</th><th>Document</th><th>Decision</th></tr></thead><tbody>
-    <tr><td>Ahmed Ali</td><td>LR-2026-00125</td><td>Annual</td><td>21–30 Aug</td><td>17</td><td><button class="btn light">View</button></td><td><button class="btn green">Approve</button> <button class="btn red" onclick="reject()">Reject</button></td></tr>
-    <tr><td>Raj Kumar</td><td>EXT-2026-00004</td><td>Return Extension</td><td>+2 Days</td><td>8</td><td><button class="btn light">View</button></td><td><button class="btn green">Approve</button> <button class="btn red" onclick="reject()">Reject</button></td></tr>
-  </tbody></table></div>
+  <table><thead><tr><th>Employee</th><th>Request</th><th>Type</th><th>Dates</th><th>Balance</th><th>Document</th><th>Decision</th></tr></thead><tbody><tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr></tbody></table></div>
 </section>
 
 <section class="page" id="tickets">
@@ -233,7 +228,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary" onclick="saveRejoin()">Record Rejoining</button></div>
     </div>
     <div class="card"><h3>Closure Logic</h3><div class="summary">
-      <div class="sumrow"><span>Returned</span><strong>Pending</strong></div>
+      <div class="sumrow"><span>Returned</span><strong id="returnedStatus">Pending</strong></div>
       <div class="sumrow"><span>Rejoined On Time?</span><strong id="ontimeValue">Pending</strong></div>
       <div class="sumrow"><span>Variance Resolved?</span><strong>Pending</strong></div>
       <div class="sumrow"><span>Final Status</span><strong>OPEN</strong></div>
@@ -246,7 +241,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   <div class="card">
     <div class="toolbar"><select id="ledgerEmployeeSelect"><option value="">Select Employee</option></select><button class="btn orange">Adjust Balance</button></div>
     <table><thead><tr><th>Leave Type</th><th>Opening</th><th>Earned</th><th>Adjustments</th><th>Used</th><th>Encashed</th><th>Available</th></tr></thead>
-    <tbody><tr><td>Annual</td><td>20</td><td>5</td><td>0</td><td>8</td><td>0</td><td><b>17</b></td></tr><tr><td>Sick</td><td>15</td><td>0</td><td>0</td><td>3</td><td>—</td><td><b>12</b></td></tr><tr><td>Unpaid</td><td>—</td><td>—</td><td>—</td><td>2</td><td>—</td><td>—</td></tr></tbody></table>
+    <tbody><tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">Select an employee. Leave ledger will start from actual posted leave transactions.</td></tr></tbody></table>
   </div>
 </section>
 
@@ -271,7 +266,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   <div class="pagehead"><div><h2>Reports</h2><p>Payroll-ready leave, movement, variance and final settlement reports.</p></div></div>
   <div class="card"><div class="toolbar"><input type="month" value="2026-08"><select><option>All Sites</option><option>Site A</option><option>Site B</option></select><button class="btn primary">Generate</button><button class="btn light">Export Excel</button><button class="btn light">Export PDF</button></div>
   <table><thead><tr><th>Employee</th><th>Working Days</th><th>Annual</th><th>Sick</th><th>Unpaid / LOP</th><th>Absent</th><th>Variance</th><th>Payable Days</th></tr></thead>
-  <tbody><tr><td>Ahmed Ali</td><td>26</td><td>2</td><td>0</td><td>1</td><td>0</td><td>Resolved</td><td>25</td></tr></tbody></table></div>
+  <tbody><tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:20px">No payroll leave data yet.</td></tr></tbody></table></div>
 </section>
 
 <section class="page" id="settings">
@@ -288,7 +283,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 
 <div class="modalwrap" id="kpiModal"><div class="modal"><div class="modalhead"><h3 id="kpiTitle">Details</h3><button class="x" onclick="closeModal('kpiModal')">×</button></div>
 <div class="toolbar"><input class="search" placeholder="Search employee"><select><option>All Sites</option></select><button class="btn light">Excel</button><button class="btn light">PDF</button></div>
-<table><thead><tr><th>Employee</th><th>Site</th><th>Leave</th><th>From</th><th>To / Return</th><th>Status</th></tr></thead><tbody><tr><td>EMP-014 • Ahmed Ali</td><td>Site A</td><td>Annual</td><td>15 Aug</td><td>19 Aug</td><td><span class="badge alert">Action Required</span></td></tr><tr><td>EMP-041 • Raj Kumar</td><td>Site B</td><td>Annual</td><td>18 Aug</td><td>25 Aug</td><td><span class="badge info">On Leave</span></td></tr></tbody></table>
+<table><thead><tr><th>Employee</th><th>Site</th><th>Leave</th><th>From</th><th>To / Return</th><th>Status</th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;color:#7d8da0;padding:20px">No records available.</td></tr></tbody></table>
 </div></div>
 
 <div class="modalwrap" id="returnModal"><div class="modal"><div class="modalhead"><h3>Return Variance Workflow</h3><button class="x" onclick="closeModal('returnModal')">×</button></div>
@@ -305,6 +300,98 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 </div></div>
 
 <script>
+
+const EMPLOYEE_DATA_KEY = "cm_employee_portal_v3";
+const LEAVE_DATA_KEY = "cm_leave_portal_v1";
+
+function readEmployeePortalData(){
+  try{
+    const raw=localStorage.getItem(EMPLOYEE_DATA_KEY);
+    if(!raw) return {employees:[],masters:[]};
+    const obj=JSON.parse(raw);
+    return {
+      employees:Array.isArray(obj?.employees)?obj.employees:[],
+      masters:Array.isArray(obj?.masters)?obj.masters:[]
+    };
+  }catch(err){
+    console.warn("Employee Portal data could not be read",err);
+    return {employees:[],masters:[]};
+  }
+}
+
+function activeEmployeesFromMaster(){
+  return readEmployeePortalData().employees.filter(e=>{
+    const status=String(e?.status||"Active").trim().toLowerCase();
+    return status!=="inactive";
+  });
+}
+
+function employeeOptionLabel(e){
+  const code=String(e?.employeeCode||"").trim();
+  const name=String(e?.employeeName||"").trim();
+  return [code,name].filter(Boolean).join(" - ") || "Unnamed Employee";
+}
+
+function fillEmployeeSelect(selectId, keepValue=true){
+  const el=document.getElementById(selectId);
+  if(!el) return;
+  const old=keepValue?el.value:"";
+  const employees=activeEmployeesFromMaster();
+  el.innerHTML='<option value="">Select Employee</option>';
+  employees
+    .slice()
+    .sort((a,b)=>employeeOptionLabel(a).localeCompare(employeeOptionLabel(b)))
+    .forEach(e=>{
+      const opt=document.createElement("option");
+      opt.value=String(e.employeeCode||e.employeeName||"");
+      opt.textContent=employeeOptionLabel(e);
+      el.appendChild(opt);
+    });
+  if(old && [...el.options].some(o=>o.value===old)) el.value=old;
+}
+
+function loadAllEmployeeDropdowns(){
+  ["employeeSelect","ticketEmployeeSelect","rejoinEmployeeSelect","ledgerEmployeeSelect","encashEmployeeSelect"]
+    .forEach(id=>fillEmployeeSelect(id));
+  refreshEmployeeSnapshot();
+}
+
+function findEmployeeByValue(value){
+  const v=String(value||"").trim();
+  if(!v) return null;
+  return readEmployeePortalData().employees.find(e=>
+    String(e?.employeeCode||"").trim()===v ||
+    String(e?.employeeName||"").trim()===v
+  ) || null;
+}
+
+function refreshEmployeeSnapshot(){
+  const sel=document.getElementById("employeeSelect");
+  const e=findEmployeeByValue(sel?.value);
+  const set=(id,val)=>{const x=document.getElementById(id);if(x)x.textContent=val||"-";};
+  set("snapCode",e?.employeeCode);
+  set("snapCompany",e?.company);
+  set("snapDesignation",e?.actualDesignation || e?.idDesignation);
+  set("snapStatus",e?.status);
+  set("snapManager",e?.lineManager || e?.approvingManager || "Not set in Employee Master");
+  const mgr=document.getElementById("approvingManagerField");
+  if(mgr) mgr.value=e?.lineManager || e?.approvingManager || "Not set in Employee Master";
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  loadAllEmployeeDropdowns();
+  const employeeSelect=document.getElementById("employeeSelect");
+  if(employeeSelect) employeeSelect.addEventListener("change",refreshEmployeeSnapshot);
+
+  // Refresh whenever user comes back from Employee Portal
+  window.addEventListener("focus",loadAllEmployeeDropdowns);
+
+  // Refresh immediately if Employee Portal data changes in another tab
+  window.addEventListener("storage",(ev)=>{
+    if(ev.key===EMPLOYEE_DATA_KEY) loadAllEmployeeDropdowns();
+  });
+});
+
 const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',tickets:'Ticket & Travel Tracker',rejoin:'Record Rejoining',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
 
 // === CIVIL MASTER EMPLOYEE PORTAL INTEGRATION ===
@@ -393,11 +480,69 @@ function closeModal(id){document.getElementById(id).classList.remove('show')}
 function diff(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)}
 function fmt(v){return new Date(v+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
 
+
+function updateLeaveDays(){
+  const s=document.getElementById('leaveStart')?.value;
+  const e=document.getElementById('leaveEnd')?.value;
+  const out=document.getElementById('totalLeaveDays');
+  if(!out) return;
+  if(!s || !e){
+    out.value='0 Day(s)';
+    return;
+  }
+  const start=new Date(s+'T00:00:00');
+  const end=new Date(e+'T00:00:00');
+  if(end < start){
+    out.value='Invalid Date Range';
+    return;
+  }
+  let days=Math.floor((end-start)/86400000)+1; // inclusive calendar days
+  const half=document.getElementById('halfDay')?.value || 'No';
+  if(half !== 'No') days=Math.max(0.5, days-0.5);
+  out.value=(Number.isInteger(days)?days:days.toFixed(1))+' Day(s)';
+}
+
 function submitLeave(){
-  const emp=document.getElementById('employeeSelect').value,s=document.getElementById('leaveStart').value,e=document.getElementById('leaveEnd').value,n=document.getElementById('leaveNotice');
-  if(!emp||!s||!e){n.className='notice ndanger show';n.textContent='Select employee and enter Start / End Date.';return}
-  if(new Date(e)<new Date(s)){n.className='notice ndanger show';n.textContent='End Date cannot be earlier than Start Date.';return}
-  n.className='notice ninfo show';n.textContent='Demo validation passed: duplicate, overlap and balance checks would run here before sending to Manager.';
+  updateLeaveDays();
+  const emp=document.getElementById('employeeSelect')?.value;
+  const s=document.getElementById('leaveStart')?.value;
+  const e=document.getElementById('leaveEnd')?.value;
+  const n=document.getElementById('leaveNotice');
+  if(!emp||!s||!e){
+    n.className='notice ndanger show';
+    n.textContent='Select employee and enter Start / End Date.';
+    return;
+  }
+  if(new Date(e)<new Date(s)){
+    n.className='notice ndanger show';
+    n.textContent='End Date cannot be earlier than Start Date.';
+    return;
+  }
+  const employee=findEmployeeByValue(emp);
+  const total=document.getElementById('totalLeaveDays')?.value||'';
+  const record={
+    id:'LR-'+Date.now(),
+    employeeCode:employee?.employeeCode||'',
+    employeeName:employee?.employeeName||'',
+    company:employee?.company||'',
+    designation:employee?.actualDesignation||employee?.idDesignation||'',
+    leaveType:document.getElementById('leaveType')?.value||'',
+    startDate:s,
+    endDate:e,
+    totalLeaveDays:total,
+    status:'Pending Manager Approval',
+    createdAt:new Date().toISOString()
+  };
+  let store={requests:[],tickets:[],rejoining:[],encashments:[]};
+  try{
+    const raw=localStorage.getItem(LEAVE_DATA_KEY);
+    if(raw) store={...store,...JSON.parse(raw)};
+  }catch(err){}
+  if(!Array.isArray(store.requests)) store.requests=[];
+  store.requests.push(record);
+  localStorage.setItem(LEAVE_DATA_KEY,JSON.stringify(store));
+  n.className='notice ninfo show';
+  n.textContent='Leave request saved for '+employeeOptionLabel(employee||{})+'.';
 }
 
 function checkDeparture(){
