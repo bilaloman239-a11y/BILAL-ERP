@@ -115,8 +115,8 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 <section class="page active" id="dashboard">
   <div class="pagehead"><div><h2>Leave Dashboard</h2><p>Live approval, movement, ticket, rejoining and exception overview.</p></div><button class="btn orange" onclick="goById('request')">+ New Leave</button></div>
   <div class="kpis">
-    <div class="kpi" onclick="openKpi('Pending Approvals')"><div class="top"><span class="lab">Pending Approvals</span><span class="bubble">✓</span></div><div class="num">0</div><div class="hint">Manager action pending</div></div>
-    <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num">0</div><div class="hint">Active approved leave</div></div>
+    <div class="kpi" onclick="openKpi('Pending Approvals')"><div class="top"><span class="lab">Pending Approvals</span><span class="bubble">✓</span></div><div class="num" id="kpiPendingApprovals">0</div><div class="hint">Manager action pending</div></div>
+    <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num" id="kpiCurrentlyOnLeave">0</div><div class="hint">Active approved leave</div></div>
     <div class="kpi" onclick="openKpi('Leaving Next 7 Days')"><div class="top"><span class="lab">Leaving Next 7 Days</span><span class="bubble o">✈</span></div><div class="num">0</div><div class="hint">Upcoming movement</div></div>
     <div class="kpi" onclick="openKpi('Returning Next 7 Days')"><div class="top"><span class="lab">Returning Next 7 Days</span><span class="bubble o">↩</span></div><div class="num">0</div><div class="hint">Expected return / rejoin</div></div>
   </div>
@@ -131,7 +131,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <div class="card">
       <h3>Pending Manager Approvals</h3>
       <table><thead><tr><th>Employee</th><th>Site</th><th>Leave</th><th>Dates</th><th>Manager</th><th>Status</th></tr></thead>
-      <tbody><tr><td colspan="6" style="text-align:center;color:#7d8da0;padding:20px">No leave requests yet.</td></tr></tbody></table>
+      <tbody id="dashboardPendingRows"><tr><td colspan="6" style="text-align:center;color:#7d8da0;padding:20px">No leave requests yet.</td></tr></tbody></table>
     </div>
     <div class="card"><h3>7-Day Movement</h3><div class="timeline">
       <div class="day"><strong>Today</strong></div>
@@ -176,7 +176,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 <section class="page" id="approvals">
   <div class="pagehead"><div><h2>Manager Approvals</h2><p>Leave, amendment and return-variance decisions.</p></div></div>
   <div class="card"><div class="toolbar"><input class="search" placeholder="Search employee"><select><option>Pending</option><option>Approved</option><option>Rejected</option><option>Escalated</option></select></div>
-  <table><thead><tr><th>Employee</th><th>Request</th><th>Type</th><th>Dates</th><th>Balance</th><th>Document</th><th>Decision</th></tr></thead><tbody><tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr></tbody></table></div>
+  <table><thead><tr><th>Employee</th><th>Request</th><th>Type</th><th>Dates</th><th>Manager</th><th>Status</th><th>Decision</th></tr></thead><tbody id="managerApprovalRows"><tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr></tbody></table></div>
 </section>
 
 <section class="page" id="tickets">
@@ -390,13 +390,15 @@ document.addEventListener("DOMContentLoaded",()=>{
   loadAllEmployeeDropdowns();
   const employeeSelect=document.getElementById("employeeSelect");
   if(employeeSelect) employeeSelect.addEventListener("change",refreshEmployeeSnapshot);
+  refreshLeaveUI();
 
   // Refresh whenever user comes back from Employee Portal
-  window.addEventListener("focus",loadAllEmployeeDropdowns);
+  window.addEventListener("focus",()=>{loadAllEmployeeDropdowns();refreshLeaveUI();});
 
   // Refresh immediately if Employee Portal data changes in another tab
   window.addEventListener("storage",(ev)=>{
     if(ev.key===EMPLOYEE_DATA_KEY) loadAllEmployeeDropdowns();
+    if(ev.key===LEAVE_DATA_KEY) refreshLeaveUI();
   });
 });
 
@@ -424,6 +426,128 @@ function closeModal(id){document.getElementById(id).classList.remove('show')}
 function diff(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)}
 function fmt(v){return new Date(v+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
 
+
+
+function readLeaveStore(){
+  let store={requests:[],tickets:[],rejoining:[],encashments:[]};
+  try{
+    const raw=localStorage.getItem(LEAVE_DATA_KEY);
+    if(raw) store={...store,...JSON.parse(raw)};
+  }catch(err){
+    console.warn("Leave data could not be read",err);
+  }
+  if(!Array.isArray(store.requests)) store.requests=[];
+  return store;
+}
+
+function saveLeaveStore(store){
+  localStorage.setItem(LEAVE_DATA_KEY,JSON.stringify(store));
+}
+
+function escHtml(v){
+  return String(v??"")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+function niceDate(v){
+  if(!v) return "-";
+  try{
+    return new Date(v+"T00:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+  }catch(err){ return v; }
+}
+
+function renderManagerApprovals(){
+  const store=readLeaveStore();
+  const pending=store.requests.filter(r=>String(r.status||"").toLowerCase().includes("pending"));
+  const tbody=document.getElementById("managerApprovalRows");
+  const dash=document.getElementById("dashboardPendingRows");
+  const kpi=document.getElementById("kpiPendingApprovals");
+
+  if(kpi) kpi.textContent=String(pending.length);
+
+  if(tbody){
+    if(!pending.length){
+      tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr>';
+    }else{
+      tbody.innerHTML=pending.map(r=>`
+        <tr>
+          <td><b>${escHtml(r.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(r.employeeCode||"")}</span></td>
+          <td>${escHtml(r.id||"-")}</td>
+          <td>${escHtml(r.leaveType||"-")}</td>
+          <td>${niceDate(r.startDate)} → ${niceDate(r.endDate)}<br><span style="color:#78889a">${escHtml(r.totalLeaveDays||"")}</span></td>
+          <td>${escHtml(r.lineManager||r.approvingManager||"-")}</td>
+          <td><span class="badge pending">${escHtml(r.status||"Pending")}</span></td>
+          <td>
+            <button class="btn green" onclick="approveLeave('${escHtml(r.id)}')">Approve</button>
+            <button class="btn red" onclick="rejectLeave('${escHtml(r.id)}')">Reject</button>
+          </td>
+        </tr>`).join("");
+    }
+  }
+
+  if(dash){
+    if(!pending.length){
+      dash.innerHTML='<tr><td colspan="6" style="text-align:center;color:#7d8da0;padding:20px">No leave requests yet.</td></tr>';
+    }else{
+      dash.innerHTML=pending.slice(0,5).map(r=>`
+        <tr>
+          <td>${escHtml(r.employeeName||"-")}</td>
+          <td>-</td>
+          <td>${escHtml(r.leaveType||"-")}</td>
+          <td>${niceDate(r.startDate)} → ${niceDate(r.endDate)}</td>
+          <td>${escHtml(r.lineManager||r.approvingManager||"-")}</td>
+          <td><span class="badge pending">Pending</span></td>
+        </tr>`).join("");
+    }
+  }
+}
+
+function approveLeave(id){
+  const store=readLeaveStore();
+  const req=store.requests.find(r=>String(r.id)===String(id));
+  if(!req) return alert("Leave request not found.");
+  req.status="Approved";
+  req.approvedAt=new Date().toISOString();
+  req.approvedBy=req.lineManager||req.approvingManager||"Manager";
+  saveLeaveStore(store);
+  renderManagerApprovals();
+  renderApprovedLeaveCount();
+}
+
+function rejectLeave(id){
+  const reason=prompt("Rejection reason is mandatory:");
+  if(!reason || !reason.trim()) return;
+  const store=readLeaveStore();
+  const req=store.requests.find(r=>String(r.id)===String(id));
+  if(!req) return alert("Leave request not found.");
+  req.status="Rejected";
+  req.rejectionReason=reason.trim();
+  req.rejectedAt=new Date().toISOString();
+  req.rejectedBy=req.lineManager||req.approvingManager||"Manager";
+  saveLeaveStore(store);
+  renderManagerApprovals();
+  renderApprovedLeaveCount();
+}
+
+function renderApprovedLeaveCount(){
+  const store=readLeaveStore();
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const active=store.requests.filter(r=>{
+    if(String(r.status)!=="Approved" || !r.startDate || !r.endDate) return false;
+    const s=new Date(r.startDate+"T00:00:00");
+    const e=new Date(r.endDate+"T00:00:00");
+    return s<=today && today<=e;
+  });
+  const el=document.getElementById("kpiCurrentlyOnLeave");
+  if(el) el.textContent=String(active.length);
+}
+
+function refreshLeaveUI(){
+  renderManagerApprovals();
+  renderApprovedLeaveCount();
+}
 
 function updateLeaveDays(){
   const s=document.getElementById('leaveStart')?.value;
@@ -497,6 +621,7 @@ function submitLeave(){
   localStorage.setItem(LEAVE_DATA_KEY,JSON.stringify(store));
   n.className='notice ninfo show';
   n.textContent='Leave request saved for '+employeeOptionLabel(employee||{})+' and routed to Manager: '+manager+'.';
+  refreshLeaveUI();
 }
 
 function checkDeparture(){
