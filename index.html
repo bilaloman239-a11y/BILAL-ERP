@@ -1592,8 +1592,30 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   $("profileEditBtn").addEventListener("click",()=>{
     if(profileEmployeeIndex===null) return;
+
+    const editIndex=profileEmployeeIndex;
     $("employeeProfileModal").classList.add("hidden");
-    openEditor(profileEmployeeIndex);
+
+    // Always switch to Employees page before opening the editor.
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    $("employees").classList.add("active");
+
+    document.querySelectorAll(".navbtn[data-page]").forEach(b=>b.classList.remove("active"));
+    const employeeNav=document.querySelector('.navbtn[data-page="employees"]');
+    if(employeeNav) employeeNav.classList.add("active");
+
+    $("pageTitle").textContent="Employees";
+
+    // Open the exact employee selected in the profile.
+    openEditor(editIndex);
+
+    // Ensure editor is visible even if an older inline style was left behind.
+    const editor=$("employeeEditor");
+    if(editor){
+      editor.classList.remove("hidden");
+      editor.style.display="block";
+      setTimeout(()=>editor.scrollIntoView({behavior:"smooth",block:"start"}),50);
+    }
   });
 
 
@@ -1657,10 +1679,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   function openEditor(index=null){
-    editingIndex=index;
-    const e=index===null?employeeDefaults():JSON.parse(JSON.stringify(data.employees[index]));
-    $("employeeEditorTitle").textContent=index===null?"Add Employee":"Edit Employee";
+    if(index!==null && (!Number.isInteger(Number(index)) || !data.employees[Number(index)])){
+      alert("Employee record could not be found. Please refresh the employee list.");
+      return;
+    }
+
+    editingIndex=index===null?null:Number(index);
+    const e=editingIndex===null?employeeDefaults():JSON.parse(JSON.stringify(data.employees[editingIndex]));
+    $("employeeEditorTitle").textContent=editingIndex===null?"Add Employee":"Edit Employee";
     $("employeeEditor").classList.remove("hidden");
+    $("employeeEditor").style.display="block";
 
     $("fEmployeeCode").value=e.employeeCode||"";
     $("fEmployeeName").value=e.employeeName||"";
