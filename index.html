@@ -431,6 +431,24 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 
 
 @media(max-width:760px){#exportColumnChoices{grid-template-columns:1fr!important}}
+
+/* Employee List — Expand + Advanced Filter */
+.employee-filter-panel{
+  margin:0 0 15px;padding:16px;border:1px solid #dce8f5;border-radius:14px;
+  background:linear-gradient(135deg,#f8fbff,#fffaf6);box-shadow:0 5px 16px rgba(38,76,115,.05);
+}
+.employee-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:11px}
+.employee-filter-grid .field{margin:0}
+.employee-filter-grid label{display:block;font-size:11px;font-weight:800;color:#51677e;margin-bottom:6px;text-transform:uppercase;letter-spacing:.25px}
+.employee-filter-grid input,.employee-filter-grid select{width:100%;height:40px;border:1px solid #cfdceb;border-radius:9px;padding:0 10px;background:#fff;color:#25384d}
+.employee-filter-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+.employee-filter-count{margin-right:auto;font-size:12px;color:#6f8398;font-weight:700}
+.emp-extra-col{display:none}
+.employee-list-expanded .emp-extra-col{display:table-cell}
+#expandEmployeeListBtn.active{background:linear-gradient(180deg,#f9b47f,var(--orange));color:#fff;box-shadow:0 4px 12px rgba(234,124,46,.28)}
+#advancedEmployeeFilterBtn.active{background:#eaf3ff;color:#236da7;box-shadow:inset 0 0 0 1px #c8dcf1}
+@media(max-width:1100px){.employee-filter-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.employee-filter-grid{grid-template-columns:1fr}}
 </style>
 <style>
 /* ============================================================
@@ -808,14 +826,37 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
           <button id="exportEmployeeListBtn" class="btn light" type="button">Export List</button>
           <button id="newEmployeeBtn" class="btn" type="button" onclick="window.cmOpenNewEmployee && window.cmOpenNewEmployee()">+ Add Employee</button>
           <input id="employeeSearch" class="search" placeholder="Search employee...">
+          <button id="expandEmployeeListBtn" class="btn light" type="button" title="Show more employee columns">Expand List</button>
+          <button id="advancedEmployeeFilterBtn" class="btn light" type="button" title="Open advanced employee filters">Advanced Filter</button>
           <button id="exportBackupBtn" class="btn light" type="button">Export Backup</button>
           <button id="importBackupBtn" class="btn light" type="button">Restore Backup</button>
           <input id="importBackupFile" type="file" accept="application/json,.json" class="hidden">
         </div>
 
-        <div class="table-wrap">
+        <div id="advancedEmployeeFilterPanel" class="employee-filter-panel hidden">
+          <div class="employee-filter-grid">
+            <div class="field"><label>Actual Designation</label><select id="afActualDesignation"><option value="">All</option></select></div>
+            <div class="field"><label>Nationality</label><select id="afNationality"><option value="">All</option></select></div>
+            <div class="field"><label>Company</label><select id="afCompany"><option value="">All</option></select></div>
+            <div class="field"><label>ID Card Designation</label><select id="afIdDesignation"><option value="">All</option></select></div>
+            <div class="field"><label>Employee Status</label><select id="afStatus"><option value="">All</option><option>Active</option><option>Inactive</option></select></div>
+            <div class="field"><label>Gender</label><select id="afGender"><option value="">All</option><option>Male</option><option>Female</option></select></div>
+            <div class="field"><label>Joining From</label><input id="afJoiningFrom" type="date"></div>
+            <div class="field"><label>Joining To</label><input id="afJoiningTo" type="date"></div>
+          </div>
+          <div class="employee-filter-actions">
+            <span id="employeeFilterCount" class="employee-filter-count">Showing all employees</span>
+            <button id="clearEmployeeFiltersBtn" class="btn light" type="button">Clear Filters</button>
+          </div>
+        </div>
+
+        <div id="employeeTableWrap" class="table-wrap">
           <table>
-            <thead><tr><th>Code</th><th>Name</th><th>Actual Designation</th><th>Nationality</th><th>Company</th><th>ID Card Designation</th><th>Status</th><th></th></tr></thead>
+            <thead><tr>
+              <th>Code</th><th>Name</th><th>Actual Designation</th><th>Nationality</th><th>Company</th><th>ID Card Designation</th><th>Status</th>
+              <th class="emp-extra-col">Gender</th><th class="emp-extra-col">Mobile</th><th class="emp-extra-col">Joining Date</th><th class="emp-extra-col">Unified No.</th><th class="emp-extra-col">Documents</th>
+              <th>Actions</th>
+            </tr></thead>
             <tbody id="employeeRows"></tbody>
           </table>
         </div>
@@ -1853,21 +1894,87 @@ document.addEventListener("DOMContentLoaded", () => {
     if(saveData()){ closeEditor(); alert("Employee data saved successfully."); }
   });
 
-  $("employeeSearch").addEventListener("input",renderEmployees);
-  function renderEmployees(){
-    const q=$("employeeSearch").value.trim().toLowerCase();
-    const rows=data.employees.map((e,i)=>({...e,_i:i})).filter(e=>
-      [e.employeeCode,e.employeeName,e.actualDesignation,e.nationality,e.company,e.idDesignation,e.currentSite,e.status]
-      .join(" ").toLowerCase().includes(q)
-    );
-    $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>
-      <td>${esc(e.employeeCode)}</td><td><button class="employee-link" data-view-employee="${e._i}">${esc(e.employeeName)}</button></td><td>${esc(e.actualDesignation)}</td>
-      <td>${esc(e.nationality)}</td><td>${esc(e.company)}</td><td>${esc(e.idDesignation)}</td>
-      <td>${esc(e.status)}${e.status==="Inactive"?`<div class="small">${esc(e.inactiveReason)} · ${esc(e.inactiveDate)}</div>`:""}</td>
-      <td>${esc(e.currentSite)}</td>
-      <td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td>
-    </tr>`).join(""):'<tr><td colspan="9" class="empty">No employee records.</td></tr>';
+  function uniqueEmployeeValues(key){
+    return [...new Set((data.employees||[]).map(e=>String(e?.[key]||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
   }
+  function fillAdvancedEmployeeFilters(){
+    const configs=[
+      ["afActualDesignation","actualDesignation"],["afNationality","nationality"],["afCompany","company"],["afIdDesignation","idDesignation"]
+    ];
+    configs.forEach(([id,key])=>{
+      const el=$(id); if(!el) return;
+      const current=el.value;
+      el.innerHTML='<option value="">All</option>'+uniqueEmployeeValues(key).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+      if([...el.options].some(o=>o.value===current)) el.value=current;
+    });
+  }
+  function getFilteredEmployees(){
+    const q=($("employeeSearch")?.value||"").trim().toLowerCase();
+    const actual=$("afActualDesignation")?.value||"";
+    const nationality=$("afNationality")?.value||"";
+    const company=$("afCompany")?.value||"";
+    const idDes=$("afIdDesignation")?.value||"";
+    const status=$("afStatus")?.value||"";
+    const gender=$("afGender")?.value||"";
+    const joinFrom=$("afJoiningFrom")?.value||"";
+    const joinTo=$("afJoiningTo")?.value||"";
+    return (data.employees||[]).map((e,i)=>({...e,_i:i})).filter(e=>{
+      const text=[e.employeeCode,e.employeeName,e.employeeNameArabic,e.actualDesignation,e.nationality,e.company,e.idDesignation,e.mobile,e.unifiedNumber,e.status].join(" ").toLowerCase();
+      if(q && !text.includes(q)) return false;
+      if(actual && e.actualDesignation!==actual) return false;
+      if(nationality && e.nationality!==nationality) return false;
+      if(company && e.company!==company) return false;
+      if(idDes && e.idDesignation!==idDes) return false;
+      if(status && e.status!==status) return false;
+      if(gender && e.gender!==gender) return false;
+      if(joinFrom && (!e.joiningDate || e.joiningDate<joinFrom)) return false;
+      if(joinTo && (!e.joiningDate || e.joiningDate>joinTo)) return false;
+      return true;
+    });
+  }
+  function renderEmployees(){
+    fillAdvancedEmployeeFilters();
+    const rows=getFilteredEmployees();
+    const total=(data.employees||[]).length;
+    if($("employeeFilterCount")) $("employeeFilterCount").textContent=`Showing ${rows.length} of ${total} employee${total===1?"":"s"}`;
+    $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>
+      <td>${esc(e.employeeCode)}</td>
+      <td><button class="employee-link" data-view-employee="${e._i}">${esc(e.employeeName)}</button></td>
+      <td>${esc(e.actualDesignation)}</td>
+      <td>${esc(e.nationality)}</td>
+      <td>${esc(e.company)}</td>
+      <td>${esc(e.idDesignation)}</td>
+      <td>${esc(e.status)}${e.status==="Inactive"?`<div class="small">${esc(e.inactiveReason)} · ${esc(e.inactiveDate)}</div>`:""}</td>
+      <td class="emp-extra-col">${esc(e.gender)}</td>
+      <td class="emp-extra-col">${esc(e.mobile)}</td>
+      <td class="emp-extra-col">${esc(e.joiningDate)}</td>
+      <td class="emp-extra-col">${esc(e.unifiedNumber)}</td>
+      <td class="emp-extra-col">${(e.documents||[]).length}</td>
+      <td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td>
+    </tr>`).join(""):'<tr><td colspan="13" class="empty">No employee records match your search / filters.</td></tr>';
+  }
+
+  $("employeeSearch").addEventListener("input",renderEmployees);
+  ["afActualDesignation","afNationality","afCompany","afIdDesignation","afStatus","afGender","afJoiningFrom","afJoiningTo"].forEach(id=>{
+    $(id)?.addEventListener("change",renderEmployees);
+  });
+  $("advancedEmployeeFilterBtn")?.addEventListener("click",()=>{
+    const panel=$("advancedEmployeeFilterPanel");
+    panel.classList.toggle("hidden");
+    $("advancedEmployeeFilterBtn").classList.toggle("active",!panel.classList.contains("hidden"));
+    fillAdvancedEmployeeFilters();
+  });
+  $("expandEmployeeListBtn")?.addEventListener("click",()=>{
+    const wrap=$("employeeTableWrap");
+    const expanded=wrap.classList.toggle("employee-list-expanded");
+    $("expandEmployeeListBtn").classList.toggle("active",expanded);
+    $("expandEmployeeListBtn").textContent=expanded?"Compact List":"Expand List";
+  });
+  $("clearEmployeeFiltersBtn")?.addEventListener("click",()=>{
+    ["afActualDesignation","afNationality","afCompany","afIdDesignation","afStatus","afGender","afJoiningFrom","afJoiningTo"].forEach(id=>{if($(id)) $(id).value="";});
+    if($("employeeSearch")) $("employeeSearch").value="";
+    renderEmployees();
+  });
   document.addEventListener("click",e=>{
     if(e.target.dataset.viewEmployee!==undefined) openEmployeeProfile(Number(e.target.dataset.viewEmployee));
     if(e.target.dataset.editEmployee!==undefined) openEditor(Number(e.target.dataset.editEmployee));
@@ -2162,8 +2269,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return e[k]||"";
   }
   function exportRows(){
-    const q=($("employeeSearch")?.value||"").trim().toLowerCase();
-    return (data.employees||[]).filter(e=>!q||[e.employeeCode,e.employeeName,e.employeeNameArabic,e.actualDesignation,e.nationality,e.mobile,e.company,e.idDesignation,e.unifiedNumber].join(" ").toLowerCase().includes(q));
+    return getFilteredEmployees();
   }
   function openExportEmployee(){
     $("exportColumnChoices").innerHTML=EMP_EXPORT_COLS.map(([k,l],i)=>`<label style="display:flex;gap:8px;align-items:center;padding:10px;border:1px solid #e1e9f2;border-radius:10px;background:#fafcff"><input type="checkbox" class="emp-exp-col" value="${k}" ${i<14?"checked":""}><span style="font-size:13px;font-weight:700">${esc(l)}</span></label>`).join("");
