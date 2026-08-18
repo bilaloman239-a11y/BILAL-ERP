@@ -13,6 +13,7 @@
   --shadow:0 10px 28px rgba(23,54,93,.08);
 }
 *{box-sizing:border-box}
+.hidden{display:none!important}
 body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
 button,input,select,textarea{font:inherit}
 .app{min-height:100vh;display:flex}
@@ -93,6 +94,8 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <button onclick="go('approvals',this)"><span class="ico">✓</span><span>Manager Approvals</span></button>
     <button onclick="go('tickets',this)"><span class="ico">✈</span><span>Ticket & Travel Tracker</span></button>
     <button onclick="go('rejoin',this)"><span class="ico">↩</span><span>Record Rejoining</span></button>
+    <button onclick="go('attendance',this)"><span class="ico">🗓</span><span>Timesheet / Absence</span></button>
+    <button onclick="go('medical',this)"><span class="ico">✚</span><span>Medical Leave Register</span></button>
     <button onclick="go('ledger',this)"><span class="ico">▦</span><span>Leave Ledger</span></button>
     <button onclick="go('encash',this)"><span class="ico">₿</span><span>Leave Encashment</span></button>
     <button onclick="go('reports',this)"><span class="ico">↗</span><span>Reports</span></button>
@@ -126,6 +129,12 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <div class="kpi" onclick="openKpi('Rejoining Pending')"><div class="top"><span class="lab">Rejoining Pending</span><span class="bubble">⌛</span></div><div class="num">0</div><div class="hint">Returned but duty not resumed</div></div>
     <div class="kpi" onclick="openKpi('Escalated Cases')"><div class="top"><span class="lab">Escalated Cases</span><span class="bubble o">⚠</span></div><div class="num">0</div><div class="hint">SLA exceeded</div></div>
   </div>
+  <div class="kpis">
+    <div class="kpi" onclick="goById('medical')"><div class="top"><span class="lab">Medical Leave This Year</span><span class="bubble">✚</span></div><div class="num" id="kpiMedicalDaysYear">0</div><div class="hint">Total recorded sick / medical days</div></div>
+    <div class="kpi" onclick="goById('medical')"><div class="top"><span class="lab">Medical Paper Received</span><span class="bubble">📄</span></div><div class="num" id="kpiMedicalPaperReceived">0</div><div class="hint">Current month</div></div>
+    <div class="kpi" onclick="goById('medical')"><div class="top"><span class="lab">Medical Paper Pending</span><span class="bubble o">?</span></div><div class="num" id="kpiMedicalPaperPending">0</div><div class="hint">Current month / not provided</div></div>
+    <div class="kpi" onclick="goById('attendance')"><div class="top"><span class="lab">Timesheet Exceptions</span><span class="bubble o">🗓</span></div><div class="num" id="kpiTimesheetExceptions">0</div><div class="hint">Manual absence / adjustment records</div></div>
+  </div>
 
   <div class="grid2">
     <div class="card">
@@ -151,11 +160,20 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <div class="card">
       <div class="formgrid">
         <div class="fg full"><label>Employee</label><select id="employeeSelect" onchange="refreshEmployeeSnapshot()"><option value="">Loading employees...</option></select></div>
-        <div class="fg"><label>Leave Type</label><select id="leaveType"><option>Annual Leave</option><option>Sick Leave</option><option>Unpaid Leave</option><option>Emergency Leave</option></select></div>
+        <div class="fg"><label>Leave Type</label><select id="leaveType" onchange="toggleMedicalFields()"><option>Annual Leave</option><option>Sick Leave</option><option>Unpaid Leave</option><option>Emergency Leave</option></select></div>
         <div class="fg"><label>Half Day</label><select id="halfDay" onchange="updateLeaveDays()"><option>No</option><option>First Half</option><option>Second Half</option></select></div>
         <div class="fg"><label>Start Date</label><input type="date" id="leaveStart" onchange="updateLeaveDays()"></div>
         <div class="fg"><label>End Date</label><input type="date" id="leaveEnd" onchange="updateLeaveDays()"></div>
         <div class="fg full"><label>Total Leave Days</label><input id="totalLeaveDays" value="0 Day(s)" readonly style="font-weight:800;color:#17365d;background:#f4f8fc"></div>
+        <div class="fg full hidden" id="medicalPaperBox">
+          <label>Medical Paper Status</label>
+          <select id="medicalPaperStatus">
+            <option>Not Provided</option>
+            <option>Received</option>
+            <option>Not Required</option>
+          </select>
+          <small style="color:#7a8999;font-size:9px">Paper upload is optional. Status is kept for month-end tracking.</small>
+        </div>
         <div class="fg"><label>Approving Manager</label><input id="approvingManagerField" value="Select an employee" readonly title="Auto-picked from Employee Management → Line Manager / Approving Manager"><small style="color:#7a8999;font-size:9px">Auto-picked from Employee Portal Line Manager field.</small></div>
         <div class="fg"><label>Attachment</label><input type="file"></div>
         <div class="fg full"><label>HR Remarks</label><textarea placeholder="Received signed leave form..."></textarea></div>
@@ -234,6 +252,108 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <div class="sumrow"><span>Variance Resolved?</span><strong>Pending</strong></div>
       <div class="sumrow"><span>Final Status</span><strong>OPEN</strong></div>
     </div><div class="notice nwarn show">Case cannot become CLOSED while return variance, rejoining action, escalation or payroll treatment remains unresolved.</div></div>
+  </div>
+</section>
+
+
+<section class="page" id="attendance">
+  <div class="pagehead">
+    <div><h2>Timesheet / Absence Entry</h2><p>Month-end manual attendance exception entry from received timesheets.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Add Attendance Exception</h3>
+      <div class="formgrid">
+        <div class="fg full"><label>Employee</label><select id="attendanceEmployeeSelect"><option value="">Select Employee</option></select></div>
+        <div class="fg"><label>Date From</label><input type="date" id="attendanceFrom" onchange="updateAttendanceDays()"></div>
+        <div class="fg"><label>Date To</label><input type="date" id="attendanceTo" onchange="updateAttendanceDays()"></div>
+        <div class="fg"><label>Total Days</label><input id="attendanceDays" value="0 Day(s)" readonly style="font-weight:800;color:#17365d;background:#f4f8fc"></div>
+        <div class="fg"><label>Attendance Status</label>
+          <select id="attendanceStatus" onchange="toggleAttendanceMedical()">
+            <option>Absent</option>
+            <option>Sick / Medical Leave</option>
+            <option>Unpaid Leave</option>
+            <option>Annual Leave Adjustment</option>
+            <option>Emergency Leave</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Payroll Treatment</label>
+          <select id="attendancePayroll">
+            <option>LOP / Unpaid</option>
+            <option>Paid</option>
+            <option>Pending HR Review</option>
+          </select>
+        </div>
+        <div class="fg hidden" id="attendanceMedicalBox"><label>Medical Paper Status</label>
+          <select id="attendanceMedicalPaper">
+            <option>Not Provided</option>
+            <option>Received</option>
+            <option>Not Required</option>
+          </select>
+        </div>
+        <div class="fg"><label>Timesheet / Medical Attachment (Optional)</label><input type="file" id="attendanceAttachment"></div>
+        <div class="fg full"><label>Remarks</label><textarea id="attendanceRemarks" placeholder="Month-end timesheet remark / medical note..."></textarea></div>
+      </div>
+      <div id="attendanceNotice" class="notice ninfo"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary" onclick="saveAttendanceException()">Save Attendance Entry</button></div>
+    </div>
+    <div class="card">
+      <h3>Month-End Logic</h3>
+      <div class="notice ninfo show">If timesheet shows Absent, Admin can enter it here. If a medical paper later arrives, the same record can be changed to Sick / Medical Leave and the paper status can be marked Received.</div>
+      <div class="notice nwarn show">Duplicate or overlapping attendance/leave dates for the same employee are blocked to avoid double payroll impact.</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:15px">
+    <div class="pagehead" style="margin-bottom:12px">
+      <div><h2 style="font-size:15px">Attendance Exception History</h2><p>Manual month-end entries.</p></div>
+    </div>
+    <div class="toolbar">
+      <input class="search" id="attendanceSearch" placeholder="Search employee" oninput="renderAttendanceHistory()">
+      <input type="month" id="attendanceMonthFilter" onchange="renderAttendanceHistory()">
+    </div>
+    <table>
+      <thead><tr><th>Employee</th><th>Dates</th><th>Days</th><th>Status</th><th>Medical Paper</th><th>Payroll</th><th>Remarks</th><th>Action</th></tr></thead>
+      <tbody id="attendanceRows"><tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:20px">No attendance exceptions yet.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="page" id="medical">
+  <div class="pagehead">
+    <div><h2>Medical Leave Register</h2><p>Year-wise employee sick / medical leave history. Medical paper upload is optional.</p></div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="top"><span class="lab">Medical Days Selected Year</span><span class="bubble">✚</span></div><div class="num" id="medicalYearDays">0</div><div class="hint">Recorded medical leave days</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Employees with Medical Leave</span><span class="bubble">👥</span></div><div class="num" id="medicalEmployeesCount">0</div><div class="hint">Unique employees</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Paper Received</span><span class="bubble">📄</span></div><div class="num" id="medicalReceivedCount">0</div><div class="hint">Selected month/year filter</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Paper Not Provided</span><span class="bubble o">?</span></div><div class="num" id="medicalPendingCount">0</div><div class="hint">Selected month/year filter</div></div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <select id="medicalEmployeeFilter" onchange="renderMedicalRegister()"><option value="">All Employees</option></select>
+      <select id="medicalYearFilter" onchange="renderMedicalRegister()"></select>
+      <select id="medicalMonthFilter" onchange="renderMedicalRegister()">
+        <option value="">All Months</option>
+        <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+        <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+        <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+        <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+      </select>
+      <select id="medicalPaperFilter" onchange="renderMedicalRegister()">
+        <option value="">All Paper Status</option>
+        <option>Received</option>
+        <option>Not Provided</option>
+        <option>Not Required</option>
+      </select>
+    </div>
+    <table>
+      <thead><tr><th>Employee</th><th>Source</th><th>Dates</th><th>Days</th><th>Medical Paper</th><th>Leave Status</th><th>Payroll</th><th>Remarks</th></tr></thead>
+      <tbody id="medicalRegisterRows"><tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:20px">No medical leave records yet.</td></tr></tbody>
+    </table>
   </div>
 </section>
 
@@ -352,9 +472,10 @@ function fillEmployeeSelect(selectId, keepValue=true){
 }
 
 function loadAllEmployeeDropdowns(){
-  ["employeeSelect","travelEmployeeSelect","rejoinEmployeeSelect","ledgerEmployeeSelect","encashEmployeeSelect"]
+  ["employeeSelect","travelEmployeeSelect","rejoinEmployeeSelect","attendanceEmployeeSelect","medicalEmployeeFilter","ledgerEmployeeSelect","encashEmployeeSelect"]
     .forEach(id=>fillEmployeeSelect(id));
   refreshEmployeeSnapshot();
+  initMedicalFilters();
 }
 
 function findEmployeeByValue(value){
@@ -390,6 +511,14 @@ document.addEventListener("DOMContentLoaded",()=>{
   loadAllEmployeeDropdowns();
   const employeeSelect=document.getElementById("employeeSelect");
   if(employeeSelect) employeeSelect.addEventListener("change",refreshEmployeeSnapshot);
+  toggleMedicalFields();
+  toggleAttendanceMedical();
+  initMedicalFilters();
+  const am=document.getElementById("attendanceMonthFilter");
+  if(am && !am.value){
+    const d=new Date();
+    am.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  }
   refreshLeaveUI();
 
   // Refresh whenever user comes back from Employee Portal
@@ -402,7 +531,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   });
 });
 
-const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',tickets:'Ticket & Travel Tracker',rejoin:'Record Rejoining',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
+const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',tickets:'Ticket & Travel Tracker',rejoin:'Record Rejoining',attendance:'Timesheet / Absence Entry',medical:'Medical Leave Register',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
 
 function go(id,btn){
   const target=document.getElementById(id);
@@ -429,7 +558,7 @@ function fmt(v){return new Date(v+'T00:00:00').toLocaleDateString('en-GB',{day:'
 
 
 function readLeaveStore(){
-  let store={requests:[],tickets:[],rejoining:[],encashments:[]};
+  let store={requests:[],tickets:[],rejoining:[],encashments:[],attendanceAdjustments:[]};
   try{
     const raw=localStorage.getItem(LEAVE_DATA_KEY);
     if(raw) store={...store,...JSON.parse(raw)};
@@ -437,6 +566,7 @@ function readLeaveStore(){
     console.warn("Leave data could not be read",err);
   }
   if(!Array.isArray(store.requests)) store.requests=[];
+  if(!Array.isArray(store.attendanceAdjustments)) store.attendanceAdjustments=[];
   return store;
 }
 
@@ -547,6 +677,16 @@ function renderApprovedLeaveCount(){
 function refreshLeaveUI(){
   renderManagerApprovals();
   renderApprovedLeaveCount();
+  renderAttendanceHistory();
+  renderMedicalRegister();
+  renderMedicalDashboard();
+}
+
+
+function toggleMedicalFields(){
+  const type=document.getElementById("leaveType")?.value||"";
+  const box=document.getElementById("medicalPaperBox");
+  if(box) box.classList.toggle("hidden",type!=="Sick Leave");
 }
 
 function updateLeaveDays(){
@@ -570,6 +710,44 @@ function updateLeaveDays(){
   out.value=(Number.isInteger(days)?days:days.toFixed(1))+' Day(s)';
 }
 
+
+function normalizeLeaveStatus(v){
+  return String(v||"").trim().toLowerCase();
+}
+
+function isBlockingLeaveStatus(status){
+  const s=normalizeLeaveStatus(status);
+  return !["rejected","cancelled","canceled"].includes(s);
+}
+
+function findLeaveConflict(employeeCode, startDate, endDate, leaveType){
+  const store=readLeaveStore();
+  const newStart=new Date(startDate+"T00:00:00");
+  const newEnd=new Date(endDate+"T00:00:00");
+
+  const activeRequests=store.requests.filter(r=>
+    String(r.employeeCode||"").trim()===String(employeeCode||"").trim() &&
+    isBlockingLeaveStatus(r.status)
+  );
+
+  const exact=activeRequests.find(r=>
+    String(r.startDate||"")===String(startDate||"") &&
+    String(r.endDate||"")===String(endDate||"") &&
+    String(r.leaveType||"").trim().toLowerCase()===String(leaveType||"").trim().toLowerCase()
+  );
+  if(exact) return {type:"exact",request:exact};
+
+  const overlap=activeRequests.find(r=>{
+    if(!r.startDate || !r.endDate) return false;
+    const oldStart=new Date(r.startDate+"T00:00:00");
+    const oldEnd=new Date(r.endDate+"T00:00:00");
+    return newStart<=oldEnd && newEnd>=oldStart;
+  });
+  if(overlap) return {type:"overlap",request:overlap};
+
+  return null;
+}
+
 function submitLeave(){
   updateLeaveDays();
   const emp=document.getElementById('employeeSelect')?.value;
@@ -587,6 +765,39 @@ function submitLeave(){
     return;
   }
   const employee=findEmployeeByValue(emp);
+  if(!employee){
+    n.className='notice ndanger show';
+    n.textContent='Employee record could not be found in Employee Master.';
+    return;
+  }
+
+  const selectedLeaveType=document.getElementById('leaveType')?.value||'';
+  const conflict=findLeaveConflict(employee.employeeCode,s,e,selectedLeaveType);
+
+  if(conflict?.type==='exact'){
+    const r=conflict.request;
+    const msg='DUPLICATE REQUEST BLOCKED\n\nThis employee already has the same '+selectedLeaveType+
+      ' request from '+niceDate(r.startDate)+' to '+niceDate(r.endDate)+
+      '.\nExisting Request: '+(r.id||'-')+'\nStatus: '+(r.status||'-');
+    alert(msg);
+    n.className='notice ndanger show';
+    n.textContent='Duplicate leave request blocked. Existing Request '+(r.id||'-')+' is already '+(r.status||'active')+'.';
+    return;
+  }
+
+  if(conflict?.type==='overlap'){
+    const r=conflict.request;
+    const msg='OVERLAPPING LEAVE BLOCKED\n\nThis employee already has a leave request from '+
+      niceDate(r.startDate)+' to '+niceDate(r.endDate)+
+      '.\nExisting Request: '+(r.id||'-')+'\nStatus: '+(r.status||'-')+
+      '\n\nPlease change the dates or resolve/cancel the existing request first.';
+    alert(msg);
+    n.className='notice ndanger show';
+    n.textContent='Overlapping leave dates blocked. Existing Request '+(r.id||'-')+
+      ' covers '+niceDate(r.startDate)+' to '+niceDate(r.endDate)+'.';
+    return;
+  }
+
   const manager=String(employee?.lineManager || employee?.approvingManager || "").trim();
 
   if(!manager){
@@ -604,24 +815,318 @@ function submitLeave(){
     designation:employee?.actualDesignation||employee?.idDesignation||'',
     lineManager:manager,
     approvingManager:manager,
-    leaveType:document.getElementById('leaveType')?.value||'',
+    leaveType:selectedLeaveType,
+    medicalPaperStatus:selectedLeaveType==='Sick Leave'?(document.getElementById('medicalPaperStatus')?.value||'Not Provided'):'Not Required',
+    remarks:document.querySelector('#request textarea')?.value.trim()||'',
     startDate:s,
     endDate:e,
     totalLeaveDays:total,
     status:'Pending Manager Approval',
     createdAt:new Date().toISOString()
   };
-  let store={requests:[],tickets:[],rejoining:[],encashments:[]};
+  let store={requests:[],tickets:[],rejoining:[],encashments:[],attendanceAdjustments:[]};
   try{
     const raw=localStorage.getItem(LEAVE_DATA_KEY);
     if(raw) store={...store,...JSON.parse(raw)};
   }catch(err){}
   if(!Array.isArray(store.requests)) store.requests=[];
+  if(!Array.isArray(store.attendanceAdjustments)) store.attendanceAdjustments=[];
   store.requests.push(record);
   localStorage.setItem(LEAVE_DATA_KEY,JSON.stringify(store));
   n.className='notice ninfo show';
   n.textContent='Leave request saved for '+employeeOptionLabel(employee||{})+' and routed to Manager: '+manager+'.';
   refreshLeaveUI();
+}
+
+
+function parseDayValue(v){
+  const n=parseFloat(String(v||"").replace(/[^\d.]/g,""));
+  return Number.isFinite(n)?n:0;
+}
+
+function updateAttendanceDays(){
+  const s=document.getElementById("attendanceFrom")?.value;
+  const e=document.getElementById("attendanceTo")?.value;
+  const out=document.getElementById("attendanceDays");
+  if(!out) return;
+  if(!s||!e){out.value="0 Day(s)";return;}
+  const a=new Date(s+"T00:00:00"),b=new Date(e+"T00:00:00");
+  if(b<a){out.value="Invalid Date Range";return;}
+  out.value=(Math.floor((b-a)/86400000)+1)+" Day(s)";
+}
+
+function toggleAttendanceMedical(){
+  const isMedical=document.getElementById("attendanceStatus")?.value==="Sick / Medical Leave";
+  const box=document.getElementById("attendanceMedicalBox");
+  if(box) box.classList.toggle("hidden",!isMedical);
+  if(isMedical){
+    const payroll=document.getElementById("attendancePayroll");
+    if(payroll && payroll.value==="LOP / Unpaid") payroll.value="Pending HR Review";
+  }
+}
+
+function attendanceConflict(employeeCode,startDate,endDate,ignoreId=""){
+  const store=readLeaveStore();
+  const a=new Date(startDate+"T00:00:00"), b=new Date(endDate+"T00:00:00");
+
+  const leave=store.requests.find(r=>{
+    if(String(r.employeeCode||"")!==String(employeeCode||"")) return false;
+    if(["rejected","cancelled","canceled"].includes(normalizeLeaveStatus(r.status))) return false;
+    if(!r.startDate||!r.endDate) return false;
+    const x=new Date(r.startDate+"T00:00:00"), y=new Date(r.endDate+"T00:00:00");
+    return a<=y && b>=x;
+  });
+  if(leave) return {source:"Leave Request",record:leave};
+
+  const adj=store.attendanceAdjustments.find(r=>{
+    if(String(r.id)===String(ignoreId)) return false;
+    if(String(r.employeeCode||"")!==String(employeeCode||"")) return false;
+    if(!r.startDate||!r.endDate) return false;
+    const x=new Date(r.startDate+"T00:00:00"), y=new Date(r.endDate+"T00:00:00");
+    return a<=y && b>=x;
+  });
+  if(adj) return {source:"Attendance Entry",record:adj};
+
+  return null;
+}
+
+function saveAttendanceException(){
+  const empVal=document.getElementById("attendanceEmployeeSelect")?.value;
+  const s=document.getElementById("attendanceFrom")?.value;
+  const e=document.getElementById("attendanceTo")?.value;
+  const status=document.getElementById("attendanceStatus")?.value||"Absent";
+  const notice=document.getElementById("attendanceNotice");
+
+  if(!empVal||!s||!e){
+    notice.className="notice ndanger show";
+    notice.textContent="Select employee and enter Date From / Date To.";
+    return;
+  }
+  if(new Date(e)<new Date(s)){
+    notice.className="notice ndanger show";
+    notice.textContent="Date To cannot be earlier than Date From.";
+    return;
+  }
+
+  const emp=findEmployeeByValue(empVal);
+  if(!emp){
+    notice.className="notice ndanger show";
+    notice.textContent="Employee not found in Employee Master.";
+    return;
+  }
+
+  const conflict=attendanceConflict(emp.employeeCode,s,e);
+  if(conflict){
+    const r=conflict.record;
+    alert("DUPLICATE / OVERLAP BLOCKED\n\nExisting "+conflict.source+": "+(r.id||"-")+
+      "\nDates: "+niceDate(r.startDate)+" to "+niceDate(r.endDate));
+    notice.className="notice ndanger show";
+    notice.textContent="Entry blocked because these dates already exist in "+conflict.source+".";
+    return;
+  }
+
+  updateAttendanceDays();
+  const store=readLeaveStore();
+  const record={
+    id:"ATT-"+Date.now(),
+    employeeCode:emp.employeeCode||"",
+    employeeName:emp.employeeName||"",
+    company:emp.company||"",
+    startDate:s,
+    endDate:e,
+    totalDays:document.getElementById("attendanceDays")?.value||"",
+    attendanceStatus:status,
+    medicalPaperStatus:status==="Sick / Medical Leave"?(document.getElementById("attendanceMedicalPaper")?.value||"Not Provided"):"Not Required",
+    payrollTreatment:document.getElementById("attendancePayroll")?.value||"",
+    remarks:document.getElementById("attendanceRemarks")?.value.trim()||"",
+    source:"Timesheet",
+    createdAt:new Date().toISOString()
+  };
+  store.attendanceAdjustments.push(record);
+  saveLeaveStore(store);
+
+  notice.className="notice ninfo show";
+  notice.textContent="Attendance exception saved for "+employeeOptionLabel(emp)+".";
+  renderAttendanceHistory();
+  renderMedicalRegister();
+  renderMedicalDashboard();
+}
+
+function updateAttendanceMedicalStatus(id){
+  const store=readLeaveStore();
+  const row=store.attendanceAdjustments.find(r=>String(r.id)===String(id));
+  if(!row) return;
+  const value=prompt("Medical Paper Status:\nReceived / Not Provided / Not Required",row.medicalPaperStatus||"Not Provided");
+  if(!value) return;
+  const allowed=["Received","Not Provided","Not Required"];
+  const match=allowed.find(x=>x.toLowerCase()===value.trim().toLowerCase());
+  if(!match) return alert("Use: Received, Not Provided, or Not Required.");
+  row.medicalPaperStatus=match;
+  row.updatedAt=new Date().toISOString();
+  saveLeaveStore(store);
+  renderAttendanceHistory();
+  renderMedicalRegister();
+  renderMedicalDashboard();
+}
+
+function convertAttendanceToMedical(id){
+  const store=readLeaveStore();
+  const row=store.attendanceAdjustments.find(r=>String(r.id)===String(id));
+  if(!row) return;
+  if(!confirm("Convert this attendance entry to Sick / Medical Leave?")) return;
+  row.attendanceStatus="Sick / Medical Leave";
+  if(!row.medicalPaperStatus || row.medicalPaperStatus==="Not Required") row.medicalPaperStatus="Not Provided";
+  row.updatedAt=new Date().toISOString();
+  saveLeaveStore(store);
+  renderAttendanceHistory();
+  renderMedicalRegister();
+  renderMedicalDashboard();
+}
+
+function renderAttendanceHistory(){
+  const tbody=document.getElementById("attendanceRows");
+  if(!tbody) return;
+  const store=readLeaveStore();
+  const q=(document.getElementById("attendanceSearch")?.value||"").trim().toLowerCase();
+  const month=document.getElementById("attendanceMonthFilter")?.value||"";
+
+  let rows=store.attendanceAdjustments.slice().reverse();
+  if(q) rows=rows.filter(r=>(r.employeeName+" "+r.employeeCode).toLowerCase().includes(q));
+  if(month) rows=rows.filter(r=>String(r.startDate||"").startsWith(month));
+
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:20px">No attendance exceptions found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=rows.map(r=>`
+    <tr>
+      <td><b>${escHtml(r.employeeName)}</b><br><span style="color:#78889a">${escHtml(r.employeeCode)}</span></td>
+      <td>${niceDate(r.startDate)} → ${niceDate(r.endDate)}</td>
+      <td>${escHtml(r.totalDays)}</td>
+      <td>${escHtml(r.attendanceStatus)}</td>
+      <td>${escHtml(r.medicalPaperStatus||"Not Required")}</td>
+      <td>${escHtml(r.payrollTreatment||"-")}</td>
+      <td>${escHtml(r.remarks||"-")}</td>
+      <td>
+        ${r.attendanceStatus!=="Sick / Medical Leave"?`<button class="btn light" onclick="convertAttendanceToMedical('${escHtml(r.id)}')">Convert to Medical</button>`:""}
+        ${r.attendanceStatus==="Sick / Medical Leave"?`<button class="btn light" onclick="updateAttendanceMedicalStatus('${escHtml(r.id)}')">Paper Status</button>`:""}
+      </td>
+    </tr>`).join("");
+}
+
+function medicalRecords(){
+  const store=readLeaveStore();
+  const fromLeave=store.requests
+    .filter(r=>r.leaveType==="Sick Leave" && !["rejected","cancelled","canceled"].includes(normalizeLeaveStatus(r.status)))
+    .map(r=>({
+      id:r.id, employeeCode:r.employeeCode, employeeName:r.employeeName,
+      startDate:r.startDate,endDate:r.endDate,days:parseDayValue(r.totalLeaveDays),
+      medicalPaperStatus:r.medicalPaperStatus||"Not Provided",
+      leaveStatus:r.status||"-",payrollTreatment:"Leave Workflow",
+      remarks:r.remarks||"",source:"Leave Request"
+    }));
+
+  const fromAttendance=store.attendanceAdjustments
+    .filter(r=>r.attendanceStatus==="Sick / Medical Leave")
+    .map(r=>({
+      id:r.id, employeeCode:r.employeeCode, employeeName:r.employeeName,
+      startDate:r.startDate,endDate:r.endDate,days:parseDayValue(r.totalDays),
+      medicalPaperStatus:r.medicalPaperStatus||"Not Provided",
+      leaveStatus:"Recorded by HR",payrollTreatment:r.payrollTreatment||"-",
+      remarks:r.remarks||"",source:"Timesheet"
+    }));
+
+  return [...fromLeave,...fromAttendance];
+}
+
+function initMedicalFilters(){
+  const year=document.getElementById("medicalYearFilter");
+  if(year && !year.options.length){
+    const current=new Date().getFullYear();
+    for(let y=current+1;y>=current-5;y--){
+      const o=document.createElement("option");o.value=String(y);o.textContent=String(y);
+      if(y===current)o.selected=true;
+      year.appendChild(o);
+    }
+  }
+
+  const emp=document.getElementById("medicalEmployeeFilter");
+  if(emp){
+    const old=emp.value;
+    emp.innerHTML='<option value="">All Employees</option>';
+    activeEmployeesFromMaster().slice().sort((a,b)=>employeeOptionLabel(a).localeCompare(employeeOptionLabel(b))).forEach(e=>{
+      const o=document.createElement("option");
+      o.value=String(e.employeeCode||e.employeeName||"");
+      o.textContent=employeeOptionLabel(e);
+      emp.appendChild(o);
+    });
+    if(old && [...emp.options].some(o=>o.value===old))emp.value=old;
+  }
+}
+
+function renderMedicalRegister(){
+  const tbody=document.getElementById("medicalRegisterRows");
+  if(!tbody) return;
+  initMedicalFilters();
+
+  const emp=document.getElementById("medicalEmployeeFilter")?.value||"";
+  const year=document.getElementById("medicalYearFilter")?.value||String(new Date().getFullYear());
+  const month=document.getElementById("medicalMonthFilter")?.value||"";
+  const paper=document.getElementById("medicalPaperFilter")?.value||"";
+
+  let rows=medicalRecords().filter(r=>String(r.startDate||"").startsWith(year+"-"));
+  if(emp) rows=rows.filter(r=>String(r.employeeCode||"")===String(emp));
+  if(month) rows=rows.filter(r=>String(r.startDate||"").slice(5,7)===month);
+  if(paper) rows=rows.filter(r=>r.medicalPaperStatus===paper);
+
+  const totalDays=rows.reduce((a,r)=>a+(Number(r.days)||0),0);
+  const employees=new Set(rows.map(r=>r.employeeCode||r.employeeName));
+  const received=rows.filter(r=>r.medicalPaperStatus==="Received").length;
+  const pending=rows.filter(r=>r.medicalPaperStatus==="Not Provided").length;
+
+  const set=(id,val)=>{const x=document.getElementById(id);if(x)x.textContent=String(val);};
+  set("medicalYearDays",Number.isInteger(totalDays)?totalDays:totalDays.toFixed(1));
+  set("medicalEmployeesCount",employees.size);
+  set("medicalReceivedCount",received);
+  set("medicalPendingCount",pending);
+
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:20px">No medical leave records found.</td></tr>';
+    return;
+  }
+
+  rows.sort((a,b)=>String(b.startDate).localeCompare(String(a.startDate)));
+  tbody.innerHTML=rows.map(r=>`
+    <tr>
+      <td><b>${escHtml(r.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(r.employeeCode||"")}</span></td>
+      <td>${escHtml(r.source)}</td>
+      <td>${niceDate(r.startDate)} → ${niceDate(r.endDate)}</td>
+      <td>${escHtml(r.days)}</td>
+      <td>${escHtml(r.medicalPaperStatus)}</td>
+      <td>${escHtml(r.leaveStatus)}</td>
+      <td>${escHtml(r.payrollTreatment)}</td>
+      <td>${escHtml(r.remarks||"-")}</td>
+    </tr>`).join("");
+}
+
+function renderMedicalDashboard(){
+  const records=medicalRecords();
+  const now=new Date();
+  const year=String(now.getFullYear());
+  const month=year+"-"+String(now.getMonth()+1).padStart(2,"0");
+  const yearRows=records.filter(r=>String(r.startDate||"").startsWith(year+"-"));
+  const monthRows=records.filter(r=>String(r.startDate||"").startsWith(month));
+  const days=yearRows.reduce((a,r)=>a+(Number(r.days)||0),0);
+  const received=monthRows.filter(r=>r.medicalPaperStatus==="Received").length;
+  const pending=monthRows.filter(r=>r.medicalPaperStatus==="Not Provided").length;
+  const store=readLeaveStore();
+
+  const set=(id,val)=>{const x=document.getElementById(id);if(x)x.textContent=String(val);};
+  set("kpiMedicalDaysYear",Number.isInteger(days)?days:days.toFixed(1));
+  set("kpiMedicalPaperReceived",received);
+  set("kpiMedicalPaperPending",pending);
+  set("kpiTimesheetExceptions",store.attendanceAdjustments.length);
 }
 
 function checkDeparture(){
