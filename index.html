@@ -828,8 +828,8 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
         <div class="toolbar">
           <button id="exportEmployeeListBtn" class="btn light" type="button">Export List</button>
           <button id="newEmployeeBtn" class="btn" type="button" onclick="window.cmOpenNewEmployee && window.cmOpenNewEmployee()">+ Add Employee</button>
-          <button id="bulkUploadBtn" class="btn light" type="button" title="Bulk upload employees from CSV">Bulk Upload</button>
-          <input id="bulkUploadFile" type="file" accept=".csv,text/csv" class="hidden">
+          <button id="bulkUploadBtn" class="btn light" type="button" title="Download sample Excel and bulk upload employees">Bulk Upload</button>
+          <input id="bulkUploadFile" type="file" accept=".xls,.xml,.csv,text/csv,application/vnd.ms-excel,text/xml,application/xml" class="hidden">
           <input id="employeeSearch" class="search" placeholder="Search employee...">
           <button id="expandEmployeeListBtn" class="btn light" type="button" title="Show more employee columns">Expand List</button>
           <button id="advancedEmployeeFilterBtn" class="btn light" type="button" title="Open advanced employee filters">Advanced Filter</button>
@@ -1077,6 +1077,35 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
     <div class="followup-sheet-actions">
       <button id="cancelFollowupDrawer" class="btn light" type="button">Cancel</button>
       <button id="saveFollowupDrawer" class="btn orange" type="button">Save Follow-up</button>
+    </div>
+  </div>
+</div>
+
+<div id="bulkUploadModal" class="profile-modal hidden">
+  <div class="profile-shell" style="max-width:760px">
+    <div class="profile-head">
+      <div>
+        <div class="profile-name">Bulk Upload Employees</div>
+        <div class="profile-meta">Step 1: sample Excel download karein. Step 2: usi sheet mein employee data fill karke upload karein.</div>
+      </div>
+      <button id="closeBulkUploadModal" class="btn light" type="button">Close</button>
+    </div>
+    <div class="profile-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="doc-card" style="margin:0">
+          <div class="section-title" style="margin-top:0">1. Download Sample Excel</div>
+          <div class="small" style="line-height:1.6;margin-bottom:14px">Template mein employee list ke required aur common fields already columns ki form mein diye gaye hain. Example row ko replace karke apna data fill karein.</div>
+          <button id="downloadBulkTemplateBtn" class="btn orange" type="button">Download Sample Excel</button>
+        </div>
+        <div class="doc-card" style="margin:0">
+          <div class="section-title" style="margin-top:0">2. Upload Filled Excel</div>
+          <div class="small" style="line-height:1.6;margin-bottom:14px">Filled sample file select karein. Employee Code aur Employee Name required hain. Duplicate Employee Code skip hoga.</div>
+          <button id="chooseBulkUploadBtn" class="btn" type="button">Choose Filled Excel</button>
+        </div>
+      </div>
+      <div class="note" style="margin-top:16px;margin-bottom:0">
+        <b>Important:</b> Download ki hui <b>.xls</b> sample ko Excel mein open karke fill karein aur same Excel 2003 XML / .xls format mein save karein. CSV bhi upload ki ja sakti hai.
+      </div>
     </div>
   </div>
 </div>
@@ -1974,7 +2003,14 @@ document.addEventListener("DOMContentLoaded", () => {
     </tr>`).join(""):'<tr><td colspan="28" class="empty">No employee records match your search / filters.</td></tr>';
   }
 
-  // BULK EMPLOYEE UPLOAD (CSV - local/offline)
+  // BULK EMPLOYEE UPLOAD — Sample Excel first, then upload filled sheet
+  const BULK_HEADERS=[
+    "Employee Code","Employee Name","Arabic Name","Unified Number","Actual Designation","Nationality","Gender","Date of Birth","Marital Status","Mobile",
+    "Company","ID Card Designation","Joining Date","Status","Inactive Reason","Inactive Date",
+    "Passport No.","Passport Issue Date","Passport Expiry","Emirates ID No.","Emirates ID Issue Date","Emirates ID Expiry",
+    "Emergency Contact","Emergency Relation","Emergency Mobile","Emergency Country"
+  ];
+
   function parseCsv(text){
     const rows=[]; let row=[], cell="", inQuotes=false;
     text=String(text||"").replace(/^\uFEFF/,"");
@@ -1995,83 +2031,102 @@ document.addEventListener("DOMContentLoaded", () => {
     if(row.some(v=>v!=="")) rows.push(row);
     return rows;
   }
-  function normHeader(v){
-    return String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"");
-  }
+  function normHeader(v){ return String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,""); }
   function csvVal(obj,...keys){
     for(const k of keys){ const v=obj[normHeader(k)]; if(v!==undefined) return String(v).trim(); }
     return "";
   }
-  function csvEmployee(rowObj){
+  function makeDoc(type,number,issueDate,expiryDate){
+    if(!number && !issueDate && !expiryDate) return null;
+    return {type,number:number||"",issueDate:issueDate||"",expiryDate:expiryDate||"",url:"",followupStatus:"Pending",followupDate:"",followupRemarks:"",followupHistory:[]};
+  }
+  function rowEmployee(rowObj){
     const code=csvVal(rowObj,"Employee Code","Code");
     const name=csvVal(rowObj,"Employee Name","Name");
+    const docs=[];
+    const passport=makeDoc("Passport",csvVal(rowObj,"Passport No.","Passport No","Passport Number"),csvVal(rowObj,"Passport Issue Date"),csvVal(rowObj,"Passport Expiry","Passport Expiry Date"));
+    const eid=makeDoc("Emirates ID",csvVal(rowObj,"Emirates ID No.","Emirates ID No","Emirates ID Number"),csvVal(rowObj,"Emirates ID Issue Date"),csvVal(rowObj,"Emirates ID Expiry","Emirates ID Expiry Date"));
+    if(passport) docs.push(passport); if(eid) docs.push(eid);
     return {
-      employeeCode:code,
-      employeeName:name,
+      employeeCode:code, employeeName:name,
       employeeNameArabic:csvVal(rowObj,"Employee Name Arabic","Arabic Name","Employee Name in Arabic"),
       unifiedNumber:csvVal(rowObj,"Unified Number","Unified No","Unified No."),
-      actualDesignation:csvVal(rowObj,"Actual Designation"),
-      nationality:csvVal(rowObj,"Nationality"),
-      gender:csvVal(rowObj,"Gender"),
-      dob:csvVal(rowObj,"Date of Birth","DOB"),
-      maritalStatus:csvVal(rowObj,"Marital Status"),
-      mobile:csvVal(rowObj,"Mobile","Mobile Number"),
-      photo:"",
-      company:csvVal(rowObj,"Company"),
-      idDesignation:csvVal(rowObj,"ID Card Designation","Designation as per ID Card"),
-      joiningDate:csvVal(rowObj,"Joining Date"),
-      status:csvVal(rowObj,"Status","Employee Status")||"Active",
-      inactiveReason:csvVal(rowObj,"Inactive Reason"),
-      inactiveDate:csvVal(rowObj,"Inactive Date"),
-      documents:[],
-      emergency:{
-        name:csvVal(rowObj,"Emergency Contact","Emergency Name"),
-        relationship:csvVal(rowObj,"Emergency Relation","Emergency Relationship"),
-        mobile:csvVal(rowObj,"Emergency Mobile"),
-        country:csvVal(rowObj,"Emergency Country")
-      },
-      attachments:[],
-      history:[],
-      updatedAt:new Date().toISOString()
+      actualDesignation:csvVal(rowObj,"Actual Designation"), nationality:csvVal(rowObj,"Nationality"), gender:csvVal(rowObj,"Gender"),
+      dob:csvVal(rowObj,"Date of Birth","DOB"), maritalStatus:csvVal(rowObj,"Marital Status"), mobile:csvVal(rowObj,"Mobile","Mobile Number"), photo:"",
+      company:csvVal(rowObj,"Company"), idDesignation:csvVal(rowObj,"ID Card Designation","Designation as per ID Card"), joiningDate:csvVal(rowObj,"Joining Date"),
+      status:csvVal(rowObj,"Status","Employee Status")||"Active", inactiveReason:csvVal(rowObj,"Inactive Reason"), inactiveDate:csvVal(rowObj,"Inactive Date"),
+      documents:docs,
+      emergency:{name:csvVal(rowObj,"Emergency Contact","Emergency Name"),relationship:csvVal(rowObj,"Emergency Relation","Emergency Relationship"),mobile:csvVal(rowObj,"Emergency Mobile"),country:csvVal(rowObj,"Emergency Country")},
+      attachments:[], history:[], updatedAt:new Date().toISOString()
     };
   }
-  $("bulkUploadBtn")?.addEventListener("click",()=>$("bulkUploadFile")?.click());
+
+  function xmlEsc(v){ return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function downloadBulkTemplate(){
+    const example=["CM-004","Sample Employee","","","PIPE FITTER","INDIAN","Male","1990-01-15","Married","0500000000","CIVIL MASTER GENERAL MAINTENANCE LLC-OPC","Pipe Fitter","2026-08-01","Active","","","P1234567","2025-01-01","2030-01-01","784-0000-0000000-0","2026-01-01","2028-01-01","Contact Name","Brother","0500000001","India"];
+    const headerCells=BULK_HEADERS.map(h=>`<Cell ss:StyleID="Header"><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`).join("");
+    const sampleCells=example.map(v=>`<Cell><Data ss:Type="String">${xmlEsc(v)}</Data></Cell>`).join("");
+    const widths=BULK_HEADERS.map((_,i)=>`<Column ss:AutoFitWidth="0" ss:Width="${i===1?150:i===10?220:105}"/>`).join("");
+    const xml=`<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n<Styles><Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Bottom"/><Font ss:FontName="Calibri" ss:Size="11"/></Style><Style ss:ID="Header"><Font ss:Bold="1"/><Interior ss:Color="#DCEBFA" ss:Pattern="Solid"/><Alignment ss:WrapText="1"/></Style></Styles>\n<Worksheet ss:Name="Employees"><Table>${widths}<Row>${headerCells}</Row><Row>${sampleCells}</Row></Table><WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel"><FreezePanes/><FrozenNoSplit/><SplitHorizontal>1</SplitHorizontal><TopRowBottomPane>1</TopRowBottomPane><ActivePane>2</ActivePane></WorksheetOptions></Worksheet>\n<Worksheet ss:Name="Instructions"><Table><Row><Cell ss:StyleID="Header"><Data ss:Type="String">Bulk Upload Instructions</Data></Cell></Row><Row><Cell><Data ss:Type="String">1. Employees sheet mein sample row replace karke employee data fill karein.</Data></Cell></Row><Row><Cell><Data ss:Type="String">2. Employee Code aur Employee Name required hain.</Data></Cell></Row><Row><Cell><Data ss:Type="String">3. Dates ko YYYY-MM-DD format mein rakhein.</Data></Cell></Row><Row><Cell><Data ss:Type="String">4. Status Active ya Inactive likhein.</Data></Cell></Row><Row><Cell><Data ss:Type="String">5. Duplicate Employee Code import nahi hoga.</Data></Cell></Row><Row><Cell><Data ss:Type="String">6. File ko same .xls / XML Spreadsheet format mein save karke Bulk Upload se upload karein.</Data></Cell></Row></Table></Worksheet>\n</Workbook>`;
+    const blob=new Blob([xml],{type:"application/vnd.ms-excel;charset=utf-8"});
+    const url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download="Civil_Master_Employee_Bulk_Upload_Sample.xls"; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+
+  function parseSpreadsheetXml(text){
+    const doc=new DOMParser().parseFromString(String(text||""),"application/xml");
+    if(doc.querySelector("parsererror")) throw new Error("Excel file could not be read. Please use the downloaded sample file and save it in the same .xls format.");
+    const worksheets=[...doc.getElementsByTagNameNS("*","Worksheet")];
+    const ws=worksheets.find(x=>x.getAttributeNS("urn:schemas-microsoft-com:office:spreadsheet","Name")==="Employees" || x.getAttribute("ss:Name")==="Employees") || worksheets[0];
+    if(!ws) throw new Error("Employees sheet not found.");
+    return [...ws.getElementsByTagNameNS("*","Row")].map(row=>[...row.getElementsByTagNameNS("*","Cell")].map(cell=>{
+      const d=cell.getElementsByTagNameNS("*","Data")[0]; return d?d.textContent.trim():"";
+    })).filter(r=>r.some(Boolean));
+  }
+
+  function importEmployeeRows(rows){
+    if(rows.length<2) throw new Error("Excel sheet has no employee rows.");
+    const headers=rows[0].map(normHeader);
+    if(!headers.includes(normHeader("Employee Code")) && !headers.includes(normHeader("Code"))) throw new Error("Employee Code column is required.");
+    if(!headers.includes(normHeader("Employee Name")) && !headers.includes(normHeader("Name"))) throw new Error("Employee Name column is required.");
+    const existingCodes=new Set((data.employees||[]).map(x=>String(x.employeeCode||"").trim().toLowerCase()).filter(Boolean));
+    const batchCodes=new Set(); const imported=[]; let skipped=0;
+    rows.slice(1).forEach(cols=>{
+      const obj={}; headers.forEach((h,i)=>obj[h]=cols[i]??"");
+      const emp=rowEmployee(obj), k=emp.employeeCode.toLowerCase();
+      if(!emp.employeeCode || !emp.employeeName || existingCodes.has(k) || batchCodes.has(k)){ skipped++; return; }
+      batchCodes.add(k);
+      addHistoryEvent(emp,{type:"Employee Created",title:"Employee profile created by bulk upload",changes:[
+        {field:"Employee Code",old:"",new:emp.employeeCode},{field:"Employee Name",old:"",new:emp.employeeName},{field:"Status",old:"",new:emp.status}
+      ]});
+      imported.push(emp);
+    });
+    if(!imported.length) throw new Error(`No employee imported. ${skipped} row(s) skipped because Code/Name was missing or Employee Code already exists.`);
+    if(!confirm(`Bulk Upload Summary\n\nReady to import: ${imported.length}\nSkipped: ${skipped}\n\nContinue?`)) return;
+    data.employees.push(...imported);
+    if(saveData()) alert(`Bulk upload completed. ${imported.length} employee(s) imported. ${skipped} row(s) skipped.`);
+  }
+
+  $("bulkUploadBtn")?.addEventListener("click",()=>$("bulkUploadModal")?.classList.remove("hidden"));
+  $("closeBulkUploadModal")?.addEventListener("click",()=>$("bulkUploadModal")?.classList.add("hidden"));
+  $("bulkUploadModal")?.addEventListener("click",e=>{ if(e.target===$("bulkUploadModal")) $("bulkUploadModal").classList.add("hidden"); });
+  $("downloadBulkTemplateBtn")?.addEventListener("click",downloadBulkTemplate);
+  $("chooseBulkUploadBtn")?.addEventListener("click",()=>$("bulkUploadFile")?.click());
   $("bulkUploadFile")?.addEventListener("change",e=>{
-    const file=e.target.files?.[0];
-    if(!file) return;
+    const file=e.target.files?.[0]; if(!file) return;
+    const name=(file.name||"").toLowerCase();
     const reader=new FileReader();
     reader.onload=()=>{
       try{
-        const rows=parseCsv(reader.result);
-        if(rows.length<2) throw new Error("CSV has no employee rows.");
-        const headers=rows[0].map(normHeader);
-        if(!headers.includes(normHeader("Employee Code")) && !headers.includes(normHeader("Code"))) throw new Error("Employee Code column is required.");
-        if(!headers.includes(normHeader("Employee Name")) && !headers.includes(normHeader("Name"))) throw new Error("Employee Name column is required.");
-        const existingCodes=new Set((data.employees||[]).map(x=>String(x.employeeCode||"").trim().toLowerCase()).filter(Boolean));
-        const batchCodes=new Set();
-        const imported=[]; let skipped=0;
-        rows.slice(1).forEach(cols=>{
-          const obj={}; headers.forEach((h,i)=>obj[h]=cols[i]??"");
-          const emp=csvEmployee(obj);
-          const k=emp.employeeCode.toLowerCase();
-          if(!emp.employeeCode || !emp.employeeName || existingCodes.has(k) || batchCodes.has(k)){ skipped++; return; }
-          batchCodes.add(k);
-          addHistoryEvent(emp,{type:"Employee Created",title:"Employee profile created by bulk upload",changes:[
-            {field:"Employee Code",old:"",new:emp.employeeCode},
-            {field:"Employee Name",old:"",new:emp.employeeName},
-            {field:"Status",old:"",new:emp.status}
-          ]});
-          imported.push(emp);
-        });
-        if(!imported.length) return alert(`No employee imported. ${skipped} row(s) skipped because Code/Name was missing or Employee Code already exists.`);
-        if(!confirm(`Bulk Upload Summary\n\nReady to import: ${imported.length}\nSkipped: ${skipped}\n\nContinue?`)) return;
-        data.employees.push(...imported);
-        if(saveData()) alert(`Bulk upload completed. ${imported.length} employee(s) imported. ${skipped} row(s) skipped.`);
-      }catch(err){
-        console.error(err);
-        alert("Bulk upload failed: "+(err?.message||"Invalid CSV file."));
-      }finally{ e.target.value=""; }
+        const text=String(reader.result||"");
+        const rows=name.endsWith(".csv")?parseCsv(text):parseSpreadsheetXml(text);
+        importEmployeeRows(rows);
+        $("bulkUploadModal")?.classList.add("hidden");
+      }catch(err){ console.error(err); alert("Bulk upload failed: "+(err?.message||"Invalid file.")); }
+      finally{ e.target.value=""; }
     };
+    reader.onerror=()=>{ alert("Bulk upload failed: file could not be read."); e.target.value=""; };
     reader.readAsText(file);
   });
 
