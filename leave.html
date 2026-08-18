@@ -156,7 +156,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
         <div class="fg"><label>Start Date</label><input type="date" id="leaveStart" onchange="updateLeaveDays()"></div>
         <div class="fg"><label>End Date</label><input type="date" id="leaveEnd" onchange="updateLeaveDays()"></div>
         <div class="fg full"><label>Total Leave Days</label><input id="totalLeaveDays" value="0 Day(s)" readonly style="font-weight:800;color:#17365d;background:#f4f8fc"></div>
-        <div class="fg"><label>Approving Manager</label><input id="approvingManagerField" value="Not set in Employee Master" readonly></div>
+        <div class="fg"><label>Approving Manager</label><input id="approvingManagerField" value="Select an employee" readonly title="Auto-picked from Employee Management → Line Manager / Approving Manager"><small style="color:#7a8999;font-size:9px">Auto-picked from Employee Portal Line Manager field.</small></div>
         <div class="fg"><label>Attachment</label><input type="file"></div>
         <div class="fg full"><label>HR Remarks</label><textarea placeholder="Received signed leave form..."></textarea></div>
       </div>
@@ -168,6 +168,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <div class="sumrow"><span>Company</span><strong id="snapCompany">-</strong></div>
       <div class="sumrow"><span>Designation</span><strong id="snapDesignation">-</strong></div>
       <div class="sumrow"><span>Employee Status</span><strong id="snapStatus">-</strong></div>
+      <div class="sumrow"><span>Line Manager</span><strong id="snapManager">-</strong></div>
     </div><div class="notice ninfo show">Employee, Site, Designation, Manager and leave balance should come from the same Employee Master database used by Employee Portal.</div></div>
   </div>
 </section>
@@ -351,7 +352,7 @@ function fillEmployeeSelect(selectId, keepValue=true){
 }
 
 function loadAllEmployeeDropdowns(){
-  ["employeeSelect","ticketEmployeeSelect","rejoinEmployeeSelect","ledgerEmployeeSelect","encashEmployeeSelect"]
+  ["employeeSelect","travelEmployeeSelect","rejoinEmployeeSelect","ledgerEmployeeSelect","encashEmployeeSelect"]
     .forEach(id=>fillEmployeeSelect(id));
   refreshEmployeeSnapshot();
 }
@@ -369,13 +370,20 @@ function refreshEmployeeSnapshot(){
   const sel=document.getElementById("employeeSelect");
   const e=findEmployeeByValue(sel?.value);
   const set=(id,val)=>{const x=document.getElementById(id);if(x)x.textContent=val||"-";};
+
   set("snapCode",e?.employeeCode);
   set("snapCompany",e?.company);
   set("snapDesignation",e?.actualDesignation || e?.idDesignation);
   set("snapStatus",e?.status);
-  set("snapManager",e?.lineManager || e?.approvingManager || "Not set in Employee Master");
+
+  const manager=String(e?.lineManager || e?.approvingManager || "").trim();
+  set("snapManager",manager || "Not assigned");
+
   const mgr=document.getElementById("approvingManagerField");
-  if(mgr) mgr.value=e?.lineManager || e?.approvingManager || "Not set in Employee Master";
+  if(mgr){
+    mgr.value=manager || "Not assigned in Employee Master";
+    mgr.dataset.manager=manager;
+  }
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
@@ -455,6 +463,14 @@ function submitLeave(){
     return;
   }
   const employee=findEmployeeByValue(emp);
+  const manager=String(employee?.lineManager || employee?.approvingManager || "").trim();
+
+  if(!manager){
+    n.className='notice ndanger show';
+    n.textContent='Line Manager / Approving Manager is not assigned in Employee Master. Please update this employee in Employee Management before submitting leave.';
+    return;
+  }
+
   const total=document.getElementById('totalLeaveDays')?.value||'';
   const record={
     id:'LR-'+Date.now(),
@@ -462,6 +478,8 @@ function submitLeave(){
     employeeName:employee?.employeeName||'',
     company:employee?.company||'',
     designation:employee?.actualDesignation||employee?.idDesignation||'',
+    lineManager:manager,
+    approvingManager:manager,
     leaveType:document.getElementById('leaveType')?.value||'',
     startDate:s,
     endDate:e,
@@ -478,7 +496,7 @@ function submitLeave(){
   store.requests.push(record);
   localStorage.setItem(LEAVE_DATA_KEY,JSON.stringify(store));
   n.className='notice ninfo show';
-  n.textContent='Leave request saved for '+employeeOptionLabel(employee||{})+'.';
+  n.textContent='Leave request saved for '+employeeOptionLabel(employee||{})+' and routed to Manager: '+manager+'.';
 }
 
 function checkDeparture(){
