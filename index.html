@@ -1642,28 +1642,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="section">JOINING DECLARATION</div><p class="declaration">I confirm that I have joined Civil Master General Maintenance LLC - OPC on the joining date stated above. I confirm that the information and documents provided by me are correct. I agree to comply with the company's policies, procedures, safety requirements and lawful instructions applicable to my employment.</p>
 <table class="sign"><tr><th>EMPLOYEE</th><th>HR / ADMINISTRATION</th><th>AUTHORIZED SIGNATORY</th></tr><tr><td>Name: ${val(e.employeeName)}<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Company Stamp: ______________</td></tr></table>
 <div class="footer">Civil Master General Maintenance LLC - OPC &nbsp; | &nbsp; Employee Joining Record</div></div>
-<div class="page">
-<div class="header"><div><div class="brand">CIVIL MASTER</div><div class="sub">GENERAL MAINTENANCE LLC - OPC</div></div><div class="badge">EMPLOYEE<br>JOINING</div></div>
-<div class="title">EMPLOYEE JOINING CHECKLIST</div><div class="accent"></div>
-<div class="section">EMPLOYEE REFERENCE</div>
-<table class="info"><tr><td class="label">Employee Code</td><td class="value">${val(e.employeeCode)}</td><td class="label">Employee Name</td><td class="value">${val(e.employeeName)}</td></tr><tr><td class="label">Designation</td><td class="value">${val(e.actualDesignation)}</td><td class="label">Joining Date</td><td class="value">${joiningFormDate(e.joiningDate)}</td></tr><tr><td class="label">Site / Location</td><td class="value"></td><td class="label">Prepared By</td><td class="value">Administrator</td></tr></table>
-<div class="section">JOINING REQUIREMENTS</div>
-<table class="check"><tr><th>JOINING REQUIREMENT</th><th>STATUS</th><th>REMARKS</th></tr>
-<tr><td>Passport Copy Received</td><td>${yesNo(!!passport)}</td><td>${passport?val(passport.number||""):""}</td></tr>
-<tr><td>Visa Copy Received</td><td>${yesNo(!!visa)}</td><td>${visa?val(visa.number||""):""}</td></tr>
-<tr><td>Emirates ID Copy Received</td><td>${yesNo(!!eid)}</td><td>${eid?val(eid.number||""):""}</td></tr>
-<tr><td>Photograph Received</td><td>${yesNo(!!e.photo)}</td><td></td></tr>
-<tr><td>Medical Completed</td><td>${yesNo(!!medical)}</td><td></td></tr>
-<tr><td>Employment Contract Signed</td><td>${yesNo(!!contract)}</td><td></td></tr>
-<tr><td>Safety Induction Completed</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
-<tr><td>Uniform Issued</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
-<tr><td>Safety Shoes Issued</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
-<tr><td>PPE Issued</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
-<tr><td>Accommodation Assigned</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr>
-<tr><td>Site Assigned</td><td>☐ Yes &nbsp; ☐ No</td><td></td></tr></table>
-<div class="remarks"><b>Remarks:</b> __________________________________________________________________________________</div>
-<table class="sign"><tr><th>EMPLOYEE</th><th>HR / ADMIN</th><th>MANAGER APPROVAL</th></tr><tr><td>Signature: __________________<br>Date: ______________________</td><td>Signature: __________________<br>Date: ______________________</td><td>Signature: __________________<br>Date: ______________________</td></tr></table>
-<div class="footer">Civil Master General Maintenance LLC - OPC &nbsp; | &nbsp; Employee Joining Record</div></div></body></html>`);
+</body></html>`);
     w.document.close();
     w.focus();
   }
