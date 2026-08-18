@@ -828,6 +828,8 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
         <div class="toolbar">
           <button id="exportEmployeeListBtn" class="btn light" type="button">Export List</button>
           <button id="newEmployeeBtn" class="btn" type="button" onclick="window.cmOpenNewEmployee && window.cmOpenNewEmployee()">+ Add Employee</button>
+          <button id="bulkUploadBtn" class="btn light" type="button" title="Bulk upload employees from CSV">Bulk Upload</button>
+          <input id="bulkUploadFile" type="file" accept=".csv,text/csv" class="hidden">
           <input id="employeeSearch" class="search" placeholder="Search employee...">
           <button id="expandEmployeeListBtn" class="btn light" type="button" title="Show more employee columns">Expand List</button>
           <button id="advancedEmployeeFilterBtn" class="btn light" type="button" title="Open advanced employee filters">Advanced Filter</button>
@@ -1971,6 +1973,107 @@ document.addEventListener("DOMContentLoaded", () => {
       <td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td>
     </tr>`).join(""):'<tr><td colspan="28" class="empty">No employee records match your search / filters.</td></tr>';
   }
+
+  // BULK EMPLOYEE UPLOAD (CSV - local/offline)
+  function parseCsv(text){
+    const rows=[]; let row=[], cell="", inQuotes=false;
+    text=String(text||"").replace(/^\uFEFF/,"");
+    for(let i=0;i<text.length;i++){
+      const ch=text[i], next=text[i+1];
+      if(ch==='"'){
+        if(inQuotes && next==='"'){ cell+='"'; i++; }
+        else inQuotes=!inQuotes;
+      }else if(ch===',' && !inQuotes){ row.push(cell.trim()); cell=""; }
+      else if((ch==='\n' || ch==='\r') && !inQuotes){
+        if(ch==='\r' && next==='\n') i++;
+        row.push(cell.trim()); cell="";
+        if(row.some(v=>v!=="")) rows.push(row);
+        row=[];
+      }else cell+=ch;
+    }
+    row.push(cell.trim());
+    if(row.some(v=>v!=="")) rows.push(row);
+    return rows;
+  }
+  function normHeader(v){
+    return String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"");
+  }
+  function csvVal(obj,...keys){
+    for(const k of keys){ const v=obj[normHeader(k)]; if(v!==undefined) return String(v).trim(); }
+    return "";
+  }
+  function csvEmployee(rowObj){
+    const code=csvVal(rowObj,"Employee Code","Code");
+    const name=csvVal(rowObj,"Employee Name","Name");
+    return {
+      employeeCode:code,
+      employeeName:name,
+      employeeNameArabic:csvVal(rowObj,"Employee Name Arabic","Arabic Name","Employee Name in Arabic"),
+      unifiedNumber:csvVal(rowObj,"Unified Number","Unified No","Unified No."),
+      actualDesignation:csvVal(rowObj,"Actual Designation"),
+      nationality:csvVal(rowObj,"Nationality"),
+      gender:csvVal(rowObj,"Gender"),
+      dob:csvVal(rowObj,"Date of Birth","DOB"),
+      maritalStatus:csvVal(rowObj,"Marital Status"),
+      mobile:csvVal(rowObj,"Mobile","Mobile Number"),
+      photo:"",
+      company:csvVal(rowObj,"Company"),
+      idDesignation:csvVal(rowObj,"ID Card Designation","Designation as per ID Card"),
+      joiningDate:csvVal(rowObj,"Joining Date"),
+      status:csvVal(rowObj,"Status","Employee Status")||"Active",
+      inactiveReason:csvVal(rowObj,"Inactive Reason"),
+      inactiveDate:csvVal(rowObj,"Inactive Date"),
+      documents:[],
+      emergency:{
+        name:csvVal(rowObj,"Emergency Contact","Emergency Name"),
+        relationship:csvVal(rowObj,"Emergency Relation","Emergency Relationship"),
+        mobile:csvVal(rowObj,"Emergency Mobile"),
+        country:csvVal(rowObj,"Emergency Country")
+      },
+      attachments:[],
+      history:[],
+      updatedAt:new Date().toISOString()
+    };
+  }
+  $("bulkUploadBtn")?.addEventListener("click",()=>$("bulkUploadFile")?.click());
+  $("bulkUploadFile")?.addEventListener("change",e=>{
+    const file=e.target.files?.[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const rows=parseCsv(reader.result);
+        if(rows.length<2) throw new Error("CSV has no employee rows.");
+        const headers=rows[0].map(normHeader);
+        if(!headers.includes(normHeader("Employee Code")) && !headers.includes(normHeader("Code"))) throw new Error("Employee Code column is required.");
+        if(!headers.includes(normHeader("Employee Name")) && !headers.includes(normHeader("Name"))) throw new Error("Employee Name column is required.");
+        const existingCodes=new Set((data.employees||[]).map(x=>String(x.employeeCode||"").trim().toLowerCase()).filter(Boolean));
+        const batchCodes=new Set();
+        const imported=[]; let skipped=0;
+        rows.slice(1).forEach(cols=>{
+          const obj={}; headers.forEach((h,i)=>obj[h]=cols[i]??"");
+          const emp=csvEmployee(obj);
+          const k=emp.employeeCode.toLowerCase();
+          if(!emp.employeeCode || !emp.employeeName || existingCodes.has(k) || batchCodes.has(k)){ skipped++; return; }
+          batchCodes.add(k);
+          addHistoryEvent(emp,{type:"Employee Created",title:"Employee profile created by bulk upload",changes:[
+            {field:"Employee Code",old:"",new:emp.employeeCode},
+            {field:"Employee Name",old:"",new:emp.employeeName},
+            {field:"Status",old:"",new:emp.status}
+          ]});
+          imported.push(emp);
+        });
+        if(!imported.length) return alert(`No employee imported. ${skipped} row(s) skipped because Code/Name was missing or Employee Code already exists.`);
+        if(!confirm(`Bulk Upload Summary\n\nReady to import: ${imported.length}\nSkipped: ${skipped}\n\nContinue?`)) return;
+        data.employees.push(...imported);
+        if(saveData()) alert(`Bulk upload completed. ${imported.length} employee(s) imported. ${skipped} row(s) skipped.`);
+      }catch(err){
+        console.error(err);
+        alert("Bulk upload failed: "+(err?.message||"Invalid CSV file."));
+      }finally{ e.target.value=""; }
+    };
+    reader.readAsText(file);
+  });
 
   $("employeeSearch").addEventListener("input",renderEmployees);
   ["afActualDesignation","afNationality","afCompany","afIdDesignation","afStatus","afGender","afJoiningFrom","afJoiningTo"].forEach(id=>{
