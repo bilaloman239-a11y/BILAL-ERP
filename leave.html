@@ -327,7 +327,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <div class="card">
       <div class="formgrid">
         <div class="fg full"><label>Employee / Leave Request</label><select id="rejoinEmployeeSelect" onchange="loadRejoinRequest()"><option value="">Select Employee / Leave Request</option></select></div>
-        <div class="fg"><label>Approved Leave End</label><input type="date" id="rLeaveEnd" value="2026-08-17"></div>
+        <div class="fg"><label>Approved Leave End</label><input type="date" id="rLeaveEnd" readonly></div>
         <div class="fg"><label>Actual Return Date</label><input type="date" id="actualReturn"></div>
         <div class="fg"><label>Actual Rejoining Date</label><input type="date" id="actualRejoin" onchange="checkRejoin()"></div>
         <div class="fg"><label>Rejoining Site / Duty Location</label><select><option>Site A</option><option>Site B</option><option>Head Office</option></select></div>
@@ -1295,7 +1295,23 @@ function toggleRequestTicketFields(){
   }
 }
 
-function validateRequestTicketDates(){ return true; }
+function validateRequestTicketDates(){
+  const ticketRequired=document.getElementById('requestTicketRequired')?.value||'No';
+  if(ticketRequired!=='Yes') return true;
+  const s=document.getElementById('leaveStart')?.value;
+  if(!s) return true;
+  const n=document.getElementById('leaveNotice');
+  const today=new Date(); today.setHours(0,0,0,0);
+  const start=new Date(s+"T00:00:00");
+  if(start<today){
+    if(n){
+      n.className='notice ndanger show';
+      n.textContent='Ticket approval cannot be requested when the Start Date is in the past. Update the leave dates or set Ticket Required to No.';
+    }
+    return false;
+  }
+  return true;
+}
 
 
 function normalizeLeaveStatus(v){
@@ -2276,8 +2292,6 @@ function saveLeavePayrollRecord(){
   openLeaveLifecycle(id);
 }
 
-
-function reject(){const r=prompt('Rejection reason is mandatory:');if(r&&r.trim())alert('Rejection reason recorded.')}
 </script>
 </body>
 </html>
