@@ -94,6 +94,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <button onclick="go('approvals',this)"><span class="ico">✓</span><span>Manager Approvals</span></button>
     <button onclick="go('approved',this)"><span class="ico">☑</span><span>Approved Leave Applications</span></button>
     <button onclick="go('tickets',this)"><span class="ico">✈</span><span>Ticket & Travel Tracker</span></button>
+    <button onclick="go('history',this)"><span class="ico">◷</span><span>Employee Leave History</span></button>
     <button onclick="go('rejoin',this)"><span class="ico">↩</span><span>Record Rejoining</span></button>
     <button onclick="go('attendance',this)"><span class="ico">🗓</span><span>Timesheet / Absence</span></button>
     <button onclick="go('medical',this)"><span class="ico">✚</span><span>Medical Leave Register</span></button>
@@ -121,8 +122,8 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   <div class="kpis">
     <div class="kpi" onclick="openKpi('Pending Approvals')"><div class="top"><span class="lab">Pending Approvals</span><span class="bubble">✓</span></div><div class="num" id="kpiPendingApprovals">0</div><div class="hint">Manager action pending</div></div>
     <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num" id="kpiCurrentlyOnLeave">0</div><div class="hint">Counts only after departure ticket date is entered and starts</div></div>
-    <div class="kpi" onclick="openKpi('Leaving Next 7 Days')"><div class="top"><span class="lab">Leaving Next 7 Days</span><span class="bubble o">✈</span></div><div class="num">0</div><div class="hint">Upcoming movement</div></div>
-    <div class="kpi" onclick="openKpi('Returning Next 7 Days')"><div class="top"><span class="lab">Returning Next 7 Days</span><span class="bubble o">↩</span></div><div class="num">0</div><div class="hint">Expected return / rejoin</div></div>
+    <div class="kpi" onclick="openKpi('Leaving Next 7 Days')"><div class="top"><span class="lab">Leaving Next 7 Days</span><span class="bubble o">✈</span></div><div class="num" id="kpiLeaving7">0</div><div class="hint">Departure tickets in next 7 days</div></div>
+    <div class="kpi" onclick="openKpi('Returning Next 7 Days')"><div class="top"><span class="lab">Returning Next 7 Days</span><span class="bubble o">↩</span></div><div class="num" id="kpiReturning7">0</div><div class="hint">Return tickets in next 7 days</div></div>
   </div>
   <div class="kpis">
     <div class="kpi" onclick="openKpi('Ticket Action Required')"><div class="top"><span class="lab">Ticket Action Required</span><span class="bubble o">!</span></div><div class="num">0</div><div class="hint">Not booked / confirmed</div></div>
@@ -144,13 +145,13 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <tbody id="dashboardPendingRows"><tr><td colspan="6" style="text-align:center;color:#7d8da0;padding:20px">No leave requests yet.</td></tr></tbody></table>
     </div>
     <div class="card"><h3>7-Day Movement</h3><div class="timeline">
-      <div class="day"><strong>Today</strong></div>
-      <div class="day"><strong>+1</strong></div>
-      <div class="day"><strong>+2</strong></div>
-      <div class="day"><strong>+3</strong></div>
-      <div class="day"><strong>+4</strong></div>
-      <div class="day"><strong>+5</strong></div>
-      <div class="day"><strong>+6</strong></div>
+      <div class="day" id="movementDay0"><strong>Today</strong></div>
+      <div class="day" id="movementDay1"><strong>+1</strong></div>
+      <div class="day" id="movementDay2"><strong>+2</strong></div>
+      <div class="day" id="movementDay3"><strong>+3</strong></div>
+      <div class="day" id="movementDay4"><strong>+4</strong></div>
+      <div class="day" id="movementDay5"><strong>+5</strong></div>
+      <div class="day" id="movementDay6"><strong>+6</strong></div>
     </div></div>
   </div>
 </section>
@@ -279,12 +280,43 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   </div>
 </section>
 
+
+<section class="page" id="history">
+  <div class="pagehead">
+    <div><h2>Employee Leave Lifecycle History</h2><p>Complete employee leave journey: request, approval, travel, return, rejoining, paid/unpaid days and leave salary payment.</p></div>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <input id="historySearch" class="search" placeholder="Search employee / code / request" oninput="renderEmployeeLeaveHistory()">
+      <select id="historyEmployeeFilter" onchange="renderEmployeeLeaveHistory()"><option value="">All Employees</option></select>
+      <select id="historyYearFilter" onchange="renderEmployeeLeaveHistory()"><option value="">All Years</option></select>
+      <select id="historyStatusFilter" onchange="renderEmployeeLeaveHistory()">
+        <option value="">All Status</option><option>Pending Manager Approval</option><option>Approved</option><option>Rejected</option><option>Closed</option>
+      </select>
+      <button class="btn light" onclick="clearLeaveHistoryFilters()">Clear Filters</button>
+    </div>
+    <div class="summary" style="margin-bottom:12px">
+      <div class="sumrow"><span>Matching Leave Records</span><strong id="historyRecordCount">0</strong></div>
+    </div>
+    <div style="overflow:auto">
+      <table>
+        <thead><tr>
+          <th>Employee</th><th>Request</th><th>Leave</th><th>Approved Dates</th><th>Approved On</th>
+          <th>Departure</th><th>Return</th><th>Rejoined</th><th>Paid</th><th>Unpaid / LOP</th>
+          <th>Leave Salary</th><th>Paid Date</th><th>Status</th><th>History</th>
+        </tr></thead>
+        <tbody id="employeeLeaveHistoryRows"><tr><td colspan="14" style="text-align:center;color:#7d8da0;padding:20px">No leave history yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
 <section class="page" id="rejoin">
   <div class="pagehead"><div><h2>Record Rejoining</h2><p>Close leave only after actual duty resumption and any variance treatment.</p></div></div>
   <div class="grid2">
     <div class="card">
       <div class="formgrid">
-        <div class="fg full"><label>Employee / Leave Request</label><select id="rejoinEmployeeSelect"><option value="">Select Employee</option></select></div>
+        <div class="fg full"><label>Employee / Leave Request</label><select id="rejoinEmployeeSelect" onchange="loadRejoinRequest()"><option value="">Select Employee / Leave Request</option></select></div>
         <div class="fg"><label>Approved Leave End</label><input type="date" id="rLeaveEnd" value="2026-08-17"></div>
         <div class="fg"><label>Actual Return Date</label><input type="date" id="actualReturn"></div>
         <div class="fg"><label>Actual Rejoining Date</label><input type="date" id="actualRejoin" onchange="checkRejoin()"></div>
@@ -574,6 +606,34 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   </div>
 </div>
 
+
+<div class="modalwrap" id="leaveLifecycleModal">
+  <div class="modal" style="width:min(1050px,97vw)">
+    <div class="modalhead"><h3>Employee Leave Lifecycle</h3><button class="x" onclick="closeModal('leaveLifecycleModal')">×</button></div>
+    <input type="hidden" id="lifecycleLeaveId">
+    <div id="lifecycleSummary" class="summary" style="margin-bottom:14px"></div>
+
+    <h3>Chronological Timeline</h3>
+    <div id="lifecycleTimeline" style="border-left:3px solid #dce8f4;padding-left:16px;margin:10px 0 20px"></div>
+
+    <h3>Payroll / Leave Salary Record</h3>
+    <div class="formgrid">
+      <div class="fg"><label>Paid Leave Days</label><input id="lifePaidDays" type="number" min="0" step="0.5" placeholder="0"></div>
+      <div class="fg"><label>Unpaid / LOP Days</label><input id="lifeUnpaidDays" type="number" min="0" step="0.5" placeholder="0"></div>
+      <div class="fg"><label>Absent Days</label><input id="lifeAbsentDays" type="number" min="0" step="0.5" placeholder="0"></div>
+      <div class="fg"><label>Eligible Leave Salary Days</label><input id="lifeSalaryDays" type="number" min="0" step="0.5" placeholder="0"></div>
+      <div class="fg"><label>Leave Salary Amount (AED)</label><input id="lifeSalaryAmount" type="number" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="fg"><label>Leave Salary Payment Status</label><select id="lifeSalaryStatus"><option>Pending</option><option>Paid</option><option>Not Applicable</option></select></div>
+      <div class="fg"><label>Leave Salary Paid Date</label><input id="lifeSalaryPaidDate" type="date"></div>
+      <div class="fg"><label>Payment Method</label><select id="lifePaymentMethod"><option value="">Select</option><option>Bank Transfer</option><option>WPS / Payroll</option><option>Cash</option><option>Final Settlement</option><option>Other</option></select></div>
+      <div class="fg"><label>Payment Reference</label><input id="lifePaymentReference" placeholder="Optional reference"></div>
+      <div class="fg full"><label>Payroll / HR Remarks</label><textarea id="lifePayrollRemarks" placeholder="Leave salary / payroll treatment remarks..."></textarea></div>
+    </div>
+    <div id="lifecycleNotice" class="notice ninfo"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary" onclick="saveLeavePayrollRecord()">Save Payroll / Salary Record</button></div>
+  </div>
+</div>
+
 <script>
 
 const EMPLOYEE_DATA_KEY = "cm_employee_portal_v3";
@@ -630,6 +690,7 @@ function loadAllEmployeeDropdowns(){
     .forEach(id=>fillEmployeeSelect(id));
   refreshEmployeeSnapshot();
   initMedicalFilters();
+  initLeaveHistoryFilters();
 }
 
 function findEmployeeByValue(value){
@@ -686,7 +747,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   });
 });
 
-const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',approved:'Approved Leave Applications',tickets:'Ticket & Travel Tracker',rejoin:'Record Rejoining',attendance:'Timesheet / Absence Entry',medical:'Medical Leave Register',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
+const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',approved:'Approved Leave Applications',tickets:'Ticket & Travel Tracker',history:'Employee Leave History',rejoin:'Record Rejoining',attendance:'Timesheet / Absence Entry',medical:'Medical Leave Register',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
 
 function go(id,btn){
   const target=document.getElementById(id);
@@ -717,7 +778,7 @@ function fmt(v){return new Date(v+'T00:00:00').toLocaleDateString('en-GB',{day:'
 
 
 function readLeaveStore(){
-  let store={requests:[],tickets:[],rejoining:[],encashments:[],attendanceAdjustments:[]};
+  let store={requests:[],tickets:[],rejoining:[],encashments:[],attendanceAdjustments:[],leavePayroll:[]};
   try{
     const raw=localStorage.getItem(LEAVE_DATA_KEY);
     if(raw) store={...store,...JSON.parse(raw)};
@@ -726,6 +787,8 @@ function readLeaveStore(){
   }
   if(!Array.isArray(store.requests)) store.requests=[];
   if(!Array.isArray(store.attendanceAdjustments)) store.attendanceAdjustments=[];
+  if(!Array.isArray(store.rejoining)) store.rejoining=[];
+  if(!Array.isArray(store.leavePayroll)) store.leavePayroll=[];
   return store;
 }
 
@@ -1003,38 +1066,129 @@ function getCurrentlyOnLeaveRecords(){
   });
 }
 
+
+function getTicketMovementRecords(kind){
+  const store=readLeaveStore();
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const end=new Date(today);
+  end.setDate(end.getDate()+7);
+
+  const out=[];
+  (store.requests||[]).forEach(req=>{
+    if(String(req.status)!=="Approved") return;
+    const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(req.id));
+    if(!ticket) return;
+
+    const prefix=kind==="Departure"?"Departure":"Return";
+    const history=(ticket.history||[])
+      .filter(h=>String(h.journeySide||"").startsWith(prefix) && h.travelDate)
+      .sort((a,b)=>String(a.travelDate).localeCompare(String(b.travelDate)));
+
+    // Prefer latest matching-side history; fallback to ticket summary dates.
+    let h=history.slice(-1)[0]||null;
+    let travelDate=h?.travelDate || (kind==="Departure"?ticket.departureDate:ticket.returnDate) || "";
+    if(!travelDate) return;
+
+    const d=new Date(travelDate+"T00:00:00");
+    if(d<today || d>end) return;
+
+    out.push({
+      req,
+      ticket,
+      history:h,
+      travelDate,
+      route:h ? ((h.fromAirport||"-")+" → "+(h.toAirport||"-")) : "-",
+      providedBy:h?.providedBy || (kind==="Departure"?ticket.departureProvidedBy:ticket.returnProvidedBy) || "-",
+      status:h?.status || ticket.status || "-"
+    });
+  });
+
+  return out.sort((a,b)=>String(a.travelDate).localeCompare(String(b.travelDate)));
+}
+
+
+function renderMovementTimeline(){
+  const leaving=getTicketMovementRecords("Departure");
+  const returning=getTicketMovementRecords("Return");
+  const today=new Date(); today.setHours(0,0,0,0);
+
+  for(let i=0;i<7;i++){
+    const box=document.getElementById("movementDay"+i);
+    if(!box) continue;
+    const date=new Date(today); date.setDate(date.getDate()+i);
+    const key=date.toISOString().slice(0,10);
+    const dep=leaving.filter(x=>x.travelDate===key).length;
+    const ret=returning.filter(x=>x.travelDate===key).length;
+    box.innerHTML=`<strong>${i===0?"Today":"+"+i}</strong>`+
+      (dep?`<div class="ev">${dep} Depart</div>`:"")+
+      (ret?`<div class="ev ret">${ret} Return</div>`:"");
+  }
+}
+
+function renderMovementKpis(){
+  const leaving=getTicketMovementRecords("Departure");
+  const returning=getTicketMovementRecords("Return");
+  const a=document.getElementById("kpiLeaving7");
+  const b=document.getElementById("kpiReturning7");
+  if(a) a.textContent=String(leaving.length);
+  if(b) b.textContent=String(returning.length);
+}
+
 function renderKpiDetails(title){
   const tbody=document.getElementById("kpiDetailRows");
   if(!tbody) return;
 
-  if(title!=="Currently On Leave"){
-    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No records available for this dashboard card yet.</td></tr>';
+  if(title==="Currently On Leave"){
+    const store=readLeaveStore();
+    const rows=getCurrentlyOnLeaveRecords();
+
+    if(!rows.length){
+      tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No employees currently on leave.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML=rows.map(r=>{
+      const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(r.id))||{};
+      const dep=ticket.departureDate||r.departureTicketDate||"";
+      const ret=ticket.returnDate||r.returnTicketDate||r.endDate||"";
+      return `
+        <tr>
+          <td><b>${escHtml(r.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(r.employeeCode||"")}</span></td>
+          <td>${escHtml(r.company||"-")}</td>
+          <td>${escHtml(r.leaveType||"-")}</td>
+          <td>${niceDate(dep)}<br><span style="color:#78889a">${escHtml(ticket.departureProvidedBy||"")}</span></td>
+          <td>${niceDate(ret)}<br><span style="color:#78889a">${escHtml(ticket.returnProvidedBy||"")}</span></td>
+          <td><span class="badge approved">On Leave</span></td>
+          <td><button class="btn orange" onclick="closeModal('kpiModal');openApprovedTicket('${escHtml(r.id)}')">Ticket</button></td>
+        </tr>`;
+    }).join("");
     return;
   }
 
-  const store=readLeaveStore();
-  const rows=getCurrentlyOnLeaveRecords();
+  if(title==="Leaving Next 7 Days" || title==="Returning Next 7 Days"){
+    const kind=title.startsWith("Leaving")?"Departure":"Return";
+    const rows=getTicketMovementRecords(kind);
 
-  if(!rows.length){
-    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No employees currently on leave.</td></tr>';
-    return;
-  }
+    if(!rows.length){
+      tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No ${kind.toLowerCase()} travel in the next 7 days.</td></tr>`;
+      return;
+    }
 
-  tbody.innerHTML=rows.map(r=>{
-    const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(r.id))||{};
-    const dep=ticket.departureDate||r.departureTicketDate||"";
-    const ret=ticket.returnDate||r.returnTicketDate||r.endDate||"";
-    return `
+    tbody.innerHTML=rows.map(x=>`
       <tr>
-        <td><b>${escHtml(r.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(r.employeeCode||"")}</span></td>
-        <td>${escHtml(r.company||"-")}</td>
-        <td>${escHtml(r.leaveType||"-")}</td>
-        <td>${niceDate(dep)}<br><span style="color:#78889a">${escHtml(ticket.departureProvidedBy||"")}</span></td>
-        <td>${niceDate(ret)}<br><span style="color:#78889a">${escHtml(ticket.returnProvidedBy||"")}</span></td>
-        <td><span class="badge approved">On Leave</span></td>
-        <td><button class="btn orange" onclick="closeModal('kpiModal');openApprovedTicket('${escHtml(r.id)}')">Ticket</button></td>
-      </tr>`;
-  }).join("");
+        <td><b>${escHtml(x.req.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(x.req.employeeCode||"")}</span></td>
+        <td>${escHtml(x.req.company||"-")}</td>
+        <td>${escHtml(x.req.leaveType||"-")}</td>
+        <td>${kind==="Departure"?niceDate(x.travelDate):niceDate(x.ticket.departureDate||x.req.departureTicketDate)}</td>
+        <td>${kind==="Return"?niceDate(x.travelDate):niceDate(x.ticket.returnDate||x.req.returnTicketDate||x.req.endDate)}</td>
+        <td><span class="badge info">${escHtml(x.status||kind)}</span><br><span style="color:#78889a">${escHtml(x.providedBy)} • ${escHtml(x.route)}</span></td>
+        <td><button class="btn orange" onclick="closeModal('kpiModal');openApprovedTicket('${escHtml(x.req.id)}')">Ticket</button></td>
+      </tr>`).join("");
+    return;
+  }
+
+  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No records available for this dashboard card yet.</td></tr>';
 }
 
 function renderApprovedLeaveCount(){
@@ -1090,8 +1244,12 @@ function clearTravelTrackerFilters(){
 function refreshLeaveUI(){
   renderManagerApprovals();
   renderApprovedLeaveCount();
+  renderMovementKpis();
+  renderMovementTimeline();
   renderApprovedLeaves();
   renderTravelTracker();
+  renderEmployeeLeaveHistory();
+  populateRejoinRequests();
   renderAttendanceHistory();
   renderMedicalRegister();
   renderMedicalDashboard();
@@ -1249,13 +1407,15 @@ function submitLeave(){
     status:'Pending Manager Approval',
     createdAt:new Date().toISOString()
   };
-  let store={requests:[],tickets:[],rejoining:[],encashments:[],attendanceAdjustments:[]};
+  let store={requests:[],tickets:[],rejoining:[],encashments:[],attendanceAdjustments:[],leavePayroll:[]};
   try{
     const raw=localStorage.getItem(LEAVE_DATA_KEY);
     if(raw) store={...store,...JSON.parse(raw)};
   }catch(err){}
   if(!Array.isArray(store.requests)) store.requests=[];
   if(!Array.isArray(store.attendanceAdjustments)) store.attendanceAdjustments=[];
+  if(!Array.isArray(store.rejoining)) store.rejoining=[];
+  if(!Array.isArray(store.leavePayroll)) store.leavePayroll=[];
   store.requests.push(record);
 
   if(record.ticketRequired==="Yes"){
@@ -1845,9 +2005,224 @@ function checkRejoin(){
   else{v.textContent='NO';n.className='notice ndanger show';n.textContent='Employee rejoined '+x+' day(s) late. Return Variance Workflow must be completed before closure.'}
 }
 function saveRejoin(){
-  const r=document.getElementById('actualRejoin').value;if(!r){alert('Enter Actual Rejoining Date.');return}
-  checkRejoin();alert('Rejoining recorded in demo. Final backend version should audit user/time and close only when all pending actions are resolved.');
+  const leaveId=document.getElementById('rejoinEmployeeSelect')?.value;
+  const actualReturn=document.getElementById('actualReturn')?.value||"";
+  const actualRejoin=document.getElementById('actualRejoin')?.value||"";
+  if(!leaveId){alert('Select Employee / Leave Request.');return}
+  if(!actualRejoin){alert('Enter Actual Rejoining Date.');return}
+  const store=readLeaveStore();
+  const req=store.requests.find(r=>String(r.id)===String(leaveId));
+  if(!req){alert('Leave request not found.');return}
+  const existing=store.rejoining.find(x=>String(x.leaveRequestId)===String(leaveId));
+  const record={
+    id:existing?.id||('REJ-'+Date.now()),
+    leaveRequestId:leaveId,
+    employeeCode:req.employeeCode||"",
+    employeeName:req.employeeName||"",
+    approvedLeaveEnd:req.endDate||"",
+    actualReturnDate:actualReturn,
+    actualRejoiningDate:actualRejoin,
+    recordedAt:new Date().toISOString(),
+    recordedBy:'HR / Admin'
+  };
+  if(existing) Object.assign(existing,record); else store.rejoining.push(record);
+  if(actualRejoin) req.finalStatus='Closed';
+  saveLeaveStore(store);
+  checkRejoin();
+  refreshLeaveUI();
+  alert('Rejoining saved and added to Employee Leave History.');
 }
+
+function initLeaveHistoryFilters(){
+  const emp=document.getElementById("historyEmployeeFilter");
+  if(emp){
+    const old=emp.value;
+    emp.innerHTML='<option value="">All Employees</option>';
+    activeEmployeesFromMaster().slice().sort((a,b)=>employeeOptionLabel(a).localeCompare(employeeOptionLabel(b))).forEach(e=>{
+      const o=document.createElement("option"); o.value=String(e.employeeCode||e.employeeName||""); o.textContent=employeeOptionLabel(e); emp.appendChild(o);
+    });
+    if([...emp.options].some(o=>o.value===old)) emp.value=old;
+  }
+  const yr=document.getElementById("historyYearFilter");
+  if(yr){
+    const old=yr.value, years=new Set();
+    readLeaveStore().requests.forEach(r=>{const y=String(r.startDate||"").slice(0,4);if(y)years.add(y);});
+    yr.innerHTML='<option value="">All Years</option>'+[...years].sort().reverse().map(y=>`<option>${escHtml(y)}</option>`).join("");
+    if([...yr.options].some(o=>o.value===old)) yr.value=old;
+  }
+  populateRejoinRequests();
+}
+
+function populateRejoinRequests(){
+  const el=document.getElementById("rejoinEmployeeSelect"); if(!el)return;
+  const old=el.value, store=readLeaveStore();
+  const rows=store.requests.filter(r=>String(r.status)==="Approved");
+  el.innerHTML='<option value="">Select Employee / Leave Request</option>'+rows.map(r=>`<option value="${escHtml(r.id)}">${escHtml(r.employeeCode||"")} - ${escHtml(r.employeeName||"-")} | ${escHtml(r.id)} | ${niceDate(r.startDate)} → ${niceDate(r.endDate)}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+
+function loadRejoinRequest(){
+  const id=document.getElementById("rejoinEmployeeSelect")?.value||"";
+  const store=readLeaveStore(), req=store.requests.find(r=>String(r.id)===String(id));
+  const existing=(store.rejoining||[]).find(x=>String(x.leaveRequestId)===String(id));
+  if(document.getElementById("rLeaveEnd")) document.getElementById("rLeaveEnd").value=req?.endDate||"";
+  if(document.getElementById("actualReturn")) document.getElementById("actualReturn").value=existing?.actualReturnDate||"";
+  if(document.getElementById("actualRejoin")) document.getElementById("actualRejoin").value=existing?.actualRejoiningDate||"";
+  if(existing?.actualRejoiningDate) checkRejoin();
+}
+
+function latestTicketSide(ticket,prefix){
+  return (ticket?.history||[]).filter(h=>String(h.journeySide||"").startsWith(prefix)).slice(-1)[0]||null;
+}
+function numberDays(v){
+  const m=String(v||"").match(/[\d.]+/); return m?Number(m[0]):0;
+}
+function payrollFor(store,id){
+  if(!Array.isArray(store.leavePayroll))store.leavePayroll=[];
+  return store.leavePayroll.find(x=>String(x.leaveRequestId)===String(id))||null;
+}
+function attendanceTotalsFor(store,req){
+  let paid=0,unpaid=0,absent=0;
+  (store.attendanceAdjustments||[]).filter(a=>String(a.employeeCode||"")===String(req.employeeCode||"")).forEach(a=>{
+    if(!a.dateFrom||!a.dateTo||!req.startDate||!req.endDate)return;
+    if(a.dateTo<req.startDate||a.dateFrom>req.endDate)return;
+    const d=Number(a.days||numberDays(a.totalDays)||0);
+    const st=String(a.status||a.attendanceStatus||"").toLowerCase();
+    const pay=String(a.payroll||a.payrollTreatment||"").toLowerCase();
+    if(st.includes("absent")) absent+=d;
+    else if(pay.includes("lop")||pay.includes("unpaid")||st.includes("unpaid")) unpaid+=d;
+    else if(pay.includes("paid")) paid+=d;
+  });
+  return {paid,unpaid,absent};
+}
+function finalLifecycleStatus(req,rejoin,payroll){
+  if(rejoin?.actualRejoiningDate) return "Closed";
+  if(String(req.status||"")==="Rejected") return "Rejected";
+  if(String(req.status||"")==="Approved" && payroll?.paymentStatus==="Pending") return "Approved";
+  return req.status||"Pending Manager Approval";
+}
+function renderEmployeeLeaveHistory(){
+  const tbody=document.getElementById("employeeLeaveHistoryRows"); if(!tbody)return;
+  initLeaveHistoryFiltersLight();
+  const store=readLeaveStore();
+  const q=(document.getElementById("historySearch")?.value||"").trim().toLowerCase();
+  const emp=document.getElementById("historyEmployeeFilter")?.value||"";
+  const year=document.getElementById("historyYearFilter")?.value||"";
+  const status=document.getElementById("historyStatusFilter")?.value||"";
+  let rows=store.requests.slice();
+  rows=rows.filter(r=>{
+    const rejoin=(store.rejoining||[]).find(x=>String(x.leaveRequestId)===String(r.id));
+    const pay=payrollFor(store,r.id);
+    const fs=finalLifecycleStatus(r,rejoin,pay);
+    const text=[r.employeeName,r.employeeCode,r.id,r.leaveType].join(" ").toLowerCase();
+    if(q&&!text.includes(q))return false;
+    if(emp&&String(r.employeeCode||r.employeeName)!==emp)return false;
+    if(year&&String(r.startDate||"").slice(0,4)!==year)return false;
+    if(status&&fs!==status)return false;
+    return true;
+  }).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+  const cnt=document.getElementById("historyRecordCount");if(cnt)cnt.textContent=String(rows.length);
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="14" style="text-align:center;color:#7d8da0;padding:20px">No matching leave history found.</td></tr>';return;}
+  tbody.innerHTML=rows.map(r=>{
+    const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(r.id));
+    const dep=latestTicketSide(ticket,"Departure"), ret=latestTicketSide(ticket,"Return");
+    const rej=(store.rejoining||[]).find(x=>String(x.leaveRequestId)===String(r.id));
+    const pay=payrollFor(store,r.id), att=attendanceTotalsFor(store,r);
+    const paid=pay?.paidDays!==undefined?pay.paidDays:att.paid;
+    const unpaid=pay?.unpaidDays!==undefined?pay.unpaidDays:att.unpaid;
+    const salary=pay?.salaryAmount?('AED '+Number(pay.salaryAmount).toLocaleString()):'-';
+    const fs=finalLifecycleStatus(r,rej,pay);
+    const badge=fs==="Closed"||fs==="Approved"?"approved":(fs==="Rejected"?"alert":"pending");
+    return `<tr>
+      <td><b>${escHtml(r.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(r.employeeCode||"")}</span></td>
+      <td>${escHtml(r.id||"-")}</td><td>${escHtml(r.leaveType||"-")}</td>
+      <td>${niceDate(r.startDate)} → ${niceDate(r.endDate)}<br><span style="color:#78889a">${escHtml(r.totalLeaveDays||"")}</span></td>
+      <td>${r.approvedAt?new Date(r.approvedAt).toLocaleDateString("en-GB"):"-"}</td>
+      <td>${dep?niceDate(dep.travelDate)+"<br><span style='color:#78889a'>"+escHtml(dep.providedBy||"-")+"</span>":"-"}</td>
+      <td>${ret?niceDate(ret.travelDate)+"<br><span style='color:#78889a'>"+escHtml(ret.providedBy||"-")+"</span>":"-"}</td>
+      <td>${niceDate(rej?.actualRejoiningDate)}</td><td>${escHtml(paid||0)}</td><td>${escHtml(unpaid||0)}</td>
+      <td>${salary}</td><td>${niceDate(pay?.paidDate)}</td><td><span class="badge ${badge}">${escHtml(fs)}</span></td>
+      <td><button class="btn light" onclick="openLeaveLifecycle('${escHtml(r.id)}')">View History</button></td>
+    </tr>`;
+  }).join("");
+}
+function initLeaveHistoryFiltersLight(){
+  const yr=document.getElementById("historyYearFilter"); if(!yr)return;
+  const current=yr.value, years=[...new Set(readLeaveStore().requests.map(r=>String(r.startDate||"").slice(0,4)).filter(Boolean))].sort().reverse();
+  const desired='<option value="">All Years</option>'+years.map(y=>`<option>${escHtml(y)}</option>`).join("");
+  if(yr.innerHTML!==desired){yr.innerHTML=desired;if([...yr.options].some(o=>o.value===current))yr.value=current;}
+}
+function clearLeaveHistoryFilters(){
+  ["historySearch"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+  ["historyEmployeeFilter","historyYearFilter","historyStatusFilter"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+  renderEmployeeLeaveHistory();
+}
+function openLeaveLifecycle(id){
+  const store=readLeaveStore(), req=store.requests.find(r=>String(r.id)===String(id)); if(!req)return;
+  const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(id));
+  const dep=latestTicketSide(ticket,"Departure"), ret=latestTicketSide(ticket,"Return");
+  const rej=(store.rejoining||[]).find(x=>String(x.leaveRequestId)===String(id));
+  const pay=payrollFor(store,id), att=attendanceTotalsFor(store,req);
+  document.getElementById("lifecycleLeaveId").value=id;
+  document.getElementById("lifecycleSummary").innerHTML=`
+    <div class="sumrow"><span>Employee</span><strong>${escHtml(req.employeeName||"-")} (${escHtml(req.employeeCode||"")})</strong></div>
+    <div class="sumrow"><span>Leave Request</span><strong>${escHtml(req.id)} • ${escHtml(req.leaveType||"-")}</strong></div>
+    <div class="sumrow"><span>Approved Leave</span><strong>${niceDate(req.startDate)} → ${niceDate(req.endDate)} (${escHtml(req.totalLeaveDays||"-")})</strong></div>
+    <div class="sumrow"><span>Ticket Approval</span><strong>${escHtml(ticketApprovalDisplay(req))}</strong></div>
+    <div class="sumrow"><span>Actual Departure / Return</span><strong>${dep?niceDate(dep.travelDate):"-"} / ${ret?niceDate(ret.travelDate):"-"}</strong></div>
+    <div class="sumrow"><span>Actual Rejoining</span><strong>${niceDate(rej?.actualRejoiningDate)}</strong></div>`;
+  const events=[];
+  if(req.createdAt)events.push({d:req.createdAt,t:"Leave Request Created",x:"HR/Admin submitted "+(req.leaveType||"leave")+" request."});
+  if(req.approvedAt)events.push({d:req.approvedAt,t:"Manager Approval",x:"Approved by "+(req.approvedBy||req.lineManager||"Manager")+". Ticket: "+ticketApprovalDisplay(req)+"."});
+  if(req.rejectedAt)events.push({d:req.rejectedAt,t:"Leave Rejected",x:"Rejected by "+(req.rejectedBy||"Manager")+"."});
+  (ticket?.history||[]).forEach(h=>events.push({d:h.createdAt||h.travelDate,t:String(h.journeySide||"Ticket Entry"),x:"Travel "+niceDate(h.travelDate)+" • "+(h.providedBy||"-")+" • "+(h.status||"-")+" • "+(h.fromAirport||"-")+" → "+(h.toAirport||"-")}));
+  if(rej?.actualReturnDate)events.push({d:rej.recordedAt||rej.actualReturnDate,t:"Actual Return Recorded",x:"Actual return: "+niceDate(rej.actualReturnDate)});
+  if(rej?.actualRejoiningDate)events.push({d:rej.recordedAt||rej.actualRejoiningDate,t:"Duty Rejoined",x:"Actual rejoining: "+niceDate(rej.actualRejoiningDate)});
+  if(pay?.updatedAt)events.push({d:pay.updatedAt,t:"Payroll / Leave Salary Updated",x:"Paid days "+(pay.paidDays||0)+", Unpaid "+(pay.unpaidDays||0)+", Absent "+(pay.absentDays||0)+", Leave Salary AED "+(pay.salaryAmount||0)+", Status "+(pay.paymentStatus||"-")+(pay.paidDate?" on "+niceDate(pay.paidDate):"")});
+  events.sort((a,b)=>String(a.d||"").localeCompare(String(b.d||"")));
+  document.getElementById("lifecycleTimeline").innerHTML=events.length?events.map(e=>`<div style="position:relative;margin:0 0 14px"><div style="font-size:9px;color:#6b7280">${e.d?new Date(e.d.length===10?e.d+"T00:00:00":e.d).toLocaleString("en-GB"):"-"}</div><b style="color:#17365d">${escHtml(e.t)}</b><div style="font-size:10px;margin-top:3px">${escHtml(e.x)}</div></div>`).join(""):'<div style="color:#7d8da0">No timeline events yet.</div>';
+  document.getElementById("lifePaidDays").value=pay?.paidDays??att.paid??0;
+  document.getElementById("lifeUnpaidDays").value=pay?.unpaidDays??att.unpaid??0;
+  document.getElementById("lifeAbsentDays").value=pay?.absentDays??att.absent??0;
+  document.getElementById("lifeSalaryDays").value=pay?.salaryDays??"";
+  document.getElementById("lifeSalaryAmount").value=pay?.salaryAmount??"";
+  document.getElementById("lifeSalaryStatus").value=pay?.paymentStatus||"Pending";
+  document.getElementById("lifeSalaryPaidDate").value=pay?.paidDate||"";
+  document.getElementById("lifePaymentMethod").value=pay?.paymentMethod||"";
+  document.getElementById("lifePaymentReference").value=pay?.paymentReference||"";
+  document.getElementById("lifePayrollRemarks").value=pay?.remarks||"";
+  document.getElementById("lifecycleNotice").className="notice ninfo";
+  document.getElementById("leaveLifecycleModal").classList.add("show");
+}
+function saveLeavePayrollRecord(){
+  const id=document.getElementById("lifecycleLeaveId")?.value;if(!id)return;
+  const store=readLeaveStore();if(!Array.isArray(store.leavePayroll))store.leavePayroll=[];
+  let p=store.leavePayroll.find(x=>String(x.leaveRequestId)===String(id));
+  const data={
+    leaveRequestId:id,
+    paidDays:Number(document.getElementById("lifePaidDays")?.value||0),
+    unpaidDays:Number(document.getElementById("lifeUnpaidDays")?.value||0),
+    absentDays:Number(document.getElementById("lifeAbsentDays")?.value||0),
+    salaryDays:Number(document.getElementById("lifeSalaryDays")?.value||0),
+    salaryAmount:Number(document.getElementById("lifeSalaryAmount")?.value||0),
+    paymentStatus:document.getElementById("lifeSalaryStatus")?.value||"Pending",
+    paidDate:document.getElementById("lifeSalaryPaidDate")?.value||"",
+    paymentMethod:document.getElementById("lifePaymentMethod")?.value||"",
+    paymentReference:document.getElementById("lifePaymentReference")?.value.trim()||"",
+    remarks:document.getElementById("lifePayrollRemarks")?.value.trim()||"",
+    updatedAt:new Date().toISOString(),
+    updatedBy:"HR / Admin"
+  };
+  if(data.paymentStatus==="Paid"&&!data.paidDate)return alert("Enter Leave Salary Paid Date.");
+  if(p)Object.assign(p,data);else{data.id="LP-"+Date.now();data.createdAt=data.updatedAt;store.leavePayroll.push(data);}
+  saveLeaveStore(store);
+  document.getElementById("lifecycleNotice").className="notice ninfo show";
+  document.getElementById("lifecycleNotice").textContent="Payroll / leave salary record saved in employee leave history.";
+  renderEmployeeLeaveHistory();
+  openLeaveLifecycle(id);
+}
+
+
 function reject(){const r=prompt('Rejection reason is mandatory:');if(r&&r.trim())alert('Rejection reason recorded.')}
 </script>
 </body>
