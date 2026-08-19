@@ -92,6 +92,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   <div class="nav">
     <button onclick="go('request',this)"><span class="ico">＋</span><span>Submit Leave Request</span></button>
     <button onclick="go('approvals',this)"><span class="ico">✓</span><span>Manager Approvals</span></button>
+    <button onclick="go('approved',this)"><span class="ico">☑</span><span>Approved Leave Applications</span></button>
     <button onclick="go('tickets',this)"><span class="ico">✈</span><span>Ticket & Travel Tracker</span></button>
     <button onclick="go('rejoin',this)"><span class="ico">↩</span><span>Record Rejoining</span></button>
     <button onclick="go('attendance',this)"><span class="ico">🗓</span><span>Timesheet / Absence</span></button>
@@ -119,7 +120,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   <div class="pagehead"><div><h2>Leave Dashboard</h2><p>Live approval, movement, ticket, rejoining and exception overview.</p></div><button class="btn orange" onclick="goById('request')">+ New Leave</button></div>
   <div class="kpis">
     <div class="kpi" onclick="openKpi('Pending Approvals')"><div class="top"><span class="lab">Pending Approvals</span><span class="bubble">✓</span></div><div class="num" id="kpiPendingApprovals">0</div><div class="hint">Manager action pending</div></div>
-    <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num" id="kpiCurrentlyOnLeave">0</div><div class="hint">Active approved leave</div></div>
+    <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num" id="kpiCurrentlyOnLeave">0</div><div class="hint">Counts only after departure ticket date is entered and starts</div></div>
     <div class="kpi" onclick="openKpi('Leaving Next 7 Days')"><div class="top"><span class="lab">Leaving Next 7 Days</span><span class="bubble o">✈</span></div><div class="num">0</div><div class="hint">Upcoming movement</div></div>
     <div class="kpi" onclick="openKpi('Returning Next 7 Days')"><div class="top"><span class="lab">Returning Next 7 Days</span><span class="bubble o">↩</span></div><div class="num">0</div><div class="hint">Expected return / rejoin</div></div>
   </div>
@@ -162,8 +163,8 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
         <div class="fg full"><label>Employee</label><select id="employeeSelect" onchange="refreshEmployeeSnapshot()"><option value="">Loading employees...</option></select></div>
         <div class="fg"><label>Leave Type</label><select id="leaveType" onchange="toggleMedicalFields()"><option>Annual Leave</option><option>Sick Leave</option><option>Unpaid Leave</option><option>Emergency Leave</option></select></div>
         <div class="fg"><label>Half Day</label><select id="halfDay" onchange="updateLeaveDays()"><option>No</option><option>First Half</option><option>Second Half</option></select></div>
-        <div class="fg"><label>Start Date</label><input type="date" id="leaveStart" onchange="updateLeaveDays();validateRequestTicketDates()"></div>
-        <div class="fg"><label>End Date</label><input type="date" id="leaveEnd" onchange="updateLeaveDays();validateRequestTicketDates()"></div>
+        <div class="fg"><label>Start Date</label><input type="date" id="leaveStart" onchange="updateLeaveDays()"></div>
+        <div class="fg"><label>End Date</label><input type="date" id="leaveEnd" onchange="updateLeaveDays()"></div>
         <div class="fg full"><label>Total Leave Days</label><input id="totalLeaveDays" value="0 Day(s)" readonly style="font-weight:800;color:#17365d;background:#f4f8fc"></div>
         <div class="fg full hidden" id="medicalPaperBox">
           <label>Medical Paper Status</label>
@@ -177,44 +178,38 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
         <div class="fg"><label>Approving Manager</label><input id="approvingManagerField" value="Select an employee" readonly title="Auto-picked from Employee Management → Line Manager / Approving Manager"><small style="color:#7a8999;font-size:9px">Auto-picked from Employee Portal Line Manager field.</small></div>
         <div class="fg"><label>Attachment</label><input type="file"></div>
 
+        
+        
         <div class="fg full" style="margin-top:6px">
-          <div style="font-weight:800;color:#17365d;border-left:4px solid #f2a45f;padding-left:8px;margin:4px 0 2px">Ticket / Travel Details</div>
+          <div style="font-weight:800;color:#17365d;border-left:4px solid #f2a45f;padding-left:8px;margin:4px 0 2px">Ticket Approval</div>
         </div>
         <div class="fg">
           <label>Ticket Required?</label>
           <select id="requestTicketRequired" onchange="toggleRequestTicketFields()">
             <option>No</option>
             <option>Yes</option>
+            <option>Self</option>
           </select>
         </div>
-        <div class="fg hidden request-ticket-field"><label>Ticket Entitlement</label>
+        <div class="fg hidden request-ticket-field">
+          <label>Ticket Approval Type</label>
           <select id="requestTicketEntitlement">
-            <option>Company Return Ticket</option>
-            <option>Self Ticket</option>
-            <option>One-Sided Home Country → UAE</option>
-            <option>One-Sided UAE → Home Country</option>
+            <option>Cash</option>
+            <option>Return Ticket</option>
+            <option>UAE → Home Country</option>
+            <option>Home Country → UAE</option>
           </select>
         </div>
-        <div class="fg hidden request-ticket-field"><label>Ticket Status</label>
-          <select id="requestTicketStatus">
-            <option>Requested</option>
-            <option>Booked</option>
-            <option>Confirmed</option>
-            <option>Cancelled</option>
-          </select>
-        </div>
-        <div class="fg hidden request-ticket-field"><label>Ticket Approval Status</label>
+        <div class="fg hidden request-ticket-field">
+          <label>Ticket Approval Status</label>
           <input id="requestTicketApprovalStatus" value="Pending Manager Approval" readonly style="background:#f4f8fc;font-weight:700;color:#17365d">
         </div>
-        <div class="fg hidden request-ticket-field"><label>Departure Airport</label><input id="requestDepartureAirport" placeholder="e.g. DXB"></div>
-        <div class="fg hidden request-ticket-field"><label>Destination City / Airport</label><input id="requestDestination" placeholder="e.g. DEL / Delhi"></div>
-        <div class="fg hidden request-ticket-field"><label>PNR / Ticket No.</label><input id="requestPnr" placeholder="Booking reference"></div>
-        <div class="fg hidden request-ticket-field"><label>Departure Ticket Date</label><input type="date" id="requestDepartureDate" onchange="validateRequestTicketDates()"></div>
-        <div class="fg hidden request-ticket-field"><label>Return Ticket / Arrival Date</label><input type="date" id="requestReturnDate" onchange="validateRequestTicketDates()"></div>
-        <div class="fg hidden request-ticket-field"><label>Ticket Attachment (Optional)</label><input type="file" id="requestTicketAttachment"></div>
-        <div class="fg full"><div id="requestTicketNotice" class="notice nwarn"></div></div>
-
-        <div class="fg full"><label>HR Remarks</label><textarea placeholder="Received signed leave form..."></textarea></div>
+        <div class="fg full">
+          <div id="requestTicketNotice" class="notice ninfo show">
+            Manager will approve the leave and ticket entitlement together. Actual ticket details will be entered after leave approval.
+          </div>
+        </div>
+<div class="fg full"><label>HR Remarks</label><textarea placeholder="Received signed leave form..."></textarea></div>
       </div>
       <div id="leaveNotice" class="notice nwarn"></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:13px"><button class="btn light">Save Draft</button><button class="btn primary" onclick="submitLeave()">Submit to Manager</button></div>
@@ -235,30 +230,58 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
   <table><thead><tr><th>Employee</th><th>Request</th><th>Leave</th><th>Dates</th><th>Ticket Approval</th><th>Ticket Dates</th><th>Manager</th><th>Status</th><th>Decision</th></tr></thead><tbody id="managerApprovalRows"><tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr></tbody></table></div>
 </section>
 
+
+<section class="page" id="approved">
+  <div class="pagehead">
+    <div><h2>Approved Leave Applications</h2><p>Approved leave records. Use Ticket button to enter departure / return ticket details and maintain complete ticket history.</p></div>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <input id="approvedLeaveSearch" class="search" placeholder="Search employee / request" oninput="renderApprovedLeaves()">
+      <select id="approvedTicketFilter" onchange="renderApprovedLeaves()">
+        <option value="">All Ticket Types</option>
+        <option>Cash</option>
+        <option>Return Ticket</option>
+        <option>UAE → Home Country</option>
+        <option>Home Country → UAE</option>
+        <option>Self</option>
+        <option>Not Required</option>
+      </select>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Employee</th><th>Request</th><th>Leave</th><th>Dates</th><th>Ticket Approval</th><th>Manager</th><th>Status</th><th>Ticket</th></tr>
+      </thead>
+      <tbody id="approvedLeaveRows">
+        <tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:20px">No approved leave applications yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <section class="page" id="tickets">
-  <div class="pagehead"><div><h2>Ticket & Travel Tracker</h2><p>Ticket responsibility, routing, status, departure and return validation.</p></div></div>
+  <div class="pagehead"><div><h2>Ticket & Travel Tracker</h2><p>Operational ticket overview. Primary ticket entry is available from Approved Leave Applications → Ticket.</p></div></div>
   <div class="grid2eq">
     <div class="card">
       <h3>Ticket Booking & Travel Details</h3>
       <div class="formgrid">
-        <div class="fg full"><label>Employee / Approved Leave</label><select id="travelEmployeeSelect"><option value="">Select Employee</option></select></div>
+        <div class="fg full"><label>Employee / Approved Leave</label><select id="travelEmployeeSelect" onchange="loadApprovedLeaveForTravel()"><option value="">Select Employee</option></select></div>
         <div class="fg"><label>Approved Leave Start</label><input type="date" id="approvedStart" value="2026-08-15"></div>
         <div class="fg"><label>Approved Leave End</label><input type="date" id="approvedEnd" value="2026-08-17"></div>
-        <div class="fg"><label>Ticket Entitlement</label><select><option>Company Provided</option><option>Self Booked</option></select></div>
-        <div class="fg"><label>Ticket Status</label><select><option>Requested</option><option>Booked</option><option>Confirmed</option><option>Cancelled</option></select></div>
-        <div class="fg"><label>Departure Airport</label><input placeholder="DXB"></div>
-        <div class="fg"><label>Destination City / Airport</label><input placeholder="DEL / Delhi"></div>
-        <div class="fg"><label>PNR / Ticket No.</label><input placeholder="Booking reference"></div>
+        <div class="fg"><label>Ticket Entitlement</label><select id="travelTicketEntitlement"><option>Company Return Ticket</option><option>Self Ticket</option><option>One-Sided Home Country → UAE</option><option>One-Sided UAE → Home Country</option></select></div>
+        <div class="fg"><label>Ticket Status</label><select id="travelTicketStatus"><option>Requested</option><option>Booked</option><option>Confirmed</option><option>Cancelled</option></select></div>
+        <div class="fg"><label>Departure Airport</label><input id="travelDepartureAirport" placeholder="DXB"></div>
+        <div class="fg"><label>Destination City / Airport</label><input id="travelDestination" placeholder="DEL / Delhi"></div>
         <div class="fg"><label>Ticket Attachment</label><input type="file"></div>
         <div class="fg"><label>Departure Ticket Date</label><input type="date" id="depTicket" onchange="checkDeparture()"></div>
-        <div class="fg"><label>Actual Departure Date</label><input type="date"></div>
+        <div class="fg"><label>Actual Departure Date</label><input type="date" id="actualDepartureDate"></div>
         <div class="fg"><label>Return Ticket / Arrival Date</label><input type="date" id="retTicket" onchange="checkReturn()"></div>
         <div class="fg"><label>Expected Rejoining Date</label><input type="date" id="expectedRejoin"></div>
         <div class="fg full"><label>Remarks</label><textarea placeholder="Ticket / site release / travel remarks"></textarea></div>
       </div>
       <div id="depMsg" class="notice ndanger"></div>
       <div id="retMsg" class="notice nwarn"></div>
-      <div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary">Save Ticket / Travel</button></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary" onclick="saveTicketTravel()">Save Ticket / Travel</button></div>
     </div>
     <div class="card"><h3>Validation Rules</h3>
       <div class="notice ninfo show">Departure ticket earlier than Approved Leave Start must be blocked unless an authorized leave amendment is initiated.</div>
@@ -442,7 +465,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 
 <div class="modalwrap" id="kpiModal"><div class="modal"><div class="modalhead"><h3 id="kpiTitle">Details</h3><button class="x" onclick="closeModal('kpiModal')">×</button></div>
 <div class="toolbar"><input class="search" placeholder="Search employee"><select><option>All Sites</option></select><button class="btn light">Excel</button><button class="btn light">PDF</button></div>
-<table><thead><tr><th>Employee</th><th>Site</th><th>Leave</th><th>From</th><th>To / Return</th><th>Status</th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;color:#7d8da0;padding:20px">No records available.</td></tr></tbody></table>
+<table><thead><tr><th>Employee</th><th>Company / Site</th><th>Leave</th><th>Departure</th><th>Return</th><th>Status</th><th>Ticket</th></tr></thead><tbody id="kpiDetailRows"><tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No records available.</td></tr></tbody></table>
 </div></div>
 
 <div class="modalwrap" id="returnModal"><div class="modal"><div class="modalhead"><h3>Return Variance Workflow</h3><button class="x" onclick="closeModal('returnModal')">×</button></div>
@@ -489,8 +512,6 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
           <option>Requested</option><option>Booked</option><option>Confirmed</option><option>Cancelled</option>
         </select>
       </div>
-      <div class="fg amend-ticket-field"><label>PNR / Ticket No.</label><input id="amendPnr"></div>
-
       <div class="fg amend-ticket-field"><label>Departure Ticket Date</label><input type="date" id="amendDepartureDate"></div>
       <div class="fg amend-ticket-field"><label>Return Ticket / Arrival Date</label><input type="date" id="amendReturnDate"></div>
 
@@ -503,6 +524,65 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <button class="btn light" onclick="closeModal('amendApprovalModal')">Cancel</button>
       <button class="btn green" onclick="saveAmendedApproval()">Approve with Amendment</button>
     </div>
+  </div>
+</div>
+
+
+<div class="modalwrap" id="approvedTicketModal">
+  <div class="modal">
+    <div class="modalhead">
+      <h3>Ticket Details & History</h3>
+      <button class="x" onclick="closeModal('approvedTicketModal')">×</button>
+    </div>
+    <input type="hidden" id="ticketHistoryLeaveId">
+
+    <div class="summary" id="approvedTicketSummary" style="margin-bottom:14px"></div>
+
+    <div class="formgrid">
+      <div class="fg"><label>Journey Side</label>
+        <select id="ticketJourneySide">
+          <option>Departure - UAE → Home Country</option>
+          <option>Return - Home Country → UAE</option>
+        </select>
+      </div>
+      <div class="fg"><label>Ticket Provided By</label>
+        <select id="ticketProvidedBy">
+          <option>Company</option>
+          <option>Employee / Self</option>
+          <option>Cash Paid by Company</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Ticket Status</label>
+        <select id="approvedTicketStatus">
+          <option>Requested</option>
+          <option>Booked</option>
+          <option>Confirmed</option>
+          <option>Cancelled</option>
+          <option>Travelled</option>
+        </select>
+      </div>
+      <div class="fg"><label>Travel Date</label><input type="date" id="approvedTravelDate"></div>
+      <div class="fg"><label>From Airport / City</label><input id="approvedFromAirport" placeholder="e.g. DXB"></div>
+      <div class="fg"><label>To Airport / City</label><input id="approvedToAirport" placeholder="e.g. DEL"></div>
+      <div class="fg"><label>Cost / Cash Amount</label><input id="approvedTicketCost" type="number" min="0" step="0.01" placeholder="Optional"></div>
+      <div class="fg full"><label>Remarks</label><textarea id="approvedTicketRemarks" placeholder="Ticket details / provider note..."></textarea></div>
+      <div class="fg full"><label>Ticket Attachment (Optional)</label><input type="file" id="approvedTicketFile"></div>
+    </div>
+
+    <div id="approvedTicketNotice" class="notice ninfo"></div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin:14px 0">
+      <button class="btn primary" onclick="saveApprovedTicketHistory()">Save Ticket Entry</button>
+    </div>
+
+    <h3 style="margin-top:18px">Ticket History</h3>
+    <table>
+      <thead><tr><th>Date Added</th><th>Journey</th><th>Travel Date</th><th>Provided By</th><th>Status</th><th>Route</th><th>Remarks</th></tr></thead>
+      <tbody id="approvedTicketHistoryRows">
+        <tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:18px">No ticket history yet.</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -608,17 +688,17 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
   refreshLeaveUI();
 
-  // Refresh whenever user comes back from Employee Portal
+ // Refresh whenever user comes back from Employee Portal
   window.addEventListener("focus",()=>{loadAllEmployeeDropdowns();refreshLeaveUI();});
 
-  // Refresh immediately if Employee Portal data changes in another tab
+ // Refresh immediately if Employee Portal data changes in another tab
   window.addEventListener("storage",(ev)=>{
     if(ev.key===EMPLOYEE_DATA_KEY) loadAllEmployeeDropdowns();
     if(ev.key===LEAVE_DATA_KEY) refreshLeaveUI();
   });
 });
 
-const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',tickets:'Ticket & Travel Tracker',rejoin:'Record Rejoining',attendance:'Timesheet / Absence Entry',medical:'Medical Leave Register',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
+const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',approved:'Approved Leave Applications',tickets:'Ticket & Travel Tracker',rejoin:'Record Rejoining',attendance:'Timesheet / Absence Entry',medical:'Medical Leave Register',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
 
 function go(id,btn){
   const target=document.getElementById(id);
@@ -637,7 +717,11 @@ function goById(id){
   const btn=[...document.querySelectorAll('.nav button')].find(b=>b.getAttribute('onclick')?.includes("'"+id+"'"));
   go(id,btn);
 }
-function openKpi(t){document.getElementById('kpiTitle').textContent=t;document.getElementById('kpiModal').classList.add('show')}
+function openKpi(t){
+  document.getElementById('kpiTitle').textContent=t;
+  renderKpiDetails(t);
+  document.getElementById('kpiModal').classList.add('show');
+}
 function closeModal(id){document.getElementById(id).classList.remove('show')}
 function diff(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)}
 function fmt(v){return new Date(v+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
@@ -688,12 +772,15 @@ function renderManagerApprovals(){
       tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr>';
     }else{
       tbody.innerHTML=pending.map(r=>{
-        const ticketRequired=String(r.ticketRequired||"No")==="Yes";
+        const ticketChoice=String(r.ticketRequired||"No");
+        const ticketRequired=ticketChoice==="Yes";
         const ticketText=ticketRequired
-          ? `<b>${escHtml(r.ticketEntitlement||"-")}</b><br><span style="color:#78889a">${escHtml(r.ticketStatus||"-")} • ${escHtml(r.ticketApprovalStatus||"Pending Manager Approval")}</span>`
-          : `<span style="color:#78889a">No Ticket Required</span>`;
+          ? `<b>${escHtml(r.ticketEntitlement||"-")}</b><br><span style="color:#78889a">${escHtml(r.ticketApprovalStatus||"Pending Manager Approval")}</span>`
+          : (ticketChoice==="Self"
+              ? `<span style="color:#78889a">Self Arranged</span>`
+              : `<span style="color:#78889a">No Ticket Required</span>`);
         const ticketDates=ticketRequired
-          ? `${niceDate(r.departureTicketDate)} → ${niceDate(r.returnTicketDate)}<br><span style="color:#78889a">${escHtml(r.pnr||"No PNR")}</span>`
+          ? `<span style="color:#78889a">Details after approval</span>`
           : `-`;
 
         return `
@@ -740,7 +827,7 @@ function approveLeaveAndTicket(id){
 
   req.status="Approved";
   req.leaveApprovalStatus="Approved";
-  req.ticketApprovalStatus=String(req.ticketRequired||"No")==="Yes"?"Approved":"Not Required";
+  req.ticketApprovalStatus=String(req.ticketRequired||"No")==="Yes"?"Approved":(String(req.ticketRequired||"No")==="Self"?"Self":"Not Required");
   req.approvedAt=new Date().toISOString();
   req.approvedBy=req.lineManager||req.approvingManager||"Manager";
   req.approvalMode="Approved All";
@@ -777,7 +864,6 @@ function openAmendApproval(id){
   document.getElementById("amendTicketRequired").value=req.ticketRequired||"No";
   document.getElementById("amendTicketEntitlement").value=req.ticketEntitlement||"Company Return Ticket";
   document.getElementById("amendTicketStatus").value=req.ticketStatus||"Requested";
-  document.getElementById("amendPnr").value=req.pnr||"";
   document.getElementById("amendDepartureDate").value=req.departureTicketDate||"";
   document.getElementById("amendReturnDate").value=req.returnTicketDate||"";
   document.getElementById("amendManagerRemarks").value="";
@@ -826,7 +912,6 @@ function saveAmendedApproval(){
     ticketRequired:req.ticketRequired,
     ticketEntitlement:req.ticketEntitlement,
     ticketStatus:req.ticketStatus,
-    pnr:req.pnr,
     departureTicketDate:req.departureTicketDate,
     returnTicketDate:req.returnTicketDate
   };
@@ -837,7 +922,6 @@ function saveAmendedApproval(){
   req.ticketRequired=ticketRequired;
   req.ticketEntitlement=ticketRequired==="Yes"?document.getElementById("amendTicketEntitlement").value:"";
   req.ticketStatus=ticketRequired==="Yes"?document.getElementById("amendTicketStatus").value:"";
-  req.pnr=ticketRequired==="Yes"?document.getElementById("amendPnr").value.trim():"";
   req.departureTicketDate=ticketRequired==="Yes"?dep:"";
   req.returnTicketDate=ticketRequired==="Yes"?ret:"";
   req.status="Approved";
@@ -857,7 +941,6 @@ function saveAmendedApproval(){
     }
     ticket.entitlement=req.ticketEntitlement;
     ticket.status=req.ticketStatus;
-    ticket.pnr=req.pnr;
     ticket.departureDate=req.departureTicketDate;
     ticket.returnDate=req.returnTicketDate;
     ticket.approvalStatus="Approved with Amendment";
@@ -900,16 +983,74 @@ function rejectLeave(id){
   renderApprovedLeaveCount();
 }
 
-function renderApprovedLeaveCount(){
+
+function getCurrentlyOnLeaveRecords(){
   const store=readLeaveStore();
   const today=new Date();
   today.setHours(0,0,0,0);
-  const active=store.requests.filter(r=>{
-    if(String(r.status)!=="Approved" || !r.startDate || !r.endDate) return false;
-    const s=new Date(r.startDate+"T00:00:00");
-    const e=new Date(r.endDate+"T00:00:00");
-    return s<=today && today<=e;
+
+  return store.requests.filter(r=>{
+    if(String(r.status)!=="Approved") return false;
+
+    const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(r.id));
+    const depDate=String(ticket?.departureDate || r.departureTicketDate || "").trim();
+    if(!depDate) return false;
+
+    const dep=new Date(depDate+"T00:00:00");
+    if(dep>today) return false;
+
+    const rejoin=(store.rejoining||[]).find(x=>String(x.leaveRequestId)===String(r.id));
+    if(rejoin?.actualRejoiningDate){
+      const rej=new Date(rejoin.actualRejoiningDate+"T00:00:00");
+      return today<rej;
+    }
+
+    const returnDate=String(ticket?.returnDate || r.returnTicketDate || r.endDate || "").trim();
+    if(returnDate){
+      const ret=new Date(returnDate+"T00:00:00");
+      return today<=ret;
+    }
+
+    return true;
   });
+}
+
+function renderKpiDetails(title){
+  const tbody=document.getElementById("kpiDetailRows");
+  if(!tbody) return;
+
+  if(title!=="Currently On Leave"){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No records available for this dashboard card yet.</td></tr>';
+    return;
+  }
+
+  const store=readLeaveStore();
+  const rows=getCurrentlyOnLeaveRecords();
+
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No employees currently on leave.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=rows.map(r=>{
+    const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(r.id))||{};
+    const dep=ticket.departureDate||r.departureTicketDate||"";
+    const ret=ticket.returnDate||r.returnTicketDate||r.endDate||"";
+    return `
+      <tr>
+        <td><b>${escHtml(r.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(r.employeeCode||"")}</span></td>
+        <td>${escHtml(r.company||"-")}</td>
+        <td>${escHtml(r.leaveType||"-")}</td>
+        <td>${niceDate(dep)}<br><span style="color:#78889a">${escHtml(ticket.departureProvidedBy||"")}</span></td>
+        <td>${niceDate(ret)}<br><span style="color:#78889a">${escHtml(ticket.returnProvidedBy||"")}</span></td>
+        <td><span class="badge approved">On Leave</span></td>
+        <td><button class="btn orange" onclick="closeModal('kpiModal');openApprovedTicket('${escHtml(r.id)}')">Ticket</button></td>
+      </tr>`;
+  }).join("");
+}
+
+function renderApprovedLeaveCount(){
+  const active=getCurrentlyOnLeaveRecords();
   const el=document.getElementById("kpiCurrentlyOnLeave");
   if(el) el.textContent=String(active.length);
 }
@@ -917,6 +1058,7 @@ function renderApprovedLeaveCount(){
 function refreshLeaveUI(){
   renderManagerApprovals();
   renderApprovedLeaveCount();
+  renderApprovedLeaves();
   renderAttendanceHistory();
   renderMedicalRegister();
   renderMedicalDashboard();
@@ -931,66 +1073,23 @@ function toggleMedicalFields(){
 
 
 function toggleRequestTicketFields(){
-  const required=document.getElementById("requestTicketRequired")?.value==="Yes";
-  document.querySelectorAll(".request-ticket-field").forEach(el=>el.classList.toggle("hidden",!required));
+  const choice=document.getElementById("requestTicketRequired")?.value||"No";
+  const needsApproval=choice==="Yes";
+  document.querySelectorAll(".request-ticket-field").forEach(el=>el.classList.toggle("hidden",!needsApproval));
   const n=document.getElementById("requestTicketNotice");
-  if(n && !required) n.className="notice nwarn";
+  if(n){
+    n.className="notice ninfo show";
+    if(choice==="Yes"){
+      n.textContent="Manager will approve leave and ticket entitlement together. Actual ticket details will be entered after approval.";
+    }else if(choice==="Self"){
+      n.textContent="Employee will arrange ticket himself. No company ticket approval is required.";
+    }else{
+      n.textContent="No ticket required for this leave request.";
+    }
+  }
 }
 
-function validateRequestTicketDates(){
-  const required=document.getElementById("requestTicketRequired")?.value==="Yes";
-  const n=document.getElementById("requestTicketNotice");
-  if(!required || !n) return true;
-
-  const leaveStart=document.getElementById("leaveStart")?.value;
-  const leaveEnd=document.getElementById("leaveEnd")?.value;
-  const dep=document.getElementById("requestDepartureDate")?.value;
-  const ret=document.getElementById("requestReturnDate")?.value;
-
-  if(dep && leaveStart && new Date(dep)<new Date(leaveStart)){
-    n.className="notice ndanger show";
-    n.textContent="Departure ticket date is earlier than leave start date. Correct the ticket date or change the leave dates.";
-    return false;
-  }
-
-  if(dep && ret && new Date(ret)<new Date(dep)){
-    n.className="notice ndanger show";
-    n.textContent="Return ticket date cannot be earlier than departure ticket date.";
-    return false;
-  }
-
-  if(ret && leaveEnd && new Date(ret)>new Date(leaveEnd)){
-    const days=diff(leaveEnd,ret);
-    n.className="notice nwarn show";
-    n.textContent="Return ticket is "+days+" day(s) after leave end date. Return Variance / Leave Extension approval will be required.";
-    return true;
-  }
-
-  n.className="notice ninfo show";
-  n.textContent="Ticket dates are valid for this leave request.";
-  return true;
-}
-
-function updateLeaveDays(){
-  const s=document.getElementById('leaveStart')?.value;
-  const e=document.getElementById('leaveEnd')?.value;
-  const out=document.getElementById('totalLeaveDays');
-  if(!out) return;
-  if(!s || !e){
-    out.value='0 Day(s)';
-    return;
-  }
-  const start=new Date(s+'T00:00:00');
-  const end=new Date(e+'T00:00:00');
-  if(end < start){
-    out.value='Invalid Date Range';
-    return;
-  }
-  let days=Math.floor((end-start)/86400000)+1; // inclusive calendar days
-  const half=document.getElementById('halfDay')?.value || 'No';
-  if(half !== 'No') days=Math.max(0.5, days-0.5);
-  out.value=(Number.isInteger(days)?days:days.toFixed(1))+' Day(s)';
-}
+function validateRequestTicketDates(){ return true; }
 
 
 function normalizeLeaveStatus(v){
@@ -1103,13 +1202,13 @@ function submitLeave(){
     medicalPaperStatus:selectedLeaveType==='Sick Leave'?(document.getElementById('medicalPaperStatus')?.value||'Not Provided'):'Not Required',
     ticketRequired:document.getElementById('requestTicketRequired')?.value||'No',
     ticketEntitlement:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestTicketEntitlement')?.value||''):'',
-    ticketStatus:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestTicketStatus')?.value||''):'',
-    ticketApprovalStatus:document.getElementById('requestTicketRequired')?.value==='Yes'?'Pending Manager Approval':'Not Required',
-    departureAirport:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestDepartureAirport')?.value.trim()||''):'',
-    destination:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestDestination')?.value.trim()||''):'',
-    pnr:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestPnr')?.value.trim()||''):'',
-    departureTicketDate:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestDepartureDate')?.value||''):'',
-    returnTicketDate:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestReturnDate')?.value||''):'',
+    ticketStatus:document.getElementById('requestTicketRequired')?.value==='Yes'?'Approval Requested':(document.getElementById('requestTicketRequired')?.value==='Self'?'Self Arranged':'Not Required'),
+    ticketApprovalStatus:document.getElementById('requestTicketRequired')?.value==='Yes'?'Pending Manager Approval':(document.getElementById('requestTicketRequired')?.value==='Self'?'Self':'Not Required'),
+    departureAirport:'',
+    destination:'',
+    pnr:'',
+    departureTicketDate:'',
+    returnTicketDate:'',
     remarks:document.querySelector('#request textarea')?.value.trim()||'',
     startDate:s,
     endDate:e,
@@ -1134,12 +1233,11 @@ function submitLeave(){
       employeeCode:record.employeeCode,
       employeeName:record.employeeName,
       entitlement:record.ticketEntitlement,
-      status:record.ticketStatus,
-      departureAirport:record.departureAirport,
-      destination:record.destination,
-      pnr:record.pnr,
-      departureDate:record.departureTicketDate,
-      returnDate:record.returnTicketDate,
+      approvalStatus:"Pending Manager Approval",
+      status:"Approval Requested",
+      departureDate:"",
+      returnDate:"",
+      history:[],
       createdAt:new Date().toISOString()
     });
   }
@@ -1439,6 +1537,242 @@ function renderMedicalDashboard(){
   set("kpiMedicalPaperReceived",received);
   set("kpiMedicalPaperPending",pending);
   set("kpiTimesheetExceptions",store.attendanceAdjustments.length);
+}
+
+
+function loadApprovedLeaveForTravel(){
+  const emp=document.getElementById("travelEmployeeSelect")?.value;
+  if(!emp) return;
+  const store=readLeaveStore();
+  const approved=store.requests
+    .filter(r=>String(r.employeeCode||"")===String(emp) && String(r.status)==="Approved")
+    .sort((a,b)=>String(b.startDate).localeCompare(String(a.startDate)))[0];
+  if(!approved) return;
+
+  document.getElementById("approvedStart").value=approved.startDate||"";
+  document.getElementById("approvedEnd").value=approved.endDate||"";
+  const ent=document.getElementById("travelTicketEntitlement");
+  if(ent && approved.ticketEntitlement) ent.value=approved.ticketEntitlement;
+}
+
+function saveTicketTravel(){
+  const emp=document.getElementById("travelEmployeeSelect")?.value;
+  const dep=document.getElementById("depTicket")?.value;
+  const ret=document.getElementById("retTicket")?.value;
+  if(!emp) return alert("Select employee first.");
+  if(!dep) return alert("Enter Departure Ticket Date.");
+
+  const store=readLeaveStore();
+  const approved=store.requests
+    .filter(r=>String(r.employeeCode||"")===String(emp) && String(r.status)==="Approved")
+    .sort((a,b)=>String(b.startDate).localeCompare(String(a.startDate)))[0];
+  if(!approved) return alert("No approved leave request found for this employee.");
+
+  if(dep && approved.startDate && new Date(dep)<new Date(approved.startDate)){
+    return alert("Departure ticket date is earlier than approved leave start date.");
+  }
+  if(ret && dep && new Date(ret)<new Date(dep)){
+    return alert("Return ticket date cannot be earlier than departure ticket date.");
+  }
+
+  if(!Array.isArray(store.tickets)) store.tickets=[];
+  let ticket=store.tickets.find(t=>String(t.leaveRequestId)===String(approved.id));
+  if(!ticket){
+    ticket={id:"TKT-"+Date.now(),leaveRequestId:approved.id,employeeCode:approved.employeeCode,employeeName:approved.employeeName};
+    store.tickets.push(ticket);
+  }
+
+  ticket.entitlement=document.getElementById("travelTicketEntitlement")?.value||approved.ticketEntitlement||"";
+  ticket.status=document.getElementById("travelTicketStatus")?.value||"Booked";
+  ticket.approvalStatus=approved.ticketApprovalStatus||"Approved";
+  ticket.departureAirport=document.getElementById("travelDepartureAirport")?.value.trim()||"";
+  ticket.destination=document.getElementById("travelDestination")?.value.trim()||"";
+  ticket.departureDate=dep;
+  ticket.returnDate=ret||"";
+  ticket.actualDepartureDate=document.getElementById("actualDepartureDate")?.value||"";
+  ticket.updatedAt=new Date().toISOString();
+
+  approved.departureTicketDate=dep;
+  approved.returnTicketDate=ret||"";
+  approved.pnr=ticket.pnr;
+  approved.ticketStatus=ticket.status;
+
+  saveLeaveStore(store);
+  refreshLeaveUI();
+  alert("Ticket / Travel details saved. Currently On Leave count will start when the departure ticket date arrives.");
+}
+
+
+function ticketApprovalDisplay(r){
+  const choice=String(r.ticketRequired||"No");
+  if(choice==="Self") return "Self";
+  if(choice!=="Yes") return "Not Required";
+  return r.ticketEntitlement||"Approved Ticket";
+}
+
+function renderApprovedLeaves(){
+  const tbody=document.getElementById("approvedLeaveRows");
+  if(!tbody) return;
+
+  const store=readLeaveStore();
+  const q=(document.getElementById("approvedLeaveSearch")?.value||"").trim().toLowerCase();
+  const filter=document.getElementById("approvedTicketFilter")?.value||"";
+
+  let rows=store.requests.filter(r=>String(r.status)==="Approved");
+
+  if(q){
+    rows=rows.filter(r=>
+      (String(r.employeeName||"")+" "+String(r.employeeCode||"")+" "+String(r.id||"")).toLowerCase().includes(q)
+    );
+  }
+  if(filter){
+    rows=rows.filter(r=>ticketApprovalDisplay(r)===filter);
+  }
+
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:20px">No approved leave applications found.</td></tr>';
+    return;
+  }
+
+  rows.sort((a,b)=>String(b.approvedAt||b.createdAt||"").localeCompare(String(a.approvedAt||a.createdAt||"")));
+
+  tbody.innerHTML=rows.map(r=>`
+    <tr>
+      <td><b>${escHtml(r.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(r.employeeCode||"")}</span></td>
+      <td>${escHtml(r.id||"-")}</td>
+      <td>${escHtml(r.leaveType||"-")}</td>
+      <td>${niceDate(r.startDate)} → ${niceDate(r.endDate)}<br><span style="color:#78889a">${escHtml(r.totalLeaveDays||"")}</span></td>
+      <td>${escHtml(ticketApprovalDisplay(r))}<br><span style="color:#78889a">${escHtml(r.ticketApprovalStatus||"")}</span></td>
+      <td>${escHtml(r.lineManager||r.approvingManager||"-")}</td>
+      <td><span class="badge approved">Approved</span></td>
+      <td><button class="btn orange" onclick="openApprovedTicket('${escHtml(r.id)}')">Ticket</button></td>
+    </tr>`).join("");
+}
+
+function ticketHistoryForRequest(store,leaveId){
+  if(!Array.isArray(store.tickets)) store.tickets=[];
+  let ticket=store.tickets.find(t=>String(t.leaveRequestId)===String(leaveId));
+  if(!ticket){
+    const req=store.requests.find(r=>String(r.id)===String(leaveId));
+    ticket={
+      id:"TKT-"+Date.now(),
+      leaveRequestId:leaveId,
+      employeeCode:req?.employeeCode||"",
+      employeeName:req?.employeeName||"",
+      entitlement:req?.ticketEntitlement||"",
+      approvalStatus:req?.ticketApprovalStatus||"",
+      history:[],
+      createdAt:new Date().toISOString()
+    };
+    store.tickets.push(ticket);
+  }
+  if(!Array.isArray(ticket.history)) ticket.history=[];
+  return ticket;
+}
+
+function openApprovedTicket(leaveId){
+  const store=readLeaveStore();
+  const req=store.requests.find(r=>String(r.id)===String(leaveId));
+  if(!req) return alert("Approved leave request not found.");
+
+  const ticket=ticketHistoryForRequest(store,leaveId);
+  saveLeaveStore(store);
+
+  document.getElementById("ticketHistoryLeaveId").value=leaveId;
+
+  const summary=document.getElementById("approvedTicketSummary");
+  if(summary){
+    const depHistory=(ticket.history||[]).filter(h=>String(h.journeySide||"").startsWith("Departure")).slice(-1)[0];
+    const retHistory=(ticket.history||[]).filter(h=>String(h.journeySide||"").startsWith("Return")).slice(-1)[0];
+
+    summary.innerHTML=`
+      <div class="sumrow"><span>Employee</span><strong>${escHtml(req.employeeName||"-")} (${escHtml(req.employeeCode||"")})</strong></div>
+      <div class="sumrow"><span>Leave</span><strong>${niceDate(req.startDate)} → ${niceDate(req.endDate)}</strong></div>
+      <div class="sumrow"><span>Approved Ticket</span><strong>${escHtml(ticketApprovalDisplay(req))}</strong></div>
+      <div class="sumrow"><span>Approved By</span><strong>${escHtml(req.approvedBy||req.lineManager||"-")}</strong></div>
+      <div class="sumrow"><span>Departure Ticket</span><strong>${depHistory?niceDate(depHistory.travelDate)+" • "+escHtml(depHistory.providedBy||"-"):"Not entered"}</strong></div>
+      <div class="sumrow"><span>Return Ticket</span><strong>${retHistory?niceDate(retHistory.travelDate)+" • "+escHtml(retHistory.providedBy||"-"):"Not entered"}</strong></div>`;
+  }
+
+  renderApprovedTicketHistory(leaveId);
+  document.getElementById("approvedTicketNotice").className="notice ninfo";
+  document.getElementById("approvedTicketModal").classList.add("show");
+}
+
+function renderApprovedTicketHistory(leaveId){
+  const tbody=document.getElementById("approvedTicketHistoryRows");
+  if(!tbody) return;
+  const store=readLeaveStore();
+  const ticket=ticketHistoryForRequest(store,leaveId);
+  const rows=(ticket.history||[]).slice().reverse();
+
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:18px">No ticket history yet.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=rows.map(h=>`
+    <tr>
+      <td>${h.createdAt?new Date(h.createdAt).toLocaleString():"-"}</td>
+      <td>${escHtml(h.journeySide||"-")}</td>
+      <td>${niceDate(h.travelDate)}</td>
+      <td>${escHtml(h.providedBy||"-")}</td>
+      <td>${escHtml(h.status||"-")}</td>
+      <td>${escHtml((h.fromAirport||"-")+" → "+(h.toAirport||"-"))}</td>
+      <td>${escHtml(h.remarks||"-")}</td>
+    </tr>`).join("");
+}
+
+function saveApprovedTicketHistory(){
+  const leaveId=document.getElementById("ticketHistoryLeaveId")?.value;
+  if(!leaveId) return alert("Leave request not selected.");
+
+  const travelDate=document.getElementById("approvedTravelDate")?.value;
+  if(!travelDate) return alert("Enter Travel Date.");
+
+  const store=readLeaveStore();
+  const req=store.requests.find(r=>String(r.id)===String(leaveId));
+  if(!req) return alert("Leave request not found.");
+
+  const ticket=ticketHistoryForRequest(store,leaveId);
+  const historyEntry={
+    id:"TKT-HIST-"+Date.now(),
+    journeySide:document.getElementById("ticketJourneySide")?.value||"",
+    providedBy:document.getElementById("ticketProvidedBy")?.value||"",
+    status:document.getElementById("approvedTicketStatus")?.value||"",
+    travelDate,
+    fromAirport:document.getElementById("approvedFromAirport")?.value.trim()||"",
+    toAirport:document.getElementById("approvedToAirport")?.value.trim()||"",
+    cost:document.getElementById("approvedTicketCost")?.value||"",
+    remarks:document.getElementById("approvedTicketRemarks")?.value.trim()||"",
+    createdAt:new Date().toISOString()
+  };
+
+ // Validate against approved leave dates for departure.
+  if(historyEntry.journeySide.startsWith("Departure") && req.startDate && new Date(travelDate)<new Date(req.startDate)){
+    return alert("Departure ticket date cannot be earlier than approved leave start date.");
+  }
+
+  ticket.history.push(historyEntry);
+  ticket.updatedAt=new Date().toISOString();
+
+  if(historyEntry.journeySide.startsWith("Departure")){
+    ticket.departureDate=travelDate;
+    ticket.departureProvidedBy=historyEntry.providedBy;
+    req.departureTicketDate=travelDate;
+  }else{
+    ticket.returnDate=travelDate;
+    ticket.returnProvidedBy=historyEntry.providedBy;
+    req.returnTicketDate=travelDate;
+  }
+
+  saveLeaveStore(store);
+
+  document.getElementById("approvedTicketNotice").className="notice ninfo show";
+  document.getElementById("approvedTicketNotice").textContent="Ticket history saved successfully.";
+  renderApprovedTicketHistory(leaveId);
+  renderApprovedLeaves();
+  refreshLeaveUI();
 }
 
 function checkDeparture(){
