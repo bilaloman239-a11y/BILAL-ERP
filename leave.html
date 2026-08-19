@@ -93,6 +93,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <button onclick="go('request',this)"><span class="ico">＋</span><span>Submit Leave Request</span></button>
     <button onclick="go('approvals',this)"><span class="ico">✓</span><span>Manager Approvals</span></button>
     <button onclick="go('approved',this)"><span class="ico">☑</span><span>Approved Leave Applications</span></button>
+    <button onclick="go('accounts',this)"><span class="ico">₿</span><span>Accounts / Leave Salary</span></button>
     <button onclick="go('tickets',this)"><span class="ico">✈</span><span>Ticket & Travel Tracker</span></button>
     <button onclick="go('history',this)"><span class="ico">◷</span><span>Employee Leave History</span></button>
     <button onclick="go('rejoin',this)"><span class="ico">↩</span><span>Record Rejoining</span></button>
@@ -257,6 +258,15 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
         <tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:20px">No approved leave applications yet.</td></tr>
       </tbody>
     </table>
+  </div>
+</section>
+
+<section class="page" id="accounts">
+  <div class="pagehead"><div><h2>Accounts / Leave Salary</h2><p>Manager-approved leave is sent here automatically for leave salary processing.</p></div></div>
+  <div class="card">
+    <div class="toolbar"><input id="accountsSearch" class="search" placeholder="Search employee / request" oninput="renderAccountsLeaves()"><select id="accountsStatusFilter" onchange="renderAccountsLeaves()"><option value="">All Payment Status</option><option>Pending</option><option>Partially Paid</option><option>Paid</option></select></div>
+    <table><thead><tr><th>Employee</th><th>Request</th><th>Leave</th><th>Effective Leave Period</th><th>Total Days</th><th>Paid Days</th><th>Unpaid Days</th><th>Salary</th><th>Payment</th><th>Action</th></tr></thead>
+    <tbody id="accountsLeaveRows"><tr><td colspan="10" style="text-align:center;color:#7d8da0;padding:20px">No manager-approved leave applications yet.</td></tr></tbody></table>
   </div>
 </section>
 
@@ -618,11 +628,15 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 
     <h3>Payroll / Leave Salary Record</h3>
     <div class="formgrid">
-      <div class="fg"><label>Paid Leave Days</label><input id="lifePaidDays" type="number" min="0" step="0.5" placeholder="0"></div>
-      <div class="fg"><label>Unpaid / LOP Days</label><input id="lifeUnpaidDays" type="number" min="0" step="0.5" placeholder="0"></div>
+      <div class="fg"><label>Total Leave Days (Auto)</label><input id="lifeTotalDays" readonly style="font-weight:800;color:#17365d;background:#f4f8fc"></div>
+      <div class="fg"><label>Calculation Basis</label><input id="lifeDayBasis" readonly style="background:#f4f8fc"></div>
+      <div class="fg"><label>Paid Leave Days (Accountant Entry)</label><input id="lifePaidDays" type="number" min="0" step="0.5" placeholder="0" oninput="recalcAccountsUnpaid()"></div>
+      <div class="fg"><label>Unpaid / LOP Days (Auto)</label><input id="lifeUnpaidDays" type="number" min="0" step="0.5" readonly style="font-weight:800;background:#f4f8fc"></div>
       <div class="fg"><label>Absent Days</label><input id="lifeAbsentDays" type="number" min="0" step="0.5" placeholder="0"></div>
       <div class="fg"><label>Eligible Leave Salary Days</label><input id="lifeSalaryDays" type="number" min="0" step="0.5" placeholder="0"></div>
-      <div class="fg"><label>Leave Salary Amount (AED)</label><input id="lifeSalaryAmount" type="number" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="fg"><label>Leave Salary Amount / Payable (AED)</label><input id="lifeSalaryAmount" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcPaymentBalance()"></div>
+      <div class="fg"><label>Payment Amount (AED)</label><input id="lifePaymentAmount" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcPaymentBalance()"></div>
+      <div class="fg"><label>Balance Payable (Auto)</label><input id="lifeBalanceAmount" readonly style="font-weight:800;background:#f4f8fc"></div>
       <div class="fg"><label>Leave Salary Payment Status</label><select id="lifeSalaryStatus"><option>Pending</option><option>Paid</option><option>Not Applicable</option></select></div>
       <div class="fg"><label>Leave Salary Paid Date</label><input id="lifeSalaryPaidDate" type="date"></div>
       <div class="fg"><label>Payment Method</label><select id="lifePaymentMethod"><option value="">Select</option><option>Bank Transfer</option><option>WPS / Payroll</option><option>Cash</option><option>Final Settlement</option><option>Other</option></select></div>
@@ -747,7 +761,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   });
 });
 
-const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',approved:'Approved Leave Applications',tickets:'Ticket & Travel Tracker',history:'Employee Leave History',rejoin:'Record Rejoining',attendance:'Timesheet / Absence Entry',medical:'Medical Leave Register',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
+const titles={dashboard:'Leave Dashboard',request:'Submit Leave Request',approvals:'Manager Approvals',approved:'Approved Leave Applications',accounts:'Accounts / Leave Salary',tickets:'Ticket & Travel Tracker',history:'Employee Leave History',rejoin:'Record Rejoining',attendance:'Timesheet / Absence Entry',medical:'Medical Leave Register',ledger:'Leave Ledger',encash:'Leave Encashment',reports:'Leave Reports',settings:'Rules & Escalation'};
 
 function go(id,btn){
   const target=document.getElementById(id);
@@ -1253,6 +1267,7 @@ function refreshLeaveUI(){
   renderAttendanceHistory();
   renderMedicalRegister();
   renderMedicalDashboard();
+  renderAccountsLeaves();
 }
 
 
@@ -2157,12 +2172,41 @@ function clearLeaveHistoryFilters(){
   ["historyEmployeeFilter","historyYearFilter","historyStatusFilter"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
   renderEmployeeLeaveHistory();
 }
+function effectiveLeavePeriod(req,store){
+  const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(req.id));
+  const dep=latestTicketSide(ticket,"Departure");
+  const ret=latestTicketSide(ticket,"Return");
+  const start=dep?.travelDate || req.departureTicketDate || req.startDate || "";
+  const end=ret?.travelDate || req.returnTicketDate || req.endDate || "";
+  let basis="Approved Leave Start → Leave End";
+  if(start && (dep?.travelDate||req.departureTicketDate)) basis="Departure Ticket → Leave End";
+  if((dep?.travelDate||req.departureTicketDate) && (ret?.travelDate||req.returnTicketDate)) basis="Departure Ticket → Return Ticket";
+  let days=0;
+  if(start&&end&&new Date(end)>=new Date(start)) days=Math.floor((new Date(end+'T00:00:00')-new Date(start+'T00:00:00'))/86400000)+1;
+  return {start,end,days,basis};
+}
+function recalcAccountsUnpaid(){
+  const total=Number(document.getElementById("lifeTotalDays")?.dataset.days||0), paid=Number(document.getElementById("lifePaidDays")?.value||0);
+  const el=document.getElementById("lifeUnpaidDays"); if(el) el.value=Math.max(0,total-paid);
+}
+function recalcPaymentBalance(){
+  const payable=Number(document.getElementById("lifeSalaryAmount")?.value||0), paid=Number(document.getElementById("lifePaymentAmount")?.value||0);
+  const el=document.getElementById("lifeBalanceAmount"); if(el) el.value=Math.max(0,payable-paid).toFixed(2);
+}
+function renderAccountsLeaves(){
+  const store=readLeaveStore(), body=document.getElementById("accountsLeaveRows"); if(!body)return;
+  const q=(document.getElementById("accountsSearch")?.value||"").toLowerCase(), sf=document.getElementById("accountsStatusFilter")?.value||"";
+  const rows=(store.requests||[]).filter(r=>String(r.status)==="Approved").filter(r=>{const p=payrollFor(store,r.id); const st=p?.paymentStatus||"Pending"; return (!q||[r.employeeName,r.employeeCode,r.id].join(' ').toLowerCase().includes(q))&&(!sf||st===sf);});
+  body.innerHTML=rows.length?rows.map(r=>{const e=effectiveLeavePeriod(r,store),p=payrollFor(store,r.id),paid=Number(p?.paidDays||0),unpaid=Math.max(0,e.days-paid),sal=Number(p?.salaryAmount||0),amt=Number(p?.paymentAmount||0),st=p?.paymentStatus||"Pending";return `<tr><td><b>${escHtml(r.employeeName||'-')}</b><br><small>${escHtml(r.employeeCode||'')}</small></td><td>${escHtml(r.id)}</td><td>${escHtml(r.leaveType||'-')}</td><td>${niceDate(e.start)} → ${niceDate(e.end)}<br><small>${escHtml(e.basis)}</small></td><td><b>${e.days}</b></td><td>${paid}</td><td>${unpaid}</td><td>AED ${sal.toFixed(2)}</td><td><span class="badge ${st==='Paid'?'approved':st==='Partially Paid'?'info':'pending'}">${escHtml(st)}</span><br><small>AED ${amt.toFixed(2)}</small></td><td><button class="btn primary" onclick="openLeaveLifecycle('${String(r.id).replace(/'/g,"\\'")}')">Process</button></td></tr>`}).join(''):'<tr><td colspan="10" style="text-align:center;color:#7d8da0;padding:20px">No matching approved leave applications.</td></tr>';
+}
+
 function openLeaveLifecycle(id){
   const store=readLeaveStore(), req=store.requests.find(r=>String(r.id)===String(id)); if(!req)return;
   const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(id));
   const dep=latestTicketSide(ticket,"Departure"), ret=latestTicketSide(ticket,"Return");
   const rej=(store.rejoining||[]).find(x=>String(x.leaveRequestId)===String(id));
   const pay=payrollFor(store,id), att=attendanceTotalsFor(store,req);
+  const eff=effectiveLeavePeriod(req,store);
   document.getElementById("lifecycleLeaveId").value=id;
   document.getElementById("lifecycleSummary").innerHTML=`
     <div class="sumrow"><span>Employee</span><strong>${escHtml(req.employeeName||"-")} (${escHtml(req.employeeCode||"")})</strong></div>
@@ -2181,11 +2225,15 @@ function openLeaveLifecycle(id){
   if(pay?.updatedAt)events.push({d:pay.updatedAt,t:"Payroll / Leave Salary Updated",x:"Paid days "+(pay.paidDays||0)+", Unpaid "+(pay.unpaidDays||0)+", Absent "+(pay.absentDays||0)+", Leave Salary AED "+(pay.salaryAmount||0)+", Status "+(pay.paymentStatus||"-")+(pay.paidDate?" on "+niceDate(pay.paidDate):"")});
   events.sort((a,b)=>String(a.d||"").localeCompare(String(b.d||"")));
   document.getElementById("lifecycleTimeline").innerHTML=events.length?events.map(e=>`<div style="position:relative;margin:0 0 14px"><div style="font-size:9px;color:#6b7280">${e.d?new Date(e.d.length===10?e.d+"T00:00:00":e.d).toLocaleString("en-GB"):"-"}</div><b style="color:#17365d">${escHtml(e.t)}</b><div style="font-size:10px;margin-top:3px">${escHtml(e.x)}</div></div>`).join(""):'<div style="color:#7d8da0">No timeline events yet.</div>';
-  document.getElementById("lifePaidDays").value=pay?.paidDays??att.paid??0;
-  document.getElementById("lifeUnpaidDays").value=pay?.unpaidDays??att.unpaid??0;
+  document.getElementById("lifeTotalDays").value=eff.days+" Day(s)"; document.getElementById("lifeTotalDays").dataset.days=eff.days;
+  document.getElementById("lifeDayBasis").value=eff.basis;
+  document.getElementById("lifePaidDays").value=pay?.paidDays??0;
+  recalcAccountsUnpaid();
   document.getElementById("lifeAbsentDays").value=pay?.absentDays??att.absent??0;
   document.getElementById("lifeSalaryDays").value=pay?.salaryDays??"";
   document.getElementById("lifeSalaryAmount").value=pay?.salaryAmount??"";
+  document.getElementById("lifePaymentAmount").value=pay?.paymentAmount??"";
+  recalcPaymentBalance();
   document.getElementById("lifeSalaryStatus").value=pay?.paymentStatus||"Pending";
   document.getElementById("lifeSalaryPaidDate").value=pay?.paidDate||"";
   document.getElementById("lifePaymentMethod").value=pay?.paymentMethod||"";
@@ -2201,18 +2249,24 @@ function saveLeavePayrollRecord(){
   const data={
     leaveRequestId:id,
     paidDays:Number(document.getElementById("lifePaidDays")?.value||0),
-    unpaidDays:Number(document.getElementById("lifeUnpaidDays")?.value||0),
+    unpaidDays:Math.max(0,Number(document.getElementById("lifeTotalDays")?.dataset.days||0)-Number(document.getElementById("lifePaidDays")?.value||0)),
     absentDays:Number(document.getElementById("lifeAbsentDays")?.value||0),
     salaryDays:Number(document.getElementById("lifeSalaryDays")?.value||0),
     salaryAmount:Number(document.getElementById("lifeSalaryAmount")?.value||0),
+    paymentAmount:Number(document.getElementById("lifePaymentAmount")?.value||0),
     paymentStatus:document.getElementById("lifeSalaryStatus")?.value||"Pending",
     paidDate:document.getElementById("lifeSalaryPaidDate")?.value||"",
     paymentMethod:document.getElementById("lifePaymentMethod")?.value||"",
     paymentReference:document.getElementById("lifePaymentReference")?.value.trim()||"",
     remarks:document.getElementById("lifePayrollRemarks")?.value.trim()||"",
     updatedAt:new Date().toISOString(),
-    updatedBy:"HR / Admin"
+    updatedBy:"Accounts"
   };
+  const totalDays=Number(document.getElementById("lifeTotalDays")?.dataset.days||0);
+  if(data.paidDays>totalDays)return alert("Paid Leave Days cannot be greater than Total Leave Days ("+totalDays+").");
+  if(data.paymentAmount>data.salaryAmount)return alert("Payment Amount cannot be greater than Leave Salary Payable Amount.");
+  data.balanceAmount=Math.max(0,data.salaryAmount-data.paymentAmount);
+  data.paymentStatus=data.paymentAmount<=0?"Pending":(data.paymentAmount<data.salaryAmount?"Partially Paid":"Paid");
   if(data.paymentStatus==="Paid"&&!data.paidDate)return alert("Enter Leave Salary Paid Date.");
   if(p)Object.assign(p,data);else{data.id="LP-"+Date.now();data.createdAt=data.updatedAt;store.leavePayroll.push(data);}
   saveLeaveStore(store);
