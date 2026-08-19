@@ -260,34 +260,22 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 </section>
 
 <section class="page" id="tickets">
-  <div class="pagehead"><div><h2>Ticket & Travel Tracker</h2><p>Operational ticket overview. Primary ticket entry is available from Approved Leave Applications → Ticket.</p></div></div>
-  <div class="grid2eq">
-    <div class="card">
-      <h3>Ticket Booking & Travel Details</h3>
-      <div class="formgrid">
-        <div class="fg full"><label>Employee / Approved Leave</label><select id="travelEmployeeSelect" onchange="loadApprovedLeaveForTravel()"><option value="">Select Employee</option></select></div>
-        <div class="fg"><label>Approved Leave Start</label><input type="date" id="approvedStart" value="2026-08-15"></div>
-        <div class="fg"><label>Approved Leave End</label><input type="date" id="approvedEnd" value="2026-08-17"></div>
-        <div class="fg"><label>Ticket Entitlement</label><select id="travelTicketEntitlement"><option>Company Return Ticket</option><option>Self Ticket</option><option>One-Sided Home Country → UAE</option><option>One-Sided UAE → Home Country</option></select></div>
-        <div class="fg"><label>Ticket Status</label><select id="travelTicketStatus"><option>Requested</option><option>Booked</option><option>Confirmed</option><option>Cancelled</option></select></div>
-        <div class="fg"><label>Departure Airport</label><input id="travelDepartureAirport" placeholder="DXB"></div>
-        <div class="fg"><label>Destination City / Airport</label><input id="travelDestination" placeholder="DEL / Delhi"></div>
-        <div class="fg"><label>Ticket Attachment</label><input type="file"></div>
-        <div class="fg"><label>Departure Ticket Date</label><input type="date" id="depTicket" onchange="checkDeparture()"></div>
-        <div class="fg"><label>Actual Departure Date</label><input type="date" id="actualDepartureDate"></div>
-        <div class="fg"><label>Return Ticket / Arrival Date</label><input type="date" id="retTicket" onchange="checkReturn()"></div>
-        <div class="fg"><label>Expected Rejoining Date</label><input type="date" id="expectedRejoin"></div>
-        <div class="fg full"><label>Remarks</label><textarea placeholder="Ticket / site release / travel remarks"></textarea></div>
-      </div>
-      <div id="depMsg" class="notice ndanger"></div>
-      <div id="retMsg" class="notice nwarn"></div>
-      <div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary" onclick="saveTicketTravel()">Save Ticket / Travel</button></div>
+  <div class="pagehead"><div><h2>Ticket & Travel Tracker</h2><p>Read-only travel history from approved leave ticket entries. Use filters to check any employee, date, journey, provider or status.</p></div></div>
+  <div class="card">
+    <div class="toolbar">
+      <input id="travelTrackerSearch" class="search" placeholder="Search employee / code / request / route" oninput="renderTravelTracker()">
+      <input id="travelTrackerFrom" type="date" onchange="renderTravelTracker()" title="Travel From Date">
+      <input id="travelTrackerTo" type="date" onchange="renderTravelTracker()" title="Travel To Date">
+      <select id="travelTrackerJourney" onchange="renderTravelTracker()"><option value="">All Journeys</option><option value="Departure">Departure</option><option value="Return">Return</option></select>
+      <select id="travelTrackerProvider" onchange="renderTravelTracker()"><option value="">All Providers</option><option>Company</option><option>Employee / Self</option><option>Cash Paid by Company</option><option>Other</option></select>
+      <select id="travelTrackerStatus" onchange="renderTravelTracker()"><option value="">All Status</option><option>Requested</option><option>Booked</option><option>Confirmed</option><option>Cancelled</option><option>Travelled</option></select>
+      <button class="btn light" onclick="clearTravelTrackerFilters()">Clear Filters</button>
     </div>
-    <div class="card"><h3>Validation Rules</h3>
-      <div class="notice ninfo show">Departure ticket earlier than Approved Leave Start must be blocked unless an authorized leave amendment is initiated.</div>
-      <div class="notice ninfo show">Return ticket after Approved Leave End automatically opens Return Variance Workflow.</div>
-      <div class="notice ninfo show">Cancelled ticket must not count as confirmed departure/return until a replacement ticket is entered.</div>
-    </div>
+    <div class="summary" style="margin-bottom:12px"><div class="sumrow"><span>Filtered Travel Entries</span><strong id="travelTrackerCount">0</strong></div></div>
+    <table>
+      <thead><tr><th>Employee</th><th>Request</th><th>Journey</th><th>Travel Date</th><th>Route</th><th>Ticket Provided By</th><th>Status</th><th>Cost / Cash</th><th>Remarks</th></tr></thead>
+      <tbody id="travelTrackerRows"><tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No ticket / travel history yet.</td></tr></tbody>
+    </table>
   </div>
 </section>
 
@@ -1055,10 +1043,55 @@ function renderApprovedLeaveCount(){
   if(el) el.textContent=String(active.length);
 }
 
+function renderTravelTracker(){
+  const tbody=document.getElementById("travelTrackerRows");
+  if(!tbody) return;
+  const store=readLeaveStore();
+  const q=(document.getElementById("travelTrackerSearch")?.value||"").trim().toLowerCase();
+  const from=document.getElementById("travelTrackerFrom")?.value||"";
+  const to=document.getElementById("travelTrackerTo")?.value||"";
+  const journey=document.getElementById("travelTrackerJourney")?.value||"";
+  const provider=document.getElementById("travelTrackerProvider")?.value||"";
+  const status=document.getElementById("travelTrackerStatus")?.value||"";
+  let rows=[];
+  (store.tickets||[]).forEach(t=>{
+    const req=(store.requests||[]).find(r=>String(r.id)===String(t.leaveRequestId))||{};
+    (Array.isArray(t.history)?t.history:[]).forEach(h=>rows.push({t,req,h}));
+  });
+  rows=rows.filter(x=>{
+    const h=x.h, req=x.req, t=x.t;
+    const text=[req.employeeName,t.employeeName,req.employeeCode,t.employeeCode,req.id,t.leaveRequestId,h.fromAirport,h.toAirport,h.remarks].join(" ").toLowerCase();
+    if(q && !text.includes(q)) return false;
+    if(from && (!h.travelDate || h.travelDate<from)) return false;
+    if(to && (!h.travelDate || h.travelDate>to)) return false;
+    if(journey && !String(h.journeySide||"").startsWith(journey)) return false;
+    if(provider && String(h.providedBy||"")!==provider) return false;
+    if(status && String(h.status||"")!==status) return false;
+    return true;
+  }).sort((a,b)=>String(b.h.travelDate||b.h.createdAt||"").localeCompare(String(a.h.travelDate||a.h.createdAt||"")));
+  const count=document.getElementById("travelTrackerCount"); if(count) count.textContent=String(rows.length);
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No matching ticket / travel history found.</td></tr>';return;}
+  tbody.innerHTML=rows.map(x=>{const h=x.h,req=x.req,t=x.t; const amount=h.cost?('AED '+escHtml(h.cost)):'-'; return `<tr>
+    <td><b>${escHtml(req.employeeName||t.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(req.employeeCode||t.employeeCode||"")}</span></td>
+    <td>${escHtml(req.id||t.leaveRequestId||"-")}</td>
+    <td>${escHtml(h.journeySide||"-")}</td>
+    <td>${niceDate(h.travelDate)}</td>
+    <td>${escHtml((h.fromAirport||"-")+" → "+(h.toAirport||"-"))}</td>
+    <td>${escHtml(h.providedBy||"-")}</td>
+    <td><span class="badge info">${escHtml(h.status||"-")}</span></td>
+    <td>${amount}</td><td>${escHtml(h.remarks||"-")}</td></tr>`;}).join("");
+}
+function clearTravelTrackerFilters(){
+  ["travelTrackerSearch","travelTrackerFrom","travelTrackerTo"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+  ["travelTrackerJourney","travelTrackerProvider","travelTrackerStatus"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+  renderTravelTracker();
+}
+
 function refreshLeaveUI(){
   renderManagerApprovals();
   renderApprovedLeaveCount();
   renderApprovedLeaves();
+  renderTravelTracker();
   renderAttendanceHistory();
   renderMedicalRegister();
   renderMedicalDashboard();
@@ -1594,7 +1627,6 @@ function saveTicketTravel(){
 
   approved.departureTicketDate=dep;
   approved.returnTicketDate=ret||"";
-  approved.pnr=ticket.pnr;
   approved.ticketStatus=ticket.status;
 
   saveLeaveStore(store);
