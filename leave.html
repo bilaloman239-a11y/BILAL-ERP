@@ -162,8 +162,8 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
         <div class="fg full"><label>Employee</label><select id="employeeSelect" onchange="refreshEmployeeSnapshot()"><option value="">Loading employees...</option></select></div>
         <div class="fg"><label>Leave Type</label><select id="leaveType" onchange="toggleMedicalFields()"><option>Annual Leave</option><option>Sick Leave</option><option>Unpaid Leave</option><option>Emergency Leave</option></select></div>
         <div class="fg"><label>Half Day</label><select id="halfDay" onchange="updateLeaveDays()"><option>No</option><option>First Half</option><option>Second Half</option></select></div>
-        <div class="fg"><label>Start Date</label><input type="date" id="leaveStart" onchange="updateLeaveDays()"></div>
-        <div class="fg"><label>End Date</label><input type="date" id="leaveEnd" onchange="updateLeaveDays()"></div>
+        <div class="fg"><label>Start Date</label><input type="date" id="leaveStart" onchange="updateLeaveDays();validateRequestTicketDates()"></div>
+        <div class="fg"><label>End Date</label><input type="date" id="leaveEnd" onchange="updateLeaveDays();validateRequestTicketDates()"></div>
         <div class="fg full"><label>Total Leave Days</label><input id="totalLeaveDays" value="0 Day(s)" readonly style="font-weight:800;color:#17365d;background:#f4f8fc"></div>
         <div class="fg full hidden" id="medicalPaperBox">
           <label>Medical Paper Status</label>
@@ -176,6 +176,44 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
         </div>
         <div class="fg"><label>Approving Manager</label><input id="approvingManagerField" value="Select an employee" readonly title="Auto-picked from Employee Management → Line Manager / Approving Manager"><small style="color:#7a8999;font-size:9px">Auto-picked from Employee Portal Line Manager field.</small></div>
         <div class="fg"><label>Attachment</label><input type="file"></div>
+
+        <div class="fg full" style="margin-top:6px">
+          <div style="font-weight:800;color:#17365d;border-left:4px solid #f2a45f;padding-left:8px;margin:4px 0 2px">Ticket / Travel Details</div>
+        </div>
+        <div class="fg">
+          <label>Ticket Required?</label>
+          <select id="requestTicketRequired" onchange="toggleRequestTicketFields()">
+            <option>No</option>
+            <option>Yes</option>
+          </select>
+        </div>
+        <div class="fg hidden request-ticket-field"><label>Ticket Entitlement</label>
+          <select id="requestTicketEntitlement">
+            <option>Company Return Ticket</option>
+            <option>Self Ticket</option>
+            <option>One-Sided Home Country → UAE</option>
+            <option>One-Sided UAE → Home Country</option>
+          </select>
+        </div>
+        <div class="fg hidden request-ticket-field"><label>Ticket Status</label>
+          <select id="requestTicketStatus">
+            <option>Requested</option>
+            <option>Booked</option>
+            <option>Confirmed</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+        <div class="fg hidden request-ticket-field"><label>Ticket Approval Status</label>
+          <input id="requestTicketApprovalStatus" value="Pending Manager Approval" readonly style="background:#f4f8fc;font-weight:700;color:#17365d">
+        </div>
+        <div class="fg hidden request-ticket-field"><label>Departure Airport</label><input id="requestDepartureAirport" placeholder="e.g. DXB"></div>
+        <div class="fg hidden request-ticket-field"><label>Destination City / Airport</label><input id="requestDestination" placeholder="e.g. DEL / Delhi"></div>
+        <div class="fg hidden request-ticket-field"><label>PNR / Ticket No.</label><input id="requestPnr" placeholder="Booking reference"></div>
+        <div class="fg hidden request-ticket-field"><label>Departure Ticket Date</label><input type="date" id="requestDepartureDate" onchange="validateRequestTicketDates()"></div>
+        <div class="fg hidden request-ticket-field"><label>Return Ticket / Arrival Date</label><input type="date" id="requestReturnDate" onchange="validateRequestTicketDates()"></div>
+        <div class="fg hidden request-ticket-field"><label>Ticket Attachment (Optional)</label><input type="file" id="requestTicketAttachment"></div>
+        <div class="fg full"><div id="requestTicketNotice" class="notice nwarn"></div></div>
+
         <div class="fg full"><label>HR Remarks</label><textarea placeholder="Received signed leave form..."></textarea></div>
       </div>
       <div id="leaveNotice" class="notice nwarn"></div>
@@ -187,14 +225,14 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <div class="sumrow"><span>Designation</span><strong id="snapDesignation">-</strong></div>
       <div class="sumrow"><span>Employee Status</span><strong id="snapStatus">-</strong></div>
       <div class="sumrow"><span>Line Manager</span><strong id="snapManager">-</strong></div>
-    </div><div class="notice ninfo show">Employee, Site, Designation, Manager and leave balance should come from the same Employee Master database used by Employee Portal.</div></div>
+    </div><div class="notice ninfo show">Employee, Designation and Manager come from Employee Master. Ticket details can now be entered directly with the leave request.</div></div>
   </div>
 </section>
 
 <section class="page" id="approvals">
   <div class="pagehead"><div><h2>Manager Approvals</h2><p>Leave, amendment and return-variance decisions.</p></div></div>
   <div class="card"><div class="toolbar"><input class="search" placeholder="Search employee"><select><option>Pending</option><option>Approved</option><option>Rejected</option><option>Escalated</option></select></div>
-  <table><thead><tr><th>Employee</th><th>Request</th><th>Type</th><th>Dates</th><th>Manager</th><th>Status</th><th>Decision</th></tr></thead><tbody id="managerApprovalRows"><tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr></tbody></table></div>
+  <table><thead><tr><th>Employee</th><th>Request</th><th>Leave</th><th>Dates</th><th>Ticket Approval</th><th>Ticket Dates</th><th>Manager</th><th>Status</th><th>Decision</th></tr></thead><tbody id="managerApprovalRows"><tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr></tbody></table></div>
 </section>
 
 <section class="page" id="tickets">
@@ -420,6 +458,54 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:13px"><button class="btn light" onclick="closeModal('returnModal')">Save HR Action Required</button><button class="btn primary" onclick="saveVariance()">Continue</button></div>
 </div></div>
 
+
+<div class="modalwrap" id="amendApprovalModal">
+  <div class="modal">
+    <div class="modalhead">
+      <h3>Approve Leave & Ticket with Amendment</h3>
+      <button class="x" onclick="closeModal('amendApprovalModal')">×</button>
+    </div>
+    <input type="hidden" id="amendRequestId">
+    <div class="formgrid">
+      <div class="fg"><label>Leave Start Date</label><input type="date" id="amendLeaveStart"></div>
+      <div class="fg"><label>Leave End Date</label><input type="date" id="amendLeaveEnd"></div>
+
+      <div class="fg"><label>Ticket Required?</label>
+        <select id="amendTicketRequired" onchange="toggleAmendTicketFields()">
+          <option>No</option><option>Yes</option>
+        </select>
+      </div>
+      <div class="fg amend-ticket-field"><label>Ticket Provision / Type</label>
+        <select id="amendTicketEntitlement">
+          <option>Company Return Ticket</option>
+          <option>Self Ticket</option>
+          <option>One-Sided Home Country → UAE</option>
+          <option>One-Sided UAE → Home Country</option>
+        </select>
+      </div>
+
+      <div class="fg amend-ticket-field"><label>Ticket Status</label>
+        <select id="amendTicketStatus">
+          <option>Requested</option><option>Booked</option><option>Confirmed</option><option>Cancelled</option>
+        </select>
+      </div>
+      <div class="fg amend-ticket-field"><label>PNR / Ticket No.</label><input id="amendPnr"></div>
+
+      <div class="fg amend-ticket-field"><label>Departure Ticket Date</label><input type="date" id="amendDepartureDate"></div>
+      <div class="fg amend-ticket-field"><label>Return Ticket / Arrival Date</label><input type="date" id="amendReturnDate"></div>
+
+      <div class="fg full"><label>Manager Amendment Remarks</label>
+        <textarea id="amendManagerRemarks" placeholder="Reason / conditions for amendment..."></textarea>
+      </div>
+    </div>
+    <div id="amendApprovalNotice" class="notice nwarn"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn light" onclick="closeModal('amendApprovalModal')">Cancel</button>
+      <button class="btn green" onclick="saveAmendedApproval()">Approve with Amendment</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
 const EMPLOYEE_DATA_KEY = "cm_employee_portal_v3";
@@ -513,6 +599,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(employeeSelect) employeeSelect.addEventListener("change",refreshEmployeeSnapshot);
   toggleMedicalFields();
   toggleAttendanceMedical();
+  toggleRequestTicketFields();
   initMedicalFilters();
   const am=document.getElementById("attendanceMonthFilter");
   if(am && !am.value){
@@ -598,21 +685,34 @@ function renderManagerApprovals(){
 
   if(tbody){
     if(!pending.length){
-      tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr>';
+      tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No pending approvals yet.</td></tr>';
     }else{
-      tbody.innerHTML=pending.map(r=>`
+      tbody.innerHTML=pending.map(r=>{
+        const ticketRequired=String(r.ticketRequired||"No")==="Yes";
+        const ticketText=ticketRequired
+          ? `<b>${escHtml(r.ticketEntitlement||"-")}</b><br><span style="color:#78889a">${escHtml(r.ticketStatus||"-")} • ${escHtml(r.ticketApprovalStatus||"Pending Manager Approval")}</span>`
+          : `<span style="color:#78889a">No Ticket Required</span>`;
+        const ticketDates=ticketRequired
+          ? `${niceDate(r.departureTicketDate)} → ${niceDate(r.returnTicketDate)}<br><span style="color:#78889a">${escHtml(r.pnr||"No PNR")}</span>`
+          : `-`;
+
+        return `
         <tr>
           <td><b>${escHtml(r.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(r.employeeCode||"")}</span></td>
           <td>${escHtml(r.id||"-")}</td>
           <td>${escHtml(r.leaveType||"-")}</td>
           <td>${niceDate(r.startDate)} → ${niceDate(r.endDate)}<br><span style="color:#78889a">${escHtml(r.totalLeaveDays||"")}</span></td>
+          <td>${ticketText}</td>
+          <td>${ticketDates}</td>
           <td>${escHtml(r.lineManager||r.approvingManager||"-")}</td>
           <td><span class="badge pending">${escHtml(r.status||"Pending")}</span></td>
-          <td>
-            <button class="btn green" onclick="approveLeave('${escHtml(r.id)}')">Approve</button>
+          <td style="white-space:nowrap">
+            <button class="btn green" onclick="approveLeaveAndTicket('${escHtml(r.id)}')">Approve All</button>
+            <button class="btn light" onclick="openAmendApproval('${escHtml(r.id)}')">Approve with Amendment</button>
             <button class="btn red" onclick="rejectLeave('${escHtml(r.id)}')">Reject</button>
           </td>
-        </tr>`).join("");
+        </tr>`;
+      }).join("");
     }
   }
 
@@ -633,16 +733,145 @@ function renderManagerApprovals(){
   }
 }
 
-function approveLeave(id){
+function approveLeaveAndTicket(id){
   const store=readLeaveStore();
   const req=store.requests.find(r=>String(r.id)===String(id));
   if(!req) return alert("Leave request not found.");
+
   req.status="Approved";
+  req.leaveApprovalStatus="Approved";
+  req.ticketApprovalStatus=String(req.ticketRequired||"No")==="Yes"?"Approved":"Not Required";
   req.approvedAt=new Date().toISOString();
   req.approvedBy=req.lineManager||req.approvingManager||"Manager";
+  req.approvalMode="Approved All";
+
+  if(Array.isArray(store.tickets)){
+    store.tickets.forEach(t=>{
+      if(String(t.leaveRequestId)===String(id)){
+        t.approvalStatus="Approved";
+        t.approvedAt=req.approvedAt;
+        t.approvedBy=req.approvedBy;
+      }
+    });
+  }
+
   saveLeaveStore(store);
   renderManagerApprovals();
   renderApprovedLeaveCount();
+  alert("Leave and ticket approved.");
+}
+
+function toggleAmendTicketFields(){
+  const required=document.getElementById("amendTicketRequired")?.value==="Yes";
+  document.querySelectorAll(".amend-ticket-field").forEach(x=>x.classList.toggle("hidden",!required));
+}
+
+function openAmendApproval(id){
+  const store=readLeaveStore();
+  const req=store.requests.find(r=>String(r.id)===String(id));
+  if(!req) return alert("Leave request not found.");
+
+  document.getElementById("amendRequestId").value=req.id||"";
+  document.getElementById("amendLeaveStart").value=req.startDate||"";
+  document.getElementById("amendLeaveEnd").value=req.endDate||"";
+  document.getElementById("amendTicketRequired").value=req.ticketRequired||"No";
+  document.getElementById("amendTicketEntitlement").value=req.ticketEntitlement||"Company Return Ticket";
+  document.getElementById("amendTicketStatus").value=req.ticketStatus||"Requested";
+  document.getElementById("amendPnr").value=req.pnr||"";
+  document.getElementById("amendDepartureDate").value=req.departureTicketDate||"";
+  document.getElementById("amendReturnDate").value=req.returnTicketDate||"";
+  document.getElementById("amendManagerRemarks").value="";
+  document.getElementById("amendApprovalNotice").className="notice nwarn";
+
+  toggleAmendTicketFields();
+  document.getElementById("amendApprovalModal").classList.add("show");
+}
+
+function saveAmendedApproval(){
+  const id=document.getElementById("amendRequestId").value;
+  const store=readLeaveStore();
+  const req=store.requests.find(r=>String(r.id)===String(id));
+  const notice=document.getElementById("amendApprovalNotice");
+  if(!req) return alert("Leave request not found.");
+
+  const newStart=document.getElementById("amendLeaveStart").value;
+  const newEnd=document.getElementById("amendLeaveEnd").value;
+  const ticketRequired=document.getElementById("amendTicketRequired").value;
+  const dep=document.getElementById("amendDepartureDate").value;
+  const ret=document.getElementById("amendReturnDate").value;
+  const remarks=document.getElementById("amendManagerRemarks").value.trim();
+
+  if(!newStart || !newEnd || new Date(newEnd)<new Date(newStart)){
+    notice.className="notice ndanger show";
+    notice.textContent="Enter a valid amended leave date range.";
+    return;
+  }
+
+  if(ticketRequired==="Yes"){
+    if(dep && new Date(dep)<new Date(newStart)){
+      notice.className="notice ndanger show";
+      notice.textContent="Departure ticket date cannot be earlier than amended leave start date.";
+      return;
+    }
+    if(dep && ret && new Date(ret)<new Date(dep)){
+      notice.className="notice ndanger show";
+      notice.textContent="Return ticket date cannot be earlier than departure ticket date.";
+      return;
+    }
+  }
+
+  req.originalApprovalSnapshot=req.originalApprovalSnapshot||{
+    startDate:req.startDate,
+    endDate:req.endDate,
+    ticketRequired:req.ticketRequired,
+    ticketEntitlement:req.ticketEntitlement,
+    ticketStatus:req.ticketStatus,
+    pnr:req.pnr,
+    departureTicketDate:req.departureTicketDate,
+    returnTicketDate:req.returnTicketDate
+  };
+
+  req.startDate=newStart;
+  req.endDate=newEnd;
+  req.totalLeaveDays=(Math.floor((new Date(newEnd+"T00:00:00")-new Date(newStart+"T00:00:00"))/86400000)+1)+" Day(s)";
+  req.ticketRequired=ticketRequired;
+  req.ticketEntitlement=ticketRequired==="Yes"?document.getElementById("amendTicketEntitlement").value:"";
+  req.ticketStatus=ticketRequired==="Yes"?document.getElementById("amendTicketStatus").value:"";
+  req.pnr=ticketRequired==="Yes"?document.getElementById("amendPnr").value.trim():"";
+  req.departureTicketDate=ticketRequired==="Yes"?dep:"";
+  req.returnTicketDate=ticketRequired==="Yes"?ret:"";
+  req.status="Approved";
+  req.leaveApprovalStatus="Approved with Amendment";
+  req.ticketApprovalStatus=ticketRequired==="Yes"?"Approved with Amendment":"Not Required";
+  req.approvalMode="Approved with Amendment";
+  req.managerAmendmentRemarks=remarks;
+  req.approvedAt=new Date().toISOString();
+  req.approvedBy=req.lineManager||req.approvingManager||"Manager";
+
+  if(!Array.isArray(store.tickets)) store.tickets=[];
+  let ticket=store.tickets.find(t=>String(t.leaveRequestId)===String(id));
+  if(ticketRequired==="Yes"){
+    if(!ticket){
+      ticket={id:"TKT-"+Date.now(),leaveRequestId:req.id,employeeCode:req.employeeCode,employeeName:req.employeeName};
+      store.tickets.push(ticket);
+    }
+    ticket.entitlement=req.ticketEntitlement;
+    ticket.status=req.ticketStatus;
+    ticket.pnr=req.pnr;
+    ticket.departureDate=req.departureTicketDate;
+    ticket.returnDate=req.returnTicketDate;
+    ticket.approvalStatus="Approved with Amendment";
+    ticket.approvedAt=req.approvedAt;
+    ticket.approvedBy=req.approvedBy;
+  }else if(ticket){
+    ticket.approvalStatus="Not Required / Removed by Amendment";
+  }
+
+  saveLeaveStore(store);
+  closeModal("amendApprovalModal");
+  renderManagerApprovals();
+  renderApprovedLeaveCount();
+  alert("Leave and ticket approved with amendment.");
 }
 
 function rejectLeave(id){
@@ -652,9 +881,20 @@ function rejectLeave(id){
   const req=store.requests.find(r=>String(r.id)===String(id));
   if(!req) return alert("Leave request not found.");
   req.status="Rejected";
+  req.leaveApprovalStatus="Rejected";
+  req.ticketApprovalStatus=String(req.ticketRequired||"No")==="Yes"?"Rejected":"Not Required";
   req.rejectionReason=reason.trim();
   req.rejectedAt=new Date().toISOString();
   req.rejectedBy=req.lineManager||req.approvingManager||"Manager";
+  if(Array.isArray(store.tickets)){
+    store.tickets.forEach(t=>{
+      if(String(t.leaveRequestId)===String(id)){
+        t.approvalStatus="Rejected";
+        t.rejectedAt=req.rejectedAt;
+        t.rejectedBy=req.rejectedBy;
+      }
+    });
+  }
   saveLeaveStore(store);
   renderManagerApprovals();
   renderApprovedLeaveCount();
@@ -687,6 +927,48 @@ function toggleMedicalFields(){
   const type=document.getElementById("leaveType")?.value||"";
   const box=document.getElementById("medicalPaperBox");
   if(box) box.classList.toggle("hidden",type!=="Sick Leave");
+}
+
+
+function toggleRequestTicketFields(){
+  const required=document.getElementById("requestTicketRequired")?.value==="Yes";
+  document.querySelectorAll(".request-ticket-field").forEach(el=>el.classList.toggle("hidden",!required));
+  const n=document.getElementById("requestTicketNotice");
+  if(n && !required) n.className="notice nwarn";
+}
+
+function validateRequestTicketDates(){
+  const required=document.getElementById("requestTicketRequired")?.value==="Yes";
+  const n=document.getElementById("requestTicketNotice");
+  if(!required || !n) return true;
+
+  const leaveStart=document.getElementById("leaveStart")?.value;
+  const leaveEnd=document.getElementById("leaveEnd")?.value;
+  const dep=document.getElementById("requestDepartureDate")?.value;
+  const ret=document.getElementById("requestReturnDate")?.value;
+
+  if(dep && leaveStart && new Date(dep)<new Date(leaveStart)){
+    n.className="notice ndanger show";
+    n.textContent="Departure ticket date is earlier than leave start date. Correct the ticket date or change the leave dates.";
+    return false;
+  }
+
+  if(dep && ret && new Date(ret)<new Date(dep)){
+    n.className="notice ndanger show";
+    n.textContent="Return ticket date cannot be earlier than departure ticket date.";
+    return false;
+  }
+
+  if(ret && leaveEnd && new Date(ret)>new Date(leaveEnd)){
+    const days=diff(leaveEnd,ret);
+    n.className="notice nwarn show";
+    n.textContent="Return ticket is "+days+" day(s) after leave end date. Return Variance / Leave Extension approval will be required.";
+    return true;
+  }
+
+  n.className="notice ninfo show";
+  n.textContent="Ticket dates are valid for this leave request.";
+  return true;
 }
 
 function updateLeaveDays(){
@@ -764,6 +1046,8 @@ function submitLeave(){
     n.textContent='End Date cannot be earlier than Start Date.';
     return;
   }
+  if(!validateRequestTicketDates()) return;
+
   const employee=findEmployeeByValue(emp);
   if(!employee){
     n.className='notice ndanger show';
@@ -817,6 +1101,15 @@ function submitLeave(){
     approvingManager:manager,
     leaveType:selectedLeaveType,
     medicalPaperStatus:selectedLeaveType==='Sick Leave'?(document.getElementById('medicalPaperStatus')?.value||'Not Provided'):'Not Required',
+    ticketRequired:document.getElementById('requestTicketRequired')?.value||'No',
+    ticketEntitlement:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestTicketEntitlement')?.value||''):'',
+    ticketStatus:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestTicketStatus')?.value||''):'',
+    ticketApprovalStatus:document.getElementById('requestTicketRequired')?.value==='Yes'?'Pending Manager Approval':'Not Required',
+    departureAirport:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestDepartureAirport')?.value.trim()||''):'',
+    destination:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestDestination')?.value.trim()||''):'',
+    pnr:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestPnr')?.value.trim()||''):'',
+    departureTicketDate:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestDepartureDate')?.value||''):'',
+    returnTicketDate:document.getElementById('requestTicketRequired')?.value==='Yes'?(document.getElementById('requestReturnDate')?.value||''):'',
     remarks:document.querySelector('#request textarea')?.value.trim()||'',
     startDate:s,
     endDate:e,
@@ -832,9 +1125,28 @@ function submitLeave(){
   if(!Array.isArray(store.requests)) store.requests=[];
   if(!Array.isArray(store.attendanceAdjustments)) store.attendanceAdjustments=[];
   store.requests.push(record);
+
+  if(record.ticketRequired==="Yes"){
+    if(!Array.isArray(store.tickets)) store.tickets=[];
+    store.tickets.push({
+      id:"TKT-"+Date.now(),
+      leaveRequestId:record.id,
+      employeeCode:record.employeeCode,
+      employeeName:record.employeeName,
+      entitlement:record.ticketEntitlement,
+      status:record.ticketStatus,
+      departureAirport:record.departureAirport,
+      destination:record.destination,
+      pnr:record.pnr,
+      departureDate:record.departureTicketDate,
+      returnDate:record.returnTicketDate,
+      createdAt:new Date().toISOString()
+    });
+  }
+
   localStorage.setItem(LEAVE_DATA_KEY,JSON.stringify(store));
   n.className='notice ninfo show';
-  n.textContent='Leave request saved for '+employeeOptionLabel(employee||{})+' and routed to Manager: '+manager+'.';
+  n.textContent='Leave request saved for '+employeeOptionLabel(employee||{})+' and routed to Manager: '+manager+'. Leave and ticket (if required) will be approved together.';
   refreshLeaveUI();
 }
 
