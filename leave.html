@@ -284,8 +284,8 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     </div>
     <div class="summary" style="margin-bottom:12px"><div class="sumrow"><span>Filtered Travel Entries</span><strong id="travelTrackerCount">0</strong></div></div>
     <table>
-      <thead><tr><th>Employee</th><th>Request</th><th>Journey</th><th>Travel Date</th><th>Route</th><th>Ticket Provided By</th><th>Status</th><th>Cost / Cash</th><th>Remarks</th></tr></thead>
-      <tbody id="travelTrackerRows"><tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No ticket / travel history yet.</td></tr></tbody>
+      <thead><tr><th>Employee</th><th>Request</th><th>Journey</th><th>Travel Date</th><th>Route</th><th>Ticket Provided By</th><th>Status</th><th>Cost / Cash</th><th>Remarks</th><th>Action</th></tr></thead>
+      <tbody id="travelTrackerRows"><tr><td colspan="10" style="text-align:center;color:#7d8da0;padding:20px">No ticket / travel history yet.</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -565,14 +565,15 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <button class="x" onclick="closeModal('approvedTicketModal')">×</button>
     </div>
     <input type="hidden" id="ticketHistoryLeaveId">
+    <input type="hidden" id="ticketHistoryEditId">
 
     <div class="summary" id="approvedTicketSummary" style="margin-bottom:14px"></div>
 
     <div class="formgrid">
       <div class="fg"><label>Journey Side</label>
         <select id="ticketJourneySide">
-          <option>Departure - UAE → Home Country</option>
-          <option>Return - Home Country → UAE</option>
+          <option value="Departure - UAE → Home Country">Departure Ticket (From UAE)</option>
+          <option value="Return - Home Country → UAE">Return Ticket (To UAE)</option>
         </select>
       </div>
       <div class="fg"><label>Ticket Provided By</label>
@@ -1251,7 +1252,7 @@ function renderTravelTracker(){
     return true;
   }).sort((a,b)=>String(b.h.travelDate||b.h.createdAt||"").localeCompare(String(a.h.travelDate||a.h.createdAt||"")));
   const count=document.getElementById("travelTrackerCount"); if(count) count.textContent=String(rows.length);
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No matching ticket / travel history found.</td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#7d8da0;padding:20px">No matching ticket / travel history found.</td></tr>';return;}
   tbody.innerHTML=rows.map(x=>{const h=x.h,req=x.req,t=x.t; const amount=h.cost?('AED '+escHtml(h.cost)):'-'; return `<tr>
     <td><b>${escHtml(req.employeeName||t.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(req.employeeCode||t.employeeCode||"")}</span></td>
     <td>${escHtml(req.id||t.leaveRequestId||"-")}</td>
@@ -1260,8 +1261,21 @@ function renderTravelTracker(){
     <td>${escHtml((h.fromAirport||"-")+" → "+(h.toAirport||"-"))}</td>
     <td>${escHtml(h.providedBy||"-")}</td>
     <td><span class="badge info">${escHtml(h.status||"-")}</span></td>
-    <td>${amount}</td><td>${escHtml(h.remarks||"-")}</td></tr>`;}).join("");
+    <td>${amount}</td><td>${escHtml(h.remarks||"-")}</td>
+    <td><button class="btn orange" onclick="openTrackerTicketEdit('${escHtml(req.id||t.leaveRequestId||"")}','${escHtml(h.id||"")}')">Edit</button></td></tr>`;}).join("");
 }
+
+function openTrackerTicketEdit(leaveId,historyId){
+  if(!leaveId) return alert("Leave request not found.");
+  openApprovedTicket(leaveId);
+  if(historyId){
+    setTimeout(()=>editApprovedTicketHistory(leaveId,historyId),0);
+  }else{
+    const n=document.getElementById("approvedTicketNotice");
+    if(n){ n.className="notice nwarn show"; n.textContent="This older ticket entry has no edit ID. Open Ticket History and save a fresh entry if changes are required."; }
+  }
+}
+
 function clearTravelTrackerFilters(){
   ["travelTrackerSearch","travelTrackerFrom","travelTrackerTo"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
   ["travelTrackerJourney","travelTrackerProvider","travelTrackerStatus"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
@@ -1937,6 +1951,7 @@ function openApprovedTicket(leaveId){
   saveLeaveStore(store);
 
   document.getElementById("ticketHistoryLeaveId").value=leaveId;
+  document.getElementById("ticketHistoryEditId").value="";
 
   const summary=document.getElementById("approvedTicketSummary");
   if(summary){
@@ -1965,7 +1980,7 @@ function renderApprovedTicketHistory(leaveId){
   const rows=(ticket.history||[]).slice().reverse();
 
   if(!rows.length){
-    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:18px">No ticket history yet.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:18px">No ticket history yet.</td></tr>';
     return;
   }
 
@@ -1978,7 +1993,29 @@ function renderApprovedTicketHistory(leaveId){
       <td>${escHtml(h.status||"-")}</td>
       <td>${escHtml((h.fromAirport||"-")+" → "+(h.toAirport||"-"))}</td>
       <td>${escHtml(h.remarks||"-")}</td>
+      <td><button class="btn light" onclick="editApprovedTicketHistory('${escHtml(leaveId)}','${escHtml(h.id)}')">Edit</button></td>
     </tr>`).join("");
+}
+
+function editApprovedTicketHistory(leaveId,historyId){
+  const store=readLeaveStore();
+  const ticket=ticketHistoryForRequest(store,leaveId);
+  const h=(ticket.history||[]).find(x=>String(x.id)===String(historyId));
+  if(!h) return alert("Ticket entry not found.");
+  document.getElementById("ticketHistoryLeaveId").value=leaveId;
+  document.getElementById("ticketHistoryEditId").value=historyId;
+  document.getElementById("ticketJourneySide").value=h.journeySide||"Departure - UAE → Home Country";
+  document.getElementById("ticketProvidedBy").value=h.providedBy||"Company";
+  document.getElementById("approvedTicketStatus").value=h.status||"Requested";
+  document.getElementById("approvedTravelDate").value=h.travelDate||"";
+  document.getElementById("approvedFromAirport").value=h.fromAirport||"";
+  document.getElementById("approvedToAirport").value=h.toAirport||"";
+  document.getElementById("approvedTicketCost").value=h.cost||"";
+  document.getElementById("approvedTicketRemarks").value=h.remarks||"";
+  const n=document.getElementById("approvedTicketNotice");
+  n.className="notice ninfo show";
+  n.textContent="Edit mode: update the ticket details above and click Save Ticket Entry.";
+  document.getElementById("approvedTravelDate")?.scrollIntoView({behavior:"smooth",block:"center"});
 }
 
 function saveApprovedTicketHistory(){
@@ -2011,7 +2048,20 @@ function saveApprovedTicketHistory(){
     return alert("Departure ticket date cannot be earlier than approved leave start date.");
   }
 
-  ticket.history.push(historyEntry);
+  const editId=document.getElementById("ticketHistoryEditId")?.value||"";
+  if(editId){
+    const idx=ticket.history.findIndex(h=>String(h.id)===String(editId));
+    if(idx>=0){
+      historyEntry.id=ticket.history[idx].id;
+      historyEntry.createdAt=ticket.history[idx].createdAt||historyEntry.createdAt;
+      historyEntry.updatedAt=new Date().toISOString();
+      ticket.history[idx]=historyEntry;
+    }else{
+      ticket.history.push(historyEntry);
+    }
+  }else{
+    ticket.history.push(historyEntry);
+  }
   ticket.updatedAt=new Date().toISOString();
 
   if(historyEntry.journeySide.startsWith("Departure")){
@@ -2027,7 +2077,8 @@ function saveApprovedTicketHistory(){
   saveLeaveStore(store);
 
   document.getElementById("approvedTicketNotice").className="notice ninfo show";
-  document.getElementById("approvedTicketNotice").textContent="Ticket history saved successfully.";
+  document.getElementById("approvedTicketNotice").textContent=editId?"Ticket entry updated successfully.":"Ticket history saved successfully.";
+  document.getElementById("ticketHistoryEditId").value="";
   renderApprovedTicketHistory(leaveId);
   renderApprovedLeaves();
   refreshLeaveUI();
