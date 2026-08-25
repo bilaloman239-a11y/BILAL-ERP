@@ -88,6 +88,7 @@ label{font-size:10px;font-weight:800;color:#45566c}input,select,textarea{border:
 </header>
 
 <div class="content">
+<div id="portalErrorBox" style="display:none;background:#fdeeee;border:1px solid #efbaba;color:#9f2f2f;padding:11px 12px;border-radius:10px;margin-bottom:12px;font-size:11px"></div>
 
 <section class="page active" id="dashboard">
   <div class="pagehead"><div><h2>Sub Contractor Dashboard</h2><p>Live operational and commercial overview.</p></div><button class="btn orange" onclick="openContractorModal()">+ New Sub Contractor</button></div>
@@ -347,6 +348,15 @@ label{font-size:10px;font-weight:800;color:#45566c}input,select,textarea{border:
 </div></div>
 
 <script>
+// Robust DOM binding for browsers that do not expose element IDs as globals.
+document.querySelectorAll('[id]').forEach(function(el){
+  try{ window[el.id]=el; }catch(e){}
+});
+window.addEventListener('error',function(ev){
+  console.error('Sub Contractor Portal error:',ev.error||ev.message);
+  const box=document.getElementById('portalErrorBox');
+  if(box){box.style.display='block';box.textContent='Portal error: '+(ev.message||'Unknown error');}
+});
 const SC_KEY="cm_subcontractor_portal_v1";
 const EMPLOYEE_DATA_KEY="cm_employee_portal_v3";
 let db=loadDb();
@@ -618,7 +628,20 @@ function exportBackup(){const blob=new Blob([JSON.stringify({...db,_exportedAt:n
 function importBackup(){const f=backupFile.files?.[0];if(!f)return alert("Choose backup JSON file.");const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x||!Array.isArray(x.contractors))throw 0;if(!confirm(`Restore backup with ${x.contractors.length} subcontractor(s)? Current module data will be replaced.`))return;db={...emptyDb(),...x};saveDb();backupFile.value="";alert("Backup restored successfully.")}catch(e){alert("Invalid Sub Contractor backup file.")}};r.readAsText(f)}
 
 function renderAll(){fillFilters();renderDashboard();renderContractors();renderAssignments();renderRates();renderTimesheets();renderInvoices();renderDocuments();renderReports()}
-document.addEventListener("DOMContentLoaded",()=>{tsMonthFilter.value=monthNow();renderAll();window.addEventListener("focus",renderAll);window.addEventListener("storage",e=>{if(e.key===EMPLOYEE_DATA_KEY||e.key===SC_KEY){db=loadDb();renderAll()}})})
+document.addEventListener("DOMContentLoaded",()=>{
+  document.querySelectorAll('[id]').forEach(function(el){try{window[el.id]=el}catch(e){}});
+  try{
+    const monthEl=document.getElementById("tsMonthFilter");
+    if(monthEl) monthEl.value=monthNow();
+    renderAll();
+    window.addEventListener("focus",()=>{db=loadDb();renderAll()});
+    window.addEventListener("storage",e=>{if(e.key===EMPLOYEE_DATA_KEY||e.key===SC_KEY){db=loadDb();renderAll()}});
+  }catch(err){
+    console.error(err);
+    const box=document.getElementById("portalErrorBox");
+    if(box){box.style.display="block";box.textContent="Portal startup error: "+(err?.message||err);}
+  }
+})
 </script>
 </body>
 </html>
