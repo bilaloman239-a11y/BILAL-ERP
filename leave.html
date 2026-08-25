@@ -76,6 +76,8 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 .timeline{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}.day{border:1px solid var(--line);border-radius:9px;padding:8px;min-height:76px;background:#fbfcfd}.day strong{font-size:9px;color:var(--navy)}.ev{margin-top:6px;padding:4px 5px;border-radius:6px;background:var(--blue2);color:var(--blue);font-size:8px}.ev.ret{background:var(--orange2);color:var(--amber)}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid2eq{grid-template-columns:1fr}}
 @media(max-width:760px){.sidebar{width:76px}.brand h2,.brand small,.nav span:not(.ico),.module-link span:not(.ico),.nav-title,.sidebar-note{display:none}.main{margin-left:76px;width:calc(100% - 76px)}.content{padding:17px}.kpis{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.fg.full{grid-column:auto}.timeline{grid-template-columns:repeat(2,1fr)}}
+
+@media(max-width:900px){.lsf-main-grid{grid-template-columns:1fr!important}.lsf-main-grid aside{position:static!important}}
 </style>
 </head>
 <body>
@@ -647,7 +649,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <div class="fg full" id="inlineSalaryCalculatorLegacy" style="display:none;border:1px solid #dce8f4;border-radius:12px;padding:12px;background:#f8fbfe">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><b style="color:#17365d">Salary History Based Leave Salary Calculator</b><div style="font-size:9px;color:#6b7280;margin-top:3px">Split payable days when Basic Salary changes. Daily rate = Basic Salary ÷ 30.</div></div><button type="button" class="btn light" onclick="addSalaryHistoryRow()">+ Add Salary Change</button></div>
         <div class="formgrid" style="margin-top:10px"><div class="fg"><label>Entitlement From Date</label><input id="lifeEntitlementFrom" type="date" onchange="calculateSalaryHistory()"></div><div class="fg"><label>Entitlement To Date</label><input id="lifeEntitlementTo" type="date" onchange="calculateSalaryHistory()"></div></div>
-        <div style="overflow:auto;margin-top:8px"><table style="min-width:760px"><thead><tr><th>Effective From</th><th>Effective To</th><th>Basic Salary (AED)</th><th>Days Used</th><th>Daily Rate</th><th>Leave Salary</th><th>Action</th></tr></thead><tbody id="salaryHistoryRows"></tbody></table></div>
+        <div style="overflow:auto;margin-top:8px"><table style="min-width:880px"><thead><tr><th>Effective From</th><th>Effective To</th><th>Basic Salary (AED)</th><th>Unpaid Days</th><th>Applicable Days</th><th>Daily Rate</th><th>Leave Salary</th><th>Action</th></tr></thead><tbody id="salaryHistoryRows"></tbody></table></div>
         <div id="salaryCalcNotice" class="notice ninfo" style="margin-top:9px"></div>
         <div style="display:flex;justify-content:flex-end;gap:12px;align-items:center;margin-top:10px"><b>Total Calculated:</b><span id="salaryCalcTotal" style="font-size:18px;font-weight:900;color:#17365d">AED 0.00</span><button type="button" class="btn primary" onclick="applyCalculatedSalary()">Apply to Payable Amount</button></div>
       </div>
@@ -684,25 +686,47 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       </div>
     </div>
 
-    <div class="formgrid">
-      <div class="fg"><label>Leave Request</label><input id="lsfRequestId" readonly style="background:#f4f8fc"></div>
-      <div class="fg"><label>Leave Type</label><input id="lsfLeaveType" readonly style="background:#f4f8fc"></div>
-      <div class="fg"><label>Actual Leave Period</label><input id="lsfLeavePeriod" readonly style="background:#f4f8fc"></div>
-      <div class="fg"><label>Actual Leave Days</label><input id="lsfActualDays" readonly style="background:#f4f8fc;font-weight:800"></div>
-      <div class="fg"><label>Leave Salary Payable Days</label><input id="lsfPayableDays" type="number" min="0" step="0.5" oninput="calculateLeaveSalaryForm()"></div>
-      <div class="fg"><label>Calculation Method</label><input value="Basic Salary ÷ 30 × Applicable Days" readonly style="background:#f4f8fc"></div>
-      <div class="fg"><label>Entitlement From Date</label><input id="lsfEntitlementFrom" type="date" onchange="calculateLeaveSalaryForm()"></div>
-      <div class="fg"><label>Entitlement To Date</label><input id="lsfEntitlementTo" type="date" onchange="calculateLeaveSalaryForm()"></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start" class="lsf-main-grid">
+      <div>
+        <div class="formgrid">
+          <div class="fg"><label>Leave Request</label><input id="lsfRequestId" readonly style="background:#f4f8fc"></div>
+          <div class="fg"><label>Leave Type</label><input id="lsfLeaveType" readonly style="background:#f4f8fc"></div>
+          <div class="fg"><label>Actual Leave Period</label><input id="lsfLeavePeriod" readonly style="background:#f4f8fc"></div>
+          <div class="fg"><label>Actual Leave Days</label><input id="lsfActualDays" readonly style="background:#f4f8fc;font-weight:800"></div>
+          <div class="fg"><label>Leave Salary Payable Days</label><input id="lsfPayableDays" type="number" min="0" step="0.5" oninput="calculateLeaveSalaryForm()"></div>
+          <div class="fg"><label>Calculation Method</label><input value="Basic Salary ÷ 30 × Applicable Days" readonly style="background:#f4f8fc"></div>
+          <div class="fg"><label>Entitlement From Date</label><input id="lsfEntitlementFrom" type="date" onchange="calculateLeaveSalaryForm()"></div>
+          <div class="fg"><label>Entitlement To Date</label><input id="lsfEntitlementTo" type="date" onchange="calculateLeaveSalaryForm()"></div>
+        </div>
+      </div>
+
+      <aside style="border:1px solid #dce6f0;border-radius:14px;background:#f8fbfe;padding:14px;position:sticky;top:0">
+        <div style="font-size:12px;font-weight:900;color:#17365d;margin-bottom:10px">Service & Salary Reference</div>
+        <div style="background:#fff;border:1px solid #e5e9ef;border-radius:10px;padding:10px;margin-bottom:9px">
+          <div style="font-size:9px;color:#6b7280;text-transform:uppercase">Last Annual Leave Rejoining</div>
+          <div id="lsfLastAnnualRejoin" style="font-size:15px;font-weight:900;color:#17365d;margin-top:4px">-</div>
+          <div id="lsfLastAnnualRejoinSub" style="font-size:9px;color:#6b7280;margin-top:3px"></div>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e9ef;border-radius:10px;padding:10px;margin-bottom:9px">
+          <div style="font-size:9px;color:#6b7280;text-transform:uppercase">First Joining Date</div>
+          <div id="lsfFirstJoiningDate" style="font-size:15px;font-weight:900;color:#17365d;margin-top:4px">-</div>
+          <div style="font-size:9px;color:#6b7280;margin-top:3px">Used when no previous Annual Leave rejoining is available.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e9ef;border-radius:10px;padding:10px">
+          <div style="font-size:9px;color:#6b7280;text-transform:uppercase">Latest Basic Salary History</div>
+          <div id="lsfLastSalaryHistory" style="margin-top:7px;font-size:10px;color:#34465a">No previous salary history.</div>
+        </div>
+      </aside>
     </div>
 
     <div style="margin-top:16px;border-top:1px solid #e5e9ef;padding-top:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px">
-        <div><b style="color:#17365d">Basic Salary History</b><div style="font-size:9px;color:#6b7280;margin-top:2px">Add one row for every Basic Salary change/effective period.</div></div>
+        <div><b style="color:#17365d">Basic Salary History</b><div style="font-size:9px;color:#6b7280;margin-top:2px">Add one row for every Basic Salary change/effective period. Unpaid Days are auto-filled from Payroll Unpaid / LOP and remain editable.</div></div>
         <button type="button" class="btn light" onclick="addLeaveSalaryFormRow()">+ Add Salary Change</button>
       </div>
       <div style="overflow:auto">
-        <table style="min-width:820px">
-          <thead><tr><th>Effective From</th><th>Effective To</th><th>Basic Salary (AED)</th><th>Applicable Days</th><th>Daily Rate</th><th>Leave Salary</th><th>Action</th></tr></thead>
+        <table style="min-width:940px">
+          <thead><tr><th>Effective From</th><th>Effective To</th><th>Basic Salary (AED)</th><th>Unpaid Days</th><th>Applicable Days</th><th>Daily Rate</th><th>Leave Salary</th><th>Action</th></tr></thead>
           <tbody id="lsfSalaryRows"></tbody>
         </table>
       </div>
@@ -2560,27 +2584,85 @@ function openLeaveLifecycle(id){
   document.getElementById("leaveLifecycleModal").classList.add("show");
 }
 function salaryHistoryRowHtml(row={}){
-  return `<tr class="salary-history-row"><td><input type="date" class="sh-from" value="${escHtml(row.from||"")}" onchange="calculateSalaryHistory()"></td><td><input type="date" class="sh-to" value="${escHtml(row.to||"")}" onchange="calculateSalaryHistory()"></td><td><input type="number" min="0" step="0.01" class="sh-basic" value="${row.basic??""}" placeholder="0.00" oninput="calculateSalaryHistory()"></td><td class="sh-days">0</td><td class="sh-rate">0.00</td><td class="sh-amount">0.00</td><td><button type="button" class="btn light" onclick="this.closest('tr').remove();calculateSalaryHistory()">Delete</button></td></tr>`;
+  const unpaidVal=(row.unpaidDays!==undefined&&row.unpaidDays!==null)?row.unpaidDays:"";
+  const unpaidAuto=row.unpaidAuto===false?"0":"1";
+  return `<tr class="salary-history-row">
+    <td><input type="date" class="sh-from" value="${escHtml(row.from||"")}" onchange="calculateSalaryHistory()"></td>
+    <td><input type="date" class="sh-to" value="${escHtml(row.to||"")}" onchange="calculateSalaryHistory()"></td>
+    <td><input type="number" min="0" step="0.01" class="sh-basic" value="${row.basic??""}" placeholder="0.00" oninput="calculateSalaryHistory()"></td>
+    <td><input type="number" min="0" step="0.5" class="sh-unpaid" data-auto="${unpaidAuto}" value="${unpaidVal}" placeholder="Auto" oninput="this.dataset.auto='0';calculateSalaryHistory()" title="Auto-filled from overall Unpaid / LOP Days. You can edit it manually."></td>
+    <td class="sh-days">0</td><td class="sh-rate">0.00</td><td class="sh-amount">0.00</td>
+    <td><button type="button" class="btn light" onclick="this.closest('tr').remove();calculateSalaryHistory()">Delete</button></td>
+  </tr>`;
 }
 function addSalaryHistoryRow(row={}){
   const body=document.getElementById("salaryHistoryRows"); if(!body)return;
   body.insertAdjacentHTML("beforeend",salaryHistoryRowHtml(row)); calculateSalaryHistory();
 }
 function getSalaryHistoryRows(){
-  return [...document.querySelectorAll("#salaryHistoryRows .salary-history-row")].map(tr=>({from:tr.querySelector(".sh-from")?.value||"",to:tr.querySelector(".sh-to")?.value||"",basic:Number(tr.querySelector(".sh-basic")?.value||0)}));
+  return [...document.querySelectorAll("#salaryHistoryRows .salary-history-row")].map(tr=>({
+    from:tr.querySelector(".sh-from")?.value||"",
+    to:tr.querySelector(".sh-to")?.value||"",
+    basic:Number(tr.querySelector(".sh-basic")?.value||0),
+    unpaidDays:Number(tr.querySelector(".sh-unpaid")?.value||0),
+    unpaidAuto:tr.querySelector(".sh-unpaid")?.dataset.auto!=="0"
+  }));
 }
 function calculateSalaryHistory(){
   const body=document.getElementById("salaryHistoryRows"), out=document.getElementById("salaryCalcTotal"), notice=document.getElementById("salaryCalcNotice"); if(!body||!out)return 0;
   const entFrom=document.getElementById("lifeEntitlementFrom")?.value||"", entTo=document.getElementById("lifeEntitlementTo")?.value||"";
-  const payable=Number(document.getElementById("lifeSalaryDays")?.value||0); let total=0,used=0;
+  const payable=Number(document.getElementById("lifeSalaryDays")?.value||0);
+  const overallUnpaid=Math.max(0,Number(document.getElementById("lifeUnpaidDays")?.value||0));
+  let total=0,used=0,grossTotal=0,unpaidTotal=0;
   const rows=[...body.querySelectorAll(".salary-history-row")];
-  rows.forEach(tr=>{let days=0,amount=0; const f=tr.querySelector(".sh-from")?.value||"",t=tr.querySelector(".sh-to")?.value||"",basic=Number(tr.querySelector(".sh-basic")?.value||0); const rate=basic/30;
-    if(f&&t&&entFrom&&entTo){const a=new Date(Math.max(new Date(f+'T00:00:00'),new Date(entFrom+'T00:00:00'))), b=new Date(Math.min(new Date(t+'T00:00:00'),new Date(entTo+'T00:00:00'))); if(b>=a)days=Math.floor((b-a)/86400000)+1;}
-    if(payable>0 && used+days>payable)days=Math.max(0,payable-used); used+=days; amount=rate*days; total+=amount;
-    tr.querySelector(".sh-days").textContent=days; tr.querySelector(".sh-rate").textContent=rate.toFixed(2); tr.querySelector(".sh-amount").textContent=amount.toFixed(2);
+  const computed=rows.map(tr=>{
+    const f=tr.querySelector(".sh-from")?.value||"",t=tr.querySelector(".sh-to")?.value||"",basic=Number(tr.querySelector(".sh-basic")?.value||0);
+    let gross=0;
+    if(f&&t&&entFrom&&entTo){
+      const a=new Date(Math.max(new Date(f+'T00:00:00'),new Date(entFrom+'T00:00:00'))), b=new Date(Math.min(new Date(t+'T00:00:00'),new Date(entTo+'T00:00:00')));
+      if(b>=a)gross=Math.floor((b-a)/86400000)+1;
+    }
+    return {tr,gross,basic};
+  });
+  const manualUnpaid=computed.reduce((s,x)=>{
+    const el=x.tr.querySelector(".sh-unpaid");
+    return s+((el?.dataset.auto==="0")?Math.max(0,Math.min(x.gross,Number(el.value||0))):0);
+  },0);
+  let remainingAuto=Math.max(0,overallUnpaid-manualUnpaid);
+  computed.forEach(x=>{
+    const tr=x.tr, unEl=tr.querySelector(".sh-unpaid"), rate=x.basic/30;
+    let unpaid;
+    if(unEl?.dataset.auto==="0"){
+      unpaid=Math.max(0,Math.min(x.gross,Number(unEl.value||0)));
+    }else{
+      unpaid=Math.min(x.gross,remainingAuto);
+      remainingAuto=Math.max(0,remainingAuto-unpaid);
+      if(unEl)unEl.value=unpaid?String(unpaid):"0";
+    }
+    let days=Math.max(0,x.gross-unpaid);
+    if(payable>0 && used+days>payable)days=Math.max(0,payable-used);
+    used+=days; grossTotal+=x.gross; unpaidTotal+=unpaid;
+    const amount=rate*days; total+=amount;
+    tr.querySelector(".sh-days").textContent=days;
+    tr.querySelector(".sh-rate").textContent=rate.toFixed(2);
+    tr.querySelector(".sh-amount").textContent=amount.toFixed(2);
   });
   out.textContent="AED "+total.toFixed(2);
-  if(notice){if(!entFrom||!entTo) {notice.className="notice nwarn show";notice.textContent="Enter Entitlement From and To dates to split salary periods.";} else if(payable>0&&used!==payable){notice.className="notice nwarn show";notice.textContent="Salary history covers "+used+" of "+payable+" payable day(s). Check salary effective dates / entitlement period.";} else {notice.className="notice ninfo show";notice.textContent="Calculated from salary history: "+used+" day(s) across "+rows.length+" salary period(s).";}}
+  if(notice){
+    if(!entFrom||!entTo){
+      notice.className="notice nwarn show";
+      notice.textContent="Enter Entitlement From and To dates to split salary periods.";
+    }else if(overallUnpaid>0 && remainingAuto>0){
+      notice.className="notice nwarn show";
+      notice.textContent="Overall Unpaid / LOP is "+overallUnpaid+" day(s), but salary periods can only absorb "+(overallUnpaid-remainingAuto)+" day(s). Check the dates or edit Unpaid Days.";
+    }else if(payable>0&&used!==payable){
+      notice.className="notice nwarn show";
+      notice.textContent="Applicable salary days are "+used+" of "+payable+" payable day(s). Formula: period days "+grossTotal+" − unpaid "+unpaidTotal+" = applicable days.";
+    }else{
+      notice.className="notice ninfo show";
+      notice.textContent="Calculation complete: period days "+grossTotal+" − unpaid "+unpaidTotal+" = "+used+" applicable day(s). Daily rate = Basic Salary ÷ 30.";
+    }
+  }
   return total;
 }
 function applyCalculatedSalary(){const total=calculateSalaryHistory();document.getElementById("lifeSalaryAmount").value=total.toFixed(2);recalcPaymentBalance();}
@@ -2592,10 +2674,13 @@ function loadSalaryCalculator(pay,req){
 
 function lsfEsc(v){return String(v??"").replace(/[&<>\"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
 function leaveSalaryFormRowHtml(row={}){
+  const unpaidVal=(row.unpaidDays!==undefined&&row.unpaidDays!==null)?row.unpaidDays:"";
+  const unpaidAuto=row.unpaidAuto===false?"0":"1";
   return `<tr class="lsf-row">
     <td><input type="date" class="lsf-from" value="${lsfEsc(row.from||"")}" onchange="calculateLeaveSalaryForm()"></td>
     <td><input type="date" class="lsf-to" value="${lsfEsc(row.to||"")}" onchange="calculateLeaveSalaryForm()"></td>
     <td><input type="number" min="0" step="0.01" class="lsf-basic" value="${row.basic||""}" placeholder="0.00" oninput="calculateLeaveSalaryForm()"></td>
+    <td><input type="number" min="0" step="0.5" class="lsf-unpaid" data-auto="${unpaidAuto}" value="${unpaidVal}" placeholder="Auto" oninput="this.dataset.auto='0';calculateLeaveSalaryForm()" title="Auto-filled from overall Unpaid / LOP Days. Editable if HR/Accounts needs to allocate unpaid days to another salary period."></td>
     <td class="lsf-days" style="font-weight:800">0</td><td class="lsf-rate">0.00</td><td class="lsf-amount" style="font-weight:800">0.00</td>
     <td><button type="button" class="btn red" onclick="this.closest('tr').remove();calculateLeaveSalaryForm()">Delete</button></td>
   </tr>`;
@@ -2604,13 +2689,63 @@ function addLeaveSalaryFormRow(row={}){
   const b=document.getElementById("lsfSalaryRows"); if(!b)return; b.insertAdjacentHTML("beforeend",leaveSalaryFormRowHtml(row)); calculateLeaveSalaryForm();
 }
 function getLeaveSalaryFormRows(){
-  return [...document.querySelectorAll("#lsfSalaryRows .lsf-row")].map(tr=>({from:tr.querySelector(".lsf-from")?.value||"",to:tr.querySelector(".lsf-to")?.value||"",basic:Number(tr.querySelector(".lsf-basic")?.value||0)}));
+  return [...document.querySelectorAll("#lsfSalaryRows .lsf-row")].map(tr=>({
+    from:tr.querySelector(".lsf-from")?.value||"",
+    to:tr.querySelector(".lsf-to")?.value||"",
+    basic:Number(tr.querySelector(".lsf-basic")?.value||0),
+    unpaidDays:Number(tr.querySelector(".lsf-unpaid")?.value||0),
+    unpaidAuto:tr.querySelector(".lsf-unpaid")?.dataset.auto!=="0"
+  }));
+}
+
+function getEmployeeJoiningDate(emp={}){
+  return emp.joiningDate||emp.dateOfJoining||emp.joinDate||emp.doj||emp.employmentJoiningDate||emp.firstJoiningDate||emp.date_joining||"";
+}
+function loadLeaveSalaryReferencePanel(req,emp,store){
+  const sameEmployee=(store.requests||[]).filter(r=>String(r.employeeCode||r.employeeName)===String(req.employeeCode||req.employeeName));
+  const rejoinMap=new Map((store.rejoining||[]).map(x=>[String(x.leaveRequestId),x]));
+  const previousAnnual=sameEmployee
+    .filter(r=>String(r.id)!==String(req.id) && String(r.leaveType||"").toLowerCase().includes("annual"))
+    .map(r=>({req:r,rejoin:rejoinMap.get(String(r.id))}))
+    .filter(x=>x.rejoin?.actualRejoiningDate)
+    .sort((a,b)=>String(b.rejoin.actualRejoiningDate).localeCompare(String(a.rejoin.actualRejoiningDate)));
+  const last=previousAnnual[0];
+  const joinDate=getEmployeeJoiningDate(emp);
+  const rejoinEl=document.getElementById("lsfLastAnnualRejoin"), rejoinSub=document.getElementById("lsfLastAnnualRejoinSub"), joinEl=document.getElementById("lsfFirstJoiningDate");
+  if(rejoinEl) rejoinEl.textContent=last?niceDate(last.rejoin.actualRejoiningDate):"No previous annual rejoining";
+  if(rejoinSub) rejoinSub.textContent=last?("From "+(last.req.id||"previous Annual Leave")):"First Joining Date will be the service reference.";
+  if(joinEl) joinEl.textContent=joinDate?niceDate(joinDate):"Not available in Employee Master";
+
+  const reqById=new Map((store.requests||[]).map(r=>[String(r.id),r]));
+  let salaryRows=[];
+  (store.leavePayroll||[]).forEach(p=>{
+    const r=reqById.get(String(p.leaveRequestId));
+    if(!r || String(r.employeeCode||r.employeeName)!==String(req.employeeCode||req.employeeName) || String(r.id)===String(req.id)) return;
+    (Array.isArray(p.salaryHistory)?p.salaryHistory:[]).forEach(h=>{
+      if(h && Number(h.basic||0)>0) salaryRows.push({from:h.from||"",to:h.to||"",basic:Number(h.basic||0),request:r.id||""});
+    });
+  });
+  const masterHist=Array.isArray(emp.salaryHistory)?emp.salaryHistory:(Array.isArray(emp.basicSalaryHistory)?emp.basicSalaryHistory:[]);
+  if(!salaryRows.length && masterHist.length){
+    masterHist.forEach(h=>salaryRows.push({from:h.from||h.effectiveFrom||h.startDate||"",to:h.to||h.effectiveTo||h.endDate||"",basic:Number(h.basic||h.basicSalary||h.salary||0),request:"Employee Master"}));
+  }
+  salaryRows=salaryRows.filter(x=>x.basic>0).sort((a,b)=>String(b.from||b.to).localeCompare(String(a.from||a.to))).slice(0,5);
+  const currentBasic=Number(emp.basicSalary||emp.basic||emp.salaryBasic||0);
+  const box=document.getElementById("lsfLastSalaryHistory");
+  if(box){
+    if(salaryRows.length){
+      box.innerHTML=salaryRows.map(x=>`<div style="border-bottom:1px solid #eef1f5;padding:6px 0"><b style="color:#17365d">AED ${x.basic.toFixed(2)}</b><div style="font-size:9px;color:#6b7280">${x.from?niceDate(x.from):"-"} → ${x.to?niceDate(x.to):"Present"}</div></div>`).join("");
+    }else if(currentBasic>0){
+      box.innerHTML=`<b style="color:#17365d">AED ${currentBasic.toFixed(2)}</b><div style="font-size:9px;color:#6b7280;margin-top:3px">Current Basic Salary from Employee Master</div>`;
+    }else box.textContent="No previous salary history.";
+  }
 }
 function openLeaveSalaryForm(){
   const leaveId=document.getElementById("lifecycleLeaveId")?.value||""; if(!leaveId)return alert("Open an employee leave record first.");
   const store=readLeaveStore(); const req=(store.requests||[]).find(r=>String(r.id)===String(leaveId)); if(!req)return alert("Leave request not found.");
   const pay=(store.leavePayroll||[]).find(x=>String(x.leaveRequestId)===String(leaveId));
   const emp=findEmployeeByValue(req.employeeCode||req.employeeName)||{};
+  loadLeaveSalaryReferencePanel(req,emp,store);
   const eff=effectiveLeavePeriod(req,store);
   document.getElementById("lsfEmployeeName").textContent=req.employeeName||emp.employeeName||"-";
   document.getElementById("lsfEmployeeCode").textContent=req.employeeCode||emp.employeeCode||"-";
@@ -2631,16 +2766,62 @@ function openLeaveSalaryForm(){
 }
 function calculateLeaveSalaryForm(){
   const from=document.getElementById("lsfEntitlementFrom")?.value||"", to=document.getElementById("lsfEntitlementTo")?.value||"";
-  const payable=Number(document.getElementById("lsfPayableDays")?.value||0); let used=0,total=0;
+  const payable=Number(document.getElementById("lsfPayableDays")?.value||0);
+  const overallUnpaid=Math.max(0,Number(document.getElementById("lifeUnpaidDays")?.value||0));
+  let used=0,total=0,grossTotal=0,unpaidTotal=0;
   const rows=[...document.querySelectorAll("#lsfSalaryRows .lsf-row")];
-  rows.forEach(tr=>{let days=0; const rf=tr.querySelector(".lsf-from")?.value||"",rt=tr.querySelector(".lsf-to")?.value||"",basic=Number(tr.querySelector(".lsf-basic")?.value||0),rate=basic/30;
-    if(rf&&rt&&from&&to){const a=new Date(Math.max(new Date(rf+"T00:00:00"),new Date(from+"T00:00:00"))),b=new Date(Math.min(new Date(rt+"T00:00:00"),new Date(to+"T00:00:00")));if(b>=a)days=Math.floor((b-a)/86400000)+1;}
-    if(payable>0&&used+days>payable)days=Math.max(0,payable-used);used+=days;const amount=days*rate;total+=amount;
-    tr.querySelector(".lsf-days").textContent=days;tr.querySelector(".lsf-rate").textContent=rate.toFixed(2);tr.querySelector(".lsf-amount").textContent=amount.toFixed(2);
+  const computed=rows.map(tr=>{
+    const rf=tr.querySelector(".lsf-from")?.value||"",rt=tr.querySelector(".lsf-to")?.value||"",basic=Number(tr.querySelector(".lsf-basic")?.value||0);
+    let gross=0;
+    if(rf&&rt&&from&&to){
+      const a=new Date(Math.max(new Date(rf+"T00:00:00"),new Date(from+"T00:00:00"))),b=new Date(Math.min(new Date(rt+"T00:00:00"),new Date(to+"T00:00:00")));
+      if(b>=a)gross=Math.floor((b-a)/86400000)+1;
+    }
+    return {tr,gross,basic};
   });
-  document.getElementById("lsfDaysCalculated").textContent=used+" / "+payable+" Day(s)";document.getElementById("lsfGrandTotal").textContent="AED "+total.toFixed(2);
-  const n=document.getElementById("lsfNotice");if(!from||!to){n.className="notice nwarn show";n.textContent="Enter Entitlement From and To dates.";}else if(payable>0&&used!==payable){n.className="notice nwarn show";n.textContent="Salary history covers "+used+" of "+payable+" payable day(s). Complete the effective salary periods.";}else{n.className="notice ninfo show";n.textContent="Calculation complete: each salary period is calculated separately using Basic Salary ÷ 30.";}
-  return {total,used,payable};
+
+  const manualUnpaid=computed.reduce((sum,x)=>{
+    const el=x.tr.querySelector(".lsf-unpaid");
+    return sum+((el?.dataset.auto==="0")?Math.max(0,Math.min(x.gross,Number(el.value||0))):0);
+  },0);
+  let remainingAuto=Math.max(0,overallUnpaid-manualUnpaid);
+
+  computed.forEach(x=>{
+    const tr=x.tr, unEl=tr.querySelector(".lsf-unpaid"), rate=x.basic/30;
+    let unpaid;
+    if(unEl?.dataset.auto==="0"){
+      unpaid=Math.max(0,Math.min(x.gross,Number(unEl.value||0)));
+    }else{
+      unpaid=Math.min(x.gross,remainingAuto);
+      remainingAuto=Math.max(0,remainingAuto-unpaid);
+      if(unEl)unEl.value=unpaid?String(unpaid):"0";
+    }
+    let days=Math.max(0,x.gross-unpaid);
+    if(payable>0&&used+days>payable)days=Math.max(0,payable-used);
+    used+=days; grossTotal+=x.gross; unpaidTotal+=unpaid;
+    const amount=days*rate; total+=amount;
+    tr.querySelector(".lsf-days").textContent=days;
+    tr.querySelector(".lsf-rate").textContent=rate.toFixed(2);
+    tr.querySelector(".lsf-amount").textContent=amount.toFixed(2);
+  });
+
+  document.getElementById("lsfDaysCalculated").textContent=used+" / "+payable+" Day(s)";
+  document.getElementById("lsfGrandTotal").textContent="AED "+total.toFixed(2);
+  const n=document.getElementById("lsfNotice");
+  if(!from||!to){
+    n.className="notice nwarn show";
+    n.textContent="Enter Entitlement From and To dates.";
+  }else if(overallUnpaid>0 && remainingAuto>0){
+    n.className="notice nwarn show";
+    n.textContent="Overall Unpaid / LOP is "+overallUnpaid+" day(s), but only "+(overallUnpaid-remainingAuto)+" day(s) fit inside these salary periods. Check the dates or edit Unpaid Days.";
+  }else if(payable>0&&used!==payable){
+    n.className="notice nwarn show";
+    n.textContent="Applicable Days = Effective Period Days − Unpaid Days. Current calculation: "+grossTotal+" − "+unpaidTotal+" = "+used+" day(s), while Leave Salary Payable Days is "+payable+".";
+  }else{
+    n.className="notice ninfo show";
+    n.textContent="Calculation complete: "+grossTotal+" period day(s) − "+unpaidTotal+" unpaid day(s) = "+used+" applicable day(s). Each salary period uses Basic Salary ÷ 30.";
+  }
+  return {total,used,payable,grossTotal,unpaidTotal};
 }
 function applyLeaveSalaryForm(){
   const calc=calculateLeaveSalaryForm(), rows=getLeaveSalaryFormRows();
@@ -2648,6 +2829,7 @@ function applyLeaveSalaryForm(){
   if(!document.getElementById("lsfEntitlementFrom").value||!document.getElementById("lsfEntitlementTo").value)return alert("Enter Entitlement From and To dates.");
   if(rows.some(x=>!x.from||!x.to||x.basic<=0))return alert("Complete Effective From, Effective To and Basic Salary for every salary row.");
   if(rows.some(x=>new Date(x.to)<new Date(x.from)))return alert("Effective To cannot be earlier than Effective From.");
+  if(rows.some(x=>Number(x.unpaidDays||0)<0))return alert("Unpaid Days cannot be negative.");
   if(calc.used!==calc.payable)return alert("Salary history must cover all "+calc.payable+" payable day(s) before applying.");
   document.getElementById("lifeSalaryDays").value=calc.payable;
   document.getElementById("lifeEntitlementFrom").value=document.getElementById("lsfEntitlementFrom").value;
@@ -2712,6 +2894,7 @@ function saveLeavePayrollRecord(){
     if(new Date(data.entitlementTo)<new Date(data.entitlementFrom))return alert("Entitlement To Date cannot be earlier than Entitlement From Date.");
     if(data.salaryHistory.some(x=>!x.from||!x.to||x.basic<=0))return alert("Complete Effective From, Effective To and Basic Salary for every salary history row, or delete the empty row.");
     if(data.salaryHistory.some(x=>new Date(x.to)<new Date(x.from)))return alert("Salary History Effective To cannot be earlier than Effective From.");
+    if(data.salaryHistory.some(x=>Number(x.unpaidDays||0)<0))return alert("Salary History Unpaid Days cannot be negative.");
   }
   if(data.paymentAmount>data.salaryAmount)return alert("Payment Amount cannot be greater than Leave Salary Payable Amount.");
   data.balanceAmount=Math.max(0,data.salaryAmount-data.paymentAmount);
