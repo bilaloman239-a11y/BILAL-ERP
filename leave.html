@@ -2857,43 +2857,53 @@ function applyLeaveSalaryForm(){
   const calc=calculateLeaveSalaryForm();
   const entFrom=document.getElementById("lsfEntitlementFrom")?.value||"";
   const entTo=document.getElementById("lsfEntitlementTo")?.value||"";
-  const rows=getLeaveSalaryFormRows().filter(x=>x.from&&x.to&&Number(x.basic)>0);
-  if(!entFrom||!entTo) return alert("Please enter Entitlement From and Entitlement To dates.");
-  if(!rows.length) return alert("Please enter at least one Basic Salary History period.");
+  const allRows=getLeaveSalaryFormRows();
 
-  // Validate continuous coverage of the ACTUAL entitlement date period.
+  if(!entFrom||!entTo) return alert("Please enter Entitlement From and Entitlement To dates.");
+  if(new Date(entTo)<new Date(entFrom)) return alert("Entitlement To Date cannot be earlier than Entitlement From Date.");
+  if(!allRows.length) return alert("Please enter at least one Basic Salary History period.");
+  if(allRows.some(x=>!x.from||!x.to||Number(x.basic)<=0)) return alert("Complete Effective From, Effective To and Basic Salary for every salary row.");
+  if(allRows.some(x=>new Date(x.to)<new Date(x.from))) return alert("Effective To cannot be earlier than Effective From.");
+  if(allRows.some(x=>Number(x.unpaidDays||0)<0)) return alert("Unpaid Days cannot be negative.");
+  if(calc.payable<=0) return alert("Calculated Leave Entitlement Days must be greater than zero.");
+
+  // Salary history must cover the ACTUAL entitlement date range, not the calculated leave-entitlement days.
   const start=new Date(entFrom+"T00:00:00");
   const end=new Date(entTo+"T00:00:00");
-  const clipped=rows.map(r=>({
+  const clipped=allRows.map(r=>({
     from:new Date((r.from<entFrom?entFrom:r.from)+"T00:00:00"),
     to:new Date((r.to>entTo?entTo:r.to)+"T00:00:00")
   })).filter(r=>r.to>=start&&r.from<=end).sort((a,b)=>a.from-b.from);
+
+  if(!clipped.length) return alert("Basic Salary History does not cover the Entitlement From → Entitlement To period.");
 
   let cursor=new Date(start);
   for(const r of clipped){
     if(r.from>cursor){
       return alert("Basic Salary History has an uncovered date period. Please cover the full Entitlement From → Entitlement To period.");
     }
-    const next=new Date(r.to); next.setDate(next.getDate()+1);
+    const next=new Date(r.to);
+    next.setDate(next.getDate()+1);
     if(next>cursor) cursor=next;
   }
   if(cursor<=end){
     return alert("Basic Salary History has an uncovered date period. Please cover the full Entitlement From → Entitlement To period.");
   }
 
-  const calc=calculateLeaveSalaryForm(), rows=getLeaveSalaryFormRows();
-  if(calc.payable<=0)return alert("Enter Leave Salary Payable Days.");
-  if(!document.getElementById("lsfEntitlementFrom").value||!document.getElementById("lsfEntitlementTo").value)return alert("Enter Entitlement From and To dates.");
-  if(rows.some(x=>!x.from||!x.to||x.basic<=0))return alert("Complete Effective From, Effective To and Basic Salary for every salary row.");
-  if(rows.some(x=>new Date(x.to)<new Date(x.from)))return alert("Effective To cannot be earlier than Effective From.");
-  if(rows.some(x=>Number(x.unpaidDays||0)<0))return alert("Unpaid Days cannot be negative.");
   document.getElementById("lifeSalaryDays").value=Number(calc.payable||0).toFixed(2);
-  document.getElementById("lifeEntitlementFrom").value=document.getElementById("lsfEntitlementFrom").value;
-  document.getElementById("lifeEntitlementTo").value=document.getElementById("lsfEntitlementTo").value;
-  const ib=document.getElementById("salaryHistoryRows"); ib.innerHTML=""; rows.forEach(addSalaryHistoryRow);
-  document.getElementById("lifeSalaryAmount").value=calc.total.toFixed(2);recalcPaymentBalance();checkSalaryDaysOverride();
+  document.getElementById("lifeEntitlementFrom").value=entFrom;
+  document.getElementById("lifeEntitlementTo").value=entTo;
+  const ib=document.getElementById("salaryHistoryRows");
+  if(ib){ib.innerHTML=""; allRows.forEach(addSalaryHistoryRow);}
+  document.getElementById("lifeSalaryAmount").value=Number(calc.total||0).toFixed(2);
+  recalcPaymentBalance();
+  checkSalaryDaysOverride();
   closeModal("leaveSalaryFormModal");
-  const n=document.getElementById("lifecycleNotice");if(n){n.className="notice ninfo show";n.textContent="Leave Salary Form calculation applied to Payroll record. Click Save Payroll / Salary Record to save it.";}
+  const n=document.getElementById("lifecycleNotice");
+  if(n){
+    n.className="notice ninfo show";
+    n.textContent="Leave Salary calculation applied to Payroll record. Click Save Payroll / Salary Record to save it.";
+  }
 }
 
 function checkSalaryDaysOverride(){
