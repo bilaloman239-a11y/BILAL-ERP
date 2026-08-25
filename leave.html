@@ -49,6 +49,7 @@ button,input,select,textarea{font:inherit}
 .primary{background:var(--navy);color:#fff}.orange{background:var(--orange);color:#fff}.light{background:#fff;border:1px solid var(--line);color:var(--navy)}
 .green{background:var(--green);color:#fff}.red{background:var(--red);color:#fff}
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:13px}
+.ticket-alert-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);cursor:pointer}
 .kpi:hover{transform:translateY(-1px)} .kpi .top{display:flex;justify-content:space-between;gap:10px}.kpi .lab{font-size:11px;color:var(--muted)}
 .kpi .num{font-size:27px;font-weight:900;color:var(--navy);margin-top:8px}.kpi .hint{font-size:9px;color:var(--muted);margin-top:3px}
@@ -125,6 +126,9 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num" id="kpiCurrentlyOnLeave">0</div><div class="hint">Counts only after departure ticket date is entered and starts</div></div>
     <div class="kpi" onclick="openKpi('Leaving Next 7 Days')"><div class="top"><span class="lab">Leaving Next 7 Days</span><span class="bubble o">✈</span></div><div class="num" id="kpiLeaving7">0</div><div class="hint">Departure tickets in next 7 days</div></div>
     <div class="kpi" onclick="openKpi('Returning Next 7 Days')"><div class="top"><span class="lab">Returning Next 7 Days</span><span class="bubble o">↩</span></div><div class="num" id="kpiReturning7">0</div><div class="hint">Return tickets in next 7 days</div></div>
+  </div>
+  <div class="kpis ticket-alert-kpis">
+    <div class="kpi" onclick="openKpi('Ticket Booking Pending')"><div class="top"><span class="lab">Ticket Booking Pending</span><span class="bubble o">✈</span></div><div class="num" id="kpiTicketBookingPending">0</div><div class="hint"><span id="kpiDeparturePendingMini">0</span> Departure • <span id="kpiReturnPendingMini">0</span> Return — due within 7 days</div></div>
   </div>
   <div class="kpis">
     <div class="kpi" onclick="openKpi('Ticket Action Required')"><div class="top"><span class="lab">Ticket Action Required</span><span class="bubble o">!</span></div><div class="num">0</div><div class="hint">Not booked / confirmed</div></div>
@@ -1136,6 +1140,49 @@ function getTicketMovementRecords(kind){
 }
 
 
+function getTicketBookingPendingRecords(kind){
+  const store=readLeaveStore();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const limit=new Date(today); limit.setDate(limit.getDate()+7);
+  const prefix=kind==="Departure"?"Departure":"Return";
+  const out=[];
+
+  (store.requests||[]).forEach(req=>{
+    if(String(req.status||"")!=="Approved") return;
+    if(String(req.ticketRequired||"No")!=="Yes") return;
+
+    const targetDate=kind==="Departure" ? String(req.startDate||"") : String(req.endDate||"");
+    if(!targetDate) return;
+    const due=new Date(targetDate+"T00:00:00");
+    if(due<today || due>limit) return;
+
+    const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(req.id))||{};
+    const sideHistory=(Array.isArray(ticket.history)?ticket.history:[])
+      .filter(h=>String(h.journeySide||"").startsWith(prefix))
+      .sort((a,b)=>String(a.updatedAt||a.createdAt||"").localeCompare(String(b.updatedAt||b.createdAt||"")));
+    const latest=sideHistory.slice(-1)[0]||null;
+    const status=String(latest?.status||"").trim();
+    const completed=["Booked","Confirmed","Travelled"].includes(status);
+    if(completed) return;
+
+    const daysLeft=Math.ceil((due-today)/86400000);
+    out.push({req,ticket,history:latest,dueDate:targetDate,status:status||"Not Entered",daysLeft});
+  });
+
+  return out.sort((a,b)=>String(a.dueDate).localeCompare(String(b.dueDate)));
+}
+
+function renderTicketPendingKpis(){
+  const dep=getTicketBookingPendingRecords("Departure");
+  const ret=getTicketBookingPendingRecords("Return");
+  const total=document.getElementById("kpiTicketBookingPending");
+  const a=document.getElementById("kpiDeparturePendingMini");
+  const b=document.getElementById("kpiReturnPendingMini");
+  if(total) total.textContent=String(dep.length+ret.length);
+  if(a) a.textContent=String(dep.length);
+  if(b) b.textContent=String(ret.length);
+}
+
 function renderMovementTimeline(){
   const leaving=getTicketMovementRecords("Departure");
   const returning=getTicketMovementRecords("Return");
@@ -1191,6 +1238,33 @@ function renderKpiDetails(title){
           <td><button class="btn orange" onclick="closeModal('kpiModal');openApprovedTicket('${escHtml(r.id)}')">Ticket</button></td>
         </tr>`;
     }).join("");
+    return;
+  }
+
+  if(title==="Ticket Booking Pending" || title==="Departure Ticket Booking Pending" || title==="Return Ticket Booking Pending"){
+    let rows=[];
+    if(title==="Ticket Booking Pending"){
+      rows=getTicketBookingPendingRecords("Departure").map(x=>({...x,kind:"Departure"}))
+        .concat(getTicketBookingPendingRecords("Return").map(x=>({...x,kind:"Return"})))
+        .sort((a,b)=>String(a.dueDate).localeCompare(String(b.dueDate)));
+    }else{
+      const kind=title.startsWith("Departure")?"Departure":"Return";
+      rows=getTicketBookingPendingRecords(kind).map(x=>({...x,kind}));
+    }
+    if(!rows.length){
+      tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No ticket booking pending in the next 7 days.</td></tr>';
+      return;
+    }
+    tbody.innerHTML=rows.map(x=>`
+      <tr>
+        <td><b>${escHtml(x.req.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(x.req.employeeCode||"")}</span></td>
+        <td>${escHtml(x.req.company||x.req.site||"-")}</td>
+        <td>${escHtml(x.req.leaveType||"-")}</td>
+        <td>${niceDate(x.req.startDate)}</td>
+        <td>${niceDate(x.req.endDate)}</td>
+        <td><span class="badge alert">${escHtml(x.kind+" Ticket Pending")}</span><br><span style="color:#78889a">${x.daysLeft===0?"Due today":x.daysLeft+" day(s) remaining"} • ${escHtml(x.status)}</span></td>
+        <td><button class="btn orange" onclick="closeModal('kpiModal');openApprovedTicket('${escHtml(x.req.id)}')">Book Ticket</button></td>
+      </tr>`).join("");
     return;
   }
 
@@ -1321,6 +1395,7 @@ function refreshLeaveUI(){
   renderManagerApprovals();
   renderApprovedLeaveCount();
   renderMovementKpis();
+  renderTicketPendingKpis();
   renderMovementTimeline();
   renderApprovedLeaves();
   renderTravelTracker();
