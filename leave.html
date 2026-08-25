@@ -1284,6 +1284,28 @@ function refreshLeaveUI(){
 }
 
 
+function updateLeaveDays(){
+  const s=document.getElementById("leaveStart")?.value;
+  const e=document.getElementById("leaveEnd")?.value;
+  const half=document.getElementById("halfDay")?.value||"No";
+  const out=document.getElementById("totalLeaveDays");
+  if(!out) return;
+  if(!s || !e){
+    out.value="0 Day(s)";
+    return;
+  }
+  const start=new Date(s+"T00:00:00");
+  const end=new Date(e+"T00:00:00");
+  if(end<start){
+    out.value="Invalid Date Range";
+    return;
+  }
+  let days=Math.floor((end-start)/86400000)+1;
+  if(half!=="No") days=0.5;
+  out.value=days+" Day(s)";
+}
+
+
 function toggleMedicalFields(){
   const type=document.getElementById("leaveType")?.value||"";
   const box=document.getElementById("medicalPaperBox");
