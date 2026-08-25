@@ -2821,15 +2821,15 @@ function calculateLeaveSalaryForm(){
     totalSalary+=leaveSalary;
 
     tr.querySelector(".lsf-working-days").textContent=workingDays;
-    tr.querySelector(".lsf-entitlement-days").textContent=entitlementDays.toFixed(4);
+    tr.querySelector(".lsf-entitlement-days").textContent=entitlementDays.toFixed(2);
     tr.querySelector(".lsf-rate").textContent=perDaySalary.toFixed(2);
     tr.querySelector(".lsf-amount").textContent=leaveSalary.toFixed(2);
   });
 
   const payableEl=document.getElementById("lsfPayableDays");
-  if(payableEl) payableEl.value=totalEntitlement.toFixed(4);
+  if(payableEl) payableEl.value=totalEntitlement.toFixed(2);
 
-  document.getElementById("lsfDaysCalculated").textContent=totalEntitlement.toFixed(4)+" Day(s)";
+  document.getElementById("lsfDaysCalculated").textContent=totalEntitlement.toFixed(2)+" Day(s)";
   document.getElementById("lsfGrandTotal").textContent="AED "+totalSalary.toFixed(2);
 
   const n=document.getElementById("lsfNotice");
@@ -2841,7 +2841,7 @@ function calculateLeaveSalaryForm(){
     n.textContent="Overall Unpaid / LOP is "+overallUnpaid+" day(s), but only "+(overallUnpaid-remainingAuto)+" day(s) fit inside these salary periods. Check dates or edit Unpaid Days.";
   }else{
     n.className="notice ninfo show";
-    n.textContent="Company formula applied: Working Days = "+totalGrossDays+" − "+totalUnpaid+" = "+totalWorking+". Entitlement Days = (30 ÷ 365) × "+totalWorking+" = "+totalEntitlement.toFixed(4)+". Leave Salary = (Basic Salary ÷ 30) × Entitlement Days, calculated separately for each Basic Salary period.";
+    n.textContent="Company formula applied: Working Days = "+totalGrossDays+" − "+totalUnpaid+" = "+totalWorking+". Entitlement Days = (30 ÷ 365) × "+totalWorking+" = "+totalEntitlement.toFixed(2)+". Leave Salary = (Basic Salary ÷ 30) × Entitlement Days, calculated separately for each Basic Salary period.";
   }
 
   return {
@@ -2854,14 +2854,40 @@ function calculateLeaveSalaryForm(){
   };
 }
 function applyLeaveSalaryForm(){
+  const calc=calculateLeaveSalaryForm();
+  const entFrom=document.getElementById("lsfEntitlementFrom")?.value||"";
+  const entTo=document.getElementById("lsfEntitlementTo")?.value||"";
+  const rows=getLeaveSalaryFormRows().filter(x=>x.from&&x.to&&Number(x.basic)>0);
+  if(!entFrom||!entTo) return alert("Please enter Entitlement From and Entitlement To dates.");
+  if(!rows.length) return alert("Please enter at least one Basic Salary History period.");
+
+  // Validate continuous coverage of the ACTUAL entitlement date period.
+  const start=new Date(entFrom+"T00:00:00");
+  const end=new Date(entTo+"T00:00:00");
+  const clipped=rows.map(r=>({
+    from:new Date((r.from<entFrom?entFrom:r.from)+"T00:00:00"),
+    to:new Date((r.to>entTo?entTo:r.to)+"T00:00:00")
+  })).filter(r=>r.to>=start&&r.from<=end).sort((a,b)=>a.from-b.from);
+
+  let cursor=new Date(start);
+  for(const r of clipped){
+    if(r.from>cursor){
+      return alert("Basic Salary History has an uncovered date period. Please cover the full Entitlement From → Entitlement To period.");
+    }
+    const next=new Date(r.to); next.setDate(next.getDate()+1);
+    if(next>cursor) cursor=next;
+  }
+  if(cursor<=end){
+    return alert("Basic Salary History has an uncovered date period. Please cover the full Entitlement From → Entitlement To period.");
+  }
+
   const calc=calculateLeaveSalaryForm(), rows=getLeaveSalaryFormRows();
   if(calc.payable<=0)return alert("Enter Leave Salary Payable Days.");
   if(!document.getElementById("lsfEntitlementFrom").value||!document.getElementById("lsfEntitlementTo").value)return alert("Enter Entitlement From and To dates.");
   if(rows.some(x=>!x.from||!x.to||x.basic<=0))return alert("Complete Effective From, Effective To and Basic Salary for every salary row.");
   if(rows.some(x=>new Date(x.to)<new Date(x.from)))return alert("Effective To cannot be earlier than Effective From.");
   if(rows.some(x=>Number(x.unpaidDays||0)<0))return alert("Unpaid Days cannot be negative.");
-  if(calc.used!==calc.payable)return alert("Salary history must cover all "+calc.payable+" payable day(s) before applying.");
-  document.getElementById("lifeSalaryDays").value=calc.payable;
+  document.getElementById("lifeSalaryDays").value=Number(calc.payable||0).toFixed(2);
   document.getElementById("lifeEntitlementFrom").value=document.getElementById("lsfEntitlementFrom").value;
   document.getElementById("lifeEntitlementTo").value=document.getElementById("lsfEntitlementTo").value;
   const ib=document.getElementById("salaryHistoryRows"); ib.innerHTML=""; rows.forEach(addSalaryHistoryRow);
