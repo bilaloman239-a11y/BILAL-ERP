@@ -609,9 +609,9 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 
     <h3 style="margin-top:18px">Ticket History</h3>
     <table>
-      <thead><tr><th>Date Added</th><th>Journey</th><th>Travel Date</th><th>Provided By</th><th>Status</th><th>Route</th><th>Remarks</th></tr></thead>
+      <thead><tr><th>Date Added</th><th>Journey</th><th>Travel Date</th><th>Provided By</th><th>Status</th><th>Route</th><th>Remarks</th><th>Action</th></tr></thead>
       <tbody id="approvedTicketHistoryRows">
-        <tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:18px">No ticket history yet.</td></tr>
+        <tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:18px">No ticket history yet.</td></tr>
       </tbody>
     </table>
   </div>
@@ -1262,7 +1262,7 @@ function renderTravelTracker(){
     <td>${escHtml(h.providedBy||"-")}</td>
     <td><span class="badge info">${escHtml(h.status||"-")}</span></td>
     <td>${amount}</td><td>${escHtml(h.remarks||"-")}</td>
-    <td><button class="btn orange" onclick="openTrackerTicketEdit('${escHtml(req.id||t.leaveRequestId||"")}','${escHtml(h.id||"")}')">Edit</button></td></tr>`;}).join("");
+    <td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn orange" onclick="openTrackerTicketEdit('${escHtml(req.id||t.leaveRequestId||"")}','${escHtml(h.id||"")}')">Edit</button><button class="btn red" onclick="deleteTicketHistoryEntry('${escHtml(req.id||t.leaveRequestId||"")}','${escHtml(h.id||"")}')">Delete</button></div></td></tr>`;}).join("");
 }
 
 function openTrackerTicketEdit(leaveId,historyId){
@@ -1274,6 +1274,41 @@ function openTrackerTicketEdit(leaveId,historyId){
     const n=document.getElementById("approvedTicketNotice");
     if(n){ n.className="notice nwarn show"; n.textContent="This older ticket entry has no edit ID. Open Ticket History and save a fresh entry if changes are required."; }
   }
+}
+
+function deleteTicketHistoryEntry(leaveId,historyId){
+  if(!leaveId||!historyId) return alert("Ticket entry not found.");
+  if(!confirm("Are you sure you want to delete this ticket entry?")) return;
+  const store=readLeaveStore();
+  const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(leaveId));
+  if(!ticket||!Array.isArray(ticket.history)) return alert("Ticket history not found.");
+  const idx=ticket.history.findIndex(h=>String(h.id)===String(historyId));
+  if(idx<0) return alert("Ticket entry not found.");
+  const removed=ticket.history[idx];
+  ticket.history.splice(idx,1);
+  const req=(store.requests||[]).find(r=>String(r.id)===String(leaveId));
+
+  // Recalculate summary dates from remaining active history on the same journey side.
+  const dep=[...ticket.history].filter(h=>String(h.journeySide||"").startsWith("Departure") && String(h.status||"").toLowerCase()!=="cancelled");
+  const ret=[...ticket.history].filter(h=>String(h.journeySide||"").startsWith("Return") && String(h.status||"").toLowerCase()!=="cancelled");
+  const latest=(arr)=>arr.sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0))[0]||null;
+  const d=latest(dep), r=latest(ret);
+  ticket.departureDate=d?.travelDate||"";
+  ticket.departureProvidedBy=d?.providedBy||"";
+  ticket.returnDate=r?.travelDate||"";
+  ticket.returnProvidedBy=r?.providedBy||"";
+  ticket.updatedAt=new Date().toISOString();
+  if(req){
+    req.departureTicketDate=ticket.departureDate;
+    req.returnTicketDate=ticket.returnDate;
+  }
+  saveLeaveStore(store);
+  renderApprovedTicketHistory(leaveId);
+  renderTravelTracker();
+  renderApprovedLeaves();
+  refreshLeaveUI();
+  const n=document.getElementById("approvedTicketNotice");
+  if(n){n.className="notice ninfo show";n.textContent="Ticket entry deleted successfully.";}
 }
 
 function clearTravelTrackerFilters(){
