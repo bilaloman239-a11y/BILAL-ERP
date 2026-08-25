@@ -2043,12 +2043,46 @@ function saveApprovedTicketHistory(){
     createdAt:new Date().toISOString()
   };
 
+  const editId=document.getElementById("ticketHistoryEditId")?.value||"";
+  const notice=document.getElementById("approvedTicketNotice");
+  const sideType=historyEntry.journeySide.startsWith("Departure")?"Departure":"Return";
+  const activeHistory=(Array.isArray(ticket.history)?ticket.history:[]).filter(h=>
+    String(h?.id||"")!==String(editId||"") &&
+    String(h?.status||"").toLowerCase()!=="cancelled"
+  );
+
+  // DUPLICATE CONTROL: only one active Departure and one active Return ticket
+  // are allowed for the same Leave Request. Existing ticket must be updated by Edit.
+  const sameSide=activeHistory.find(h=>{
+    const hType=String(h?.journeySide||"").startsWith("Departure")?"Departure":"Return";
+    return hType===sideType;
+  });
+  if(sameSide){
+    const msg=sideType+" Ticket already exists for this Leave Request. Please use the Edit button to update the existing ticket instead of saving a new one.";
+    if(notice){notice.className="notice ndanger show";notice.textContent=msg;}
+    return alert(msg);
+  }
+
+  // Extra exact-duplicate protection (same journey/date/route/provider).
+  const norm=v=>String(v||"").trim().toLowerCase();
+  const exactDuplicate=activeHistory.find(h=>
+    norm(h.journeySide)===norm(historyEntry.journeySide) &&
+    norm(h.travelDate)===norm(historyEntry.travelDate) &&
+    norm(h.fromAirport)===norm(historyEntry.fromAirport) &&
+    norm(h.toAirport)===norm(historyEntry.toAirport) &&
+    norm(h.providedBy)===norm(historyEntry.providedBy)
+  );
+  if(exactDuplicate){
+    const msg="This ticket entry already exists. Please use Edit instead of creating a duplicate.";
+    if(notice){notice.className="notice ndanger show";notice.textContent=msg;}
+    return alert(msg);
+  }
+
  // Validate against approved leave dates for departure.
   if(historyEntry.journeySide.startsWith("Departure") && req.startDate && new Date(travelDate)<new Date(req.startDate)){
     return alert("Departure ticket date cannot be earlier than approved leave start date.");
   }
 
-  const editId=document.getElementById("ticketHistoryEditId")?.value||"";
   if(editId){
     const idx=ticket.history.findIndex(h=>String(h.id)===String(editId));
     if(idx>=0){
