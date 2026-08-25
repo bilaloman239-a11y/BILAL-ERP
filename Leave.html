@@ -49,6 +49,7 @@ button,input,select,textarea{font:inherit}
 .primary{background:var(--navy);color:#fff}.orange{background:var(--orange);color:#fff}.light{background:#fff;border:1px solid var(--line);color:var(--navy)}
 .green{background:var(--green);color:#fff}.red{background:var(--red);color:#fff}
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:13px}
+.ticket-alert-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);cursor:pointer}
 .kpi:hover{transform:translateY(-1px)} .kpi .top{display:flex;justify-content:space-between;gap:10px}.kpi .lab{font-size:11px;color:var(--muted)}
 .kpi .num{font-size:27px;font-weight:900;color:var(--navy);margin-top:8px}.kpi .hint{font-size:9px;color:var(--muted);margin-top:3px}
@@ -125,6 +126,9 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <div class="kpi" onclick="openKpi('Currently On Leave')"><div class="top"><span class="lab">Currently On Leave</span><span class="bubble">☂</span></div><div class="num" id="kpiCurrentlyOnLeave">0</div><div class="hint">Counts only after departure ticket date is entered and starts</div></div>
     <div class="kpi" onclick="openKpi('Leaving Next 7 Days')"><div class="top"><span class="lab">Leaving Next 7 Days</span><span class="bubble o">✈</span></div><div class="num" id="kpiLeaving7">0</div><div class="hint">Departure tickets in next 7 days</div></div>
     <div class="kpi" onclick="openKpi('Returning Next 7 Days')"><div class="top"><span class="lab">Returning Next 7 Days</span><span class="bubble o">↩</span></div><div class="num" id="kpiReturning7">0</div><div class="hint">Return tickets in next 7 days</div></div>
+  </div>
+  <div class="kpis ticket-alert-kpis">
+    <div class="kpi" onclick="openKpi('Ticket Booking Pending')"><div class="top"><span class="lab">Ticket Booking Pending</span><span class="bubble o">✈</span></div><div class="num" id="kpiTicketBookingPending">0</div><div class="hint"><span id="kpiDeparturePendingMini">0</span> Departure • <span id="kpiReturnPendingMini">0</span> Return — due within 7 days</div></div>
   </div>
   <div class="kpis">
     <div class="kpi" onclick="openKpi('Ticket Action Required')"><div class="top"><span class="lab">Ticket Action Required</span><span class="bubble o">!</span></div><div class="num">0</div><div class="hint">Not booked / confirmed</div></div>
@@ -284,8 +288,8 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     </div>
     <div class="summary" style="margin-bottom:12px"><div class="sumrow"><span>Filtered Travel Entries</span><strong id="travelTrackerCount">0</strong></div></div>
     <table>
-      <thead><tr><th>Employee</th><th>Request</th><th>Journey</th><th>Travel Date</th><th>Route</th><th>Ticket Provided By</th><th>Status</th><th>Cost / Cash</th><th>Remarks</th></tr></thead>
-      <tbody id="travelTrackerRows"><tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No ticket / travel history yet.</td></tr></tbody>
+      <thead><tr><th>Employee</th><th>Request</th><th>Journey</th><th>Travel Date</th><th>Route</th><th>Ticket Provided By</th><th>Status</th><th>Cost / Cash</th><th>Remarks</th><th>Action</th></tr></thead>
+      <tbody id="travelTrackerRows"><tr><td colspan="10" style="text-align:center;color:#7d8da0;padding:20px">No ticket / travel history yet.</td></tr></tbody>
     </table>
   </div>
 </section>
@@ -609,9 +613,9 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 
     <h3 style="margin-top:18px">Ticket History</h3>
     <table>
-      <thead><tr><th>Date Added</th><th>Journey</th><th>Travel Date</th><th>Provided By</th><th>Status</th><th>Route</th><th>Remarks</th></tr></thead>
+      <thead><tr><th>Date Added</th><th>Journey</th><th>Travel Date</th><th>Provided By</th><th>Status</th><th>Route</th><th>Remarks</th><th>Action</th></tr></thead>
       <tbody id="approvedTicketHistoryRows">
-        <tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:18px">No ticket history yet.</td></tr>
+        <tr><td colspan="8" style="text-align:center;color:#7d8da0;padding:18px">No ticket history yet.</td></tr>
       </tbody>
     </table>
   </div>
@@ -634,8 +638,17 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
       <div class="fg"><label>Paid Leave Days (Accountant Entry)</label><input id="lifePaidDays" type="number" min="0" step="0.5" placeholder="0" oninput="recalcAccountsUnpaid()"></div>
       <div class="fg"><label>Unpaid / LOP Days (Auto)</label><input id="lifeUnpaidDays" type="number" min="0" step="0.5" readonly style="font-weight:800;background:#f4f8fc"></div>
       <div class="fg"><label>Absent Days</label><input id="lifeAbsentDays" type="number" min="0" step="0.5" placeholder="0"></div>
-      <div class="fg"><label>Eligible Leave Salary Days</label><input id="lifeSalaryDays" type="number" min="0" step="0.5" placeholder="0"></div>
+      <div class="fg"><label>Leave Salary Payable Days (HR/Accounts Entry)</label><input id="lifeSalaryDays" type="number" min="0" step="0.5" placeholder="0" oninput="checkSalaryDaysOverride();calculateSalaryHistory()"><small style="color:#7a8999;font-size:9px">Can be higher than actual leave days when approved by company policy / management.</small></div>
       <div class="fg"><label>Leave Salary Amount / Payable (AED)</label><input id="lifeSalaryAmount" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcPaymentBalance()"></div>
+      <div class="fg full" style="border:1px solid #dce8f4;border-radius:12px;padding:12px;background:#f8fbfe">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><b style="color:#17365d">Salary History Based Leave Salary Calculator</b><div style="font-size:9px;color:#6b7280;margin-top:3px">Split payable days when Basic Salary changes. Daily rate = Basic Salary ÷ 30.</div></div><button type="button" class="btn light" onclick="addSalaryHistoryRow()">+ Add Salary Change</button></div>
+        <div class="formgrid" style="margin-top:10px"><div class="fg"><label>Entitlement From Date</label><input id="lifeEntitlementFrom" type="date" onchange="calculateSalaryHistory()"></div><div class="fg"><label>Entitlement To Date</label><input id="lifeEntitlementTo" type="date" onchange="calculateSalaryHistory()"></div></div>
+        <div style="overflow:auto;margin-top:8px"><table style="min-width:760px"><thead><tr><th>Effective From</th><th>Effective To</th><th>Basic Salary (AED)</th><th>Days Used</th><th>Daily Rate</th><th>Leave Salary</th><th>Action</th></tr></thead><tbody id="salaryHistoryRows"></tbody></table></div>
+        <div id="salaryCalcNotice" class="notice ninfo" style="margin-top:9px"></div>
+        <div style="display:flex;justify-content:flex-end;gap:12px;align-items:center;margin-top:10px"><b>Total Calculated:</b><span id="salaryCalcTotal" style="font-size:18px;font-weight:900;color:#17365d">AED 0.00</span><button type="button" class="btn primary" onclick="applyCalculatedSalary()">Apply to Payable Amount</button></div>
+      </div>
+      <div class="fg full"><div id="salaryOverrideNotice" class="notice nwarn"></div></div>
+      <div class="fg full"><label>Leave Salary Override / Approval Reference</label><input id="lifeSalaryOverrideRef" placeholder="Required only when salary payable days exceed actual leave days"></div>
       <div class="fg"><label>Payment Amount (AED)</label><input id="lifePaymentAmount" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcPaymentBalance()"></div>
       <div class="fg"><label>Balance Payable (Auto)</label><input id="lifeBalanceAmount" readonly style="font-weight:800;background:#f4f8fc"></div>
       <div class="fg"><label>Leave Salary Payment Status</label><select id="lifeSalaryStatus"><option>Pending</option><option>Paid</option><option>Not Applicable</option></select></div>
@@ -1136,6 +1149,49 @@ function getTicketMovementRecords(kind){
 }
 
 
+function getTicketBookingPendingRecords(kind){
+  const store=readLeaveStore();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const limit=new Date(today); limit.setDate(limit.getDate()+7);
+  const prefix=kind==="Departure"?"Departure":"Return";
+  const out=[];
+
+  (store.requests||[]).forEach(req=>{
+    if(String(req.status||"")!=="Approved") return;
+    if(String(req.ticketRequired||"No")!=="Yes") return;
+
+    const targetDate=kind==="Departure" ? String(req.startDate||"") : String(req.endDate||"");
+    if(!targetDate) return;
+    const due=new Date(targetDate+"T00:00:00");
+    if(due<today || due>limit) return;
+
+    const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(req.id))||{};
+    const sideHistory=(Array.isArray(ticket.history)?ticket.history:[])
+      .filter(h=>String(h.journeySide||"").startsWith(prefix))
+      .sort((a,b)=>String(a.updatedAt||a.createdAt||"").localeCompare(String(b.updatedAt||b.createdAt||"")));
+    const latest=sideHistory.slice(-1)[0]||null;
+    const status=String(latest?.status||"").trim();
+    const completed=["Booked","Confirmed","Travelled"].includes(status);
+    if(completed) return;
+
+    const daysLeft=Math.ceil((due-today)/86400000);
+    out.push({req,ticket,history:latest,dueDate:targetDate,status:status||"Not Entered",daysLeft});
+  });
+
+  return out.sort((a,b)=>String(a.dueDate).localeCompare(String(b.dueDate)));
+}
+
+function renderTicketPendingKpis(){
+  const dep=getTicketBookingPendingRecords("Departure");
+  const ret=getTicketBookingPendingRecords("Return");
+  const total=document.getElementById("kpiTicketBookingPending");
+  const a=document.getElementById("kpiDeparturePendingMini");
+  const b=document.getElementById("kpiReturnPendingMini");
+  if(total) total.textContent=String(dep.length+ret.length);
+  if(a) a.textContent=String(dep.length);
+  if(b) b.textContent=String(ret.length);
+}
+
 function renderMovementTimeline(){
   const leaving=getTicketMovementRecords("Departure");
   const returning=getTicketMovementRecords("Return");
@@ -1191,6 +1247,33 @@ function renderKpiDetails(title){
           <td><button class="btn orange" onclick="closeModal('kpiModal');openApprovedTicket('${escHtml(r.id)}')">Ticket</button></td>
         </tr>`;
     }).join("");
+    return;
+  }
+
+  if(title==="Ticket Booking Pending" || title==="Departure Ticket Booking Pending" || title==="Return Ticket Booking Pending"){
+    let rows=[];
+    if(title==="Ticket Booking Pending"){
+      rows=getTicketBookingPendingRecords("Departure").map(x=>({...x,kind:"Departure"}))
+        .concat(getTicketBookingPendingRecords("Return").map(x=>({...x,kind:"Return"})))
+        .sort((a,b)=>String(a.dueDate).localeCompare(String(b.dueDate)));
+    }else{
+      const kind=title.startsWith("Departure")?"Departure":"Return";
+      rows=getTicketBookingPendingRecords(kind).map(x=>({...x,kind}));
+    }
+    if(!rows.length){
+      tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7d8da0;padding:20px">No ticket booking pending in the next 7 days.</td></tr>';
+      return;
+    }
+    tbody.innerHTML=rows.map(x=>`
+      <tr>
+        <td><b>${escHtml(x.req.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(x.req.employeeCode||"")}</span></td>
+        <td>${escHtml(x.req.company||x.req.site||"-")}</td>
+        <td>${escHtml(x.req.leaveType||"-")}</td>
+        <td>${niceDate(x.req.startDate)}</td>
+        <td>${niceDate(x.req.endDate)}</td>
+        <td><span class="badge alert">${escHtml(x.kind+" Ticket Pending")}</span><br><span style="color:#78889a">${x.daysLeft===0?"Due today":x.daysLeft+" day(s) remaining"} • ${escHtml(x.status)}</span></td>
+        <td><button class="btn orange" onclick="closeModal('kpiModal');openApprovedTicket('${escHtml(x.req.id)}')">Book Ticket</button></td>
+      </tr>`).join("");
     return;
   }
 
@@ -1252,7 +1335,7 @@ function renderTravelTracker(){
     return true;
   }).sort((a,b)=>String(b.h.travelDate||b.h.createdAt||"").localeCompare(String(a.h.travelDate||a.h.createdAt||"")));
   const count=document.getElementById("travelTrackerCount"); if(count) count.textContent=String(rows.length);
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#7d8da0;padding:20px">No matching ticket / travel history found.</td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#7d8da0;padding:20px">No matching ticket / travel history found.</td></tr>';return;}
   tbody.innerHTML=rows.map(x=>{const h=x.h,req=x.req,t=x.t; const amount=h.cost?('AED '+escHtml(h.cost)):'-'; return `<tr>
     <td><b>${escHtml(req.employeeName||t.employeeName||"-")}</b><br><span style="color:#78889a">${escHtml(req.employeeCode||t.employeeCode||"")}</span></td>
     <td>${escHtml(req.id||t.leaveRequestId||"-")}</td>
@@ -1261,8 +1344,56 @@ function renderTravelTracker(){
     <td>${escHtml((h.fromAirport||"-")+" → "+(h.toAirport||"-"))}</td>
     <td>${escHtml(h.providedBy||"-")}</td>
     <td><span class="badge info">${escHtml(h.status||"-")}</span></td>
-    <td>${amount}</td><td>${escHtml(h.remarks||"-")}</td></tr>`;}).join("");
+    <td>${amount}</td><td>${escHtml(h.remarks||"-")}</td>
+    <td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn orange" onclick="openTrackerTicketEdit('${escHtml(req.id||t.leaveRequestId||"")}','${escHtml(h.id||"")}')">Edit</button><button class="btn red" onclick="deleteTicketHistoryEntry('${escHtml(req.id||t.leaveRequestId||"")}','${escHtml(h.id||"")}')">Delete</button></div></td></tr>`;}).join("");
 }
+
+function openTrackerTicketEdit(leaveId,historyId){
+  if(!leaveId) return alert("Leave request not found.");
+  openApprovedTicket(leaveId);
+  if(historyId){
+    setTimeout(()=>editApprovedTicketHistory(leaveId,historyId),0);
+  }else{
+    const n=document.getElementById("approvedTicketNotice");
+    if(n){ n.className="notice nwarn show"; n.textContent="This older ticket entry has no edit ID. Open Ticket History and save a fresh entry if changes are required."; }
+  }
+}
+
+function deleteTicketHistoryEntry(leaveId,historyId){
+  if(!leaveId||!historyId) return alert("Ticket entry not found.");
+  if(!confirm("Are you sure you want to delete this ticket entry?")) return;
+  const store=readLeaveStore();
+  const ticket=(store.tickets||[]).find(t=>String(t.leaveRequestId)===String(leaveId));
+  if(!ticket||!Array.isArray(ticket.history)) return alert("Ticket history not found.");
+  const idx=ticket.history.findIndex(h=>String(h.id)===String(historyId));
+  if(idx<0) return alert("Ticket entry not found.");
+  const removed=ticket.history[idx];
+  ticket.history.splice(idx,1);
+  const req=(store.requests||[]).find(r=>String(r.id)===String(leaveId));
+
+  // Recalculate summary dates from remaining active history on the same journey side.
+  const dep=[...ticket.history].filter(h=>String(h.journeySide||"").startsWith("Departure") && String(h.status||"").toLowerCase()!=="cancelled");
+  const ret=[...ticket.history].filter(h=>String(h.journeySide||"").startsWith("Return") && String(h.status||"").toLowerCase()!=="cancelled");
+  const latest=(arr)=>arr.sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0))[0]||null;
+  const d=latest(dep), r=latest(ret);
+  ticket.departureDate=d?.travelDate||"";
+  ticket.departureProvidedBy=d?.providedBy||"";
+  ticket.returnDate=r?.travelDate||"";
+  ticket.returnProvidedBy=r?.providedBy||"";
+  ticket.updatedAt=new Date().toISOString();
+  if(req){
+    req.departureTicketDate=ticket.departureDate;
+    req.returnTicketDate=ticket.returnDate;
+  }
+  saveLeaveStore(store);
+  renderApprovedTicketHistory(leaveId);
+  renderTravelTracker();
+  renderApprovedLeaves();
+  refreshLeaveUI();
+  const n=document.getElementById("approvedTicketNotice");
+  if(n){n.className="notice ninfo show";n.textContent="Ticket entry deleted successfully.";}
+}
+
 function clearTravelTrackerFilters(){
   ["travelTrackerSearch","travelTrackerFrom","travelTrackerTo"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
   ["travelTrackerJourney","travelTrackerProvider","travelTrackerStatus"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
@@ -1273,6 +1404,7 @@ function refreshLeaveUI(){
   renderManagerApprovals();
   renderApprovedLeaveCount();
   renderMovementKpis();
+  renderTicketPendingKpis();
   renderMovementTimeline();
   renderApprovedLeaves();
   renderTravelTracker();
@@ -2030,12 +2162,46 @@ function saveApprovedTicketHistory(){
     createdAt:new Date().toISOString()
   };
 
+  const editId=document.getElementById("ticketHistoryEditId")?.value||"";
+  const notice=document.getElementById("approvedTicketNotice");
+  const sideType=historyEntry.journeySide.startsWith("Departure")?"Departure":"Return";
+  const activeHistory=(Array.isArray(ticket.history)?ticket.history:[]).filter(h=>
+    String(h?.id||"")!==String(editId||"") &&
+    String(h?.status||"").toLowerCase()!=="cancelled"
+  );
+
+  // DUPLICATE CONTROL: only one active Departure and one active Return ticket
+  // are allowed for the same Leave Request. Existing ticket must be updated by Edit.
+  const sameSide=activeHistory.find(h=>{
+    const hType=String(h?.journeySide||"").startsWith("Departure")?"Departure":"Return";
+    return hType===sideType;
+  });
+  if(sameSide){
+    const msg=sideType+" Ticket already exists for this Leave Request. Please use the Edit button to update the existing ticket instead of saving a new one.";
+    if(notice){notice.className="notice ndanger show";notice.textContent=msg;}
+    return alert(msg);
+  }
+
+  // Extra exact-duplicate protection (same journey/date/route/provider).
+  const norm=v=>String(v||"").trim().toLowerCase();
+  const exactDuplicate=activeHistory.find(h=>
+    norm(h.journeySide)===norm(historyEntry.journeySide) &&
+    norm(h.travelDate)===norm(historyEntry.travelDate) &&
+    norm(h.fromAirport)===norm(historyEntry.fromAirport) &&
+    norm(h.toAirport)===norm(historyEntry.toAirport) &&
+    norm(h.providedBy)===norm(historyEntry.providedBy)
+  );
+  if(exactDuplicate){
+    const msg="This ticket entry already exists. Please use Edit instead of creating a duplicate.";
+    if(notice){notice.className="notice ndanger show";notice.textContent=msg;}
+    return alert(msg);
+  }
+
  // Validate against approved leave dates for departure.
   if(historyEntry.journeySide.startsWith("Departure") && req.startDate && new Date(travelDate)<new Date(req.startDate)){
     return alert("Departure ticket date cannot be earlier than approved leave start date.");
   }
 
-  const editId=document.getElementById("ticketHistoryEditId")?.value||"";
   if(editId){
     const idx=ticket.history.findIndex(h=>String(h.id)===String(editId));
     if(idx>=0){
@@ -2320,6 +2486,8 @@ function openLeaveLifecycle(id){
   recalcAccountsUnpaid();
   document.getElementById("lifeAbsentDays").value=pay?.absentDays??att.absent??0;
   document.getElementById("lifeSalaryDays").value=pay?.salaryDays??"";
+  document.getElementById("lifeSalaryOverrideRef").value=pay?.salaryOverrideRef||"";
+  checkSalaryDaysOverride();
   document.getElementById("lifeSalaryAmount").value=pay?.salaryAmount??"";
   document.getElementById("lifePaymentAmount").value=pay?.paymentAmount??"";
   recalcPaymentBalance();
@@ -2328,9 +2496,57 @@ function openLeaveLifecycle(id){
   document.getElementById("lifePaymentMethod").value=pay?.paymentMethod||"";
   document.getElementById("lifePaymentReference").value=pay?.paymentReference||"";
   document.getElementById("lifePayrollRemarks").value=pay?.remarks||"";
+  loadSalaryCalculator(pay,req);
   document.getElementById("lifecycleNotice").className="notice ninfo";
   document.getElementById("leaveLifecycleModal").classList.add("show");
 }
+function salaryHistoryRowHtml(row={}){
+  return `<tr class="salary-history-row"><td><input type="date" class="sh-from" value="${escHtml(row.from||"")}" onchange="calculateSalaryHistory()"></td><td><input type="date" class="sh-to" value="${escHtml(row.to||"")}" onchange="calculateSalaryHistory()"></td><td><input type="number" min="0" step="0.01" class="sh-basic" value="${row.basic??""}" placeholder="0.00" oninput="calculateSalaryHistory()"></td><td class="sh-days">0</td><td class="sh-rate">0.00</td><td class="sh-amount">0.00</td><td><button type="button" class="btn light" onclick="this.closest('tr').remove();calculateSalaryHistory()">Delete</button></td></tr>`;
+}
+function addSalaryHistoryRow(row={}){
+  const body=document.getElementById("salaryHistoryRows"); if(!body)return;
+  body.insertAdjacentHTML("beforeend",salaryHistoryRowHtml(row)); calculateSalaryHistory();
+}
+function getSalaryHistoryRows(){
+  return [...document.querySelectorAll("#salaryHistoryRows .salary-history-row")].map(tr=>({from:tr.querySelector(".sh-from")?.value||"",to:tr.querySelector(".sh-to")?.value||"",basic:Number(tr.querySelector(".sh-basic")?.value||0)}));
+}
+function calculateSalaryHistory(){
+  const body=document.getElementById("salaryHistoryRows"), out=document.getElementById("salaryCalcTotal"), notice=document.getElementById("salaryCalcNotice"); if(!body||!out)return 0;
+  const entFrom=document.getElementById("lifeEntitlementFrom")?.value||"", entTo=document.getElementById("lifeEntitlementTo")?.value||"";
+  const payable=Number(document.getElementById("lifeSalaryDays")?.value||0); let total=0,used=0;
+  const rows=[...body.querySelectorAll(".salary-history-row")];
+  rows.forEach(tr=>{let days=0,amount=0; const f=tr.querySelector(".sh-from")?.value||"",t=tr.querySelector(".sh-to")?.value||"",basic=Number(tr.querySelector(".sh-basic")?.value||0); const rate=basic/30;
+    if(f&&t&&entFrom&&entTo){const a=new Date(Math.max(new Date(f+'T00:00:00'),new Date(entFrom+'T00:00:00'))), b=new Date(Math.min(new Date(t+'T00:00:00'),new Date(entTo+'T00:00:00'))); if(b>=a)days=Math.floor((b-a)/86400000)+1;}
+    if(payable>0 && used+days>payable)days=Math.max(0,payable-used); used+=days; amount=rate*days; total+=amount;
+    tr.querySelector(".sh-days").textContent=days; tr.querySelector(".sh-rate").textContent=rate.toFixed(2); tr.querySelector(".sh-amount").textContent=amount.toFixed(2);
+  });
+  out.textContent="AED "+total.toFixed(2);
+  if(notice){if(!entFrom||!entTo) {notice.className="notice nwarn show";notice.textContent="Enter Entitlement From and To dates to split salary periods.";} else if(payable>0&&used!==payable){notice.className="notice nwarn show";notice.textContent="Salary history covers "+used+" of "+payable+" payable day(s). Check salary effective dates / entitlement period.";} else {notice.className="notice ninfo show";notice.textContent="Calculated from salary history: "+used+" day(s) across "+rows.length+" salary period(s).";}}
+  return total;
+}
+function applyCalculatedSalary(){const total=calculateSalaryHistory();document.getElementById("lifeSalaryAmount").value=total.toFixed(2);recalcPaymentBalance();}
+function loadSalaryCalculator(pay,req){
+ const body=document.getElementById("salaryHistoryRows"); if(!body)return; body.innerHTML="";
+ document.getElementById("lifeEntitlementFrom").value=pay?.entitlementFrom||req?.startDate||""; document.getElementById("lifeEntitlementTo").value=pay?.entitlementTo||req?.endDate||"";
+ const hist=Array.isArray(pay?.salaryHistory)?pay.salaryHistory:[]; if(hist.length)hist.forEach(addSalaryHistoryRow); else addSalaryHistoryRow(); calculateSalaryHistory();
+}
+function checkSalaryDaysOverride(){
+  const total=Number(document.getElementById("lifeTotalDays")?.dataset.days||0);
+  const salaryDays=Number(document.getElementById("lifeSalaryDays")?.value||0);
+  const notice=document.getElementById("salaryOverrideNotice");
+  const ref=document.getElementById("lifeSalaryOverrideRef");
+  if(!notice)return;
+  if(salaryDays>total && total>=0){
+    notice.className="notice nwarn show";
+    notice.textContent="Leave Salary Override: Employee actual leave period is "+total+" day(s), but leave salary is being processed for "+salaryDays+" day(s). Approval reference and Payroll / HR Remarks are required.";
+    if(ref) ref.style.borderColor="#f2a45f";
+  }else{
+    notice.className="notice nwarn";
+    notice.textContent="";
+    if(ref) ref.style.borderColor="";
+  }
+}
+
 function saveLeavePayrollRecord(){
   const id=document.getElementById("lifecycleLeaveId")?.value;if(!id)return;
   const store=readLeaveStore();if(!Array.isArray(store.leavePayroll))store.leavePayroll=[];
@@ -2341,7 +2557,11 @@ function saveLeavePayrollRecord(){
     unpaidDays:Math.max(0,Number(document.getElementById("lifeTotalDays")?.dataset.days||0)-Number(document.getElementById("lifePaidDays")?.value||0)),
     absentDays:Number(document.getElementById("lifeAbsentDays")?.value||0),
     salaryDays:Number(document.getElementById("lifeSalaryDays")?.value||0),
+    salaryOverrideRef:document.getElementById("lifeSalaryOverrideRef")?.value.trim()||"",
     salaryAmount:Number(document.getElementById("lifeSalaryAmount")?.value||0),
+    entitlementFrom:document.getElementById("lifeEntitlementFrom")?.value||"",
+    entitlementTo:document.getElementById("lifeEntitlementTo")?.value||"",
+    salaryHistory:getSalaryHistoryRows(),
     paymentAmount:Number(document.getElementById("lifePaymentAmount")?.value||0),
     paymentStatus:document.getElementById("lifeSalaryStatus")?.value||"Pending",
     paidDate:document.getElementById("lifeSalaryPaidDate")?.value||"",
@@ -2353,6 +2573,18 @@ function saveLeavePayrollRecord(){
   };
   const totalDays=Number(document.getElementById("lifeTotalDays")?.dataset.days||0);
   if(data.paidDays>totalDays)return alert("Paid Leave Days cannot be greater than Total Leave Days ("+totalDays+").");
+  // Leave Salary Payable Days are intentionally independent from actual leave days.
+  // Example: 30 actual leave days can have 60 salary payable days with approval.
+  if(data.salaryDays>totalDays){
+    if(!data.salaryOverrideRef)return alert("Leave Salary Payable Days exceed actual leave days. Enter Leave Salary Override / Approval Reference.");
+    if(!data.remarks)return alert("Leave Salary Payable Days exceed actual leave days. Enter Payroll / HR Remarks before saving.");
+  }
+  if(data.salaryHistory.some(x=>x.from||x.to||x.basic)){
+    if(!data.entitlementFrom||!data.entitlementTo)return alert("Enter Leave Salary Entitlement From and To dates for salary-history calculation.");
+    if(new Date(data.entitlementTo)<new Date(data.entitlementFrom))return alert("Entitlement To Date cannot be earlier than Entitlement From Date.");
+    if(data.salaryHistory.some(x=>!x.from||!x.to||x.basic<=0))return alert("Complete Effective From, Effective To and Basic Salary for every salary history row, or delete the empty row.");
+    if(data.salaryHistory.some(x=>new Date(x.to)<new Date(x.from)))return alert("Salary History Effective To cannot be earlier than Effective From.");
+  }
   if(data.paymentAmount>data.salaryAmount)return alert("Payment Amount cannot be greater than Leave Salary Payable Amount.");
   data.balanceAmount=Math.max(0,data.salaryAmount-data.paymentAmount);
   data.paymentStatus=data.paymentAmount<=0?"Pending":(data.paymentAmount<data.salaryAmount?"Partially Paid":"Paid");
