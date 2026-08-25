@@ -693,8 +693,9 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
           <div class="fg"><label>Leave Type</label><input id="lsfLeaveType" readonly style="background:#f4f8fc"></div>
           <div class="fg"><label>Actual Leave Period</label><input id="lsfLeavePeriod" readonly style="background:#f4f8fc"></div>
           <div class="fg"><label>Actual Leave Days</label><input id="lsfActualDays" readonly style="background:#f4f8fc;font-weight:800"></div>
-          <div class="fg"><label>Leave Salary Payable Days</label><input id="lsfPayableDays" type="number" min="0" step="0.5" oninput="calculateLeaveSalaryForm()"></div>
-          <div class="fg"><label>Calculation Method</label><input value="Basic Salary ÷ 30 × Applicable Days" readonly style="background:#f4f8fc"></div>
+          <div class="fg"><label>Calculated Leave Entitlement Days</label><input id="lsfPayableDays" type="number" min="0" step="0.0001" readonly style="background:#f4f8fc;font-weight:800;color:#17365d"></div>
+          <div class="fg"><label>Entitlement Rate</label><input value="30 Days / 365 Working Days" readonly style="background:#f4f8fc;font-weight:700;color:#17365d"></div>
+          <div class="fg full"><label>Company Calculation Method</label><input id="lsfCalcMethod" value="Entitlement Days = (30 ÷ 365) × Working Days | Per Day Salary = Basic Salary ÷ 30 | Leave Salary = Per Day Salary × Entitlement Days" readonly style="background:#f4f8fc;font-weight:700;color:#17365d"></div>
           <div class="fg"><label>Entitlement From Date</label><input id="lsfEntitlementFrom" type="date" onchange="calculateLeaveSalaryForm()"></div>
           <div class="fg"><label>Entitlement To Date</label><input id="lsfEntitlementTo" type="date" onchange="calculateLeaveSalaryForm()"></div>
         </div>
@@ -721,12 +722,12 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 
     <div style="margin-top:16px;border-top:1px solid #e5e9ef;padding-top:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px">
-        <div><b style="color:#17365d">Basic Salary History</b><div style="font-size:9px;color:#6b7280;margin-top:2px">Add one row for every Basic Salary change/effective period. Unpaid Days are auto-filled from Payroll Unpaid / LOP and remain editable.</div></div>
+        <div><b style="color:#17365d">Basic Salary History</b><div style="font-size:9px;color:#6b7280;margin-top:2px">Add one row for every Basic Salary change/effective period. Working Days = Effective Period Days − Unpaid Days. Entitlement Days = (30 ÷ 365) × Working Days.</div></div>
         <button type="button" class="btn light" onclick="addLeaveSalaryFormRow()">+ Add Salary Change</button>
       </div>
       <div style="overflow:auto">
-        <table style="min-width:940px">
-          <thead><tr><th>Effective From</th><th>Effective To</th><th>Basic Salary (AED)</th><th>Unpaid Days</th><th>Applicable Days</th><th>Daily Rate</th><th>Leave Salary</th><th>Action</th></tr></thead>
+        <table style="min-width:1180px">
+          <thead><tr><th>Effective From</th><th>Effective To</th><th>Basic Salary (AED)</th><th>Unpaid Days</th><th>Working Days</th><th>Entitlement Days</th><th>Per Day Salary</th><th>Leave Salary</th><th>Action</th></tr></thead>
           <tbody id="lsfSalaryRows"></tbody>
         </table>
       </div>
@@ -2590,6 +2591,7 @@ function salaryHistoryRowHtml(row={}){
     <td><input type="date" class="sh-from" value="${escHtml(row.from||"")}" onchange="calculateSalaryHistory()"></td>
     <td><input type="date" class="sh-to" value="${escHtml(row.to||"")}" onchange="calculateSalaryHistory()"></td>
     <td><input type="number" min="0" step="0.01" class="sh-basic" value="${row.basic??""}" placeholder="0.00" oninput="calculateSalaryHistory()"></td>
+    <td style="display:none"><input type="number" class="sh-allowances" value="${row.allowances??0}"></td>
     <td><input type="number" min="0" step="0.5" class="sh-unpaid" data-auto="${unpaidAuto}" value="${unpaidVal}" placeholder="Auto" oninput="this.dataset.auto='0';calculateSalaryHistory()" title="Auto-filled from overall Unpaid / LOP Days. You can edit it manually."></td>
     <td class="sh-days">0</td><td class="sh-rate">0.00</td><td class="sh-amount">0.00</td>
     <td><button type="button" class="btn light" onclick="this.closest('tr').remove();calculateSalaryHistory()">Delete</button></td>
@@ -2604,6 +2606,7 @@ function getSalaryHistoryRows(){
     from:tr.querySelector(".sh-from")?.value||"",
     to:tr.querySelector(".sh-to")?.value||"",
     basic:Number(tr.querySelector(".sh-basic")?.value||0),
+    allowances:Number(tr.querySelector(".sh-allowances")?.value||0),
     unpaidDays:Number(tr.querySelector(".sh-unpaid")?.value||0),
     unpaidAuto:tr.querySelector(".sh-unpaid")?.dataset.auto!=="0"
   }));
@@ -2680,8 +2683,11 @@ function leaveSalaryFormRowHtml(row={}){
     <td><input type="date" class="lsf-from" value="${lsfEsc(row.from||"")}" onchange="calculateLeaveSalaryForm()"></td>
     <td><input type="date" class="lsf-to" value="${lsfEsc(row.to||"")}" onchange="calculateLeaveSalaryForm()"></td>
     <td><input type="number" min="0" step="0.01" class="lsf-basic" value="${row.basic||""}" placeholder="0.00" oninput="calculateLeaveSalaryForm()"></td>
-    <td><input type="number" min="0" step="0.5" class="lsf-unpaid" data-auto="${unpaidAuto}" value="${unpaidVal}" placeholder="Auto" oninput="this.dataset.auto='0';calculateLeaveSalaryForm()" title="Auto-filled from overall Unpaid / LOP Days. Editable if HR/Accounts needs to allocate unpaid days to another salary period."></td>
-    <td class="lsf-days" style="font-weight:800">0</td><td class="lsf-rate">0.00</td><td class="lsf-amount" style="font-weight:800">0.00</td>
+    <td><input type="number" min="0" step="0.5" class="lsf-unpaid" data-auto="${unpaidAuto}" value="${unpaidVal}" placeholder="Auto" oninput="this.dataset.auto='0';calculateLeaveSalaryForm()" title="Auto-filled from overall Unpaid / LOP Days. Editable by HR/Accounts."></td>
+    <td class="lsf-working-days" style="font-weight:800">0</td>
+    <td class="lsf-entitlement-days" style="font-weight:800">0.0000</td>
+    <td class="lsf-rate">0.00</td>
+    <td class="lsf-amount" style="font-weight:800">0.00</td>
     <td><button type="button" class="btn red" onclick="this.closest('tr').remove();calculateLeaveSalaryForm()">Delete</button></td>
   </tr>`;
 }
@@ -2765,17 +2771,22 @@ function openLeaveSalaryForm(){
   calculateLeaveSalaryForm(); document.getElementById("leaveSalaryFormModal").classList.add("show");
 }
 function calculateLeaveSalaryForm(){
-  const from=document.getElementById("lsfEntitlementFrom")?.value||"", to=document.getElementById("lsfEntitlementTo")?.value||"";
-  const payable=Number(document.getElementById("lsfPayableDays")?.value||0);
+  const from=document.getElementById("lsfEntitlementFrom")?.value||"",
+        to=document.getElementById("lsfEntitlementTo")?.value||"";
   const overallUnpaid=Math.max(0,Number(document.getElementById("lifeUnpaidDays")?.value||0));
-  let used=0,total=0,grossTotal=0,unpaidTotal=0;
+
+  let totalWorking=0,totalEntitlement=0,totalSalary=0,totalGrossDays=0,totalUnpaid=0;
   const rows=[...document.querySelectorAll("#lsfSalaryRows .lsf-row")];
+
   const computed=rows.map(tr=>{
-    const rf=tr.querySelector(".lsf-from")?.value||"",rt=tr.querySelector(".lsf-to")?.value||"",basic=Number(tr.querySelector(".lsf-basic")?.value||0);
+    const rf=tr.querySelector(".lsf-from")?.value||"",
+          rt=tr.querySelector(".lsf-to")?.value||"",
+          basic=Number(tr.querySelector(".lsf-basic")?.value||0);
     let gross=0;
     if(rf&&rt&&from&&to){
-      const a=new Date(Math.max(new Date(rf+"T00:00:00"),new Date(from+"T00:00:00"))),b=new Date(Math.min(new Date(rt+"T00:00:00"),new Date(to+"T00:00:00")));
-      if(b>=a)gross=Math.floor((b-a)/86400000)+1;
+      const a=new Date(Math.max(new Date(rf+"T00:00:00"),new Date(from+"T00:00:00"))),
+            b=new Date(Math.min(new Date(rt+"T00:00:00"),new Date(to+"T00:00:00")));
+      if(b>=a) gross=Math.floor((b-a)/86400000)+1;
     }
     return {tr,gross,basic};
   });
@@ -2784,44 +2795,63 @@ function calculateLeaveSalaryForm(){
     const el=x.tr.querySelector(".lsf-unpaid");
     return sum+((el?.dataset.auto==="0")?Math.max(0,Math.min(x.gross,Number(el.value||0))):0);
   },0);
+
   let remainingAuto=Math.max(0,overallUnpaid-manualUnpaid);
 
   computed.forEach(x=>{
-    const tr=x.tr, unEl=tr.querySelector(".lsf-unpaid"), rate=x.basic/30;
+    const tr=x.tr, unEl=tr.querySelector(".lsf-unpaid");
     let unpaid;
     if(unEl?.dataset.auto==="0"){
       unpaid=Math.max(0,Math.min(x.gross,Number(unEl.value||0)));
     }else{
       unpaid=Math.min(x.gross,remainingAuto);
       remainingAuto=Math.max(0,remainingAuto-unpaid);
-      if(unEl)unEl.value=unpaid?String(unpaid):"0";
+      if(unEl) unEl.value=unpaid ? String(unpaid) : "0";
     }
-    let days=Math.max(0,x.gross-unpaid);
-    if(payable>0&&used+days>payable)days=Math.max(0,payable-used);
-    used+=days; grossTotal+=x.gross; unpaidTotal+=unpaid;
-    const amount=days*rate; total+=amount;
-    tr.querySelector(".lsf-days").textContent=days;
-    tr.querySelector(".lsf-rate").textContent=rate.toFixed(2);
-    tr.querySelector(".lsf-amount").textContent=amount.toFixed(2);
+
+    const workingDays=Math.max(0,x.gross-unpaid);
+    const entitlementDays=(30/365)*workingDays;
+    const perDaySalary=x.basic/30;
+    const leaveSalary=perDaySalary*entitlementDays;
+
+    totalGrossDays+=x.gross;
+    totalUnpaid+=unpaid;
+    totalWorking+=workingDays;
+    totalEntitlement+=entitlementDays;
+    totalSalary+=leaveSalary;
+
+    tr.querySelector(".lsf-working-days").textContent=workingDays;
+    tr.querySelector(".lsf-entitlement-days").textContent=entitlementDays.toFixed(4);
+    tr.querySelector(".lsf-rate").textContent=perDaySalary.toFixed(2);
+    tr.querySelector(".lsf-amount").textContent=leaveSalary.toFixed(2);
   });
 
-  document.getElementById("lsfDaysCalculated").textContent=used+" / "+payable+" Day(s)";
-  document.getElementById("lsfGrandTotal").textContent="AED "+total.toFixed(2);
+  const payableEl=document.getElementById("lsfPayableDays");
+  if(payableEl) payableEl.value=totalEntitlement.toFixed(4);
+
+  document.getElementById("lsfDaysCalculated").textContent=totalEntitlement.toFixed(4)+" Day(s)";
+  document.getElementById("lsfGrandTotal").textContent="AED "+totalSalary.toFixed(2);
+
   const n=document.getElementById("lsfNotice");
   if(!from||!to){
     n.className="notice nwarn show";
     n.textContent="Enter Entitlement From and To dates.";
   }else if(overallUnpaid>0 && remainingAuto>0){
     n.className="notice nwarn show";
-    n.textContent="Overall Unpaid / LOP is "+overallUnpaid+" day(s), but only "+(overallUnpaid-remainingAuto)+" day(s) fit inside these salary periods. Check the dates or edit Unpaid Days.";
-  }else if(payable>0&&used!==payable){
-    n.className="notice nwarn show";
-    n.textContent="Applicable Days = Effective Period Days − Unpaid Days. Current calculation: "+grossTotal+" − "+unpaidTotal+" = "+used+" day(s), while Leave Salary Payable Days is "+payable+".";
+    n.textContent="Overall Unpaid / LOP is "+overallUnpaid+" day(s), but only "+(overallUnpaid-remainingAuto)+" day(s) fit inside these salary periods. Check dates or edit Unpaid Days.";
   }else{
     n.className="notice ninfo show";
-    n.textContent="Calculation complete: "+grossTotal+" period day(s) − "+unpaidTotal+" unpaid day(s) = "+used+" applicable day(s). Each salary period uses Basic Salary ÷ 30.";
+    n.textContent="Company formula applied: Working Days = "+totalGrossDays+" − "+totalUnpaid+" = "+totalWorking+". Entitlement Days = (30 ÷ 365) × "+totalWorking+" = "+totalEntitlement.toFixed(4)+". Leave Salary = (Basic Salary ÷ 30) × Entitlement Days, calculated separately for each Basic Salary period.";
   }
-  return {total,used,payable,grossTotal,unpaidTotal};
+
+  return {
+    total:totalSalary,
+    payable:totalEntitlement,
+    totalWorking,
+    totalEntitlement,
+    totalGrossDays,
+    totalUnpaid
+  };
 }
 function applyLeaveSalaryForm(){
   const calc=calculateLeaveSalaryForm(), rows=getLeaveSalaryFormRows();
