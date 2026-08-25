@@ -62,7 +62,7 @@ label{font-size:10px;font-weight:800;color:#45566c}input,select,textarea{border:
   <div class="nav-title">ERP Modules</div>
   <div class="nav">
     <a class="module-link" href="index.html"><span class="ico">👤</span><span>Employee Management</span></a>
-    <a class="module-link" href="Leave.html"><span class="ico">✈</span><span>Leave Management</span></a>
+    <a class="module-link" href="leave.html"><span class="ico">✈</span><span>Leave Management</span></a>
     <button class="active" onclick="go('dashboard',this)"><span class="ico">🏗</span><span>Sub Contractor Management</span></button>
   </div>
 
@@ -88,6 +88,7 @@ label{font-size:10px;font-weight:800;color:#45566c}input,select,textarea{border:
 </header>
 
 <div class="content">
+<div style="font-size:9px;color:#8190a0;margin-bottom:8px">Build: SC-2026-08-26-FIX3</div>
 <div id="portalErrorBox" style="display:none;background:#fdeeee;border:1px solid #efbaba;color:#9f2f2f;padding:11px 12px;border-radius:10px;margin-bottom:12px;font-size:11px"></div>
 
 <section class="page active" id="dashboard">
@@ -364,7 +365,20 @@ let profileId="";
 
 function emptyDb(){return {contractors:[],assignments:[],rates:[],timesheets:[],invoices:[],documents:[],history:[]}}
 function loadDb(){try{const x=JSON.parse(localStorage.getItem(SC_KEY)||"null");return {...emptyDb(),...(x||{})}}catch(e){return emptyDb()}}
-function saveDb(){localStorage.setItem(SC_KEY,JSON.stringify(db));renderAll()}
+function saveDb(){
+  try{
+    localStorage.setItem(SC_KEY,JSON.stringify(db));
+    renderAll();
+  }catch(err){
+    console.error("Sub Contractor data save failed",err);
+    const box=document.getElementById("portalErrorBox");
+    if(box){
+      box.style.display="block";
+      box.textContent="Data save error: "+(err?.message||err)+". Please allow site storage and refresh.";
+    }
+    alert("Sub Contractor data could not be saved. Please allow browser site storage and try again.");
+  }
+}
 function nowIso(){return new Date().toISOString()}
 function uid(prefix){return prefix+"-"+Date.now()+"-"+Math.random().toString(16).slice(2,7)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
@@ -380,7 +394,7 @@ function contractorName(id){return contractor(id).name||"-"}
 function employeeData(){try{const x=JSON.parse(localStorage.getItem(EMPLOYEE_DATA_KEY)||"{}");return Array.isArray(x.employees)?x.employees:[]}catch(e){return[]}}
 function employeeByCode(code){return employeeData().find(e=>String(e.employeeCode||"")===String(code||""))||{}}
 function employeeLabel(e){return [e.employeeCode,e.employeeName].filter(Boolean).join(" - ")}
-function history(entityType,entityId,title,detail){db.history.unshift({id:uid("H"),entityType,entityId,title,detail,date:nowIso(),by:"ERP User"})}
+function addScHistory(entityType,entityId,title,detail){db.history.unshift({id:uid("H"),entityType,entityId,title,detail,date:nowIso(),by:"ERP User"})}
 
 function fillContractorSelect(id,allLabel="Select Sub Contractor"){
  const el=document.getElementById(id);if(!el)return;const old=el.value;
@@ -443,7 +457,7 @@ function saveContractor(){
  const id=document.getElementById("scId").value;const name=document.getElementById("scName").value.trim();if(!name)return alert("Enter Company Name.");
  if(db.contractors.some(x=>x.id!==id&&x.name.trim().toLowerCase()===name.toLowerCase()))return alert("This Sub Contractor already exists.");
  const c={id:id||uid("SC"),name,trn:scTrn.value.trim(),status:scStatus.value,license:scLicense.value.trim(),licenseExpiry:scLicenseExpiry.value,contact:scContact.value.trim(),mobile:scMobile.value.trim(),email:scEmail.value.trim(),paymentTerms:scPaymentTerms.value.trim(),address:scAddress.value.trim(),bank:scBank.value.trim(),accountName:scAccountName.value.trim(),iban:scIban.value.trim(),agreement:scAgreement.value.trim(),agreementStart:scAgreementStart.value,agreementEnd:scAgreementEnd.value,remarks:scRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.contractors.findIndex(x=>x.id===c.id);if(i>=0){c.createdAt=db.contractors[i].createdAt;db.contractors[i]=c;history("contractor",c.id,"Sub Contractor Updated",name)}else{c.createdAt=nowIso();db.contractors.push(c);history("contractor",c.id,"Sub Contractor Created",name)}
+ const i=db.contractors.findIndex(x=>x.id===c.id);if(i>=0){c.createdAt=db.contractors[i].createdAt;db.contractors[i]=c;addScHistory("contractor",c.id,"Sub Contractor Updated",name)}else{c.createdAt=nowIso();db.contractors.push(c);addScHistory("contractor",c.id,"Sub Contractor Created",name)}
  // auto sync core license/agreement document shell if date present
  if(c.license&&c.licenseExpiry&&!db.documents.some(d=>d.contractorId===c.id&&d.type==="Trade License"&&d.number===c.license))db.documents.push({id:uid("DOC"),contractorId:c.id,type:"Trade License",number:c.license,issue:"",expiry:c.licenseExpiry,status:"Valid",url:"",remarks:"Auto-created from master",createdAt:nowIso()});
  closeModal("contractorModal");saveDb()
@@ -451,7 +465,7 @@ function saveContractor(){
 function deleteContractor(id){
  if(activeAssignmentsFor(id).length)return alert("Cannot delete: this Sub Contractor has active manpower assignments.");
  if(!confirm("Delete this Sub Contractor? Related history will remain."))return;
- db.contractors=db.contractors.filter(x=>x.id!==id);history("contractor",id,"Sub Contractor Deleted",contractorName(id));saveDb()
+ db.contractors=db.contractors.filter(x=>x.id!==id);addScHistory("contractor",id,"Sub Contractor Deleted",contractorName(id));saveDb()
 }
 function renderContractors(){
  const q=(contractorSearch.value||"").toLowerCase(),s=contractorStatusFilter.value;
@@ -468,7 +482,7 @@ function saveAssignment(){
  const id=asId.value,emp=employeeByCode(asEmployee.value),cid=asContractor.value;if(!emp.employeeCode&&!emp.employeeName)return alert("Select Employee.");if(!cid)return alert("Select Sub Contractor.");if(!asSite.value.trim()||!asFrom.value)return alert("Enter Site / Client and From Date.");if(asTo.value&&new Date(asTo.value)<new Date(asFrom.value))return alert("To Date cannot be earlier than From Date.");
  if(asStatus.value==="Active"&&db.assignments.some(x=>x.id!==id&&x.employeeCode===emp.employeeCode&&x.status==="Active"))return alert("This employee already has an Active subcontractor assignment. End or hold the old assignment first.");
  const a={id:id||uid("AS"),employeeCode:emp.employeeCode||asEmployee.value,employeeName:emp.employeeName||"",contractorId:cid,site:asSite.value.trim(),designation:asDesignation.value.trim(),from:asFrom.value,to:asTo.value,status:asStatus.value,rateRef:asRateRef.value.trim(),remarks:asRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.assignments.findIndex(x=>x.id===a.id);if(i>=0){a.createdAt=db.assignments[i].createdAt;db.assignments[i]=a;history("contractor",cid,"Manpower Assignment Updated",`${a.employeeCode} ${a.employeeName} → ${a.site}`)}else{a.createdAt=nowIso();db.assignments.push(a);history("contractor",cid,"Manpower Assigned",`${a.employeeCode} ${a.employeeName} → ${a.site}`)}
+ const i=db.assignments.findIndex(x=>x.id===a.id);if(i>=0){a.createdAt=db.assignments[i].createdAt;db.assignments[i]=a;addScHistory("contractor",cid,"Manpower Assignment Updated",`${a.employeeCode} ${a.employeeName} → ${a.site}`)}else{a.createdAt=nowIso();db.assignments.push(a);addScHistory("contractor",cid,"Manpower Assigned",`${a.employeeCode} ${a.employeeName} → ${a.site}`)}
  closeModal("assignmentModal");saveDb()
 }
 function renderAssignments(){
@@ -476,7 +490,7 @@ function renderAssignments(){
  const arr=db.assignments.filter(a=>(!cid||a.contractorId===cid)&&(!s||a.status===s)&&[a.employeeCode,a.employeeName,contractorName(a.contractorId),a.site,a.designation].join(" ").toLowerCase().includes(q));
  assignmentRows.innerHTML=arr.map(a=>`<tr><td><b>${esc(a.employeeName||"-")}</b><br><span class="muted">${esc(a.employeeCode)}</span></td><td>${esc(contractorName(a.contractorId))}</td><td>${esc(a.site)}</td><td>${esc(a.designation||"-")}</td><td>${fmtDate(a.from)}</td><td>${fmtDate(a.to)}</td><td>${badge(a.status)}</td><td>${esc(a.rateRef||"Rate Master")}</td><td><button class="btn light" onclick="openAssignmentModal('${a.id}')">Edit</button> <button class="btn red" onclick="deleteAssignment('${a.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No assignments.</td></tr>'
 }
-function deleteAssignment(id){if(!confirm("Delete this assignment?"))return;const a=db.assignments.find(x=>x.id===id);db.assignments=db.assignments.filter(x=>x.id!==id);if(a)history("contractor",a.contractorId,"Manpower Assignment Deleted",`${a.employeeCode} ${a.employeeName}`);saveDb()}
+function deleteAssignment(id){if(!confirm("Delete this assignment?"))return;const a=db.assignments.find(x=>x.id===id);db.assignments=db.assignments.filter(x=>x.id!==id);if(a)addScHistory("contractor",a.contractorId,"Manpower Assignment Deleted",`${a.employeeCode} ${a.employeeName}`);saveDb()}
 
 function openRateModal(id=""){
  fillFilters();const r=id?db.rates.find(x=>x.id===id)||{}:{};
@@ -486,14 +500,14 @@ function saveRate(){
  const id=rtId.value,cid=rtContractor.value,des=rtDesignation.value.trim();if(!cid||!des||!rtFrom.value)return alert("Select Sub Contractor, enter Designation and Effective From.");
  if(rtTo.value&&new Date(rtTo.value)<new Date(rtFrom.value))return alert("Effective To cannot be earlier than Effective From.");
  const r={id:id||uid("RT"),contractorId:cid,designation:des,normal:+rtNormal.value||0,ot:+rtOt.value||0,holiday:+rtHoliday.value||0,daily:+rtDaily.value||0,monthly:+rtMonthly.value||0,from:rtFrom.value,to:rtTo.value,remarks:rtRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.rates.findIndex(x=>x.id===r.id);if(i>=0){r.createdAt=db.rates[i].createdAt;db.rates[i]=r}else{r.createdAt=nowIso();db.rates.push(r)}history("contractor",cid,i>=0?"Rate Updated":"Rate Added",`${des} effective ${fmtDate(r.from)}`);closeModal("rateModal");saveDb()
+ const i=db.rates.findIndex(x=>x.id===r.id);if(i>=0){r.createdAt=db.rates[i].createdAt;db.rates[i]=r}else{r.createdAt=nowIso();db.rates.push(r)}addScHistory("contractor",cid,i>=0?"Rate Updated":"Rate Added",`${des} effective ${fmtDate(r.from)}`);closeModal("rateModal");saveDb()
 }
 function renderRates(){
  const q=(rateSearch.value||"").toLowerCase(),cid=rateContractorFilter.value;
  const arr=db.rates.filter(r=>(!cid||r.contractorId===cid)&&[contractorName(r.contractorId),r.designation].join(" ").toLowerCase().includes(q)).sort((a,b)=>(b.from||"").localeCompare(a.from||""));
  rateRows.innerHTML=arr.map(r=>`<tr><td>${esc(contractorName(r.contractorId))}</td><td><b>${esc(r.designation)}</b></td><td>${money(r.normal)}</td><td>${money(r.ot)}</td><td>${money(r.holiday)}</td><td>${money(r.daily)}</td><td>${money(r.monthly)}</td><td>${fmtDate(r.from)}</td><td>${fmtDate(r.to)}</td><td><button class="btn light" onclick="openRateModal('${r.id}')">Edit</button> <button class="btn red" onclick="deleteRate('${r.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#7d8da0">No rates.</td></tr>'
 }
-function deleteRate(id){if(!confirm("Delete this rate record?"))return;const r=db.rates.find(x=>x.id===id);db.rates=db.rates.filter(x=>x.id!==id);if(r)history("contractor",r.contractorId,"Rate Deleted",r.designation);saveDb()}
+function deleteRate(id){if(!confirm("Delete this rate record?"))return;const r=db.rates.find(x=>x.id===id);db.rates=db.rates.filter(x=>x.id!==id);if(r)addScHistory("contractor",r.contractorId,"Rate Deleted",r.designation);saveDb()}
 function applicableRate(contractorId,designation,date){
  const d=date||todayYmd();const list=db.rates.filter(r=>r.contractorId===contractorId&&String(r.designation||"").toLowerCase()===String(designation||"").toLowerCase()&&(!r.from||r.from<=d)&&(!r.to||r.to>=d)).sort((a,b)=>(b.from||"").localeCompare(a.from||""));return list[0]||{}
 }
@@ -518,14 +532,14 @@ function saveTimesheet(){
  const e=employeeByCode(code),calc=tsCalc(cid,code,month,tsNormal.value,tsOt.value,tsHoliday.value,tsAdjustment.value);
  if(!calc.rate.id&&(+tsNormal.value||+tsOt.value||+tsHoliday.value))return alert("No effective rate found for this employee's designation. Add Rate Master first.");
  const t={id:id||uid("TS"),month,contractorId:cid,employeeCode:code,employeeName:e.employeeName||calc.assignment.employeeName||"",designation:calc.assignment.designation||"",normalHours:+tsNormal.value||0,otHours:+tsOt.value||0,holidayHours:+tsHoliday.value||0,absentDays:+tsAbsent.value||0,adjustment:+tsAdjustment.value||0,billing:calc.amount,status:tsApproval.value,rateId:calc.rate.id||"",remarks:tsRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.timesheets.findIndex(x=>x.id===t.id);if(i>=0){t.createdAt=db.timesheets[i].createdAt;db.timesheets[i]=t}else{t.createdAt=nowIso();db.timesheets.push(t)}history("contractor",cid,i>=0?"Timesheet Updated":"Timesheet Added",`${month} — ${t.employeeCode} ${t.employeeName} — AED ${money(t.billing)}`);closeModal("timesheetModal");saveDb()
+ const i=db.timesheets.findIndex(x=>x.id===t.id);if(i>=0){t.createdAt=db.timesheets[i].createdAt;db.timesheets[i]=t}else{t.createdAt=nowIso();db.timesheets.push(t)}addScHistory("contractor",cid,i>=0?"Timesheet Updated":"Timesheet Added",`${month} — ${t.employeeCode} ${t.employeeName} — AED ${money(t.billing)}`);closeModal("timesheetModal");saveDb()
 }
 function renderTimesheets(){
  const m=tsMonthFilter.value,cid=tsContractorFilter.value,s=tsStatusFilter.value;
  const arr=db.timesheets.filter(t=>(!m||t.month===m)&&(!cid||t.contractorId===cid)&&(!s||t.status===s));
  timesheetRows.innerHTML=arr.map(t=>`<tr><td>${esc(t.month)}</td><td><b>${esc(t.employeeName)}</b><br><span class="muted">${esc(t.employeeCode)}</span></td><td>${esc(contractorName(t.contractorId))}</td><td>${t.normalHours}</td><td>${t.otHours}</td><td>${t.holidayHours}</td><td>${t.absentDays}</td><td>${money(t.adjustment)}</td><td><b>AED ${money(t.billing)}</b></td><td>${badge(t.status)}</td><td><button class="btn light" onclick="openTimesheetModal('${t.id}')">Edit</button> <button class="btn red" onclick="deleteTimesheet('${t.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="11" style="text-align:center;padding:20px;color:#7d8da0">No timesheets.</td></tr>'
 }
-function deleteTimesheet(id){const t=db.timesheets.find(x=>x.id===id);if(!t)return;if(db.invoices.some(i=>i.contractorId===t.contractorId&&i.month===t.month&&i.status!=="Draft"))return alert("Cannot delete: invoice already submitted for this subcontractor/month.");if(!confirm("Delete this timesheet?"))return;db.timesheets=db.timesheets.filter(x=>x.id!==id);history("contractor",t.contractorId,"Timesheet Deleted",`${t.month} ${t.employeeCode}`);saveDb()}
+function deleteTimesheet(id){const t=db.timesheets.find(x=>x.id===id);if(!t)return;if(db.invoices.some(i=>i.contractorId===t.contractorId&&i.month===t.month&&i.status!=="Draft"))return alert("Cannot delete: invoice already submitted for this subcontractor/month.");if(!confirm("Delete this timesheet?"))return;db.timesheets=db.timesheets.filter(x=>x.id!==id);addScHistory("contractor",t.contractorId,"Timesheet Deleted",`${t.month} ${t.employeeCode}`);saveDb()}
 
 function openInvoiceModal(id=""){
  fillFilters();const i=id?db.invoices.find(x=>x.id===id)||{}:{};
@@ -542,14 +556,14 @@ function saveInvoice(){
  if(db.invoices.some(x=>x.id!==id&&x.number.trim().toLowerCase()===num.toLowerCase()))return alert("Invoice Number already exists.");
  recalcInvoice();const total=+invTotal.value||0,paid=+invPaid.value||0;let status=invStatus.value;if(paid>=total&&total>0)status="Paid";else if(paid>0)status="Partially Paid";else if(invDue.value&&daysTo(invDue.value)<0&&status!=="Draft")status="Overdue";
  const i={id:id||uid("INV"),contractorId:cid,month:m,number:num,invoiceDate:invDate.value,dueDate:invDue.value,basic:+invBasic.value||0,vatPct:+invVatPct.value||0,vat:+invVat.value||0,total,paid,status,paymentDate:invPaymentDate.value,paymentMode:invPaymentMode.value,paymentRef:invPaymentRef.value.trim(),remarks:invRemarks.value.trim(),updatedAt:nowIso()};
- const ix=db.invoices.findIndex(x=>x.id===i.id);if(ix>=0){i.createdAt=db.invoices[ix].createdAt;db.invoices[ix]=i}else{i.createdAt=nowIso();db.invoices.push(i)}history("contractor",cid,ix>=0?"Invoice Updated":"Invoice Created",`${num} — AED ${money(total)} — ${status}`);closeModal("invoiceModal");saveDb()
+ const ix=db.invoices.findIndex(x=>x.id===i.id);if(ix>=0){i.createdAt=db.invoices[ix].createdAt;db.invoices[ix]=i}else{i.createdAt=nowIso();db.invoices.push(i)}addScHistory("contractor",cid,ix>=0?"Invoice Updated":"Invoice Created",`${num} — AED ${money(total)} — ${status}`);closeModal("invoiceModal");saveDb()
 }
 function renderInvoices(){
  const q=(invoiceSearch.value||"").toLowerCase(),s=invoiceStatusFilter.value;
  const arr=db.invoices.map(i=>({...i,displayStatus:overdueInvoice(i)&&i.status!=="Paid"?"Overdue":i.status})).filter(i=>(!s||i.displayStatus===s)&&[i.number,contractorName(i.contractorId),i.month].join(" ").toLowerCase().includes(q));
  invoiceRows.innerHTML=arr.map(i=>`<tr><td><b>${esc(i.number)}</b></td><td>${esc(contractorName(i.contractorId))}</td><td>${esc(i.month)}</td><td>${fmtDate(i.invoiceDate)}</td><td>${money(i.basic)}</td><td>${money(i.vat)}</td><td><b>${money(i.total)}</b></td><td>${money(i.paid)}</td><td><b>${money(Number(i.total)-Number(i.paid||0))}</b></td><td>${fmtDate(i.dueDate)}</td><td>${badge(i.displayStatus)}</td><td><button class="btn light" onclick="openInvoiceModal('${i.id}')">Edit</button> <button class="btn red" onclick="deleteInvoice('${i.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="12" style="text-align:center;padding:20px;color:#7d8da0">No invoices.</td></tr>'
 }
-function deleteInvoice(id){const i=db.invoices.find(x=>x.id===id);if(!i)return;if(Number(i.paid||0)>0)return alert("Cannot delete an invoice with recorded payment. Edit it instead.");if(!confirm("Delete this invoice?"))return;db.invoices=db.invoices.filter(x=>x.id!==id);history("contractor",i.contractorId,"Invoice Deleted",i.number);saveDb()}
+function deleteInvoice(id){const i=db.invoices.find(x=>x.id===id);if(!i)return;if(Number(i.paid||0)>0)return alert("Cannot delete an invoice with recorded payment. Edit it instead.");if(!confirm("Delete this invoice?"))return;db.invoices=db.invoices.filter(x=>x.id!==id);addScHistory("contractor",i.contractorId,"Invoice Deleted",i.number);saveDb()}
 
 function openDocumentModal(id=""){
  fillFilters();const d=id?db.documents.find(x=>x.id===id)||{}:{};
@@ -559,7 +573,7 @@ function saveDocument(){
  const id=docId.value,cid=docContractor.value;if(!cid||!docType.value)return alert("Select Sub Contractor and Document Type.");
  let status=docStatus.value;if(docExpiry.value&&daysTo(docExpiry.value)<0)status="Expired";
  const d={id:id||uid("DOC"),contractorId:cid,type:docType.value,number:docNumber.value.trim(),issue:docIssue.value,expiry:docExpiry.value,status,url:docUrl.value.trim(),remarks:docRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.documents.findIndex(x=>x.id===d.id);if(i>=0){d.createdAt=db.documents[i].createdAt;db.documents[i]=d}else{d.createdAt=nowIso();db.documents.push(d)}history("contractor",cid,i>=0?"Document Updated":"Document Added",`${d.type} ${d.number||""}`);closeModal("documentModal");saveDb()
+ const i=db.documents.findIndex(x=>x.id===d.id);if(i>=0){d.createdAt=db.documents[i].createdAt;db.documents[i]=d}else{d.createdAt=nowIso();db.documents.push(d)}addScHistory("contractor",cid,i>=0?"Document Updated":"Document Added",`${d.type} ${d.number||""}`);closeModal("documentModal");saveDb()
 }
 function renderDocuments(){
  const q=(docSearch.value||"").toLowerCase(),cid=docContractorFilter.value,ef=docExpiryFilter.value;
@@ -570,7 +584,7 @@ function renderDocuments(){
  documentRows.innerHTML=arr.map(d=>{const n=daysTo(d.expiry),st=n!==null&&n<0?"Expired":d.status;return `<tr><td>${esc(contractorName(d.contractorId))}</td><td><b>${esc(d.type)}</b></td><td>${esc(d.number||"-")}</td><td>${fmtDate(d.issue)}</td><td>${fmtDate(d.expiry)}</td><td>${n===null?"-":n}</td><td>${badge(st)}</td><td>${d.url?`<a href="${esc(d.url)}" target="_blank">Open</a>`:"-"}</td><td><button class="btn light" onclick="openDocumentModal('${d.id}')">Edit</button> <button class="btn red" onclick="deleteDocument('${d.id}')">Delete</button></td></tr>`}).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No documents.</td></tr>';
  const nums=db.documents.map(d=>daysTo(d.expiry));docExpired.textContent=nums.filter(n=>n!==null&&n<0).length;doc30.textContent=nums.filter(n=>n!==null&&n>=0&&n<=30).length;doc60.textContent=nums.filter(n=>n!==null&&n>=31&&n<=60).length;docNoExpiry.textContent=nums.filter(n=>n===null).length
 }
-function deleteDocument(id){const d=db.documents.find(x=>x.id===id);if(!confirm("Delete this document record?"))return;db.documents=db.documents.filter(x=>x.id!==id);if(d)history("contractor",d.contractorId,"Document Deleted",d.type);saveDb()}
+function deleteDocument(id){const d=db.documents.find(x=>x.id===id);if(!confirm("Delete this document record?"))return;db.documents=db.documents.filter(x=>x.id!==id);if(d)addScHistory("contractor",d.contractorId,"Document Deleted",d.type);saveDb()}
 
 function renderReports(){
  reportSummaryRows.innerHTML=db.contractors.map(c=>{
@@ -629,7 +643,11 @@ function importBackup(){const f=backupFile.files?.[0];if(!f)return alert("Choose
 
 function renderAll(){fillFilters();renderDashboard();renderContractors();renderAssignments();renderRates();renderTimesheets();renderInvoices();renderDocuments();renderReports()}
 document.addEventListener("DOMContentLoaded",()=>{
-  document.querySelectorAll('[id]').forEach(function(el){try{window[el.id]=el}catch(e){}});
+  document.querySelectorAll('[id]').forEach(function(el){
+    try{
+      if(typeof window[el.id]==="undefined") Object.defineProperty(window,el.id,{value:el,writable:true,configurable:true});
+    }catch(e){}
+  });
   try{
     const monthEl=document.getElementById("tsMonthFilter");
     if(monthEl) monthEl.value=monthNow();
