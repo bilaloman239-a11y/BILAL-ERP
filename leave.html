@@ -631,15 +631,28 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     <h3>Chronological Timeline</h3>
     <div id="lifecycleTimeline" style="border-left:3px solid #dce8f4;padding-left:16px;margin:10px 0 20px"></div>
 
-    <h3>Payroll / Leave Salary Record</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+      <h3 style="margin:0">Payroll / Leave Salary Record</h3>
+      <button type="button" class="btn orange" onclick="openLeaveSalaryForm()">🧮 Leave Salary Form / Calculator</button>
+    </div>
+    <div class="notice ninfo show" style="margin-bottom:12px">Use the Leave Salary Form / Calculator for employee-wise salary history calculation. Employee Name, Code and Designation are filled automatically from Employee Master.</div>
     <div class="formgrid">
       <div class="fg"><label>Total Leave Days (Auto)</label><input id="lifeTotalDays" readonly style="font-weight:800;color:#17365d;background:#f4f8fc"></div>
       <div class="fg"><label>Calculation Basis</label><input id="lifeDayBasis" readonly style="background:#f4f8fc"></div>
       <div class="fg"><label>Paid Leave Days (Accountant Entry)</label><input id="lifePaidDays" type="number" min="0" step="0.5" placeholder="0" oninput="recalcAccountsUnpaid()"></div>
       <div class="fg"><label>Unpaid / LOP Days (Auto)</label><input id="lifeUnpaidDays" type="number" min="0" step="0.5" readonly style="font-weight:800;background:#f4f8fc"></div>
       <div class="fg"><label>Absent Days</label><input id="lifeAbsentDays" type="number" min="0" step="0.5" placeholder="0"></div>
-      <div class="fg"><label>Eligible Leave Salary Days</label><input id="lifeSalaryDays" type="number" min="0" step="0.5" placeholder="0"></div>
+      <div class="fg"><label>Leave Salary Payable Days (HR/Accounts Entry)</label><input id="lifeSalaryDays" type="number" min="0" step="0.5" placeholder="0" oninput="checkSalaryDaysOverride();calculateSalaryHistory()"><small style="color:#7a8999;font-size:9px">Can be higher than actual leave days when approved by company policy / management.</small></div>
       <div class="fg"><label>Leave Salary Amount / Payable (AED)</label><input id="lifeSalaryAmount" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcPaymentBalance()"></div>
+      <div class="fg full" id="inlineSalaryCalculatorLegacy" style="display:none;border:1px solid #dce8f4;border-radius:12px;padding:12px;background:#f8fbfe">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><b style="color:#17365d">Salary History Based Leave Salary Calculator</b><div style="font-size:9px;color:#6b7280;margin-top:3px">Split payable days when Basic Salary changes. Daily rate = Basic Salary ÷ 30.</div></div><button type="button" class="btn light" onclick="addSalaryHistoryRow()">+ Add Salary Change</button></div>
+        <div class="formgrid" style="margin-top:10px"><div class="fg"><label>Entitlement From Date</label><input id="lifeEntitlementFrom" type="date" onchange="calculateSalaryHistory()"></div><div class="fg"><label>Entitlement To Date</label><input id="lifeEntitlementTo" type="date" onchange="calculateSalaryHistory()"></div></div>
+        <div style="overflow:auto;margin-top:8px"><table style="min-width:760px"><thead><tr><th>Effective From</th><th>Effective To</th><th>Basic Salary (AED)</th><th>Days Used</th><th>Daily Rate</th><th>Leave Salary</th><th>Action</th></tr></thead><tbody id="salaryHistoryRows"></tbody></table></div>
+        <div id="salaryCalcNotice" class="notice ninfo" style="margin-top:9px"></div>
+        <div style="display:flex;justify-content:flex-end;gap:12px;align-items:center;margin-top:10px"><b>Total Calculated:</b><span id="salaryCalcTotal" style="font-size:18px;font-weight:900;color:#17365d">AED 0.00</span><button type="button" class="btn primary" onclick="applyCalculatedSalary()">Apply to Payable Amount</button></div>
+      </div>
+      <div class="fg full"><div id="salaryOverrideNotice" class="notice nwarn"></div></div>
+      <div class="fg full"><label>Leave Salary Override / Approval Reference</label><input id="lifeSalaryOverrideRef" placeholder="Required only when salary payable days exceed actual leave days"></div>
       <div class="fg"><label>Payment Amount (AED)</label><input id="lifePaymentAmount" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcPaymentBalance()"></div>
       <div class="fg"><label>Balance Payable (Auto)</label><input id="lifeBalanceAmount" readonly style="font-weight:800;background:#f4f8fc"></div>
       <div class="fg"><label>Leave Salary Payment Status</label><select id="lifeSalaryStatus"><option>Pending</option><option>Paid</option><option>Not Applicable</option></select></div>
@@ -650,6 +663,61 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
     </div>
     <div id="lifecycleNotice" class="notice ninfo"></div>
     <div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn primary" onclick="saveLeavePayrollRecord()">Save Payroll / Salary Record</button></div>
+  </div>
+</div>
+
+
+<div class="modalwrap" id="leaveSalaryFormModal">
+  <div class="modal" style="width:min(1120px,98vw)">
+    <div class="modalhead">
+      <div><h3 style="margin:0">Leave Salary Calculation Form</h3><div style="font-size:10px;color:#6b7280;margin-top:3px">Employee-wise salary history calculation</div></div>
+      <button class="x" onclick="closeModal('leaveSalaryFormModal')">×</button>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#17365d,#245282);color:#fff;border-radius:14px;padding:15px;margin-bottom:14px">
+      <div style="font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Employee Information</div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+        <div><div style="font-size:9px;opacity:.75">Employee Name</div><b id="lsfEmployeeName">-</b></div>
+        <div><div style="font-size:9px;opacity:.75">Employee Code</div><b id="lsfEmployeeCode">-</b></div>
+        <div><div style="font-size:9px;opacity:.75">Designation</div><b id="lsfDesignation">-</b></div>
+        <div><div style="font-size:9px;opacity:.75">Company</div><b id="lsfCompany">-</b></div>
+      </div>
+    </div>
+
+    <div class="formgrid">
+      <div class="fg"><label>Leave Request</label><input id="lsfRequestId" readonly style="background:#f4f8fc"></div>
+      <div class="fg"><label>Leave Type</label><input id="lsfLeaveType" readonly style="background:#f4f8fc"></div>
+      <div class="fg"><label>Actual Leave Period</label><input id="lsfLeavePeriod" readonly style="background:#f4f8fc"></div>
+      <div class="fg"><label>Actual Leave Days</label><input id="lsfActualDays" readonly style="background:#f4f8fc;font-weight:800"></div>
+      <div class="fg"><label>Leave Salary Payable Days</label><input id="lsfPayableDays" type="number" min="0" step="0.5" oninput="calculateLeaveSalaryForm()"></div>
+      <div class="fg"><label>Calculation Method</label><input value="Basic Salary ÷ 30 × Applicable Days" readonly style="background:#f4f8fc"></div>
+      <div class="fg"><label>Entitlement From Date</label><input id="lsfEntitlementFrom" type="date" onchange="calculateLeaveSalaryForm()"></div>
+      <div class="fg"><label>Entitlement To Date</label><input id="lsfEntitlementTo" type="date" onchange="calculateLeaveSalaryForm()"></div>
+    </div>
+
+    <div style="margin-top:16px;border-top:1px solid #e5e9ef;padding-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px">
+        <div><b style="color:#17365d">Basic Salary History</b><div style="font-size:9px;color:#6b7280;margin-top:2px">Add one row for every Basic Salary change/effective period.</div></div>
+        <button type="button" class="btn light" onclick="addLeaveSalaryFormRow()">+ Add Salary Change</button>
+      </div>
+      <div style="overflow:auto">
+        <table style="min-width:820px">
+          <thead><tr><th>Effective From</th><th>Effective To</th><th>Basic Salary (AED)</th><th>Applicable Days</th><th>Daily Rate</th><th>Leave Salary</th><th>Action</th></tr></thead>
+          <tbody id="lsfSalaryRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="lsfNotice" class="notice ninfo" style="margin-top:12px"></div>
+    <div class="summary" style="margin-top:12px">
+      <div class="sumrow"><span>Total Salary Days Calculated</span><strong id="lsfDaysCalculated">0</strong></div>
+      <div class="sumrow"><span>Total Leave Salary Payable</span><strong id="lsfGrandTotal" style="font-size:18px">AED 0.00</strong></div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button type="button" class="btn light" onclick="closeModal('leaveSalaryFormModal')">Close</button>
+      <button type="button" class="btn primary" onclick="applyLeaveSalaryForm()">Apply to Payroll Record</button>
+    </div>
   </div>
 </div>
 
@@ -2477,6 +2545,8 @@ function openLeaveLifecycle(id){
   recalcAccountsUnpaid();
   document.getElementById("lifeAbsentDays").value=pay?.absentDays??att.absent??0;
   document.getElementById("lifeSalaryDays").value=pay?.salaryDays??"";
+  document.getElementById("lifeSalaryOverrideRef").value=pay?.salaryOverrideRef||"";
+  checkSalaryDaysOverride();
   document.getElementById("lifeSalaryAmount").value=pay?.salaryAmount??"";
   document.getElementById("lifePaymentAmount").value=pay?.paymentAmount??"";
   recalcPaymentBalance();
@@ -2485,9 +2555,126 @@ function openLeaveLifecycle(id){
   document.getElementById("lifePaymentMethod").value=pay?.paymentMethod||"";
   document.getElementById("lifePaymentReference").value=pay?.paymentReference||"";
   document.getElementById("lifePayrollRemarks").value=pay?.remarks||"";
+  loadSalaryCalculator(pay,req);
   document.getElementById("lifecycleNotice").className="notice ninfo";
   document.getElementById("leaveLifecycleModal").classList.add("show");
 }
+function salaryHistoryRowHtml(row={}){
+  return `<tr class="salary-history-row"><td><input type="date" class="sh-from" value="${escHtml(row.from||"")}" onchange="calculateSalaryHistory()"></td><td><input type="date" class="sh-to" value="${escHtml(row.to||"")}" onchange="calculateSalaryHistory()"></td><td><input type="number" min="0" step="0.01" class="sh-basic" value="${row.basic??""}" placeholder="0.00" oninput="calculateSalaryHistory()"></td><td class="sh-days">0</td><td class="sh-rate">0.00</td><td class="sh-amount">0.00</td><td><button type="button" class="btn light" onclick="this.closest('tr').remove();calculateSalaryHistory()">Delete</button></td></tr>`;
+}
+function addSalaryHistoryRow(row={}){
+  const body=document.getElementById("salaryHistoryRows"); if(!body)return;
+  body.insertAdjacentHTML("beforeend",salaryHistoryRowHtml(row)); calculateSalaryHistory();
+}
+function getSalaryHistoryRows(){
+  return [...document.querySelectorAll("#salaryHistoryRows .salary-history-row")].map(tr=>({from:tr.querySelector(".sh-from")?.value||"",to:tr.querySelector(".sh-to")?.value||"",basic:Number(tr.querySelector(".sh-basic")?.value||0)}));
+}
+function calculateSalaryHistory(){
+  const body=document.getElementById("salaryHistoryRows"), out=document.getElementById("salaryCalcTotal"), notice=document.getElementById("salaryCalcNotice"); if(!body||!out)return 0;
+  const entFrom=document.getElementById("lifeEntitlementFrom")?.value||"", entTo=document.getElementById("lifeEntitlementTo")?.value||"";
+  const payable=Number(document.getElementById("lifeSalaryDays")?.value||0); let total=0,used=0;
+  const rows=[...body.querySelectorAll(".salary-history-row")];
+  rows.forEach(tr=>{let days=0,amount=0; const f=tr.querySelector(".sh-from")?.value||"",t=tr.querySelector(".sh-to")?.value||"",basic=Number(tr.querySelector(".sh-basic")?.value||0); const rate=basic/30;
+    if(f&&t&&entFrom&&entTo){const a=new Date(Math.max(new Date(f+'T00:00:00'),new Date(entFrom+'T00:00:00'))), b=new Date(Math.min(new Date(t+'T00:00:00'),new Date(entTo+'T00:00:00'))); if(b>=a)days=Math.floor((b-a)/86400000)+1;}
+    if(payable>0 && used+days>payable)days=Math.max(0,payable-used); used+=days; amount=rate*days; total+=amount;
+    tr.querySelector(".sh-days").textContent=days; tr.querySelector(".sh-rate").textContent=rate.toFixed(2); tr.querySelector(".sh-amount").textContent=amount.toFixed(2);
+  });
+  out.textContent="AED "+total.toFixed(2);
+  if(notice){if(!entFrom||!entTo) {notice.className="notice nwarn show";notice.textContent="Enter Entitlement From and To dates to split salary periods.";} else if(payable>0&&used!==payable){notice.className="notice nwarn show";notice.textContent="Salary history covers "+used+" of "+payable+" payable day(s). Check salary effective dates / entitlement period.";} else {notice.className="notice ninfo show";notice.textContent="Calculated from salary history: "+used+" day(s) across "+rows.length+" salary period(s).";}}
+  return total;
+}
+function applyCalculatedSalary(){const total=calculateSalaryHistory();document.getElementById("lifeSalaryAmount").value=total.toFixed(2);recalcPaymentBalance();}
+function loadSalaryCalculator(pay,req){
+ const body=document.getElementById("salaryHistoryRows"); if(!body)return; body.innerHTML="";
+ document.getElementById("lifeEntitlementFrom").value=pay?.entitlementFrom||req?.startDate||""; document.getElementById("lifeEntitlementTo").value=pay?.entitlementTo||req?.endDate||"";
+ const hist=Array.isArray(pay?.salaryHistory)?pay.salaryHistory:[]; if(hist.length)hist.forEach(addSalaryHistoryRow); else addSalaryHistoryRow(); calculateSalaryHistory();
+}
+
+function lsfEsc(v){return String(v??"").replace(/[&<>\"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
+function leaveSalaryFormRowHtml(row={}){
+  return `<tr class="lsf-row">
+    <td><input type="date" class="lsf-from" value="${lsfEsc(row.from||"")}" onchange="calculateLeaveSalaryForm()"></td>
+    <td><input type="date" class="lsf-to" value="${lsfEsc(row.to||"")}" onchange="calculateLeaveSalaryForm()"></td>
+    <td><input type="number" min="0" step="0.01" class="lsf-basic" value="${row.basic||""}" placeholder="0.00" oninput="calculateLeaveSalaryForm()"></td>
+    <td class="lsf-days" style="font-weight:800">0</td><td class="lsf-rate">0.00</td><td class="lsf-amount" style="font-weight:800">0.00</td>
+    <td><button type="button" class="btn red" onclick="this.closest('tr').remove();calculateLeaveSalaryForm()">Delete</button></td>
+  </tr>`;
+}
+function addLeaveSalaryFormRow(row={}){
+  const b=document.getElementById("lsfSalaryRows"); if(!b)return; b.insertAdjacentHTML("beforeend",leaveSalaryFormRowHtml(row)); calculateLeaveSalaryForm();
+}
+function getLeaveSalaryFormRows(){
+  return [...document.querySelectorAll("#lsfSalaryRows .lsf-row")].map(tr=>({from:tr.querySelector(".lsf-from")?.value||"",to:tr.querySelector(".lsf-to")?.value||"",basic:Number(tr.querySelector(".lsf-basic")?.value||0)}));
+}
+function openLeaveSalaryForm(){
+  const leaveId=document.getElementById("lifecycleLeaveId")?.value||""; if(!leaveId)return alert("Open an employee leave record first.");
+  const store=readLeaveStore(); const req=(store.requests||[]).find(r=>String(r.id)===String(leaveId)); if(!req)return alert("Leave request not found.");
+  const pay=(store.leavePayroll||[]).find(x=>String(x.leaveRequestId)===String(leaveId));
+  const emp=findEmployeeByValue(req.employeeCode||req.employeeName)||{};
+  const eff=effectiveLeavePeriod(req,store);
+  document.getElementById("lsfEmployeeName").textContent=req.employeeName||emp.employeeName||"-";
+  document.getElementById("lsfEmployeeCode").textContent=req.employeeCode||emp.employeeCode||"-";
+  document.getElementById("lsfDesignation").textContent=emp.actualDesignation||emp.idDesignation||emp.designation||req.designation||"-";
+  document.getElementById("lsfCompany").textContent=req.company||emp.company||"-";
+  document.getElementById("lsfRequestId").value=req.id||"";
+  document.getElementById("lsfLeaveType").value=req.leaveType||"";
+  document.getElementById("lsfLeavePeriod").value=(eff.start?niceDate(eff.start):"-")+" → "+(eff.end?niceDate(eff.end):"-");
+  document.getElementById("lsfActualDays").value=(eff.days||0)+" Day(s)";
+  document.getElementById("lsfPayableDays").value=Number(document.getElementById("lifeSalaryDays")?.value||pay?.salaryDays||0);
+  document.getElementById("lsfEntitlementFrom").value=pay?.entitlementFrom||document.getElementById("lifeEntitlementFrom")?.value||req.startDate||"";
+  document.getElementById("lsfEntitlementTo").value=pay?.entitlementTo||document.getElementById("lifeEntitlementTo")?.value||req.endDate||"";
+  const body=document.getElementById("lsfSalaryRows"); body.innerHTML="";
+  const currentInline=getSalaryHistoryRows().filter(x=>x.from||x.to||x.basic);
+  const hist=currentInline.length?currentInline:(Array.isArray(pay?.salaryHistory)?pay.salaryHistory:[]);
+  if(hist.length) hist.forEach(addLeaveSalaryFormRow); else addLeaveSalaryFormRow();
+  calculateLeaveSalaryForm(); document.getElementById("leaveSalaryFormModal").classList.add("show");
+}
+function calculateLeaveSalaryForm(){
+  const from=document.getElementById("lsfEntitlementFrom")?.value||"", to=document.getElementById("lsfEntitlementTo")?.value||"";
+  const payable=Number(document.getElementById("lsfPayableDays")?.value||0); let used=0,total=0;
+  const rows=[...document.querySelectorAll("#lsfSalaryRows .lsf-row")];
+  rows.forEach(tr=>{let days=0; const rf=tr.querySelector(".lsf-from")?.value||"",rt=tr.querySelector(".lsf-to")?.value||"",basic=Number(tr.querySelector(".lsf-basic")?.value||0),rate=basic/30;
+    if(rf&&rt&&from&&to){const a=new Date(Math.max(new Date(rf+"T00:00:00"),new Date(from+"T00:00:00"))),b=new Date(Math.min(new Date(rt+"T00:00:00"),new Date(to+"T00:00:00")));if(b>=a)days=Math.floor((b-a)/86400000)+1;}
+    if(payable>0&&used+days>payable)days=Math.max(0,payable-used);used+=days;const amount=days*rate;total+=amount;
+    tr.querySelector(".lsf-days").textContent=days;tr.querySelector(".lsf-rate").textContent=rate.toFixed(2);tr.querySelector(".lsf-amount").textContent=amount.toFixed(2);
+  });
+  document.getElementById("lsfDaysCalculated").textContent=used+" / "+payable+" Day(s)";document.getElementById("lsfGrandTotal").textContent="AED "+total.toFixed(2);
+  const n=document.getElementById("lsfNotice");if(!from||!to){n.className="notice nwarn show";n.textContent="Enter Entitlement From and To dates.";}else if(payable>0&&used!==payable){n.className="notice nwarn show";n.textContent="Salary history covers "+used+" of "+payable+" payable day(s). Complete the effective salary periods.";}else{n.className="notice ninfo show";n.textContent="Calculation complete: each salary period is calculated separately using Basic Salary ÷ 30.";}
+  return {total,used,payable};
+}
+function applyLeaveSalaryForm(){
+  const calc=calculateLeaveSalaryForm(), rows=getLeaveSalaryFormRows();
+  if(calc.payable<=0)return alert("Enter Leave Salary Payable Days.");
+  if(!document.getElementById("lsfEntitlementFrom").value||!document.getElementById("lsfEntitlementTo").value)return alert("Enter Entitlement From and To dates.");
+  if(rows.some(x=>!x.from||!x.to||x.basic<=0))return alert("Complete Effective From, Effective To and Basic Salary for every salary row.");
+  if(rows.some(x=>new Date(x.to)<new Date(x.from)))return alert("Effective To cannot be earlier than Effective From.");
+  if(calc.used!==calc.payable)return alert("Salary history must cover all "+calc.payable+" payable day(s) before applying.");
+  document.getElementById("lifeSalaryDays").value=calc.payable;
+  document.getElementById("lifeEntitlementFrom").value=document.getElementById("lsfEntitlementFrom").value;
+  document.getElementById("lifeEntitlementTo").value=document.getElementById("lsfEntitlementTo").value;
+  const ib=document.getElementById("salaryHistoryRows"); ib.innerHTML=""; rows.forEach(addSalaryHistoryRow);
+  document.getElementById("lifeSalaryAmount").value=calc.total.toFixed(2);recalcPaymentBalance();checkSalaryDaysOverride();
+  closeModal("leaveSalaryFormModal");
+  const n=document.getElementById("lifecycleNotice");if(n){n.className="notice ninfo show";n.textContent="Leave Salary Form calculation applied to Payroll record. Click Save Payroll / Salary Record to save it.";}
+}
+
+function checkSalaryDaysOverride(){
+  const total=Number(document.getElementById("lifeTotalDays")?.dataset.days||0);
+  const salaryDays=Number(document.getElementById("lifeSalaryDays")?.value||0);
+  const notice=document.getElementById("salaryOverrideNotice");
+  const ref=document.getElementById("lifeSalaryOverrideRef");
+  if(!notice)return;
+  if(salaryDays>total && total>=0){
+    notice.className="notice nwarn show";
+    notice.textContent="Leave Salary Override: Employee actual leave period is "+total+" day(s), but leave salary is being processed for "+salaryDays+" day(s). Approval reference and Payroll / HR Remarks are required.";
+    if(ref) ref.style.borderColor="#f2a45f";
+  }else{
+    notice.className="notice nwarn";
+    notice.textContent="";
+    if(ref) ref.style.borderColor="";
+  }
+}
+
 function saveLeavePayrollRecord(){
   const id=document.getElementById("lifecycleLeaveId")?.value;if(!id)return;
   const store=readLeaveStore();if(!Array.isArray(store.leavePayroll))store.leavePayroll=[];
@@ -2498,7 +2685,11 @@ function saveLeavePayrollRecord(){
     unpaidDays:Math.max(0,Number(document.getElementById("lifeTotalDays")?.dataset.days||0)-Number(document.getElementById("lifePaidDays")?.value||0)),
     absentDays:Number(document.getElementById("lifeAbsentDays")?.value||0),
     salaryDays:Number(document.getElementById("lifeSalaryDays")?.value||0),
+    salaryOverrideRef:document.getElementById("lifeSalaryOverrideRef")?.value.trim()||"",
     salaryAmount:Number(document.getElementById("lifeSalaryAmount")?.value||0),
+    entitlementFrom:document.getElementById("lifeEntitlementFrom")?.value||"",
+    entitlementTo:document.getElementById("lifeEntitlementTo")?.value||"",
+    salaryHistory:getSalaryHistoryRows(),
     paymentAmount:Number(document.getElementById("lifePaymentAmount")?.value||0),
     paymentStatus:document.getElementById("lifeSalaryStatus")?.value||"Pending",
     paidDate:document.getElementById("lifeSalaryPaidDate")?.value||"",
@@ -2510,6 +2701,18 @@ function saveLeavePayrollRecord(){
   };
   const totalDays=Number(document.getElementById("lifeTotalDays")?.dataset.days||0);
   if(data.paidDays>totalDays)return alert("Paid Leave Days cannot be greater than Total Leave Days ("+totalDays+").");
+  // Leave Salary Payable Days are intentionally independent from actual leave days.
+  // Example: 30 actual leave days can have 60 salary payable days with approval.
+  if(data.salaryDays>totalDays){
+    if(!data.salaryOverrideRef)return alert("Leave Salary Payable Days exceed actual leave days. Enter Leave Salary Override / Approval Reference.");
+    if(!data.remarks)return alert("Leave Salary Payable Days exceed actual leave days. Enter Payroll / HR Remarks before saving.");
+  }
+  if(data.salaryHistory.some(x=>x.from||x.to||x.basic)){
+    if(!data.entitlementFrom||!data.entitlementTo)return alert("Enter Leave Salary Entitlement From and To dates for salary-history calculation.");
+    if(new Date(data.entitlementTo)<new Date(data.entitlementFrom))return alert("Entitlement To Date cannot be earlier than Entitlement From Date.");
+    if(data.salaryHistory.some(x=>!x.from||!x.to||x.basic<=0))return alert("Complete Effective From, Effective To and Basic Salary for every salary history row, or delete the empty row.");
+    if(data.salaryHistory.some(x=>new Date(x.to)<new Date(x.from)))return alert("Salary History Effective To cannot be earlier than Effective From.");
+  }
   if(data.paymentAmount>data.salaryAmount)return alert("Payment Amount cannot be greater than Leave Salary Payable Amount.");
   data.balanceAmount=Math.max(0,data.salaryAmount-data.paymentAmount);
   data.paymentStatus=data.paymentAmount<=0?"Pending":(data.paymentAmount<data.salaryAmount?"Partially Paid":"Paid");
