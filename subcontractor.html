@@ -52,6 +52,12 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
 .modal{background:#fff;border-radius:16px;width:min(900px,96vw);max-height:92vh;overflow:auto;padding:19px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
 .modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.modalhead h3{margin:0;color:var(--navy);font-size:16px}.x{width:30px;height:30px;border:0;border-radius:8px;background:#f2f4f7}
 .muted{color:var(--muted);font-size:10px}
+.section-title{grid-column:1/-1;margin-top:4px;padding:9px 10px;border-left:4px solid var(--orange);background:#fff8f1;border-radius:8px;font-size:11px;font-weight:900;color:var(--navy)}
+.doc-list{grid-column:1/-1;display:grid;gap:9px}
+.doc-row{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1.4fr auto;gap:8px;align-items:end;border:1px solid #e5e9ef;border-radius:10px;padding:10px;background:#fbfdff}
+.doc-row .fg{min-width:0}
+@media(max-width:1000px){.doc-row{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.doc-row{grid-template-columns:1fr}}
 @media(max-width:900px){.kpis{grid-template-columns:1fr}.formgrid,.formgrid.three{grid-template-columns:1fr}}
 @media(max-width:760px){.sidebar{width:76px}.brand h2,.brand small,.nav span:not(.ico),.module-link span:not(.ico),.nav-title,.sidebar-note{display:none}.main{margin-left:76px;width:calc(100% - 76px)}.content{padding:17px}}
 </style>
@@ -96,7 +102,7 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
       <select id="contractorStatus" onchange="renderContractors()"><option value="">All Status</option><option>Active</option><option>Inactive</option><option>On Hold</option></select>
     </div>
     <div class="tablewrap"><table>
-      <thead><tr><th>Company Name</th><th>TRN</th><th>Trade License</th><th>Contact Person</th><th>Mobile</th><th>Email</th><th>Status</th><th>Action</th></tr></thead>
+      <thead><tr><th>Company Name</th><th>VAT / TRN</th><th>ICV</th><th>Trade License</th><th>License State</th><th>Contact 1</th><th>Contact 2</th><th>Status</th><th>Action</th></tr></thead>
       <tbody id="contractorRows"></tbody>
     </table></div>
   </div>
@@ -133,16 +139,57 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
   <div class="modalhead"><h3 id="contractorModalTitle">Add Sub Contractor</h3><button class="x" onclick="closeModal('contractorModal')">×</button></div>
   <input type="hidden" id="scId">
   <div class="formgrid three">
+    <div class="section-title">Company & License Information</div>
     <div class="fg full"><label>Company Name *</label><input id="scName"></div>
-    <div class="fg"><label>TRN</label><input id="scTrn"></div>
     <div class="fg"><label>Trade License No.</label><input id="scLicense"></div>
+    <div class="fg"><label>License State / Emirate *</label>
+      <select id="scLicenseState">
+        <option value="">Select Emirate</option>
+        <option>Abu Dhabi</option><option>Dubai</option><option>Sharjah</option><option>Ajman</option>
+        <option>Umm Al Quwain</option><option>Ras Al Khaimah</option><option>Fujairah</option>
+      </select>
+    </div>
     <div class="fg"><label>Trade License Expiry</label><input type="date" id="scLicenseExpiry"></div>
-    <div class="fg"><label>Contact Person</label><input id="scContact"></div>
-    <div class="fg"><label>Mobile</label><input id="scMobile"></div>
-    <div class="fg"><label>Email</label><input id="scEmail" type="email"></div>
+
+    <div class="section-title">VAT & ICV Registration</div>
+    <div class="fg"><label>VAT Status *</label>
+      <select id="scVatStatus" onchange="toggleVatFields()">
+        <option>Unregistered</option><option>Registered</option>
+      </select>
+    </div>
+    <div class="fg" id="scTrnBox"><label>TRN Number *</label><input id="scTrn" placeholder="Enter TRN"></div>
+    <div class="fg"><label>ICV Status *</label>
+      <select id="scIcvStatus" onchange="toggleIcvFields()">
+        <option>Unregistered</option><option>Registered</option>
+      </select>
+    </div>
+    <div class="fg" id="scIcvScoreBox"><label>ICV Score *</label><input id="scIcvScore" type="number" min="0" max="100" step="0.01" placeholder="e.g. 42.50"></div>
+
+    <div class="section-title">Contact Person 1</div>
+    <div class="fg"><label>Contact Person 1</label><input id="scContact1"></div>
+    <div class="fg"><label>Mobile 1</label><input id="scMobile1"></div>
+    <div class="fg"><label>Email 1</label><input id="scEmail1" type="email"></div>
+
+    <div class="section-title">Contact Person 2</div>
+    <div class="fg"><label>Contact Person 2</label><input id="scContact2"></div>
+    <div class="fg"><label>Mobile 2</label><input id="scMobile2"></div>
+    <div class="fg"><label>Email 2</label><input id="scEmail2" type="email"></div>
+
+    <div class="section-title">General Information</div>
     <div class="fg"><label>Status</label><select id="scStatus"><option>Active</option><option>Inactive</option><option>On Hold</option></select></div>
     <div class="fg full"><label>Address</label><input id="scAddress"></div>
-    <div class="fg full"><label>Remarks</label><textarea id="scRemarks"></textarea></div>
+
+    <div class="section-title">Other Documents</div>
+    <div class="fg full">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div class="muted">Add VAT certificate, ICV certificate, agreement, insurance or any custom document.</div>
+        <button type="button" class="btn light" onclick="addScDocumentRow()">+ Add Document</button>
+      </div>
+    </div>
+    <div class="doc-list" id="scOtherDocuments"></div>
+
+    <div class="section-title">Remarks</div>
+    <div class="fg full"><textarea id="scRemarks" placeholder="Remarks..."></textarea></div>
   </div>
   <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
     <button class="btn light" onclick="closeModal('contractorModal')">Cancel</button>
@@ -218,20 +265,97 @@ function fillEmployeeDetails(){
   if(e && (!document.getElementById("mpId").value || !des.value)) des.value=e.actualDesignation||e.idDesignation||"";
 }
 
+function toggleVatFields(){
+  const reg=document.getElementById("scVatStatus").value==="Registered";
+  document.getElementById("scTrnBox").classList.toggle("hidden",!reg);
+  if(!reg)document.getElementById("scTrn").value="";
+}
+function toggleIcvFields(){
+  const reg=document.getElementById("scIcvStatus").value==="Registered";
+  document.getElementById("scIcvScoreBox").classList.toggle("hidden",!reg);
+  if(!reg)document.getElementById("scIcvScore").value="";
+}
+function scDocRowHtml(d={}){
+  return `<div class="doc-row">
+    <div class="fg"><label>Document Type</label><input class="sc-doc-type" value="${esc(d.type||"")}" placeholder="e.g. ICV Certificate"></div>
+    <div class="fg"><label>Document No.</label><input class="sc-doc-number" value="${esc(d.number||"")}"></div>
+    <div class="fg"><label>Issue Date</label><input type="date" class="sc-doc-issue" value="${esc(d.issue||"")}"></div>
+    <div class="fg"><label>Expiry Date</label><input type="date" class="sc-doc-expiry" value="${esc(d.expiry||"")}"></div>
+    <div class="fg"><label>URL / Reference</label><input class="sc-doc-url" value="${esc(d.url||"")}" placeholder="https://... or reference"></div>
+    <div><button type="button" class="btn red" onclick="this.closest('.doc-row').remove()">Delete</button></div>
+  </div>`;
+}
+function addScDocumentRow(d={}){
+  document.getElementById("scOtherDocuments").insertAdjacentHTML("beforeend",scDocRowHtml(d));
+}
+function getScDocuments(){
+  return [...document.querySelectorAll("#scOtherDocuments .doc-row")].map(r=>({
+    type:r.querySelector(".sc-doc-type").value.trim(),
+    number:r.querySelector(".sc-doc-number").value.trim(),
+    issue:r.querySelector(".sc-doc-issue").value,
+    expiry:r.querySelector(".sc-doc-expiry").value,
+    url:r.querySelector(".sc-doc-url").value.trim()
+  })).filter(d=>d.type||d.number||d.issue||d.expiry||d.url);
+}
 function openContractor(id=""){
   const c=id?contractor(id):{};
   document.getElementById("contractorModalTitle").textContent=id?"Edit Sub Contractor":"Add Sub Contractor";
-  const map={scId:"id",scName:"name",scTrn:"trn",scLicense:"license",scLicenseExpiry:"licenseExpiry",scContact:"contact",scMobile:"mobile",scEmail:"email",scStatus:"status",scAddress:"address",scRemarks:"remarks"};
-  Object.entries(map).forEach(([eid,key])=>document.getElementById(eid).value=c[key]|| (eid==="scStatus"?"Active":""));
+  document.getElementById("scId").value=c.id||"";
+  document.getElementById("scName").value=c.name||"";
+  document.getElementById("scLicense").value=c.license||"";
+  document.getElementById("scLicenseState").value=c.licenseState||"";
+  document.getElementById("scLicenseExpiry").value=c.licenseExpiry||"";
+  document.getElementById("scVatStatus").value=c.vatStatus||((c.trn||"")?"Registered":"Unregistered");
+  document.getElementById("scTrn").value=c.trn||"";
+  document.getElementById("scIcvStatus").value=c.icvStatus||"Unregistered";
+  document.getElementById("scIcvScore").value=c.icvScore??"";
+  document.getElementById("scContact1").value=c.contact1||c.contact||"";
+  document.getElementById("scMobile1").value=c.mobile1||c.mobile||"";
+  document.getElementById("scEmail1").value=c.email1||c.email||"";
+  document.getElementById("scContact2").value=c.contact2||"";
+  document.getElementById("scMobile2").value=c.mobile2||"";
+  document.getElementById("scEmail2").value=c.email2||"";
+  document.getElementById("scStatus").value=c.status||"Active";
+  document.getElementById("scAddress").value=c.address||"";
+  document.getElementById("scRemarks").value=c.remarks||"";
+  document.getElementById("scOtherDocuments").innerHTML="";
+  (Array.isArray(c.documents)?c.documents:[]).forEach(addScDocumentRow);
+  toggleVatFields();toggleIcvFields();
   document.getElementById("contractorModal").classList.add("show");
 }
 function saveContractor(){
   const id=document.getElementById("scId").value,name=document.getElementById("scName").value.trim();
+  const licenseState=document.getElementById("scLicenseState").value;
+  const vatStatus=document.getElementById("scVatStatus").value;
+  const trn=document.getElementById("scTrn").value.trim();
+  const icvStatus=document.getElementById("scIcvStatus").value;
+  const icvScore=document.getElementById("scIcvScore").value;
   if(!name)return alert("Enter Company Name.");
+  if(!licenseState)return alert("Select License State / Emirate.");
+  if(vatStatus==="Registered"&&!trn)return alert("VAT is Registered. Please enter TRN Number.");
+  if(icvStatus==="Registered"&&(icvScore===""||Number(icvScore)<0||Number(icvScore)>100))return alert("ICV is Registered. Please enter a valid ICV Score from 0 to 100.");
   if(db.contractors.some(c=>c.id!==id&&c.name.trim().toLowerCase()===name.toLowerCase()))return alert("This Sub Contractor already exists.");
-  const c={id:id||uid("SC"),name,trn:scTrn.value.trim(),license:scLicense.value.trim(),licenseExpiry:scLicenseExpiry.value,
-    contact:scContact.value.trim(),mobile:scMobile.value.trim(),email:scEmail.value.trim(),status:scStatus.value,
-    address:scAddress.value.trim(),remarks:scRemarks.value.trim()};
+  if(trn&&db.contractors.some(c=>c.id!==id&&String(c.trn||"").trim()===trn))return alert("This TRN Number is already used by another Sub Contractor.");
+  const c={
+    id:id||uid("SC"),name,
+    license:document.getElementById("scLicense").value.trim(),
+    licenseState,
+    licenseExpiry:document.getElementById("scLicenseExpiry").value,
+    vatStatus,trn:vatStatus==="Registered"?trn:"",
+    icvStatus,icvScore:icvStatus==="Registered"?Number(icvScore):"",
+    contact1:document.getElementById("scContact1").value.trim(),
+    mobile1:document.getElementById("scMobile1").value.trim(),
+    email1:document.getElementById("scEmail1").value.trim(),
+    contact2:document.getElementById("scContact2").value.trim(),
+    mobile2:document.getElementById("scMobile2").value.trim(),
+    email2:document.getElementById("scEmail2").value.trim(),
+    status:document.getElementById("scStatus").value,
+    address:document.getElementById("scAddress").value.trim(),
+    documents:getScDocuments(),
+    remarks:document.getElementById("scRemarks").value.trim()
+  };
+  // Backward-compatible aliases for old list/search code.
+  c.contact=c.contact1;c.mobile=c.mobile1;c.email=c.email1;
   const i=db.contractors.findIndex(x=>x.id===c.id); if(i>=0)db.contractors[i]=c;else db.contractors.push(c);
   closeModal("contractorModal");saveDb();
 }
@@ -242,16 +366,23 @@ function deleteContractor(id){
 }
 function renderContractors(){
   const q=document.getElementById("contractorSearch").value.toLowerCase(),s=document.getElementById("contractorStatus").value;
-  const arr=db.contractors.filter(c=>(!s||c.status===s)&&[c.name,c.trn,c.license,c.contact,c.mobile,c.email].join(" ").toLowerCase().includes(q));
+  const arr=db.contractors.filter(c=>(!s||c.status===s)&&[
+    c.name,c.trn,c.license,c.licenseState,c.contact1,c.mobile1,c.email1,c.contact2,c.mobile2,c.email2
+  ].join(" ").toLowerCase().includes(q));
   document.getElementById("contractorRows").innerHTML=arr.map(c=>`<tr>
     <td><b>${esc(c.name)}</b><br><span class="muted">${esc(c.address||"")}</span></td>
-    <td>${esc(c.trn||"-")}</td>
+    <td><b>${esc(c.vatStatus||((c.trn||"")?"Registered":"Unregistered"))}</b><br><span class="muted">${esc(c.trn||"-")}</span></td>
+    <td><b>${esc(c.icvStatus||"Unregistered")}</b><br><span class="muted">${c.icvStatus==="Registered"?"Score: "+esc(c.icvScore):"-"}</span></td>
     <td>${esc(c.license||"-")}<br><span class="muted">${fmtDate(c.licenseExpiry)}</span></td>
-    <td>${esc(c.contact||"-")}</td><td>${esc(c.mobile||"-")}</td><td>${esc(c.email||"-")}</td>
+    <td>${esc(c.licenseState||"-")}</td>
+    <td>${esc(c.contact1||c.contact||"-")}<br><span class="muted">${esc(c.mobile1||c.mobile||"")} ${esc(c.email1||c.email||"")}</span></td>
+    <td>${esc(c.contact2||"-")}<br><span class="muted">${esc(c.mobile2||"")} ${esc(c.email2||"")}</span></td>
     <td>${badge(c.status)}</td>
     <td><button class="btn light" onclick="openContractor('${c.id}')">Edit</button> <button class="btn red" onclick="deleteContractor('${c.id}')">Delete</button></td>
-  </tr>`).join("")||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8da0">No Sub Contractors added yet.</td></tr>';
-  kTotal.textContent=db.contractors.length;kActive.textContent=db.contractors.filter(x=>x.status==="Active").length;kInactive.textContent=db.contractors.filter(x=>x.status!=="Active").length;
+  </tr>`).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No Sub Contractors added yet.</td></tr>';
+  document.getElementById("kTotal").textContent=db.contractors.length;
+  document.getElementById("kActive").textContent=db.contractors.filter(x=>x.status==="Active").length;
+  document.getElementById("kInactive").textContent=db.contractors.filter(x=>x.status!=="Active").length;
 }
 
 function openManpower(id=""){
