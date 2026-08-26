@@ -70,6 +70,22 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
 @media(max-width:620px){.doc-row{grid-template-columns:1fr}}
 @media(max-width:900px){.kpis{grid-template-columns:1fr}.formgrid,.formgrid.three{grid-template-columns:1fr}}
 @media(max-width:760px){.sidebar{width:76px}.brand h2,.brand small,.nav span:not(.ico),.module-link span:not(.ico),.nav-title,.sidebar-note{display:none}.main{margin-left:76px;width:calc(100% - 76px)}.content{padding:17px}}
+
+.report-overlay{display:none;position:fixed;inset:0;z-index:300;background:#f5f7fa;overflow:auto;padding:22px 26px 40px}
+.report-overlay.show{display:block}
+.report-shell{max-width:1500px;margin:0 auto}
+.report-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+.report-head h2{margin:0;color:var(--navy);font-size:22px}.report-head p{margin:5px 0 0;font-size:10px;color:var(--muted)}
+.report-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.report-summary{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin:14px 0}
+.report-stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+.report-stat small{display:block;color:var(--muted);font-size:9px}.report-stat b{display:block;margin-top:5px;color:var(--navy);font-size:20px}
+.ts-received-btn{border:1px solid #bcd8c8;background:#eef9f2;color:#19734c;border-radius:8px;padding:6px 8px;font-size:9px;font-weight:800}
+.ts-pending-btn{border:1px solid #ead0a9;background:#fff7e8;color:#8a5b13;border-radius:8px;padding:6px 8px;font-size:9px;font-weight:800}
+.report-note{background:#eef5fb;border:1px solid #c9def1;border-radius:10px;padding:10px 12px;font-size:10px;color:#2e628e;margin:12px 0}
+@media(max-width:1200px){.report-filters{grid-template-columns:repeat(2,1fr)}.report-summary{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:700px){.report-filters{grid-template-columns:1fr}.report-summary{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 </head>
 <body>
@@ -130,7 +146,10 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
 <section class="page" id="projects">
   <div class="pagehead">
     <div><h2>Projects & Employee Mobilization</h2><p>Client → Project → Employee Mobilization / Demobilization → Movement History</p></div>
-    <button class="btn orange" onclick="openProject()">+ Add Project</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn light" onclick="openMonthlyReport()">📊 Reports</button>
+      <button class="btn orange" onclick="openProject()">+ Add Project</button>
+    </div>
   </div>
 
   <div class="subtabs">
@@ -214,6 +233,98 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
 
 </div>
 </main>
+</div>
+
+
+<div class="report-overlay" id="monthlyReportOverlay">
+  <div class="report-shell">
+    <div class="report-head">
+      <div>
+        <h2>Monthly Manpower & Timesheet Control Report</h2>
+        <p>Client-wise, Project-wise, Sub Contractor-wise and Employee-wise manpower movement / timesheet follow-up.</p>
+      </div>
+      <button class="btn light" onclick="closeMonthlyReport()">← Back to Projects</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Report Filters</div>
+      <div class="report-filters" style="margin-top:12px">
+        <div class="fg"><label>Month *</label><input type="month" id="repMonth" onchange="renderMonthlyReport()"></div>
+        <div class="fg"><label>Client</label><select id="repClient" onchange="fillReportProjectSelect();renderMonthlyReport()"></select></div>
+        <div class="fg"><label>Project</label><select id="repProject" onchange="renderMonthlyReport()"></select></div>
+        <div class="fg"><label>Source Type</label>
+          <select id="repSourceType" onchange="renderMonthlyReport()">
+            <option value="">All Sources</option>
+            <option value="Own">Own Employee</option>
+            <option value="Sub Contractor">Sub Contractor</option>
+          </select>
+        </div>
+        <div class="fg"><label>Sub Contractor</label><select id="repSubContractor" onchange="renderMonthlyReport()"></select></div>
+        <div class="fg"><label>Employee Search</label><input id="repEmployeeSearch" placeholder="Code / Name" oninput="renderMonthlyReport()"></div>
+        <div class="fg"><label>Designation</label><input id="repDesignation" placeholder="e.g. Pipe Fitter" oninput="renderMonthlyReport()"></div>
+        <div class="fg"><label>Movement Status</label>
+          <select id="repMovementStatus" onchange="renderMonthlyReport()">
+            <option value="">All</option>
+            <option value="Current">Currently Mobilized</option>
+            <option value="Mobilized This Month">Mobilized This Month</option>
+            <option value="Demobilized This Month">Demobilized This Month</option>
+            <option value="Transferred">Transferred</option>
+          </select>
+        </div>
+        <div class="fg"><label>Timesheet Status</label>
+          <select id="repTimesheetStatus" onchange="renderMonthlyReport()">
+            <option value="">All</option>
+            <option value="Required">Required</option>
+            <option value="Received">Received</option>
+            <option value="Pending">Pending</option>
+          </select>
+        </div>
+        <div class="fg"><label>Mobilized From</label><input type="date" id="repMobFrom" onchange="renderMonthlyReport()"></div>
+        <div class="fg"><label>Mobilized To</label><input type="date" id="repMobTo" onchange="renderMonthlyReport()"></div>
+        <div class="fg"><label>Demobilized During Period</label>
+          <select id="repDemobOnly" onchange="renderMonthlyReport()">
+            <option value="">All</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn light" onclick="clearReportFilters()">Clear Filters</button>
+        <button class="btn primary" onclick="renderMonthlyReport()">Generate Report</button>
+        <button class="btn light" onclick="exportMonthlyReportCsv()">Export Excel / CSV</button>
+        <button class="btn light" onclick="printMonthlyReport()">Print / PDF</button>
+      </div>
+    </div>
+
+    <div class="report-summary">
+      <div class="report-stat"><small>Opening Manpower</small><b id="repOpening">0</b></div>
+      <div class="report-stat"><small>Mobilized This Month</small><b id="repMobilized">0</b></div>
+      <div class="report-stat"><small>Demobilized This Month</small><b id="repDemobilized">0</b></div>
+      <div class="report-stat"><small>Closing Manpower</small><b id="repClosing">0</b></div>
+      <div class="report-stat"><small>Timesheets Required</small><b id="repTsRequired">0</b></div>
+      <div class="report-stat"><small>Received</small><b id="repTsReceived">0</b></div>
+      <div class="report-stat"><small>Pending</small><b id="repTsPending">0</b></div>
+    </div>
+
+    <div class="report-note">
+      Monthly logic: employee report mein tab aayega jab <b>Mobilization Date ≤ Month End</b> aur
+      <b>Demobilization Date blank ho ya Demobilization Date ≥ Month Start</b>. Isliye pehle month se mobilized employee bhi current month ki timesheet report mein show hoga.
+    </div>
+
+    <div class="card">
+      <div class="tablewrap">
+        <table style="min-width:1450px">
+          <thead><tr>
+            <th>Employee</th><th>Source</th><th>Sub Contractor</th><th>Client</th><th>Project</th><th>Location</th>
+            <th>Designation</th><th>Mobilized</th><th>Demobilized</th><th>Month Status</th><th>Timesheet</th><th>Received Date</th><th>Action</th>
+          </tr></thead>
+          <tbody id="monthlyReportRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modalwrap" id="clientModal"><div class="modal">
@@ -319,7 +430,7 @@ const CLIENT_KEY="cm_client_portal_v2";
 const EMPLOYEE_DATA_KEY="cm_employee_portal_v3";
 let db=loadDb();
 
-function emptyDb(){return {clients:[],projects:[],movements:[]}}
+function emptyDb(){return {clients:[],projects:[],movements:[],timesheetTracker:{}}}
 function loadDb(){try{const x=JSON.parse(localStorage.getItem(CLIENT_KEY)||"null");return {...emptyDb(),...(x||{})}}catch(e){return emptyDb()}}
 function saveDb(){localStorage.setItem(CLIENT_KEY,JSON.stringify(db));renderAll()}
 function uid(p){return p+"-"+Date.now()+"-"+Math.random().toString(16).slice(2,7)}
@@ -757,6 +868,251 @@ function renderMovementHistory(){
     </tr>`;
   }).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No Employee Movement History yet.</td></tr>';
 }
+
+function firstDayOfMonth(month){
+  return month?month+"-01":"";
+}
+function lastDayOfMonth(month){
+  if(!month)return "";
+  const [y,m]=month.split("-").map(Number);
+  return new Date(y,m,0).toISOString().slice(0,10);
+}
+function currentMonthValue(){return new Date().toISOString().slice(0,7)}
+
+function subContractorDb(){
+  const keys=["cm_subcontractor_simple_v1","cm_subcontractor_portal_v1"];
+  for(const k of keys){
+    try{
+      const x=JSON.parse(localStorage.getItem(k)||"null");
+      if(x)return {key:k,data:x};
+    }catch(e){}
+  }
+  return {key:"",data:{contractors:[],manpower:[],assignments:[]}};
+}
+function scContractors(){
+  const d=subContractorDb().data;
+  return Array.isArray(d.contractors)?d.contractors:[];
+}
+function scManpower(){
+  const d=subContractorDb().data;
+  if(Array.isArray(d.manpower))return d.manpower;
+  if(Array.isArray(d.assignments))return d.assignments;
+  return [];
+}
+function scContractorName(id){
+  return scContractors().find(c=>c.id===id)?.name||"-";
+}
+function employeeSourceInfo(code){
+  const m=scManpower().find(x=>String(x.employeeCode||"")===String(code||"") && String(x.status||"Active")!=="Ended" && String(x.status||"Active")!=="Inactive");
+  if(m)return {source:"Sub Contractor",contractorId:m.contractorId||"",contractorName:scContractorName(m.contractorId||"")};
+  return {source:"Own",contractorId:"",contractorName:"-"};
+}
+function fillReportSubContractors(){
+  const el=document.getElementById("repSubContractor"); if(!el)return;
+  const old=el.value;
+  el.innerHTML='<option value="">All Sub Contractors</option>'+scContractors()
+    .slice().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")))
+    .map(c=>`<option value="${esc(c.id)}">${esc(c.name||"")}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function fillReportProjectSelect(){
+  const cid=document.getElementById("repClient")?.value||"";
+  const el=document.getElementById("repProject"); if(!el)return;
+  const old=el.value;
+  const arr=db.projects.filter(p=>!cid||p.clientId===cid);
+  el.innerHTML='<option value="">All Projects</option>'+arr.map(p=>`<option value="${esc(p.id)}">${esc(p.code+" — "+p.name)}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function openMonthlyReport(){
+  document.getElementById("monthlyReportOverlay").classList.add("show");
+  document.body.style.overflow="hidden";
+  if(!document.getElementById("repMonth").value)document.getElementById("repMonth").value=currentMonthValue();
+  fillClientSelect("repClient",true);
+  fillReportProjectSelect();
+  fillReportSubContractors();
+  renderMonthlyReport();
+}
+function closeMonthlyReport(){
+  document.getElementById("monthlyReportOverlay").classList.remove("show");
+  document.body.style.overflow="";
+}
+function clearReportFilters(){
+  document.getElementById("repMonth").value=currentMonthValue();
+  ["repClient","repProject","repSourceType","repSubContractor","repMovementStatus","repTimesheetStatus","repDemobOnly"].forEach(id=>document.getElementById(id).value="");
+  ["repEmployeeSearch","repDesignation","repMobFrom","repMobTo"].forEach(id=>document.getElementById(id).value="");
+  fillReportProjectSelect();
+  renderMonthlyReport();
+}
+function reportTrackerKey(month,movementId){
+  return month+"|"+movementId;
+}
+function getTimesheetTracker(month,movementId){
+  return db.timesheetTracker?.[reportTrackerKey(month,movementId)]||{received:false,receivedDate:""};
+}
+function setTimesheetReceived(month,movementId,received){
+  if(!db.timesheetTracker)db.timesheetTracker={};
+  const key=reportTrackerKey(month,movementId);
+  db.timesheetTracker[key]={received:!!received,receivedDate:received?new Date().toISOString().slice(0,10):""};
+  saveDb();
+  renderMonthlyReport();
+}
+function setTimesheetReceivedDate(month,movementId,value){
+  if(!db.timesheetTracker)db.timesheetTracker={};
+  const key=reportTrackerKey(month,movementId);
+  const cur=db.timesheetTracker[key]||{};
+  db.timesheetTracker[key]={...cur,received:true,receivedDate:value||new Date().toISOString().slice(0,10)};
+  saveDb();
+  renderMonthlyReport();
+}
+function movementMonthStatus(m,start,end){
+  const started=m.fromDate>=start&&m.fromDate<=end;
+  const ended=!!m.toDate&&m.toDate>=start&&m.toDate<=end;
+  if(m.status==="Transferred"&&ended)return "Transferred";
+  if(started&&ended)return "Mobilized & Demobilized";
+  if(started)return "Mobilized This Month";
+  if(ended)return "Demobilized This Month";
+  return "Opening / Continuing";
+}
+function monthlyReportBaseRows(){
+  const month=document.getElementById("repMonth")?.value||currentMonthValue();
+  const start=firstDayOfMonth(month),end=lastDayOfMonth(month);
+  return db.movements
+    .filter(m=>m.fromDate && m.fromDate<=end && (!m.toDate || m.toDate>=start))
+    .map(m=>{
+      const p=project(m.projectId);
+      const src=employeeSourceInfo(m.employeeCode);
+      const tracker=getTimesheetTracker(month,m.id);
+      return {
+        ...m,
+        month,start,end,
+        clientName:clientName(m.clientId),
+        projectName:projectName(m.projectId),
+        projectCode:p.code||"",
+        location:projectLocation(p)||"",
+        source:src.source,
+        contractorId:src.contractorId,
+        contractorName:src.contractorName,
+        monthStatus:movementMonthStatus(m,start,end),
+        tsReceived:!!tracker.received,
+        tsReceivedDate:tracker.receivedDate||""
+      };
+    });
+}
+function filteredMonthlyReportRows(){
+  const cid=document.getElementById("repClient")?.value||"";
+  const pid=document.getElementById("repProject")?.value||"";
+  const source=document.getElementById("repSourceType")?.value||"";
+  const scid=document.getElementById("repSubContractor")?.value||"";
+  const q=(document.getElementById("repEmployeeSearch")?.value||"").toLowerCase();
+  const des=(document.getElementById("repDesignation")?.value||"").toLowerCase();
+  const ms=document.getElementById("repMovementStatus")?.value||"";
+  const ts=document.getElementById("repTimesheetStatus")?.value||"";
+  const mf=document.getElementById("repMobFrom")?.value||"";
+  const mt=document.getElementById("repMobTo")?.value||"";
+  const demobOnly=document.getElementById("repDemobOnly")?.value||"";
+
+  return monthlyReportBaseRows().filter(r=>{
+    if(cid&&r.clientId!==cid)return false;
+    if(pid&&r.projectId!==pid)return false;
+    if(source&&r.source!==source)return false;
+    if(scid&&r.contractorId!==scid)return false;
+    if(q&&!([r.employeeCode,r.employeeName].join(" ").toLowerCase().includes(q)))return false;
+    if(des&&!String(r.designation||"").toLowerCase().includes(des))return false;
+    if(mf&&r.fromDate<mf)return false;
+    if(mt&&r.fromDate>mt)return false;
+    if(demobOnly==="Yes"&&!(r.toDate&&r.toDate>=r.start&&r.toDate<=r.end))return false;
+    if(demobOnly==="No"&&(r.toDate&&r.toDate>=r.start&&r.toDate<=r.end))return false;
+
+    if(ms==="Current"&&r.toDate)return false;
+    if(ms==="Mobilized This Month"&&!(r.fromDate>=r.start&&r.fromDate<=r.end))return false;
+    if(ms==="Demobilized This Month"&&!(r.toDate&&r.toDate>=r.start&&r.toDate<=r.end))return false;
+    if(ms==="Transferred"&&r.status!=="Transferred")return false;
+
+    if(ts==="Received"&&!r.tsReceived)return false;
+    if(ts==="Pending"&&r.tsReceived)return false;
+    if(ts==="Required"){
+      // every employee active for at least one day in the selected month requires a timesheet
+    }
+    return true;
+  });
+}
+function renderMonthlyReport(){
+  if(!document.getElementById("monthlyReportRows"))return;
+  const month=document.getElementById("repMonth")?.value||currentMonthValue();
+  const start=firstDayOfMonth(month),end=lastDayOfMonth(month);
+  const rows=filteredMonthlyReportRows();
+
+  const allForSummary=monthlyReportBaseRows().filter(r=>{
+    const cid=document.getElementById("repClient")?.value||"";
+    const pid=document.getElementById("repProject")?.value||"";
+    return (!cid||r.clientId===cid)&&(!pid||r.projectId===pid);
+  });
+  const opening=allForSummary.filter(r=>r.fromDate<start && (!r.toDate||r.toDate>=start)).length;
+  const mobilized=allForSummary.filter(r=>r.fromDate>=start&&r.fromDate<=end).length;
+  const demobilized=allForSummary.filter(r=>r.toDate&&r.toDate>=start&&r.toDate<=end).length;
+  const closing=allForSummary.filter(r=>r.fromDate<=end&&(!r.toDate||r.toDate>end)).length;
+  const received=allForSummary.filter(r=>r.tsReceived).length;
+  const required=allForSummary.length;
+
+  document.getElementById("repOpening").textContent=opening;
+  document.getElementById("repMobilized").textContent=mobilized;
+  document.getElementById("repDemobilized").textContent=demobilized;
+  document.getElementById("repClosing").textContent=closing;
+  document.getElementById("repTsRequired").textContent=required;
+  document.getElementById("repTsReceived").textContent=received;
+  document.getElementById("repTsPending").textContent=Math.max(0,required-received);
+
+  document.getElementById("monthlyReportRows").innerHTML=rows.map(r=>`
+    <tr>
+      <td><b>${esc(r.employeeName||"-")}</b><br><span class="muted">${esc(r.employeeCode||"")}</span></td>
+      <td>${esc(r.source)}</td>
+      <td>${esc(r.contractorName)}</td>
+      <td>${esc(r.clientName)}</td>
+      <td><b>${esc(r.projectName)}</b><br><span class="muted">${esc(r.projectCode)}</span></td>
+      <td>${esc(r.location||"-")}</td>
+      <td>${esc(r.designation||"-")}</td>
+      <td>${fmtDate(r.fromDate)}</td>
+      <td>${r.toDate?fmtDate(r.toDate):"<b>Current</b>"}</td>
+      <td>${esc(r.monthStatus)}</td>
+      <td>${r.tsReceived?'<span class="badge activeb">Received</span>':'<span class="badge holdb">Pending</span>'}</td>
+      <td><input type="date" value="${esc(r.tsReceivedDate||"")}" onchange="setTimesheetReceivedDate('${esc(month)}','${esc(r.id)}',this.value)" style="min-width:125px"></td>
+      <td>
+        <button class="${r.tsReceived?'ts-received-btn':'ts-pending-btn'}" onclick="setTimesheetReceived('${esc(month)}','${esc(r.id)}',${r.tsReceived?'false':'true'})">
+          ${r.tsReceived?'✓ Received':'Mark Received'}
+        </button>
+      </td>
+    </tr>
+  `).join("")||'<tr><td colspan="13" style="text-align:center;padding:22px;color:#7d8da0">No manpower found for selected report filters.</td></tr>';
+}
+function csvEscape(v){return '"'+String(v??"").replace(/"/g,'""')+'"'}
+function exportMonthlyReportCsv(){
+  const month=document.getElementById("repMonth")?.value||currentMonthValue();
+  const rows=filteredMonthlyReportRows();
+  const headers=["Employee Code","Employee Name","Source","Sub Contractor","Client","Project Code","Project","Location","Designation","Mobilized","Demobilized","Month Status","Timesheet Status","Received Date"];
+  const data=rows.map(r=>[
+    r.employeeCode,r.employeeName,r.source,r.contractorName,r.clientName,r.projectCode,r.projectName,r.location,r.designation,r.fromDate,r.toDate||"Current",r.monthStatus,r.tsReceived?"Received":"Pending",r.tsReceivedDate
+  ]);
+  const csv=[headers,...data].map(r=>r.map(csvEscape).join(",")).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="monthly_manpower_timesheet_report_"+month+".csv";
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function printMonthlyReport(){
+  const month=document.getElementById("repMonth")?.value||currentMonthValue();
+  const rows=filteredMonthlyReportRows();
+  const w=window.open("","_blank");
+  const html=`<!doctype html><html><head><title>Monthly Manpower Report ${esc(month)}</title>
+    <style>body{font-family:Arial,sans-serif;padding:22px;color:#222}h2{color:#17365d}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #ccc;padding:7px;text-align:left}th{background:#eef3f8}</style>
+    </head><body><h2>Monthly Manpower & Timesheet Control Report</h2><p>Month: ${esc(month)}</p>
+    <table><thead><tr><th>Employee</th><th>Source</th><th>Sub Contractor</th><th>Client</th><th>Project</th><th>Location</th><th>Designation</th><th>Mobilized</th><th>Demobilized</th><th>Status</th><th>Timesheet</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td>${esc(r.employeeCode+" - "+r.employeeName)}</td><td>${esc(r.source)}</td><td>${esc(r.contractorName)}</td><td>${esc(r.clientName)}</td><td>${esc(r.projectCode+" - "+r.projectName)}</td><td>${esc(r.location)}</td><td>${esc(r.designation)}</td><td>${fmtDate(r.fromDate)}</td><td>${r.toDate?fmtDate(r.toDate):"Current"}</td><td>${esc(r.monthStatus)}</td><td>${r.tsReceived?"Received":"Pending"}</td></tr>`).join("")}
+    </tbody></table></body></html>`;
+  w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),300);
+}
+
 function renderAll(){
   fillClientSelect("projectClientFilter",true);
   fillClientSelect("movementClientFilter",true);
@@ -764,10 +1120,15 @@ function renderAll(){
   renderProjects();
   renderMovementHistory();
   refreshMobilizationSelectors();
+  if(document.getElementById("repClient"))fillClientSelect("repClient",true);
+  if(document.getElementById("repSubContractor"))fillReportSubContractors();
+  if(document.getElementById("repProject"))fillReportProjectSelect();
+  if(document.getElementById("monthlyReportOverlay")?.classList.contains("show"))renderMonthlyReport();
 }
 document.addEventListener("DOMContentLoaded",()=>{
   document.querySelectorAll("[id]").forEach(el=>{try{if(typeof window[el.id]==="undefined")Object.defineProperty(window,el.id,{value:el,configurable:true})}catch(e){}});
   renderAll();
+  if(document.getElementById("repMonth"))document.getElementById("repMonth").value=currentMonthValue();
 });
 </script>
 </body>
