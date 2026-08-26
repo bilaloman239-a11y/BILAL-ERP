@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Civil Master ERP - Salary / Payroll Management</title>
+<style>
+:root{
+  --navy:#17365d;--blue:#4f86bd;--blue2:#eaf3fb;--orange:#f2a45f;--orange2:#fff3e8;
+  --bg:#f5f7fa;--card:#fff;--text:#243140;--muted:#6b7280;--line:#e5e9ef;
+  --green:#198754;--red:#c73b3b;--amber:#b86f11;--shadow:0 10px 28px rgba(23,54,93,.08)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.app{min-height:100vh;display:flex}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:252px;padding:18px 14px;background:linear-gradient(180deg,#17365d,#245282);color:#fff;overflow:auto}
+.brand{display:flex;gap:12px;align-items:center;padding:5px 7px 18px;border-bottom:1px solid rgba(255,255,255,.12)}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#fff,#ffd9b7);display:grid;place-items:center;color:var(--navy);font-weight:900}
+.brand h2{font-size:15px;margin:0}.brand small{font-size:10px;color:#d9e6f3}
+.nav-title{margin:18px 8px 6px;color:#bcd0e5;font-size:9px;text-transform:uppercase;letter-spacing:1.2px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button,.module-link{border:0;background:transparent;color:#edf4fb;border-radius:10px;padding:11px 12px;text-align:left;display:flex;gap:10px;align-items:center;text-decoration:none;font-size:12px;width:100%}
+.nav button:hover,.nav button.active,.module-link:hover{background:rgba(255,255,255,.14)}
+.ico{width:20px;text-align:center}
+.sidebar-note{margin-top:20px;background:rgba(255,255,255,.08);border-radius:12px;padding:11px;font-size:10px;color:#dbe7f3;line-height:1.5}
+.main{margin-left:252px;width:calc(100% - 252px)}
+.topbar{position:sticky;top:0;z-index:20;height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 26px}
+.title h1{font-size:19px;margin:0;color:var(--navy)}.title p{margin:4px 0 0;font-size:10px;color:var(--muted)}
+.user{display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--orange2);color:var(--amber);font-weight:800}
+.content{padding:24px 26px 40px}.page{display:none}.page.active{display:block}
+.pagehead{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}
+.pagehead h2{font-size:20px;color:var(--navy);margin:0}.pagehead p{font-size:11px;color:var(--muted);margin:5px 0 0}
+.btn{border:0;border-radius:9px;padding:9px 13px;font-size:11px;font-weight:700}.primary{background:var(--navy);color:#fff}.orange{background:var(--orange);color:#fff}.light{background:#fff;border:1px solid var(--line);color:var(--navy)}.red{background:var(--red);color:#fff}.green{background:var(--green);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:15px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.kpi .top{display:flex;justify-content:space-between;gap:10px}.kpi .lab{font-size:11px;color:var(--muted)}.kpi .num{font-size:27px;font-weight:900;color:var(--navy);margin-top:8px}.kpi .hint{font-size:9px;color:var(--muted);margin-top:3px}
+.bubble{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--blue2);color:var(--blue);font-weight:800}.bubble.o{background:var(--orange2);color:var(--amber)}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:var(--shadow);margin-bottom:15px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.toolbar .search{min-width:240px;flex:1}
+input,select,textarea{border:1px solid #dce2e9;border-radius:9px;background:#fff;padding:9px 10px;font-size:11px;outline:none;width:100%}
+textarea{min-height:78px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:#7ca7d3;box-shadow:0 0 0 3px rgba(79,134,189,.08)}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.formgrid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.fg{display:flex;flex-direction:column;gap:5px}.fg.full{grid-column:1/-1}label{font-size:10px;font-weight:800;color:#45566c}
+.tablewrap{overflow:auto;border:1px solid #edf1f5;border-radius:11px}
+table{width:100%;border-collapse:collapse;font-size:10px;min-width:1050px}
+th{text-align:left;background:#f1f5f9;color:var(--navy);padding:9px;border-bottom:1px solid var(--line);font-size:9px;text-transform:uppercase;white-space:nowrap}
+td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{background:#fbfcfe}
+.badge{display:inline-flex;border-radius:20px;padding:4px 7px;font-size:8px;font-weight:800}
+.approved{background:#e9f7ef;color:#19734c}.pending{background:#fff3db;color:#916017}.alert{background:#fdeceb;color:#b83a36}.info{background:#eaf3fb;color:#2c689e}
+.modalwrap{display:none;position:fixed;inset:0;z-index:100;background:rgba(12,23,35,.55);align-items:center;justify-content:center;padding:20px}.modalwrap.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:min(1050px,96vw);max-height:92vh;overflow:auto;padding:19px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
+.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.modalhead h3{margin:0;color:var(--navy);font-size:16px}.x{width:30px;height:30px;border:0;border-radius:8px;background:#f2f4f7}
+.section-title{grid-column:1/-1;margin-top:4px;padding:9px 10px;border-left:4px solid var(--orange);background:#fff8f1;border-radius:8px;font-size:11px;font-weight:900;color:var(--navy)}
+.summary{background:linear-gradient(135deg,#eef5fb,#fff);border:1px solid #d9e7f4;border-radius:11px;padding:12px}
+.sumrow{display:flex;justify-content:space-between;padding:6px 0;font-size:10px}.sumrow strong{color:var(--navy)}
+.muted{color:var(--muted);font-size:10px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.sidebar{width:76px}.brand h2,.brand small,.nav span:not(.ico),.module-link span:not(.ico),.nav-title,.sidebar-note{display:none}.main{margin-left:76px;width:calc(100% - 76px)}.content{padding:17px}.kpis{grid-template-columns:1fr}.formgrid,.formgrid.three{grid-template-columns:1fr}}
+
+.deduction-rows{display:grid;gap:9px}
+.deduction-row{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr 1fr;gap:8px;align-items:end;border:1px solid #e4eaf0;border-radius:10px;padding:10px;background:#fbfdff}
+.deduction-row .bal{font-weight:800;color:var(--navy);padding:9px 10px;border-radius:8px;background:#f2f6fa;border:1px solid #e0e7ee}
+.ledger-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+.ledger-box{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px}
+.ledger-box small{display:block;color:var(--muted);font-size:9px}.ledger-box b{display:block;margin-top:5px;color:var(--navy);font-size:18px}
+@media(max-width:900px){.deduction-row{grid-template-columns:1fr 1fr}.ledger-summary{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.deduction-row{grid-template-columns:1fr}.ledger-summary{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo">CM</div><div><h2>CIVIL MASTER</h2><small>Salary / Payroll Management</small></div></div>
+
+  <div class="nav-title">ERP Modules</div>
+  <div class="nav">
+    <a class="module-link" href="index.html"><span class="ico">👤</span><span>Employee Management</span></a>
+    <a class="module-link" href="leave.html"><span class="ico">✈</span><span>Leave Management</span></a>
+    <a class="module-link" href="subcontractor.html"><span class="ico">🏗</span><span>Sub Contractor Management</span></a>
+    <a class="module-link" href="client.html"><span class="ico">🏢</span><span>Client Management</span></a>
+  </div>
+
+  <div class="nav-title">Payroll</div>
+  <div class="nav">
+    <button class="active" onclick="go('dashboard',this)"><span class="ico">⌂</span><span>Salary Dashboard</span></button>
+    <button onclick="go('employees',this)"><span class="ico">👤</span><span>Payroll Employees</span></button>
+    <button onclick="go('deductions',this)"><span class="ico">−</span><span>Employee Deductions</span></button>
+    <button onclick="go('processing',this)"><span class="ico">₿</span><span>Monthly Salary Processing</span></button>
+    <button onclick="go('history',this)"><span class="ico">◷</span><span>Salary History</span></button>
+    <button onclick="go('reports',this)"><span class="ico">↗</span><span>Reports</span></button>
+  </div>
+
+  <div class="sidebar-note">Standalone payroll module linked to Employee Master. Payroll records are saved month-wise.</div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="title"><h1 id="pageTitle">Salary Dashboard</h1><p>Monthly payroll, LOP, OT, allowances, deductions and salary history</p></div>
+  <div class="user"><div style="text-align:right"><b style="font-size:11px">Accounts / Payroll</b><div style="font-size:9px;color:var(--muted)">ERP User</div></div><div class="avatar">₿</div></div>
+</header>
+
+<div class="content">
+
+<section class="page active" id="dashboard">
+  <div class="pagehead"><div><h2>Salary Dashboard</h2><p>Current payroll processing overview.</p></div><button class="btn orange" onclick="goById('processing')">Process Salary</button></div>
+  <div class="kpis">
+    <div class="kpi"><div class="top"><span class="lab">Payroll Active Employees</span><span class="bubble">👤</span></div><div class="num" id="kEmployees">0</div><div class="hint">Activated for Payroll</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Processed This Month</span><span class="bubble">✓</span></div><div class="num" id="kProcessed">0</div><div class="hint">Saved payroll records</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Pending Payroll</span><span class="bubble o">!</span></div><div class="num" id="kPending">0</div><div class="hint">Active employees not processed</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Net Payroll This Month</span><span class="bubble">₿</span></div><div class="num" id="kNetPayroll">0</div><div class="hint">AED</div></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;color:var(--navy)">Current Month Payroll Summary</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Employee</th><th>Basic</th><th>Allowances</th><th>OT</th><th>LOP Deduction</th><th>Other Deduction</th><th>Net Salary</th><th>Status</th></tr></thead>
+      <tbody id="dashRows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+
+<section class="page" id="employees">
+  <div class="pagehead">
+    <div><h2>Payroll Employees</h2><p>Employee Master se select karke payroll ke liye activate / inactive karein aur salary structure define karein.</p></div>
+    <button class="btn orange" onclick="openPayrollActivation()">+ Activate Employee in Payroll</button>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="top"><span class="lab">Payroll Active</span><span class="bubble">✓</span></div><div class="num" id="kPayrollActive">0</div><div class="hint">Monthly processing mein show honge</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Payroll Inactive</span><span class="bubble o">!</span></div><div class="num" id="kPayrollInactive">0</div><div class="hint">History retained</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Employee Master</span><span class="bubble">👤</span></div><div class="num" id="kMasterEmployees">0</div><div class="hint">Available source employees</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Hourly Payroll</span><span class="bubble">H</span></div><div class="num" id="kHourlyPayroll">0</div><div class="hint">Active hourly employees</div></div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <input id="peSearch" class="search" placeholder="Search employee code / name / designation" oninput="renderPayrollEmployees()">
+      <select id="peStatusFilter" onchange="renderPayrollEmployees()">
+        <option value="">All Payroll Status</option>
+        <option value="Active">Payroll Active</option>
+        <option value="Inactive">Payroll Inactive</option>
+      </select>
+      <select id="peBasisFilter" onchange="renderPayrollEmployees()">
+        <option value="">All Pay Basis</option>
+        <option value="Monthly Basic">Monthly Basic</option>
+        <option value="Hourly">Hourly</option>
+      </select>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Employee</th><th>Designation</th><th>Payroll Status</th><th>Pay Basis</th><th>Labour Contract Salary</th><th>Actual Basic</th><th>Allowances</th><th>Rate</th><th>Action</th></tr></thead>
+      <tbody id="payrollEmployeeRows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+
+<section class="page" id="deductions">
+  <div class="pagehead">
+    <div><h2>Employee Deduction Ledger</h2><p>Advance, Visa and Other deductions with running balance and month-wise recovery history.</p></div>
+    <button class="btn orange" onclick="openDeductionModal()">+ Add Deduction</button>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="top"><span class="lab">Active Deductions</span><span class="bubble">−</span></div><div class="num" id="kDedActive">0</div><div class="hint">Balance greater than zero</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Original Amount</span><span class="bubble">₿</span></div><div class="num" id="kDedOriginal">0</div><div class="hint">AED all deduction masters</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Recovered</span><span class="bubble">✓</span></div><div class="num" id="kDedRecovered">0</div><div class="hint">AED through saved payroll</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Outstanding Balance</span><span class="bubble o">!</span></div><div class="num" id="kDedBalance">0</div><div class="hint">AED still to recover</div></div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <input id="dedSearch" class="search" placeholder="Search employee / deduction type" oninput="renderDeductions()">
+      <select id="dedTypeFilter" onchange="renderDeductions()">
+        <option value="">All Types</option><option>Advance</option><option>Visa</option><option>Other Deduction</option>
+      </select>
+      <select id="dedStatusFilter" onchange="renderDeductions()">
+        <option value="">All Status</option><option>Active</option><option>Completed</option><option>On Hold</option>
+      </select>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Employee</th><th>Type</th><th>Reference</th><th>Start Month</th><th>Original Amount</th><th>Recovered</th><th>Balance</th><th>Default Monthly</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="deductionMasterRows"></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;color:var(--navy)">Deduction Recovery History</h3>
+    <div class="toolbar">
+      <input id="dedHistSearch" class="search" placeholder="Search employee / type / month" oninput="renderDeductionHistory()">
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Month</th><th>Employee</th><th>Type</th><th>Opening Balance</th><th>Deducted</th><th>Closing Balance</th><th>Payroll Status</th></tr></thead>
+      <tbody id="deductionHistoryRows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="page" id="processing">
+  <div class="pagehead"><div><h2>Monthly Salary Processing</h2><p>Prepare and save payroll employee-wise for selected month.</p></div><button class="btn orange" onclick="openPayroll()">+ Process Employee Salary</button></div>
+  <div class="card">
+    <div class="toolbar">
+      <input id="payMonthFilter" type="month" onchange="renderProcessing()">
+      <input id="paySearch" class="search" placeholder="Search employee code / name" oninput="renderProcessing()">
+      <select id="payStatusFilter" onchange="renderProcessing()"><option value="">All Status</option><option>Processed</option><option>Pending</option></select>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Employee</th><th>Designation</th><th>Basic Salary</th><th>Payroll Status</th><th>LOP Days</th><th>OT Hours</th><th>Net Salary</th><th>Action</th></tr></thead>
+      <tbody id="processingRows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="page" id="history">
+  <div class="pagehead"><div><h2>Salary History</h2><p>Month-wise saved payroll records.</p></div></div>
+  <div class="card">
+    <div class="toolbar">
+      <input id="histMonth" type="month" onchange="renderHistory()">
+      <input id="histSearch" class="search" placeholder="Search employee" oninput="renderHistory()">
+      <button class="btn light" onclick="exportPayrollCsv()">Export CSV</button>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Month</th><th>Employee</th><th>Basic</th><th>Allowances</th><th>OT</th><th>LOP</th><th>Deductions</th><th>Net Salary</th><th>Payment Status</th><th>Action</th></tr></thead>
+      <tbody id="historyRows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="page" id="reports">
+  <div class="pagehead"><div><h2>Payroll Reports</h2><p>Monthly payroll summary and employee salary report.</p></div></div>
+  <div class="kpis">
+    <div class="kpi" onclick="exportPayrollCsv()"><div class="top"><span class="lab">Payroll Register</span><span class="bubble">CSV</span></div><div class="num">Export</div><div class="hint">Month-wise payroll details</div></div>
+    <div class="kpi" onclick="printPayrollReport()"><div class="top"><span class="lab">Monthly Payroll Report</span><span class="bubble">PDF</span></div><div class="num">Print</div><div class="hint">Print / Save as PDF</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Total Payroll Records</span><span class="bubble">#</span></div><div class="num" id="kTotalRecords">0</div><div class="hint">All saved months</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Total Net Salary</span><span class="bubble">₿</span></div><div class="num" id="kTotalNet">0</div><div class="hint">AED all saved payroll</div></div>
+  </div>
+</section>
+
+</div>
+</main>
+</div>
+
+
+
+<div class="modalwrap" id="deductionModal"><div class="modal">
+  <div class="modalhead"><h3 id="deductionModalTitle">Add Employee Deduction</h3><button class="x" onclick="closeModal('deductionModal')">×</button></div>
+  <input type="hidden" id="dedId">
+  <div class="formgrid three">
+    <div class="section-title">Employee & Deduction</div>
+    <div class="fg full"><label>Payroll Employee *</label><select id="dedEmployee"></select></div>
+    <div class="fg"><label>Deduction Type *</label>
+      <select id="dedType"><option>Advance</option><option>Visa</option><option>Other Deduction</option></select>
+    </div>
+    <div class="fg"><label>Reference / Description</label><input id="dedReference" placeholder="e.g. Visa Cost / Salary Advance"></div>
+    <div class="fg"><label>Start Month *</label><input type="month" id="dedStartMonth"></div>
+
+    <div class="section-title">Deduction Amount</div>
+    <div class="fg"><label>Original Deduction Amount (AED) *</label><input type="number" min="0" step=".01" id="dedOriginalAmount"></div>
+    <div class="fg"><label>Default Monthly Deduction (AED)</label><input type="number" min="0" step=".01" id="dedDefaultMonthly"></div>
+    <div class="fg"><label>Status</label><select id="dedStatus"><option>Active</option><option>On Hold</option><option>Completed</option></select></div>
+    <div class="fg full"><label>Remarks</label><textarea id="dedRemarks"></textarea></div>
+  </div>
+
+  <div class="summary" style="margin-top:12px">
+    <div class="sumrow"><span>Already Recovered</span><strong id="dedRecoveredPreview">AED 0.00</strong></div>
+    <div class="sumrow"><span>Current Balance</span><strong id="dedBalancePreview">AED 0.00</strong></div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+    <button class="btn light" onclick="closeModal('deductionModal')">Cancel</button>
+    <button class="btn primary" onclick="saveDeductionMaster()">Save Deduction</button>
+  </div>
+</div></div>
+
+<div class="modalwrap" id="payrollActivationModal"><div class="modal">
+  <div class="modalhead"><h3 id="activationModalTitle">Activate Employee in Payroll</h3><button class="x" onclick="closeModal('payrollActivationModal')">×</button></div>
+  <input type="hidden" id="paEditCode">
+  <div class="formgrid three">
+    <div class="section-title">Employee Selection</div>
+    <div class="fg full"><label>Employee from Employee Master *</label><select id="paEmployee" onchange="fillActivationEmployee()"></select></div>
+    <div class="fg"><label>Employee Code</label><input id="paCode" readonly></div>
+    <div class="fg"><label>Employee Name</label><input id="paName" readonly></div>
+    <div class="fg"><label>Designation</label><input id="paDesignation" readonly></div>
+
+    <div class="section-title">Salary as per Labour Contract</div>
+    <div class="fg"><label>Labour Contract Basic Salary (AED)</label><input type="number" min="0" step=".01" id="paLabourBasic" oninput="recalcActivation()"></div>
+    <div class="fg"><label>Labour Contract Allowances (AED)</label><input type="number" min="0" step=".01" id="paLabourAllowances" oninput="recalcActivation()"></div>
+    <div class="fg"><label>Labour Contract Total Salary</label><input id="paLabourTotal" readonly></div>
+
+    <div class="section-title">Actual Salary Structure</div>
+    <div class="fg"><label>Actual Basic Salary (AED) *</label><input type="number" min="0" step=".01" id="paActualBasic" oninput="recalcActivation()"></div>
+    <div class="fg"><label>Housing Allowance</label><input type="number" min="0" step=".01" id="paHousing" oninput="recalcActivation()"></div>
+    <div class="fg"><label>Transport Allowance</label><input type="number" min="0" step=".01" id="paTransport" oninput="recalcActivation()"></div>
+    <div class="fg"><label>Food Allowance</label><input type="number" min="0" step=".01" id="paFood" oninput="recalcActivation()"></div>
+    <div class="fg"><label>Other Fixed Allowance</label><input type="number" min="0" step=".01" id="paOtherAllowance" oninput="recalcActivation()"></div>
+    <div class="fg"><label>Actual Total Salary</label><input id="paActualTotal" readonly></div>
+
+    <div class="section-title">Payroll Basis & Rate</div>
+    <div class="fg"><label>Pay Basis *</label>
+      <select id="paPayBasis" onchange="toggleActivationBasis();recalcActivation()">
+        <option value="Monthly Basic">Monthly Basic</option>
+        <option value="Hourly">Hourly</option>
+      </select>
+    </div>
+    <div class="fg" id="paMonthlyRateBox"><label>Monthly Basic / Rate (AED)</label><input type="number" min="0" step=".01" id="paMonthlyRate" oninput="recalcActivation()"></div>
+    <div class="fg hidden" id="paHourlyRateBox"><label>Hourly Rate (AED / Hour) *</label><input type="number" min="0" step=".01" id="paHourlyRate" oninput="recalcActivation()"></div>
+    <div class="fg"><label>OT Rate / Hour</label><input type="number" min="0" step=".01" id="paOtRate"></div>
+    <div class="fg"><label>Payroll Status</label><select id="paStatus"><option>Active</option><option>Inactive</option></select></div>
+    <div class="fg full"><label>Remarks</label><textarea id="paRemarks"></textarea></div>
+  </div>
+
+  <div class="summary" style="margin-top:12px">
+    <div class="sumrow"><span>Labour Contract Total</span><strong id="paSummaryLabour">AED 0.00</strong></div>
+    <div class="sumrow"><span>Actual Monthly Salary</span><strong id="paSummaryActual">AED 0.00</strong></div>
+    <div class="sumrow"><span>Payroll Basis</span><strong id="paSummaryBasis">Monthly Basic</strong></div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+    <button class="btn light" onclick="closeModal('payrollActivationModal')">Cancel</button>
+    <button class="btn primary" onclick="savePayrollActivation()">Save Payroll Setup</button>
+  </div>
+</div></div>
+
+<div class="modalwrap" id="payrollModal"><div class="modal">
+  <div class="modalhead"><h3 id="payrollModalTitle">Process Salary</h3><button class="x" onclick="closeModal('payrollModal')">×</button></div>
+  <input type="hidden" id="prRecordId">
+  <div class="formgrid three">
+    <div class="section-title">Employee & Month</div>
+    <div class="fg"><label>Payroll Month *</label><input type="month" id="prMonth" onchange="fillPayrollEmployee();recalcPayroll()"></div>
+    <div class="fg full"><label>Employee *</label><select id="prEmployee" onchange="fillPayrollEmployee()"></select></div>
+    <div class="fg"><label>Employee Code</label><input id="prEmpCode" readonly></div>
+    <div class="fg"><label>Employee Name</label><input id="prEmpName" readonly></div>
+    <div class="fg"><label>Designation</label><input id="prDesignation" readonly></div>
+
+    <div class="section-title">Salary Components</div>
+    <div class="fg"><label>Basic Salary (AED) *</label><input type="number" min="0" step=".01" id="prBasic" oninput="recalcPayroll()"></div>
+    <div class="fg"><label>Fixed Allowances (AED)</label><input type="number" min="0" step=".01" id="prAllowances" oninput="recalcPayroll()"></div>
+    <div class="fg"><label>Other Earnings (AED)</label><input type="number" min="0" step=".01" id="prOtherEarnings" oninput="recalcPayroll()"></div>
+
+    <div class="section-title">Attendance / LOP / OT</div>
+    <div class="fg"><label>Working Days Basis</label><input type="number" min="1" step="1" id="prWorkingBasis" value="30" oninput="recalcPayroll()"></div>
+    <div class="fg" id="prRegularHoursBox"><label>Regular Hours (Hourly Payroll)</label><input type="number" min="0" step=".5" id="prRegularHours" oninput="recalcPayroll()"></div>
+    <div class="fg"><label>Unpaid / LOP Days</label><input type="number" min="0" step=".5" id="prLopDays" oninput="recalcPayroll()"></div>
+    <div class="fg"><label>LOP Daily Rate</label><input id="prLopRate" readonly></div>
+    <div class="fg"><label>OT Hours</label><input type="number" min="0" step=".5" id="prOtHours" oninput="recalcPayroll()"></div>
+    <div class="fg"><label>OT Rate / Hour</label><input type="number" min="0" step=".01" id="prOtRate" oninput="recalcPayroll()"></div>
+    <div class="fg"><label>OT Amount</label><input id="prOtAmount" readonly></div>
+
+    <div class="section-title">Employee Deduction Ledger</div>
+    <div class="fg full">
+      <div class="muted" style="margin-bottom:8px">Advance / Visa / Other Deduction balances are loaded automatically for this employee and payroll month.</div>
+      <div id="prLedgerDeductions" class="deduction-rows"></div>
+      <div class="summary" style="margin-top:10px">
+        <div class="sumrow"><span>Ledger Deduction This Month</span><strong id="prLedgerDeductionTotal">AED 0.00</strong></div>
+      </div>
+    </div>
+
+    <div class="section-title">Other Deductions & Payment</div>
+    <div class="fg"><label>Other One-Time Deduction (AED)</label><input type="number" min="0" step=".01" id="prOtherDeduction" oninput="recalcPayroll()"></div>
+    <div class="fg hidden"><label>Legacy Loan / Advance Deduction</label><input type="number" min="0" step=".01" id="prLoanDeduction" oninput="recalcPayroll()"></div>
+    <div class="fg"><label>Payment Status</label><select id="prPaymentStatus"><option>Pending</option><option>Paid</option><option>On Hold</option></select></div>
+    <div class="fg"><label>Payment Date</label><input type="date" id="prPaymentDate"></div>
+    <div class="fg"><label>Payment Mode</label><select id="prPaymentMode"><option value="">Select</option><option>WPS</option><option>Bank Transfer</option><option>Cheque</option><option>Cash</option></select></div>
+    <div class="fg"><label>Reference</label><input id="prPaymentRef"></div>
+
+    <div class="section-title">Payroll Calculation</div>
+    <div class="fg full">
+      <div class="summary">
+        <div class="sumrow"><span>Gross Salary</span><strong id="prGross">AED 0.00</strong></div>
+        <div class="sumrow"><span>LOP Deduction</span><strong id="prLopDeduction">AED 0.00</strong></div>
+        <div class="sumrow"><span>Total Deductions</span><strong id="prTotalDeduction">AED 0.00</strong></div>
+        <div class="sumrow"><span>Net Salary</span><strong id="prNet">AED 0.00</strong></div>
+      </div>
+    </div>
+    <div class="fg full"><label>Remarks</label><textarea id="prRemarks"></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+    <button class="btn light" onclick="closeModal('payrollModal')">Cancel</button>
+    <button class="btn primary" onclick="savePayroll()">Save Payroll Record</button>
+  </div>
+</div></div>
+
+<script>
+const SALARY_KEY="cm_salary_portal_v1";
+const EMPLOYEE_DATA_KEY="cm_employee_portal_v3";
+let db=loadDb();
+
+function emptyDb(){return {payroll:[],payrollEmployees:[],deductions:[]}}
+function loadDb(){try{const x=JSON.parse(localStorage.getItem(SALARY_KEY)||"null");return {...emptyDb(),...(x||{})}}catch(e){return emptyDb()}}
+function saveDb(){localStorage.setItem(SALARY_KEY,JSON.stringify(db));renderAll()}
+function uid(p){return p+"-"+Date.now()+"-"+Math.random().toString(16).slice(2,7)}
+function money(v){return Number(v||0).toLocaleString("en-AE",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function fmtDate(v){if(!v)return"-";const d=new Date(v+"T00:00:00");return isNaN(d)?v:d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}
+function monthNow(){return new Date().toISOString().slice(0,7)}
+function closeModal(id){document.getElementById(id).classList.remove("show")}
+function go(id,btn){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".sidebar .nav button").forEach(x=>x.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  document.getElementById("pageTitle").textContent=({dashboard:"Salary Dashboard",employees:"Payroll Employees",deductions:"Employee Deductions",processing:"Monthly Salary Processing",history:"Salary History",reports:"Payroll Reports"})[id]||"Salary / Payroll";
+  renderAll();
+}
+function goById(id){
+  const b=[...document.querySelectorAll(".sidebar .nav button")].find(x=>x.getAttribute("onclick")?.includes("'"+id+"'"));
+  go(id,b);
+}
+function employeeData(){
+  try{
+    const x=JSON.parse(localStorage.getItem(EMPLOYEE_DATA_KEY)||"{}");
+    return Array.isArray(x.employees)?x.employees:[];
+  }catch(e){return[]}
+}
+function activeEmployees(){
+  return employeeData().filter(e=>String(e.status||"Active").toLowerCase()!=="inactive");
+}
+
+function payrollSetup(code){return db.payrollEmployees.find(x=>String(x.employeeCode||"")===String(code||""))||null}
+function payrollActiveSetups(){return db.payrollEmployees.filter(x=>x.status==="Active")}
+function payrollActiveEmployees(){
+  const activeCodes=new Set(payrollActiveSetups().map(x=>String(x.employeeCode||"")));
+  return employeeData().filter(e=>activeCodes.has(String(e.employeeCode||"")) && String(e.status||"Active").toLowerCase()!=="inactive");
+}
+function fixedAllowancesFromSetup(s){
+  return Number(s?.housing||0)+Number(s?.transport||0)+Number(s?.food||0)+Number(s?.otherAllowance||0);
+}
+function employeeByCode(code){return employeeData().find(e=>String(e.employeeCode||"")===String(code||""))||{}}
+function empLabel(e){return [e.employeeCode,e.employeeName].filter(Boolean).join(" - ")}
+function basicFromEmployee(e){
+  const s=payrollSetup(e?.employeeCode);
+  return Number(s?.actualBasic??e.basicSalary??e.currentBasicSalary??e.salaryBasic??e.basic??0);
+}
+function allowancesFromEmployee(e){
+  const s=payrollSetup(e?.employeeCode);
+  if(s)return fixedAllowancesFromSetup(s);
+  return Number(e.fixedAllowances||e.allowances||e.totalAllowances||0);
+}
+function designationFromEmployee(e){return e.actualDesignation||e.idDesignation||e.designation||""}
+
+function fillEmployeeSelect(){
+  const el=document.getElementById("prEmployee"),old=el.value;
+  el.innerHTML='<option value="">Select Employee</option>'+payrollActiveEmployees()
+    .sort((a,b)=>empLabel(a).localeCompare(empLabel(b)))
+    .map(e=>`<option value="${esc(e.employeeCode||"")}">${esc(empLabel(e))}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+
+function fillActivationEmployeeSelect(){
+  const el=document.getElementById("paEmployee"); if(!el)return;
+  const old=el.value;
+  el.innerHTML='<option value="">Select Employee</option>'+employeeData()
+    .filter(e=>String(e.status||"Active").toLowerCase()!=="inactive")
+    .sort((a,b)=>empLabel(a).localeCompare(empLabel(b)))
+    .map(e=>`<option value="${esc(e.employeeCode||"")}">${esc(empLabel(e))}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function toggleActivationBasis(){
+  const hourly=document.getElementById("paPayBasis").value==="Hourly";
+  document.getElementById("paHourlyRateBox").classList.toggle("hidden",!hourly);
+  document.getElementById("paMonthlyRateBox").classList.toggle("hidden",hourly);
+}
+function recalcActivation(){
+  const lb=+document.getElementById("paLabourBasic").value||0;
+  const la=+document.getElementById("paLabourAllowances").value||0;
+  const ab=+document.getElementById("paActualBasic").value||0;
+  const housing=+document.getElementById("paHousing").value||0;
+  const transport=+document.getElementById("paTransport").value||0;
+  const food=+document.getElementById("paFood").value||0;
+  const other=+document.getElementById("paOtherAllowance").value||0;
+  const labour=lb+la, actual=ab+housing+transport+food+other;
+  document.getElementById("paLabourTotal").value=labour.toFixed(2);
+  document.getElementById("paActualTotal").value=actual.toFixed(2);
+  document.getElementById("paSummaryLabour").textContent="AED "+money(labour);
+  document.getElementById("paSummaryActual").textContent="AED "+money(actual);
+  document.getElementById("paSummaryBasis").textContent=document.getElementById("paPayBasis").value;
+  if(document.getElementById("paPayBasis").value==="Monthly Basic" && !document.getElementById("paMonthlyRate").dataset.touched){
+    document.getElementById("paMonthlyRate").value=ab.toFixed(2);
+  }
+}
+function fillActivationEmployee(){
+  const code=document.getElementById("paEmployee").value;
+  const e=employeeByCode(code);
+  if(!e.employeeCode){
+    ["paCode","paName","paDesignation"].forEach(id=>document.getElementById(id).value="");
+    return;
+  }
+  const s=payrollSetup(code);
+  document.getElementById("paCode").value=e.employeeCode||"";
+  document.getElementById("paName").value=e.employeeName||"";
+  document.getElementById("paDesignation").value=designationFromEmployee(e);
+  document.getElementById("paEditCode").value=s?.employeeCode||"";
+  document.getElementById("paLabourBasic").value=s?.labourBasic??"";
+  document.getElementById("paLabourAllowances").value=s?.labourAllowances??"";
+  document.getElementById("paActualBasic").value=s?.actualBasic??basicFromEmployee(e);
+  document.getElementById("paHousing").value=s?.housing??0;
+  document.getElementById("paTransport").value=s?.transport??0;
+  document.getElementById("paFood").value=s?.food??0;
+  document.getElementById("paOtherAllowance").value=s?.otherAllowance??0;
+  document.getElementById("paPayBasis").value=s?.payBasis||"Monthly Basic";
+  document.getElementById("paMonthlyRate").value=s?.monthlyRate??s?.actualBasic??basicFromEmployee(e);
+  document.getElementById("paHourlyRate").value=s?.hourlyRate??0;
+  document.getElementById("paOtRate").value=s?.otRate??0;
+  document.getElementById("paStatus").value=s?.status||"Active";
+  document.getElementById("paRemarks").value=s?.remarks||"";
+  toggleActivationBasis();recalcActivation();
+}
+function openPayrollActivation(code=""){
+  fillActivationEmployeeSelect();
+  document.getElementById("activationModalTitle").textContent=code?"Edit Payroll Employee":"Activate Employee in Payroll";
+  document.getElementById("paEmployee").disabled=!!code;
+  document.getElementById("paEmployee").value=code||"";
+  ["paEditCode","paCode","paName","paDesignation","paLabourBasic","paLabourAllowances","paActualBasic","paHousing","paTransport","paFood","paOtherAllowance","paMonthlyRate","paHourlyRate","paOtRate","paRemarks"].forEach(id=>{
+    const el=document.getElementById(id); if(el&&!code)el.value="";
+  });
+  document.getElementById("paPayBasis").value="Monthly Basic";
+  document.getElementById("paStatus").value="Active";
+  if(code)fillActivationEmployee(); else {toggleActivationBasis();recalcActivation();}
+  document.getElementById("payrollActivationModal").classList.add("show");
+}
+function savePayrollActivation(){
+  const code=document.getElementById("paEmployee").value;
+  const e=employeeByCode(code);
+  if(!code||!e.employeeCode)return alert("Select Employee.");
+  const payBasis=document.getElementById("paPayBasis").value;
+  const actualBasic=+document.getElementById("paActualBasic").value||0;
+  const hourlyRate=+document.getElementById("paHourlyRate").value||0;
+  const monthlyRate=+document.getElementById("paMonthlyRate").value||0;
+  if(actualBasic<=0&&payBasis==="Monthly Basic")return alert("Enter Actual Basic Salary.");
+  if(payBasis==="Hourly"&&hourlyRate<=0)return alert("Enter Hourly Rate.");
+  const s={
+    employeeCode:code,employeeName:e.employeeName||"",designation:designationFromEmployee(e),
+    status:document.getElementById("paStatus").value,
+    labourBasic:+document.getElementById("paLabourBasic").value||0,
+    labourAllowances:+document.getElementById("paLabourAllowances").value||0,
+    actualBasic,
+    housing:+document.getElementById("paHousing").value||0,
+    transport:+document.getElementById("paTransport").value||0,
+    food:+document.getElementById("paFood").value||0,
+    otherAllowance:+document.getElementById("paOtherAllowance").value||0,
+    payBasis,monthlyRate,hourlyRate,
+    otRate:+document.getElementById("paOtRate").value||0,
+    remarks:document.getElementById("paRemarks").value.trim(),
+    updatedAt:new Date().toISOString()
+  };
+  const i=db.payrollEmployees.findIndex(x=>x.employeeCode===code);
+  if(i>=0){s.createdAt=db.payrollEmployees[i].createdAt||s.updatedAt;db.payrollEmployees[i]=s}
+  else{s.createdAt=s.updatedAt;db.payrollEmployees.push(s)}
+  document.getElementById("paEmployee").disabled=false;
+  saveDb();closeModal("payrollActivationModal");
+}
+function setPayrollEmployeeStatus(code,status){
+  const s=payrollSetup(code);
+  if(!s)return;
+  if(status==="Inactive"&&!confirm("Make this employee Inactive in Payroll? Existing salary history will remain."))return;
+  s.status=status;s.updatedAt=new Date().toISOString();saveDb();
+}
+function renderPayrollEmployees(){
+  const q=(document.getElementById("peSearch")?.value||"").toLowerCase();
+  const st=document.getElementById("peStatusFilter")?.value||"";
+  const basis=document.getElementById("peBasisFilter")?.value||"";
+  const arr=db.payrollEmployees.filter(s=>(!st||s.status===st)&&(!basis||s.payBasis===basis)&&
+    [s.employeeCode,s.employeeName,s.designation].join(" ").toLowerCase().includes(q));
+  document.getElementById("payrollEmployeeRows").innerHTML=arr.map(s=>`<tr>
+    <td><b>${esc(s.employeeName||"-")}</b><br><span class="muted">${esc(s.employeeCode||"")}</span></td>
+    <td>${esc(s.designation||"-")}</td>
+    <td>${s.status==="Active"?'<span class="badge approved">Active</span>':'<span class="badge alert">Inactive</span>'}</td>
+    <td>${esc(s.payBasis||"-")}</td>
+    <td>AED ${money(Number(s.labourBasic||0)+Number(s.labourAllowances||0))}</td>
+    <td>AED ${money(s.actualBasic)}</td>
+    <td>AED ${money(fixedAllowancesFromSetup(s))}</td>
+    <td>${s.payBasis==="Hourly"?"AED "+money(s.hourlyRate)+" / Hr":"AED "+money(s.monthlyRate)+" / Month"}</td>
+    <td><button class="btn light" onclick="openPayrollActivation('${esc(s.employeeCode)}')">Edit</button>
+      <button class="btn light" onclick="openDeductionModal('', '${esc(s.employeeCode)}')">Deductions</button>
+      ${s.status==="Active"?`<button class="btn red" onclick="setPayrollEmployeeStatus('${esc(s.employeeCode)}','Inactive')">Make Inactive</button>`:`<button class="btn green" onclick="setPayrollEmployeeStatus('${esc(s.employeeCode)}','Active')">Make Active</button>`}
+    </td>
+  </tr>`).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No Payroll Employees activated yet.</td></tr>';
+  document.getElementById("kPayrollActive").textContent=db.payrollEmployees.filter(x=>x.status==="Active").length;
+  document.getElementById("kPayrollInactive").textContent=db.payrollEmployees.filter(x=>x.status==="Inactive").length;
+  document.getElementById("kMasterEmployees").textContent=employeeData().length;
+  document.getElementById("kHourlyPayroll").textContent=db.payrollEmployees.filter(x=>x.status==="Active"&&x.payBasis==="Hourly").length;
+}
+
+
+function deductionMaster(id){return db.deductions.find(d=>d.id===id)||null}
+function payrollDeductionsForMaster(id,excludePayrollId=""){
+  const rows=[];
+  db.payroll.forEach(p=>{
+    if(excludePayrollId&&p.id===excludePayrollId)return;
+    (Array.isArray(p.deductionLines)?p.deductionLines:[]).forEach(l=>{
+      if(l.deductionId===id&&Number(l.amount||0)>0)rows.push({payroll:p,line:l});
+    });
+  });
+  return rows;
+}
+function recoveredForDeduction(id,excludePayrollId=""){
+  return payrollDeductionsForMaster(id,excludePayrollId).reduce((s,x)=>s+Number(x.line.amount||0),0);
+}
+function deductionBalance(id,excludePayrollId=""){
+  const d=deductionMaster(id); if(!d)return 0;
+  return Math.max(0,Number(d.originalAmount||0)-recoveredForDeduction(id,excludePayrollId));
+}
+function deductionEffectiveStatus(d){
+  if(!d)return "Completed";
+  if(d.status==="On Hold")return "On Hold";
+  return deductionBalance(d.id)<=0?"Completed":"Active";
+}
+function fillDeductionEmployeeSelect(){
+  const el=document.getElementById("dedEmployee"); if(!el)return;
+  const old=el.value;
+  el.innerHTML='<option value="">Select Payroll Employee</option>'+db.payrollEmployees
+    .slice().sort((a,b)=>String(a.employeeName||"").localeCompare(String(b.employeeName||"")))
+    .map(s=>`<option value="${esc(s.employeeCode||"")}">${esc((s.employeeCode||"")+" - "+(s.employeeName||""))}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function openDeductionModal(id="",employeeCode=""){
+  fillDeductionEmployeeSelect();
+  const d=id?deductionMaster(id):null;
+  document.getElementById("deductionModalTitle").textContent=id?"Edit Employee Deduction":"Add Employee Deduction";
+  document.getElementById("dedId").value=d?.id||"";
+  document.getElementById("dedEmployee").value=d?.employeeCode||employeeCode||"";
+  document.getElementById("dedEmployee").disabled=!!id;
+  document.getElementById("dedType").value=d?.type||"Advance";
+  document.getElementById("dedReference").value=d?.reference||"";
+  document.getElementById("dedStartMonth").value=d?.startMonth||monthNow();
+  document.getElementById("dedOriginalAmount").value=d?.originalAmount??"";
+  document.getElementById("dedDefaultMonthly").value=d?.defaultMonthly??"";
+  document.getElementById("dedStatus").value=d?.status||"Active";
+  document.getElementById("dedRemarks").value=d?.remarks||"";
+  const recovered=d?recoveredForDeduction(d.id):0;
+  const balance=d?deductionBalance(d.id):0;
+  document.getElementById("dedRecoveredPreview").textContent="AED "+money(recovered);
+  document.getElementById("dedBalancePreview").textContent="AED "+money(balance);
+  document.getElementById("deductionModal").classList.add("show");
+}
+function saveDeductionMaster(){
+  const id=document.getElementById("dedId").value;
+  const employeeCode=document.getElementById("dedEmployee").value;
+  const emp=employeeByCode(employeeCode);
+  const originalAmount=+document.getElementById("dedOriginalAmount").value||0;
+  const defaultMonthly=+document.getElementById("dedDefaultMonthly").value||0;
+  const startMonth=document.getElementById("dedStartMonth").value;
+  if(!employeeCode)return alert("Select Payroll Employee.");
+  if(!startMonth)return alert("Select Start Month.");
+  if(originalAmount<=0)return alert("Enter Original Deduction Amount.");
+  const recovered=id?recoveredForDeduction(id):0;
+  if(originalAmount<recovered)return alert("Original Amount cannot be less than already recovered amount AED "+money(recovered)+".");
+  const d={
+    id:id||uid("DED"),
+    employeeCode,
+    employeeName:emp.employeeName||payrollSetup(employeeCode)?.employeeName||"",
+    type:document.getElementById("dedType").value,
+    reference:document.getElementById("dedReference").value.trim(),
+    startMonth,
+    originalAmount,
+    defaultMonthly,
+    status:document.getElementById("dedStatus").value,
+    remarks:document.getElementById("dedRemarks").value.trim(),
+    updatedAt:new Date().toISOString()
+  };
+  const i=db.deductions.findIndex(x=>x.id===d.id);
+  if(i>=0){d.createdAt=db.deductions[i].createdAt||d.updatedAt;db.deductions[i]=d}
+  else{d.createdAt=d.updatedAt;db.deductions.push(d)}
+  document.getElementById("dedEmployee").disabled=false;
+  closeModal("deductionModal");saveDb();
+}
+function deleteDeductionMaster(id){
+  if(recoveredForDeduction(id)>0)return alert("Cannot delete this deduction because payroll recovery history exists. Set it On Hold instead.");
+  if(!confirm("Delete this deduction master?"))return;
+  db.deductions=db.deductions.filter(d=>d.id!==id);saveDb();
+}
+function renderDeductions(){
+  const q=(document.getElementById("dedSearch")?.value||"").toLowerCase();
+  const typ=document.getElementById("dedTypeFilter")?.value||"";
+  const st=document.getElementById("dedStatusFilter")?.value||"";
+  const arr=db.deductions.filter(d=>{
+    const status=deductionEffectiveStatus(d);
+    return (!typ||d.type===typ)&&(!st||status===st)&&[d.employeeCode,d.employeeName,d.type,d.reference].join(" ").toLowerCase().includes(q);
+  });
+  document.getElementById("deductionMasterRows").innerHTML=arr.map(d=>{
+    const recovered=recoveredForDeduction(d.id),balance=deductionBalance(d.id),status=deductionEffectiveStatus(d);
+    return `<tr>
+      <td><b>${esc(d.employeeName||"-")}</b><br><span class="muted">${esc(d.employeeCode||"")}</span></td>
+      <td>${esc(d.type)}</td><td>${esc(d.reference||"-")}</td><td>${esc(d.startMonth||"-")}</td>
+      <td>AED ${money(d.originalAmount)}</td><td>AED ${money(recovered)}</td><td><b>AED ${money(balance)}</b></td>
+      <td>AED ${money(d.defaultMonthly)}</td>
+      <td>${status==="Active"?'<span class="badge approved">Active</span>':status==="Completed"?'<span class="badge info">Completed</span>':'<span class="badge pending">On Hold</span>'}</td>
+      <td><button class="btn light" onclick="openDeductionModal('${d.id}')">Edit</button> <button class="btn red" onclick="deleteDeductionMaster('${d.id}')">Delete</button></td>
+    </tr>`;
+  }).join("")||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#7d8da0">No deduction masters.</td></tr>';
+
+  const totalOriginal=db.deductions.reduce((s,d)=>s+Number(d.originalAmount||0),0);
+  const totalRecovered=db.deductions.reduce((s,d)=>s+recoveredForDeduction(d.id),0);
+  document.getElementById("kDedActive").textContent=db.deductions.filter(d=>deductionEffectiveStatus(d)==="Active").length;
+  document.getElementById("kDedOriginal").textContent=money(totalOriginal);
+  document.getElementById("kDedRecovered").textContent=money(totalRecovered);
+  document.getElementById("kDedBalance").textContent=money(Math.max(0,totalOriginal-totalRecovered));
+}
+function deductionHistoryRowsData(){
+  const rows=[];
+  db.payroll.slice().sort((a,b)=>(a.month||"").localeCompare(b.month||"")).forEach(p=>{
+    (Array.isArray(p.deductionLines)?p.deductionLines:[]).forEach(l=>{
+      const d=deductionMaster(l.deductionId);
+      rows.push({
+        month:p.month,employeeCode:p.employeeCode,employeeName:p.employeeName,
+        type:l.type||d?.type||"",opening:Number(l.openingBalance||0),amount:Number(l.amount||0),
+        closing:Number(l.closingBalance||0),paymentStatus:p.paymentStatus||"Pending"
+      });
+    });
+  });
+  return rows;
+}
+function renderDeductionHistory(){
+  const q=(document.getElementById("dedHistSearch")?.value||"").toLowerCase();
+  const arr=deductionHistoryRowsData().filter(r=>[r.month,r.employeeCode,r.employeeName,r.type].join(" ").toLowerCase().includes(q));
+  document.getElementById("deductionHistoryRows").innerHTML=arr.slice().reverse().map(r=>`<tr>
+    <td>${esc(r.month)}</td><td><b>${esc(r.employeeName)}</b><br><span class="muted">${esc(r.employeeCode)}</span></td>
+    <td>${esc(r.type)}</td><td>AED ${money(r.opening)}</td><td><b>AED ${money(r.amount)}</b></td><td>AED ${money(r.closing)}</td><td>${esc(r.paymentStatus)}</td>
+  </tr>`).join("")||'<tr><td colspan="7" style="text-align:center;padding:20px;color:#7d8da0">No deduction recovery history.</td></tr>';
+}
+function ledgerRowsForPayroll(employeeCode,month,payrollId=""){
+  const old=findPayroll(month,employeeCode);
+  const oldMap=new Map((Array.isArray(old?.deductionLines)?old.deductionLines:[]).map(l=>[l.deductionId,l]));
+  return db.deductions
+    .filter(d=>d.employeeCode===employeeCode&&d.startMonth<=month&&d.status!=="On Hold")
+    .map(d=>{
+      const opening=deductionBalance(d.id,payrollId||old?.id||"");
+      const oldLine=oldMap.get(d.id);
+      const suggested=Math.min(opening, oldLine?Number(oldLine.amount||0):Number(d.defaultMonthly||0));
+      return {d,opening,amount:Math.max(0,suggested),closing:Math.max(0,opening-Math.max(0,suggested))};
+    })
+    .filter(x=>x.opening>0 || oldMap.has(x.d.id));
+}
+function renderPayrollLedgerDeductions(){
+  const code=document.getElementById("prEmployee").value;
+  const month=document.getElementById("prMonth").value;
+  const payrollId=document.getElementById("prRecordId").value;
+  const box=document.getElementById("prLedgerDeductions");
+  if(!box)return;
+  if(!code||!month){box.innerHTML='<div class="muted">Select employee and payroll month.</div>';document.getElementById("prLedgerDeductionTotal").textContent="AED 0.00";return;}
+  const rows=ledgerRowsForPayroll(code,month,payrollId);
+  box.innerHTML=rows.map(x=>`<div class="deduction-row" data-deduction-id="${esc(x.d.id)}" data-opening="${x.opening}">
+    <div class="fg"><label>Deduction</label><div class="bal">${esc(x.d.type)}${x.d.reference?' — '+esc(x.d.reference):''}</div></div>
+    <div class="fg"><label>Opening Balance</label><div class="bal">AED ${money(x.opening)}</div></div>
+    <div class="fg"><label>This Month Deduction</label><input type="number" min="0" max="${x.opening}" step=".01" class="ledger-amount" value="${x.amount.toFixed(2)}" oninput="recalcPayrollLedgerRow(this);recalcPayroll()"></div>
+    <div class="fg"><label>Remaining Balance</label><div class="bal ledger-closing">AED ${money(x.closing)}</div></div>
+    <div class="fg"><label>Default Monthly</label><div class="bal">AED ${money(x.d.defaultMonthly)}</div></div>
+  </div>`).join("")||'<div class="muted">No active deduction balance for this employee/month.</div>';
+  recalcPayroll();
+}
+function recalcPayrollLedgerRow(input){
+  const row=input.closest(".deduction-row");
+  const opening=Number(row.dataset.opening||0);
+  let amount=Math.max(0,Number(input.value||0));
+  if(amount>opening){amount=opening;input.value=opening.toFixed(2);}
+  row.querySelector(".ledger-closing").textContent="AED "+money(Math.max(0,opening-amount));
+}
+function getPayrollDeductionLines(){
+  return [...document.querySelectorAll("#prLedgerDeductions .deduction-row")].map(row=>{
+    const id=row.dataset.deductionId;
+    const d=deductionMaster(id);
+    const opening=Number(row.dataset.opening||0);
+    const amount=Math.min(opening,Math.max(0,Number(row.querySelector(".ledger-amount")?.value||0)));
+    return {deductionId:id,type:d?.type||"",reference:d?.reference||"",openingBalance:opening,amount,closingBalance:Math.max(0,opening-amount)};
+  }).filter(l=>l.amount>0);
+}
+function payrollLedgerDeductionTotal(){
+  return [...document.querySelectorAll("#prLedgerDeductions .ledger-amount")].reduce((s,el)=>s+Math.max(0,Number(el.value||0)),0);
+}
+
+function findPayroll(month,code){return db.payroll.find(p=>p.month===month&&p.employeeCode===code)}
+function fillPayrollEmployee(){
+  const code=document.getElementById("prEmployee").value;
+  const month=document.getElementById("prMonth").value;
+  const e=employeeByCode(code);
+  if(!e.employeeCode){
+    ["prEmpCode","prEmpName","prDesignation"].forEach(id=>document.getElementById(id).value="");
+    return;
+  }
+  const old=findPayroll(month,code);
+  document.getElementById("prRecordId").value=old?.id||"";
+  document.getElementById("prEmpCode").value=e.employeeCode||"";
+  document.getElementById("prEmpName").value=e.employeeName||"";
+  document.getElementById("prDesignation").value=designationFromEmployee(e);
+  document.getElementById("prBasic").value=old?.basic??basicFromEmployee(e);
+  document.getElementById("prAllowances").value=old?.allowances??allowancesFromEmployee(e);
+  document.getElementById("prOtherEarnings").value=old?.otherEarnings??0;
+  document.getElementById("prWorkingBasis").value=old?.workingBasis??30;
+  document.getElementById("prRegularHours").value=old?.regularHours??0;
+  document.getElementById("prLopDays").value=old?.lopDays??0;
+  document.getElementById("prOtHours").value=old?.otHours??0;
+  const setup=payrollSetup(code);
+  document.getElementById("prOtRate").value=old?.otRate??Number(setup?.otRate||0);
+  document.getElementById("prOtherDeduction").value=old?.otherDeduction??0;
+  document.getElementById("prLoanDeduction").value=old?.loanDeduction??0;
+  document.getElementById("prPaymentStatus").value=old?.paymentStatus||"Pending";
+  document.getElementById("prPaymentDate").value=old?.paymentDate||"";
+  document.getElementById("prPaymentMode").value=old?.paymentMode||"";
+  document.getElementById("prPaymentRef").value=old?.paymentRef||"";
+  document.getElementById("prRemarks").value=old?.remarks||"";
+  renderPayrollLedgerDeductions();
+  recalcPayroll();
+}
+function recalcPayroll(){
+  const code=document.getElementById("prEmployee").value;
+  const setup=payrollSetup(code);
+  const enteredBasic=+document.getElementById("prBasic").value||0;
+  const regularHours=Math.max(0,+document.getElementById("prRegularHours").value||0);
+  const basic=(setup?.payBasis==="Hourly") ? regularHours*Number(setup.hourlyRate||0) : enteredBasic;
+  const allowances=+document.getElementById("prAllowances").value||0;
+  const otherEarnings=+document.getElementById("prOtherEarnings").value||0;
+  const basis=Math.max(1,+document.getElementById("prWorkingBasis").value||30);
+  const lopDays=Math.max(0,+document.getElementById("prLopDays").value||0);
+  const otHours=Math.max(0,+document.getElementById("prOtHours").value||0);
+  const otRate=Math.max(0,+document.getElementById("prOtRate").value||0);
+  const otherDed=Math.max(0,+document.getElementById("prOtherDeduction").value||0);
+  const loan=Math.max(0,+document.getElementById("prLoanDeduction").value||0);
+  const ledgerDeduction=payrollLedgerDeductionTotal();
+  const lopRate=(setup?.payBasis==="Hourly")?0:basic/basis;
+  const lopDed=(setup?.payBasis==="Hourly")?0:lopRate*lopDays;
+  const otAmount=otHours*otRate;
+  const gross=basic+allowances+otherEarnings+otAmount;
+  const totalDed=lopDed+otherDed+loan+ledgerDeduction;
+  const net=Math.max(0,gross-totalDed);
+  document.getElementById("prLopRate").value=lopRate.toFixed(2);
+  document.getElementById("prOtAmount").value=otAmount.toFixed(2);
+  document.getElementById("prGross").textContent="AED "+money(gross);
+  document.getElementById("prLopDeduction").textContent="AED "+money(lopDed);
+  document.getElementById("prLedgerDeductionTotal").textContent="AED "+money(ledgerDeduction);
+  document.getElementById("prTotalDeduction").textContent="AED "+money(totalDed);
+  document.getElementById("prNet").textContent="AED "+money(net);
+  return {basicCalc:basic,lopRate,lopDed,otAmount,gross,ledgerDeduction,totalDed,net};
+}
+function openPayroll(code="",month=""){
+  fillEmployeeSelect();
+  document.getElementById("prMonth").value=month||document.getElementById("payMonthFilter").value||monthNow();
+  document.getElementById("prEmployee").value=code||"";
+  document.getElementById("prRecordId").value="";
+  if(code)fillPayrollEmployee();
+  else{
+    ["prEmpCode","prEmpName","prDesignation","prPaymentRef","prRemarks"].forEach(id=>document.getElementById(id).value="");
+    ["prBasic","prAllowances","prOtherEarnings","prRegularHours","prLopDays","prOtHours","prOtRate","prOtherDeduction","prLoanDeduction"].forEach(id=>document.getElementById(id).value=0);
+    document.getElementById("prWorkingBasis").value=30;
+    document.getElementById("prPaymentStatus").value="Pending";
+    document.getElementById("prPaymentDate").value="";
+    document.getElementById("prPaymentMode").value="";
+    renderPayrollLedgerDeductions();
+    recalcPayroll();
+  }
+  document.getElementById("payrollModal").classList.add("show");
+}
+function savePayroll(){
+  const month=document.getElementById("prMonth").value;
+  const code=document.getElementById("prEmployee").value;
+  const e=employeeByCode(code);
+  if(!month)return alert("Select Payroll Month.");
+  if(!code||!e.employeeCode)return alert("Select Employee.");
+  const calc=recalcPayroll();
+  const id=document.getElementById("prRecordId").value||uid("PAY");
+  const p={
+    id,month,employeeCode:code,employeeName:e.employeeName||"",designation:designationFromEmployee(e),
+    basic:calc.basicCalc,
+    payBasis:payrollSetup(code)?.payBasis||"Monthly Basic",
+    regularHours:+document.getElementById("prRegularHours").value||0,
+    allowances:+document.getElementById("prAllowances").value||0,
+    otherEarnings:+document.getElementById("prOtherEarnings").value||0,
+    workingBasis:+document.getElementById("prWorkingBasis").value||30,
+    lopDays:+document.getElementById("prLopDays").value||0,
+    lopRate:calc.lopRate,lopDeduction:calc.lopDed,
+    otHours:+document.getElementById("prOtHours").value||0,
+    otRate:+document.getElementById("prOtRate").value||0,
+    otAmount:calc.otAmount,
+    deductionLines:getPayrollDeductionLines(),
+    ledgerDeduction:calc.ledgerDeduction,
+    otherDeduction:+document.getElementById("prOtherDeduction").value||0,
+    loanDeduction:+document.getElementById("prLoanDeduction").value||0,
+    gross:calc.gross,totalDeduction:calc.totalDed,net:calc.net,
+    paymentStatus:document.getElementById("prPaymentStatus").value,
+    paymentDate:document.getElementById("prPaymentDate").value,
+    paymentMode:document.getElementById("prPaymentMode").value,
+    paymentRef:document.getElementById("prPaymentRef").value.trim(),
+    remarks:document.getElementById("prRemarks").value.trim(),
+    updatedAt:new Date().toISOString()
+  };
+  const i=db.payroll.findIndex(x=>x.id===id);
+  if(i>=0){p.createdAt=db.payroll[i].createdAt||p.updatedAt;db.payroll[i]=p}
+  else{p.createdAt=p.updatedAt;db.payroll.push(p)}
+  saveDb();closeModal("payrollModal");
+}
+function deletePayroll(id){
+  if(!confirm("Delete this payroll record? Any deduction recovery posted in this payroll will be reversed automatically and deduction balance will restore."))return;
+  db.payroll=db.payroll.filter(x=>x.id!==id);saveDb();
+}
+function renderDashboard(){
+  const month=monthNow(),emps=payrollActiveEmployees(),rows=db.payroll.filter(p=>p.month===month);
+  document.getElementById("kEmployees").textContent=emps.length;
+  document.getElementById("kProcessed").textContent=rows.length;
+  document.getElementById("kPending").textContent=Math.max(0,emps.length-rows.length);
+  document.getElementById("kNetPayroll").textContent=money(rows.reduce((s,p)=>s+Number(p.net||0),0));
+  document.getElementById("dashRows").innerHTML=rows.map(p=>`<tr>
+    <td><b>${esc(p.employeeName)}</b><br><span class="muted">${esc(p.employeeCode)}</span></td>
+    <td>${money(p.basic)}</td><td>${money(p.allowances)}</td><td>${money(p.otAmount)}</td><td>${money(p.lopDeduction)}</td>
+    <td>${money(Number(p.ledgerDeduction||0)+Number(p.otherDeduction||0)+Number(p.loanDeduction||0))}</td><td><b>${money(p.net)}</b></td>
+    <td>${p.paymentStatus==="Paid"?'<span class="badge approved">Paid</span>':'<span class="badge pending">'+esc(p.paymentStatus||"Pending")+'</span>'}</td>
+  </tr>`).join("")||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8da0">No payroll processed this month.</td></tr>';
+}
+function renderProcessing(){
+  const month=document.getElementById("payMonthFilter").value||monthNow();
+  const q=(document.getElementById("paySearch").value||"").toLowerCase();
+  const status=document.getElementById("payStatusFilter").value;
+  const arr=payrollActiveEmployees().filter(e=>empLabel(e).toLowerCase().includes(q)).map(e=>{
+    const p=findPayroll(month,e.employeeCode);
+    return {e,p,status:p?"Processed":"Pending"};
+  }).filter(x=>!status||x.status===status);
+  document.getElementById("processingRows").innerHTML=arr.map(x=>`<tr>
+    <td><b>${esc(x.e.employeeName||"-")}</b><br><span class="muted">${esc(x.e.employeeCode||"")}</span></td>
+    <td>${esc(designationFromEmployee(x.e)||"-")}</td><td>${money(x.p?.basic??basicFromEmployee(x.e))}</td>
+    <td>${x.p?'<span class="badge approved">Processed</span>':'<span class="badge pending">Pending</span>'}</td>
+    <td>${x.p?.lopDays??0}</td><td>${x.p?.otHours??0}</td><td>${x.p?'<b>'+money(x.p.net)+'</b>':'-'}</td>
+    <td><button class="btn light" onclick="openPayroll('${esc(x.e.employeeCode)}','${esc(month)}')">${x.p?'Edit':'Process'}</button></td>
+  </tr>`).join("")||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8da0">No employees found.</td></tr>';
+}
+function renderHistory(){
+  const m=document.getElementById("histMonth").value,q=(document.getElementById("histSearch").value||"").toLowerCase();
+  const arr=db.payroll.slice().sort((a,b)=>(b.month||"").localeCompare(a.month||"")).filter(p=>(!m||p.month===m)&&[p.employeeCode,p.employeeName].join(" ").toLowerCase().includes(q));
+  document.getElementById("historyRows").innerHTML=arr.map(p=>`<tr>
+    <td>${esc(p.month)}</td><td><b>${esc(p.employeeName)}</b><br><span class="muted">${esc(p.employeeCode)}</span></td>
+    <td>${money(p.basic)}</td><td>${money(p.allowances)}</td><td>${money(p.otAmount)}</td><td>${money(p.lopDeduction)}</td>
+    <td>${money(Number(p.ledgerDeduction||0)+Number(p.otherDeduction||0)+Number(p.loanDeduction||0))}</td><td><b>${money(p.net)}</b></td><td>${esc(p.paymentStatus||"Pending")}</td>
+    <td><button class="btn light" onclick="openPayroll('${esc(p.employeeCode)}','${esc(p.month)}')">Edit</button> <button class="btn red" onclick="deletePayroll('${p.id}')">Delete</button></td>
+  </tr>`).join("")||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#7d8da0">No salary history.</td></tr>';
+}
+function exportPayrollCsv(){
+  const rows=db.payroll.slice().sort((a,b)=>(b.month||"").localeCompare(a.month||""));
+  const headers=["Month","Employee Code","Employee Name","Designation","Basic","Allowances","Other Earnings","OT Hours","OT Rate","OT Amount","LOP Days","LOP Deduction","Ledger Deduction","Other Deduction","Loan Deduction","Gross","Total Deduction","Net Salary","Payment Status","Payment Date","Payment Mode"];
+  const data=rows.map(p=>[p.month,p.employeeCode,p.employeeName,p.designation,p.basic,p.allowances,p.otherEarnings,p.otHours,p.otRate,p.otAmount,p.lopDays,p.lopDeduction,p.ledgerDeduction||0,p.otherDeduction,p.loanDeduction,p.gross,p.totalDeduction,p.net,p.paymentStatus,p.paymentDate,p.paymentMode]);
+  const csv=[headers,...data].map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="salary_payroll_register.csv";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function printPayrollReport(){
+  const rows=db.payroll.slice().sort((a,b)=>(b.month||"").localeCompare(a.month||""));
+  const w=window.open("","_blank");
+  w.document.write(`<!doctype html><html><head><title>Payroll Report</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #ccc;padding:7px;text-align:left}th{background:#eef3f8}h2{color:#17365d}</style></head><body><h2>Salary / Payroll Report</h2><table><thead><tr><th>Month</th><th>Employee</th><th>Basic</th><th>Allowances</th><th>OT</th><th>LOP</th><th>Deductions</th><th>Net</th></tr></thead><tbody>${rows.map(p=>`<tr><td>${esc(p.month)}</td><td>${esc(p.employeeCode+" - "+p.employeeName)}</td><td>${money(p.basic)}</td><td>${money(p.allowances)}</td><td>${money(p.otAmount)}</td><td>${money(p.lopDeduction)}</td><td>${money(Number(p.ledgerDeduction||0)+Number(p.otherDeduction||0)+Number(p.loanDeduction||0))}</td><td>${money(p.net)}</td></tr>`).join("")}</tbody></table></body></html>`);
+  w.document.close();w.focus();setTimeout(()=>w.print(),300);
+}
+function renderReports(){
+  document.getElementById("kTotalRecords").textContent=db.payroll.length;
+  document.getElementById("kTotalNet").textContent=money(db.payroll.reduce((s,p)=>s+Number(p.net||0),0));
+}
+function renderAll(){fillEmployeeSelect();fillDeductionEmployeeSelect();renderPayrollEmployees();renderDeductions();renderDeductionHistory();renderDashboard();renderProcessing();renderHistory();renderReports()}
+document.addEventListener("DOMContentLoaded",()=>{
+  document.querySelectorAll("[id]").forEach(el=>{try{if(typeof window[el.id]==="undefined")Object.defineProperty(window,el.id,{value:el,configurable:true})}catch(e){}});
+  document.getElementById("payMonthFilter").value=monthNow();
+  renderAll();
+  window.addEventListener("focus",renderAll);
+});
+</script>
+</body>
+</html>
