@@ -81,6 +81,15 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 </style>
 </head>
 <body>
+<script>
+// Auth guard: this module must not be reachable without a valid Employee Portal session.
+(function(){
+  var SESSION_KEY = "cm_logged_in_v3";
+  if(sessionStorage.getItem(SESSION_KEY) !== "1" && localStorage.getItem(SESSION_KEY) !== "1"){
+    window.location.replace("index.html");
+  }
+})();
+</script>
 <div class="app">
 <aside class="sidebar">
   <div class="brand"><div class="logo">CM</div><div><h2>CIVIL MASTER</h2><small>Leave Management Module</small></div></div>
@@ -753,19 +762,6 @@ td{padding:9px;border-bottom:1px solid #eef1f5}tr:hover td{background:#fbfcfe}
 
 const EMPLOYEE_DATA_KEY = "cm_employee_portal_v3";
 const LEAVE_DATA_KEY = "cm_leave_portal_v1";
-
-// One-time cleanup for this refreshed portal build.
-// Clears only Leave Portal records; Employee Master data is preserved.
-const LEAVE_RESET_MARKER = "cm_leave_portal_clean_reset_20260825";
-try {
-  if (!localStorage.getItem(LEAVE_RESET_MARKER)) {
-    localStorage.removeItem(LEAVE_DATA_KEY);
-    localStorage.setItem(LEAVE_RESET_MARKER, "done");
-  }
-} catch (err) {
-  console.warn("Leave Portal cleanup could not be completed", err);
-}
-
 
 function readEmployeePortalData(){
   try{

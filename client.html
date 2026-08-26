@@ -89,6 +89,15 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
 </style>
 </head>
 <body>
+<script>
+// Auth guard: this module must not be reachable without a valid Employee Portal session.
+(function(){
+  var SESSION_KEY = "cm_logged_in_v3";
+  if(sessionStorage.getItem(SESSION_KEY) !== "1" && localStorage.getItem(SESSION_KEY) !== "1"){
+    window.location.replace("index.html");
+  }
+})();
+</script>
 <div class="app">
 <aside class="sidebar">
   <div class="brand"><div class="logo">CM</div><div><h2>CIVIL MASTER</h2><small>Client Management</small></div></div>
