@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Civil Master ERP - Client Management</title>
+<style>
+:root{
+  --navy:#17365d;--blue:#4f86bd;--blue2:#eaf3fb;--orange:#f2a45f;--orange2:#fff3e8;
+  --bg:#f5f7fa;--card:#fff;--text:#243140;--muted:#6b7280;--line:#e5e9ef;
+  --green:#198754;--red:#c73b3b;--amber:#b86f11;--shadow:0 10px 28px rgba(23,54,93,.08)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.app{min-height:100vh;display:flex}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:252px;padding:18px 14px;background:linear-gradient(180deg,#17365d,#245282);color:#fff;overflow:auto}
+.brand{display:flex;gap:12px;align-items:center;padding:5px 7px 18px;border-bottom:1px solid rgba(255,255,255,.12)}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#fff,#ffd9b7);display:grid;place-items:center;color:var(--navy);font-weight:900}
+.brand h2{font-size:15px;margin:0}.brand small{font-size:10px;color:#d9e6f3}
+.nav-title{margin:18px 8px 6px;color:#bcd0e5;font-size:9px;text-transform:uppercase;letter-spacing:1.2px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button,.module-link{border:0;background:transparent;color:#edf4fb;border-radius:10px;padding:11px 12px;text-align:left;display:flex;gap:10px;align-items:center;text-decoration:none;font-size:12px;width:100%}
+.nav button:hover,.nav button.active,.module-link:hover{background:rgba(255,255,255,.14)}
+.ico{width:20px;text-align:center}
+.sidebar-note{margin-top:20px;background:rgba(255,255,255,.08);border-radius:12px;padding:11px;font-size:10px;color:#dbe7f3;line-height:1.5}
+.main{margin-left:252px;width:calc(100% - 252px)}
+.topbar{position:sticky;top:0;z-index:20;height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 26px}
+.title h1{font-size:19px;margin:0;color:var(--navy)}.title p{margin:4px 0 0;font-size:10px;color:var(--muted)}
+.user{display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--orange2);color:var(--amber);font-weight:800}
+.content{padding:24px 26px 40px}.page{display:none}.page.active{display:block}
+.pagehead{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}
+.pagehead h2{font-size:20px;color:var(--navy);margin:0}.pagehead p{font-size:11px;color:var(--muted);margin:5px 0 0}
+.btn{border:0;border-radius:9px;padding:9px 13px;font-size:11px;font-weight:700}.primary{background:var(--navy);color:#fff}.orange{background:var(--orange);color:#fff}.light{background:#fff;border:1px solid var(--line);color:var(--navy)}.red{background:var(--red);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:15px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.kpi .top{display:flex;justify-content:space-between;gap:10px}.kpi .lab{font-size:11px;color:var(--muted)}.kpi .num{font-size:27px;font-weight:900;color:var(--navy);margin-top:8px}.kpi .hint{font-size:9px;color:var(--muted);margin-top:3px}
+.bubble{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--blue2);color:var(--blue);font-weight:800}.bubble.o{background:var(--orange2);color:var(--amber)}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:var(--shadow);margin-bottom:15px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.toolbar .search{min-width:240px;flex:1}
+input,select,textarea{border:1px solid #dce2e9;border-radius:9px;background:#fff;padding:9px 10px;font-size:11px;outline:none;width:100%}
+textarea{min-height:78px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:#7ca7d3;box-shadow:0 0 0 3px rgba(79,134,189,.08)}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.formgrid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.fg{display:flex;flex-direction:column;gap:5px}.fg.full{grid-column:1/-1}label{font-size:10px;font-weight:800;color:#45566c}
+.tablewrap{overflow:auto;border:1px solid #edf1f5;border-radius:11px}
+table{width:100%;border-collapse:collapse;font-size:10px;min-width:900px}
+th{text-align:left;background:#f1f5f9;color:var(--navy);padding:9px;border-bottom:1px solid var(--line);font-size:9px;text-transform:uppercase;white-space:nowrap}
+td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{background:#fbfcfe}
+.badge{display:inline-flex;border-radius:20px;padding:4px 7px;font-size:8px;font-weight:800}
+.activeb{background:#e9f7ef;color:#19734c}.inactiveb{background:#fdeceb;color:#b83a36}.holdb{background:#fff3db;color:#916017}.doneb{background:#eaf3fb;color:#2c689e}
+.modalwrap{display:none;position:fixed;inset:0;z-index:100;background:rgba(12,23,35,.55);align-items:center;justify-content:center;padding:20px}.modalwrap.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:min(980px,96vw);max-height:92vh;overflow:auto;padding:19px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
+.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.modalhead h3{margin:0;color:var(--navy);font-size:16px}.x{width:30px;height:30px;border:0;border-radius:8px;background:#f2f4f7}
+.section-title{grid-column:1/-1;margin-top:4px;padding:9px 10px;border-left:4px solid var(--orange);background:#fff8f1;border-radius:8px;font-size:11px;font-weight:900;color:var(--navy)}
+.muted{color:var(--muted);font-size:10px}
+.subtabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.subtab{border:1px solid #d8e4f2;background:#f8fbfe;color:#415a72;padding:9px 12px;border-radius:9px;font-weight:700;font-size:11px}
+.subtab.active{background:#eaf3ff;color:#2e6d99;border-color:#bdd5ef}
+.subpane{display:none}.subpane.active{display:block}
+.current-box{background:linear-gradient(135deg,#eef5fb,#fff);border:1px solid #d9e7f4;border-radius:12px;padding:13px}
+.current-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.current-item{background:#fff;border:1px solid #e2eaf1;border-radius:10px;padding:10px}
+.current-item small{display:block;color:#7d8da0;font-size:9px}.current-item b{display:block;margin-top:4px;color:#17365d;font-size:11px}
+@media(max-width:900px){.current-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.current-grid{grid-template-columns:1fr}}
+.doc-list{grid-column:1/-1;display:grid;gap:9px}
+.doc-row{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1.4fr auto;gap:8px;align-items:end;border:1px solid #e5e9ef;border-radius:10px;padding:10px;background:#fbfdff}
+.doc-row .fg{min-width:0}
+@media(max-width:1000px){.doc-row{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.doc-row{grid-template-columns:1fr}}
+@media(max-width:900px){.kpis{grid-template-columns:1fr}.formgrid,.formgrid.three{grid-template-columns:1fr}}
+@media(max-width:760px){.sidebar{width:76px}.brand h2,.brand small,.nav span:not(.ico),.module-link span:not(.ico),.nav-title,.sidebar-note{display:none}.main{margin-left:76px;width:calc(100% - 76px)}.content{padding:17px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo">CM</div><div><h2>CIVIL MASTER</h2><small>Client Management</small></div></div>
+
+  <div class="nav-title">ERP Modules</div>
+  <div class="nav">
+    <a class="module-link" href="index.html"><span class="ico">👤</span><span>Employee Management</span></a>
+    <a class="module-link" href="leave.html"><span class="ico">✈</span><span>Leave Management</span></a>
+    <a class="module-link" href="subcontractor.html"><span class="ico">🏗</span><span>Sub Contractor Management</span></a>
+  </div>
+
+  <div class="nav-title">Client Management</div>
+  <div class="nav">
+    <button class="active" onclick="go('clients',this)"><span class="ico">🏢</span><span>Clients</span></button>
+    <button onclick="go('projects',this)"><span class="ico">📁</span><span>Projects</span></button>
+  </div>
+
+  <div class="sidebar-note">Projects are linked to the Client Master. This module is kept standalone and lightweight.</div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="title"><h1 id="pageTitle">Clients</h1><p>Client master and project control</p></div>
+  <div class="user"><div style="text-align:right"><b style="font-size:11px">Admin / Operations</b><div style="font-size:9px;color:var(--muted)">ERP User</div></div><div class="avatar">CL</div></div>
+</header>
+
+<div class="content">
+
+<section class="page active" id="clients">
+  <div class="pagehead">
+    <div><h2>Clients</h2><p>Add, edit and maintain client company records.</p></div>
+    <button class="btn orange" onclick="openClient()">+ Add Client</button>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="top"><span class="lab">Total Clients</span><span class="bubble">🏢</span></div><div class="num" id="kClientTotal">0</div><div class="hint">All registered clients</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Active Clients</span><span class="bubble">✓</span></div><div class="num" id="kClientActive">0</div><div class="hint">Currently active</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Inactive / On Hold</span><span class="bubble o">!</span></div><div class="num" id="kClientInactive">0</div><div class="hint">Not currently active</div></div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <input id="clientSearch" class="search" placeholder="Search client / TRN / contact / email" oninput="renderClients()">
+      <select id="clientStatusFilter" onchange="renderClients()">
+        <option value="">All Status</option><option>Active</option><option>Inactive</option><option>On Hold</option>
+      </select>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Client Name</th><th>VAT / TRN</th><th>ICV</th><th>Trade License</th><th>License State</th><th>Contact 1</th><th>Contact 2</th><th>Projects</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="clientRows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="page" id="projects">
+  <div class="pagehead">
+    <div><h2>Projects & Employee Mobilization</h2><p>Client → Project → Employee Mobilization / Demobilization → Movement History</p></div>
+    <button class="btn orange" onclick="openProject()">+ Add Project</button>
+  </div>
+
+  <div class="subtabs">
+    <button class="subtab active" onclick="showProjectSubTab('master',this)">Project Master</button>
+    <button class="subtab" onclick="showProjectSubTab('mobilization',this)">Mobilization / Demobilization</button>
+    <button class="subtab" onclick="showProjectSubTab('history',this)">Movement History</button>
+  </div>
+
+  <div class="subpane active" id="project-sub-master">
+    <div class="kpis">
+      <div class="kpi"><div class="top"><span class="lab">Total Projects</span><span class="bubble">📁</span></div><div class="num" id="kProjectTotal">0</div><div class="hint">All projects</div></div>
+      <div class="kpi"><div class="top"><span class="lab">Active Projects</span><span class="bubble">✓</span></div><div class="num" id="kProjectActive">0</div><div class="hint">Currently running</div></div>
+      <div class="kpi"><div class="top"><span class="lab">Completed / On Hold</span><span class="bubble o">!</span></div><div class="num" id="kProjectClosed">0</div><div class="hint">Not currently active</div></div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input id="projectSearch" class="search" placeholder="Search project / code / client / location" oninput="renderProjects()">
+        <select id="projectClientFilter" onchange="renderProjects()"></select>
+        <select id="projectStatusFilter" onchange="renderProjects()">
+          <option value="">All Status</option><option>Active</option><option>On Hold</option><option>Completed</option><option>Closed</option>
+        </select>
+      </div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Project Code</th><th>Project Name</th><th>Client</th><th>Emirate</th><th>City / Area</th><th>Site Location</th><th>Start Date</th><th>Expected End</th><th>Project Manager</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="projectRows"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="subpane" id="project-sub-mobilization">
+    <div class="grid2eq">
+      <div class="card">
+        <h3 style="margin-top:0;color:var(--navy)">Mobilize Employee</h3>
+        <div class="formgrid">
+          <div class="fg full"><label>Client *</label><select id="mobClient" onchange="fillMobProjectSelect()"></select></div>
+          <div class="fg full"><label>Project *</label><select id="mobProject"></select></div>
+          <div class="fg full"><label>Employee *</label><select id="mobEmployee" onchange="fillMobEmployeeSnapshot()"></select></div>
+          <div class="fg"><label>Mobilization Date *</label><input type="date" id="mobDate"></div>
+          <div class="fg"><label>Designation</label><input id="mobDesignation"></div>
+          <div class="fg full"><label>Remarks</label><textarea id="mobRemarks"></textarea></div>
+        </div>
+        <button class="btn primary" onclick="mobilizeEmployee()">Mobilize Employee</button>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0;color:var(--navy)">Demobilize Employee</h3>
+        <div class="formgrid">
+          <div class="fg full"><label>Currently Mobilized Employee *</label><select id="demobEmployee" onchange="fillDemobCurrent()"></select></div>
+          <div class="fg full"><div class="current-box"><div class="current-grid">
+            <div class="current-item"><small>Current Client</small><b id="demobCurrentClient">-</b></div>
+            <div class="current-item"><small>Current Project</small><b id="demobCurrentProject">-</b></div>
+            <div class="current-item"><small>Location</small><b id="demobCurrentLocation">-</b></div>
+            <div class="current-item"><small>Mobilized Date</small><b id="demobCurrentDate">-</b></div>
+          </div></div></div>
+          <div class="fg"><label>Demobilization Date *</label><input type="date" id="demobDate"></div>
+          <div class="fg"><label>Reason *</label><select id="demobReason"><option value="">Select Reason</option><option>Project Completed</option><option>Transfer</option><option>Leave</option><option>Termination</option><option>Other</option></select></div>
+          <div class="fg full"><label>Remarks</label><textarea id="demobRemarks"></textarea></div>
+        </div>
+        <button class="btn orange" onclick="demobilizeEmployee()">Demobilize Employee</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="subpane" id="project-sub-history">
+    <div class="card">
+      <div class="toolbar">
+        <input id="movementSearch" class="search" placeholder="Search employee / client / project / location" oninput="renderMovementHistory()">
+        <select id="movementClientFilter" onchange="renderMovementHistory()"></select>
+        <select id="movementStatusFilter" onchange="renderMovementHistory()">
+          <option value="">All Movement Status</option><option>Mobilized</option><option>Transferred</option><option>Demobilized</option>
+        </select>
+      </div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Employee</th><th>From Date</th><th>To Date</th><th>Client</th><th>Project</th><th>Location</th><th>Designation</th><th>Movement</th><th>Reason</th></tr></thead>
+        <tbody id="movementRows"></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+</div>
+</main>
+</div>
+
+<div class="modalwrap" id="clientModal"><div class="modal">
+  <div class="modalhead"><h3 id="clientModalTitle">Add Client</h3><button class="x" onclick="closeModal('clientModal')">×</button></div>
+  <input type="hidden" id="clId">
+  <div class="formgrid three">
+
+    <div class="section-title">Company & License Information</div>
+    <div class="fg full"><label>Client / Company Name *</label><input id="clName"></div>
+    <div class="fg"><label>Trade License No.</label><input id="clLicense"></div>
+    <div class="fg"><label>License State / Emirate *</label>
+      <select id="clLicenseState">
+        <option value="">Select Emirate</option>
+        <option>Abu Dhabi</option><option>Dubai</option><option>Sharjah</option><option>Ajman</option>
+        <option>Umm Al Quwain</option><option>Ras Al Khaimah</option><option>Fujairah</option>
+      </select>
+    </div>
+    <div class="fg"><label>Trade License Expiry</label><input type="date" id="clLicenseExpiry"></div>
+
+    <div class="section-title">VAT & ICV Registration</div>
+    <div class="fg"><label>VAT Status *</label>
+      <select id="clVatStatus" onchange="toggleClientVatFields()">
+        <option>Unregistered</option><option>Registered</option>
+      </select>
+    </div>
+    <div class="fg" id="clTrnBox"><label>TRN Number *</label><input id="clTrn" placeholder="Enter TRN"></div>
+
+    <div class="fg"><label>ICV Status *</label>
+      <select id="clIcvStatus" onchange="toggleClientIcvFields()">
+        <option>Unregistered</option><option>Registered</option>
+      </select>
+    </div>
+    <div class="fg" id="clIcvScoreBox"><label>ICV Score *</label><input id="clIcvScore" type="number" min="0" max="100" step="0.01" placeholder="e.g. 42.50"></div>
+
+    <div class="section-title">Contact Person 1</div>
+    <div class="fg"><label>Contact Person 1</label><input id="clContact1"></div>
+    <div class="fg"><label>Mobile 1</label><input id="clMobile1"></div>
+    <div class="fg"><label>Email 1</label><input id="clEmail1" type="email"></div>
+
+    <div class="section-title">Contact Person 2</div>
+    <div class="fg"><label>Contact Person 2</label><input id="clContact2"></div>
+    <div class="fg"><label>Mobile 2</label><input id="clMobile2"></div>
+    <div class="fg"><label>Email 2</label><input id="clEmail2" type="email"></div>
+
+    <div class="section-title">General Information</div>
+    <div class="fg"><label>Status</label><select id="clStatus"><option>Active</option><option>Inactive</option><option>On Hold</option></select></div>
+    <div class="fg full"><label>Address</label><input id="clAddress"></div>
+
+    <div class="section-title">Other Documents</div>
+    <div class="fg full">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div class="muted">Add VAT certificate, ICV certificate, agreement, insurance or any custom document.</div>
+        <button type="button" class="btn light" onclick="addClientDocumentRow()">+ Add Document</button>
+      </div>
+    </div>
+    <div class="doc-list" id="clOtherDocuments"></div>
+
+    <div class="section-title">Remarks</div>
+    <div class="fg full"><textarea id="clRemarks" placeholder="Remarks..."></textarea></div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+    <button class="btn light" onclick="closeModal('clientModal')">Cancel</button>
+    <button class="btn primary" onclick="saveClient()">Save Client</button>
+  </div>
+</div></div>
+
+<div class="modalwrap" id="projectModal"><div class="modal">
+  <div class="modalhead"><h3 id="projectModalTitle">Add Project</h3><button class="x" onclick="closeModal('projectModal')">×</button></div>
+  <input type="hidden" id="prId">
+  <div class="formgrid three">
+    <div class="section-title">Project Master</div>
+    <div class="fg full"><label>Client Name *</label><select id="prClient"></select></div>
+    <div class="fg"><label>Project Number / Code *</label><input id="prCode" placeholder="e.g. TM-001"></div>
+    <div class="fg full"><label>Project Name *</label><input id="prName" placeholder="e.g. ADNOC Ruwais Expansion"></div>
+    <div class="fg"><label>Emirate / State *</label>
+      <select id="prEmirate">
+        <option value="">Select Emirate</option><option>Abu Dhabi</option><option>Dubai</option><option>Sharjah</option><option>Ajman</option><option>Umm Al Quwain</option><option>Ras Al Khaimah</option><option>Fujairah</option>
+      </select>
+    </div>
+    <div class="fg"><label>City / Area</label><input id="prCity" placeholder="e.g. Ruwais"></div>
+    <div class="fg full"><label>Site Location</label><input id="prSiteLocation" placeholder="e.g. Ruwais Industrial Area"></div>
+    <div class="fg"><label>Project Start Date</label><input type="date" id="prStart"></div>
+    <div class="fg"><label>Expected End Date</label><input type="date" id="prEnd"></div>
+    <div class="fg"><label>Project Status</label><select id="prStatus"><option>Active</option><option>On Hold</option><option>Completed</option><option>Closed</option></select></div>
+
+    <div class="section-title">Project Manager / Contact Person</div>
+    <div class="fg"><label>Project Manager / Contact Person</label><input id="prContact"></div>
+    <div class="fg"><label>Contact Number</label><input id="prMobile"></div>
+    <div class="fg"><label>Email</label><input id="prEmail" type="email"></div>
+
+    <div class="section-title">Remarks</div>
+    <div class="fg full"><textarea id="prRemarks" placeholder="Optional remarks"></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+    <button class="btn light" onclick="closeModal('projectModal')">Cancel</button>
+    <button class="btn primary" onclick="saveProject()">Save Project</button>
+  </div>
+</div></div>
+
+<script>
+const CLIENT_KEY="cm_client_portal_v2";
+const EMPLOYEE_DATA_KEY="cm_employee_portal_v3";
+let db=loadDb();
+
+function emptyDb(){return {clients:[],projects:[],movements:[]}}
+function loadDb(){try{const x=JSON.parse(localStorage.getItem(CLIENT_KEY)||"null");return {...emptyDb(),...(x||{})}}catch(e){return emptyDb()}}
+function saveDb(){localStorage.setItem(CLIENT_KEY,JSON.stringify(db));renderAll()}
+function uid(p){return p+"-"+Date.now()+"-"+Math.random().toString(16).slice(2,7)}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function fmtDate(v){if(!v)return"-";const d=new Date(v+"T00:00:00");return isNaN(d)?v:d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}
+function closeModal(id){document.getElementById(id).classList.remove("show")}
+function client(id){return db.clients.find(x=>x.id===id)||{}}
+function clientName(id){return client(id).name||"-"}
+
+function go(id,btn){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".sidebar .nav button").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("pageTitle").textContent=id==="clients"?"Clients":"Projects";
+  renderAll();
+}
+function badge(s){
+  let c="inactiveb";
+  if(s==="Active")c="activeb";else if(s==="On Hold")c="holdb";else if(s==="Completed")c="doneb";
+  return `<span class="badge ${c}">${esc(s||"-")}</span>`;
+}
+function fillClientSelect(id,all=false){
+  const el=document.getElementById(id),old=el.value;
+  el.innerHTML=`<option value="">${all?"All Clients":"Select Client"}</option>`+
+    db.clients.slice().sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function toggleClientVatFields(){
+  const reg=document.getElementById("clVatStatus").value==="Registered";
+  document.getElementById("clTrnBox").classList.toggle("hidden",!reg);
+  if(!reg)document.getElementById("clTrn").value="";
+}
+function toggleClientIcvFields(){
+  const reg=document.getElementById("clIcvStatus").value==="Registered";
+  document.getElementById("clIcvScoreBox").classList.toggle("hidden",!reg);
+  if(!reg)document.getElementById("clIcvScore").value="";
+}
+function clientDocRowHtml(d={}){
+  return `<div class="doc-row">
+    <div class="fg"><label>Document Type</label><input class="cl-doc-type" value="${esc(d.type||"")}" placeholder="e.g. ICV Certificate"></div>
+    <div class="fg"><label>Document No.</label><input class="cl-doc-number" value="${esc(d.number||"")}"></div>
+    <div class="fg"><label>Issue Date</label><input type="date" class="cl-doc-issue" value="${esc(d.issue||"")}"></div>
+    <div class="fg"><label>Expiry Date</label><input type="date" class="cl-doc-expiry" value="${esc(d.expiry||"")}"></div>
+    <div class="fg"><label>URL / Reference</label><input class="cl-doc-url" value="${esc(d.url||"")}" placeholder="https://... or reference"></div>
+    <div><button type="button" class="btn red" onclick="this.closest('.doc-row').remove()">Delete</button></div>
+  </div>`;
+}
+function addClientDocumentRow(d={}){
+  document.getElementById("clOtherDocuments").insertAdjacentHTML("beforeend",clientDocRowHtml(d));
+}
+function getClientDocuments(){
+  return [...document.querySelectorAll("#clOtherDocuments .doc-row")].map(r=>({
+    type:r.querySelector(".cl-doc-type").value.trim(),
+    number:r.querySelector(".cl-doc-number").value.trim(),
+    issue:r.querySelector(".cl-doc-issue").value,
+    expiry:r.querySelector(".cl-doc-expiry").value,
+    url:r.querySelector(".cl-doc-url").value.trim()
+  })).filter(d=>d.type||d.number||d.issue||d.expiry||d.url);
+}
+function openClient(id=""){
+  const c=id?client(id):{};
+  document.getElementById("clientModalTitle").textContent=id?"Edit Client":"Add Client";
+  document.getElementById("clId").value=c.id||"";
+  document.getElementById("clName").value=c.name||"";
+  document.getElementById("clLicense").value=c.license||"";
+  document.getElementById("clLicenseState").value=c.licenseState||"";
+  document.getElementById("clLicenseExpiry").value=c.licenseExpiry||"";
+  document.getElementById("clVatStatus").value=c.vatStatus||((c.trn||"")?"Registered":"Unregistered");
+  document.getElementById("clTrn").value=c.trn||"";
+  document.getElementById("clIcvStatus").value=c.icvStatus||"Unregistered";
+  document.getElementById("clIcvScore").value=c.icvScore??"";
+  document.getElementById("clContact1").value=c.contact1||"";
+  document.getElementById("clMobile1").value=c.mobile1||"";
+  document.getElementById("clEmail1").value=c.email1||"";
+  document.getElementById("clContact2").value=c.contact2||"";
+  document.getElementById("clMobile2").value=c.mobile2||"";
+  document.getElementById("clEmail2").value=c.email2||"";
+  document.getElementById("clStatus").value=c.status||"Active";
+  document.getElementById("clAddress").value=c.address||"";
+  document.getElementById("clRemarks").value=c.remarks||"";
+  document.getElementById("clOtherDocuments").innerHTML="";
+  (Array.isArray(c.documents)?c.documents:[]).forEach(addClientDocumentRow);
+  toggleClientVatFields();
+  toggleClientIcvFields();
+  document.getElementById("clientModal").classList.add("show");
+}
+function saveClient(){
+  const id=document.getElementById("clId").value;
+  const name=document.getElementById("clName").value.trim();
+  const licenseState=document.getElementById("clLicenseState").value;
+  const vatStatus=document.getElementById("clVatStatus").value;
+  const trn=document.getElementById("clTrn").value.trim();
+  const icvStatus=document.getElementById("clIcvStatus").value;
+  const icvScore=document.getElementById("clIcvScore").value;
+
+  if(!name)return alert("Enter Client / Company Name.");
+  if(!licenseState)return alert("Select License State / Emirate.");
+  if(vatStatus==="Registered"&&!trn)return alert("VAT is Registered. Please enter TRN Number.");
+  if(icvStatus==="Registered"&&(icvScore===""||Number(icvScore)<0||Number(icvScore)>100))
+    return alert("ICV is Registered. Please enter a valid ICV Score from 0 to 100.");
+
+  if(db.clients.some(c=>c.id!==id&&c.name.trim().toLowerCase()===name.toLowerCase()))
+    return alert("This Client already exists.");
+  if(trn&&db.clients.some(c=>c.id!==id&&String(c.trn||"").trim()===trn))
+    return alert("This TRN Number is already used by another Client.");
+
+  const c={
+    id:id||uid("CL"),
+    name,
+    license:document.getElementById("clLicense").value.trim(),
+    licenseState,
+    licenseExpiry:document.getElementById("clLicenseExpiry").value,
+    vatStatus,
+    trn:vatStatus==="Registered"?trn:"",
+    icvStatus,
+    icvScore:icvStatus==="Registered"?Number(icvScore):"",
+    contact1:document.getElementById("clContact1").value.trim(),
+    mobile1:document.getElementById("clMobile1").value.trim(),
+    email1:document.getElementById("clEmail1").value.trim(),
+    contact2:document.getElementById("clContact2").value.trim(),
+    mobile2:document.getElementById("clMobile2").value.trim(),
+    email2:document.getElementById("clEmail2").value.trim(),
+    status:document.getElementById("clStatus").value,
+    address:document.getElementById("clAddress").value.trim(),
+    documents:getClientDocuments(),
+    remarks:document.getElementById("clRemarks").value.trim()
+  };
+
+  const i=db.clients.findIndex(x=>x.id===c.id);
+  if(i>=0)db.clients[i]=c;else db.clients.push(c);
+  closeModal("clientModal");
+  saveDb();
+}
+function deleteClient(id){
+  if(db.projects.some(p=>p.clientId===id))return alert("Cannot delete this Client because Projects are linked to it. Delete or move the Projects first.");
+  if(!confirm("Delete this Client?"))return;
+  db.clients=db.clients.filter(x=>x.id!==id);saveDb();
+}
+function renderClients(){
+  const q=document.getElementById("clientSearch").value.toLowerCase();
+  const s=document.getElementById("clientStatusFilter").value;
+  const arr=db.clients.filter(c=>(!s||c.status===s)&&[
+    c.name,c.trn,c.license,c.licenseState,c.contact1,c.mobile1,c.email1,c.contact2,c.mobile2,c.email2
+  ].join(" ").toLowerCase().includes(q));
+
+  document.getElementById("clientRows").innerHTML=arr.map(c=>`<tr>
+    <td><b>${esc(c.name)}</b><br><span class="muted">${esc(c.address||"")}</span></td>
+    <td><b>${esc(c.vatStatus||((c.trn||"")?"Registered":"Unregistered"))}</b><br><span class="muted">${esc(c.trn||"-")}</span></td>
+    <td><b>${esc(c.icvStatus||"Unregistered")}</b><br><span class="muted">${c.icvStatus==="Registered"?"Score: "+esc(c.icvScore):"-"}</span></td>
+    <td>${esc(c.license||"-")}<br><span class="muted">${fmtDate(c.licenseExpiry)}</span></td>
+    <td>${esc(c.licenseState||"-")}</td>
+    <td>${esc(c.contact1||"-")}<br><span class="muted">${esc(c.mobile1||"")} ${esc(c.email1||"")}</span></td>
+    <td>${esc(c.contact2||"-")}<br><span class="muted">${esc(c.mobile2||"")} ${esc(c.email2||"")}</span></td>
+    <td><b>${db.projects.filter(p=>p.clientId===c.id).length}</b></td>
+    <td>${badge(c.status)}</td>
+    <td><button class="btn light" onclick="openClient('${c.id}')">Edit</button> <button class="btn red" onclick="deleteClient('${c.id}')">Delete</button></td>
+  </tr>`).join("")||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#7d8da0">No Clients added yet.</td></tr>';
+
+  document.getElementById("kClientTotal").textContent=db.clients.length;
+  document.getElementById("kClientActive").textContent=db.clients.filter(x=>x.status==="Active").length;
+  document.getElementById("kClientInactive").textContent=db.clients.filter(x=>x.status!=="Active").length;
+}
+
+function showProjectSubTab(name,btn){
+  document.querySelectorAll("#projects .subpane").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll("#projects .subtab").forEach(x=>x.classList.remove("active"));
+  document.getElementById("project-sub-"+name).classList.add("active");
+  if(btn)btn.classList.add("active");
+  if(name==="mobilization"){refreshMobilizationSelectors();}
+  if(name==="history"){renderMovementHistory();}
+}
+function employeeData(){
+  try{
+    const x=JSON.parse(localStorage.getItem(EMPLOYEE_DATA_KEY)||"{}");
+    return Array.isArray(x.employees)?x.employees:[];
+  }catch(e){return[]}
+}
+function saveEmployeeData(arr){
+  try{
+    const x=JSON.parse(localStorage.getItem(EMPLOYEE_DATA_KEY)||"{}");
+    x.employees=arr;
+    localStorage.setItem(EMPLOYEE_DATA_KEY,JSON.stringify(x));
+  }catch(e){}
+}
+function employeeByCode(code){return employeeData().find(e=>String(e.employeeCode||"")===String(code||""))||{}}
+function project(id){return db.projects.find(x=>x.id===id)||{}}
+function projectName(id){return project(id).name||"-"}
+function projectLocation(p){
+  return [p.siteLocation,p.city,p.emirate].filter(Boolean).join(", ");
+}
+function fillEmployeeSelect(id,activeOnly=false){
+  const el=document.getElementById(id); if(!el)return;
+  const old=el.value;
+  let arr=employeeData();
+  if(activeOnly)arr=arr.filter(e=>String(e.status||"Active").toLowerCase()!=="inactive");
+  el.innerHTML='<option value="">Select Employee</option>'+arr
+    .sort((a,b)=>String(a.employeeName||"").localeCompare(String(b.employeeName||"")))
+    .map(e=>`<option value="${esc(e.employeeCode||"")}">${esc((e.employeeCode||"")+" - "+(e.employeeName||""))}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function fillCurrentMobilizedEmployeeSelect(){
+  const el=document.getElementById("demobEmployee"); if(!el)return;
+  const old=el.value;
+  const active=db.movements.filter(m=>m.status==="Mobilized"&&!m.toDate);
+  el.innerHTML='<option value="">Select Mobilized Employee</option>'+active.map(m=>`<option value="${esc(m.employeeCode)}">${esc(m.employeeCode+" - "+m.employeeName+" | "+clientName(m.clientId)+" | "+projectName(m.projectId))}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function refreshMobilizationSelectors(){
+  fillClientSelect("mobClient");
+  fillClientSelect("movementClientFilter",true);
+  fillEmployeeSelect("mobEmployee",true);
+  fillCurrentMobilizedEmployeeSelect();
+  fillMobProjectSelect();
+  fillDemobCurrent();
+}
+function fillMobProjectSelect(){
+  const cid=document.getElementById("mobClient")?.value||"";
+  const el=document.getElementById("mobProject"); if(!el)return;
+  const old=el.value;
+  const arr=db.projects.filter(p=>p.clientId===cid&&p.status==="Active");
+  el.innerHTML='<option value="">Select Project</option>'+arr.map(p=>`<option value="${esc(p.id)}">${esc(p.code+" — "+p.name)}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function fillMobEmployeeSnapshot(){
+  const e=employeeByCode(document.getElementById("mobEmployee")?.value||"");
+  if(e)document.getElementById("mobDesignation").value=e.actualDesignation||e.idDesignation||"";
+}
+function activeMovementForEmployee(code){
+  return db.movements.find(m=>m.employeeCode===code&&m.status==="Mobilized"&&!m.toDate);
+}
+function updateEmployeeCurrentProject(code,movementOrNull){
+  const arr=employeeData();
+  const e=arr.find(x=>String(x.employeeCode||"")===String(code||""));
+  if(!e)return;
+  if(movementOrNull){
+    const c=client(movementOrNull.clientId),p=project(movementOrNull.projectId);
+    e.currentClient=c.name||"";
+    e.currentClientId=c.id||"";
+    e.currentProject=p.name||"";
+    e.currentProjectId=p.id||"";
+    e.currentProjectCode=p.code||"";
+    e.currentProjectLocation=projectLocation(p);
+    e.currentSite=p.name||"";
+  }else{
+    e.currentClient="";
+    e.currentClientId="";
+    e.currentProject="";
+    e.currentProjectId="";
+    e.currentProjectCode="";
+    e.currentProjectLocation="";
+    e.currentSite="";
+  }
+  e.updatedAt=new Date().toISOString();
+  saveEmployeeData(arr);
+}
+function mobilizeEmployee(){
+  const cid=document.getElementById("mobClient").value;
+  const pid=document.getElementById("mobProject").value;
+  const code=document.getElementById("mobEmployee").value;
+  const date=document.getElementById("mobDate").value;
+  const designation=document.getElementById("mobDesignation").value.trim();
+  if(!cid)return alert("Select Client.");
+  if(!pid)return alert("Select Project.");
+  if(!code)return alert("Select Employee.");
+  if(!date)return alert("Enter Mobilization Date.");
+
+  const e=employeeByCode(code),old=activeMovementForEmployee(code);
+  if(old){
+    if(!confirm("This employee is already mobilized to "+clientName(old.clientId)+" / "+projectName(old.projectId)+". Transfer to the new project?"))return;
+    old.toDate=date;
+    old.status="Transferred";
+    old.reason="Transfer";
+    old.updatedAt=new Date().toISOString();
+  }
+
+  const m={
+    id:uid("MV"),
+    employeeCode:code,
+    employeeName:e.employeeName||"",
+    clientId:cid,
+    projectId:pid,
+    fromDate:date,
+    toDate:"",
+    designation:designation||e.actualDesignation||e.idDesignation||"",
+    status:"Mobilized",
+    reason:"",
+    remarks:document.getElementById("mobRemarks").value.trim(),
+    createdAt:new Date().toISOString(),
+    updatedAt:new Date().toISOString()
+  };
+  db.movements.push(m);
+  updateEmployeeCurrentProject(code,m);
+  saveDb();
+  document.getElementById("mobDate").value="";
+  document.getElementById("mobRemarks").value="";
+  refreshMobilizationSelectors();
+  alert("Employee mobilized successfully.");
+}
+function fillDemobCurrent(){
+  const code=document.getElementById("demobEmployee")?.value||"";
+  const m=activeMovementForEmployee(code);
+  const p=m?project(m.projectId):{},c=m?client(m.clientId):{};
+  document.getElementById("demobCurrentClient").textContent=c.name||"-";
+  document.getElementById("demobCurrentProject").textContent=p.name||"-";
+  document.getElementById("demobCurrentLocation").textContent=m?projectLocation(p):"-";
+  document.getElementById("demobCurrentDate").textContent=m?fmtDate(m.fromDate):"-";
+}
+function demobilizeEmployee(){
+  const code=document.getElementById("demobEmployee").value;
+  const date=document.getElementById("demobDate").value;
+  const reason=document.getElementById("demobReason").value;
+  if(!code)return alert("Select Currently Mobilized Employee.");
+  if(!date)return alert("Enter Demobilization Date.");
+  if(!reason)return alert("Select Demobilization Reason.");
+  const m=activeMovementForEmployee(code);
+  if(!m)return alert("No active mobilization record found.");
+  if(new Date(date)<new Date(m.fromDate))return alert("Demobilization Date cannot be earlier than Mobilization Date.");
+  m.toDate=date;
+  m.status=reason==="Transfer"?"Transferred":"Demobilized";
+  m.reason=reason;
+  m.remarks=[m.remarks,document.getElementById("demobRemarks").value.trim()].filter(Boolean).join(" | ");
+  m.updatedAt=new Date().toISOString();
+  updateEmployeeCurrentProject(code,null);
+  saveDb();
+  document.getElementById("demobDate").value="";
+  document.getElementById("demobReason").value="";
+  document.getElementById("demobRemarks").value="";
+  refreshMobilizationSelectors();
+  alert("Employee demobilized successfully.");
+}
+
+function openProject(id=""){
+  fillClientSelect("prClient");
+  const p=id?db.projects.find(x=>x.id===id)||{}:{};
+  document.getElementById("projectModalTitle").textContent=id?"Edit Project":"Add Project";
+  document.getElementById("prId").value=p.id||"";
+  document.getElementById("prClient").value=p.clientId||"";
+  document.getElementById("prCode").value=p.code||"";
+  document.getElementById("prName").value=p.name||"";
+  document.getElementById("prEmirate").value=p.emirate||"";
+  document.getElementById("prCity").value=p.city||p.location||"";
+  document.getElementById("prSiteLocation").value=p.siteLocation||"";
+  document.getElementById("prStart").value=p.startDate||"";
+  document.getElementById("prEnd").value=p.endDate||"";
+  document.getElementById("prStatus").value=p.status||"Active";
+  document.getElementById("prContact").value=p.contact||"";
+  document.getElementById("prMobile").value=p.mobile||"";
+  document.getElementById("prEmail").value=p.email||"";
+  document.getElementById("prRemarks").value=p.remarks||"";
+  document.getElementById("projectModal").classList.add("show");
+}
+function saveProject(){
+  const id=document.getElementById("prId").value;
+  const cid=document.getElementById("prClient").value;
+  const code=document.getElementById("prCode").value.trim();
+  const name=document.getElementById("prName").value.trim();
+  const emirate=document.getElementById("prEmirate").value;
+  if(!cid)return alert("Select Client.");
+  if(!code)return alert("Enter Project Number / Code.");
+  if(!name)return alert("Enter Project Name.");
+  if(!emirate)return alert("Select Emirate / State.");
+  if(document.getElementById("prEnd").value&&document.getElementById("prStart").value&&new Date(document.getElementById("prEnd").value)<new Date(document.getElementById("prStart").value))
+    return alert("Expected End Date cannot be earlier than Project Start Date.");
+  if(db.projects.some(p=>p.id!==id&&p.code.trim().toLowerCase()===code.toLowerCase()))
+    return alert("Project Code already exists.");
+  const p={
+    id:id||uid("PR"),clientId:cid,code,name,emirate,
+    city:document.getElementById("prCity").value.trim(),
+    siteLocation:document.getElementById("prSiteLocation").value.trim(),
+    startDate:document.getElementById("prStart").value,
+    endDate:document.getElementById("prEnd").value,
+    contact:document.getElementById("prContact").value.trim(),
+    mobile:document.getElementById("prMobile").value.trim(),
+    email:document.getElementById("prEmail").value.trim(),
+    status:document.getElementById("prStatus").value,
+    remarks:document.getElementById("prRemarks").value.trim()
+  };
+  const i=db.projects.findIndex(x=>x.id===p.id);
+  if(i>=0)db.projects[i]=p;else db.projects.push(p);
+  closeModal("projectModal");
+  saveDb();
+}
+function deleteProject(id){
+  if(db.movements.some(m=>m.projectId===id))return alert("Cannot delete this Project because Employee Movement History is linked to it.");
+  if(!confirm("Delete this Project?"))return;
+  db.projects=db.projects.filter(x=>x.id!==id);saveDb();
+}
+function renderProjects(){
+  const q=(document.getElementById("projectSearch")?.value||"").toLowerCase();
+  const cid=document.getElementById("projectClientFilter")?.value||"";
+  const s=document.getElementById("projectStatusFilter")?.value||"";
+  const arr=db.projects.filter(p=>(!cid||p.clientId===cid)&&(!s||p.status===s)&&[
+    p.code,p.name,clientName(p.clientId),p.emirate,p.city,p.siteLocation,p.contact
+  ].join(" ").toLowerCase().includes(q));
+  document.getElementById("projectRows").innerHTML=arr.map(p=>`<tr>
+    <td><b>${esc(p.code)}</b></td>
+    <td><b>${esc(p.name)}</b></td>
+    <td>${esc(clientName(p.clientId))}</td>
+    <td>${esc(p.emirate||"-")}</td>
+    <td>${esc(p.city||"-")}</td>
+    <td>${esc(p.siteLocation||"-")}</td>
+    <td>${fmtDate(p.startDate)}</td>
+    <td>${fmtDate(p.endDate)}</td>
+    <td>${esc(p.contact||"-")}<br><span class="muted">${esc(p.mobile||"")}</span></td>
+    <td>${badge(p.status)}</td>
+    <td><button class="btn light" onclick="openProject('${p.id}')">Edit</button> <button class="btn red" onclick="deleteProject('${p.id}')">Delete</button></td>
+  </tr>`).join("")||'<tr><td colspan="11" style="text-align:center;padding:20px;color:#7d8da0">No Projects added yet.</td></tr>';
+  document.getElementById("kProjectTotal").textContent=db.projects.length;
+  document.getElementById("kProjectActive").textContent=db.projects.filter(x=>x.status==="Active").length;
+  document.getElementById("kProjectClosed").textContent=db.projects.filter(x=>x.status!=="Active").length;
+}
+function renderMovementHistory(){
+  const q=(document.getElementById("movementSearch")?.value||"").toLowerCase();
+  const cid=document.getElementById("movementClientFilter")?.value||"";
+  const st=document.getElementById("movementStatusFilter")?.value||"";
+  const arr=db.movements.slice().sort((a,b)=>(b.fromDate||"").localeCompare(a.fromDate||"")).filter(m=>{
+    const p=project(m.projectId);
+    return (!cid||m.clientId===cid)&&(!st||m.status===st)&&[
+      m.employeeCode,m.employeeName,clientName(m.clientId),projectName(m.projectId),projectLocation(p),m.designation,m.reason
+    ].join(" ").toLowerCase().includes(q);
+  });
+  document.getElementById("movementRows").innerHTML=arr.map(m=>{
+    const p=project(m.projectId);
+    return `<tr>
+      <td><b>${esc(m.employeeName||"-")}</b><br><span class="muted">${esc(m.employeeCode)}</span></td>
+      <td>${fmtDate(m.fromDate)}</td>
+      <td>${m.toDate?fmtDate(m.toDate):"<b>Current</b>"}</td>
+      <td>${esc(clientName(m.clientId))}</td>
+      <td>${esc(projectName(m.projectId))}<br><span class="muted">${esc(p.code||"")}</span></td>
+      <td>${esc(projectLocation(p)||"-")}</td>
+      <td>${esc(m.designation||"-")}</td>
+      <td>${badge(m.status)}</td>
+      <td>${esc(m.reason||"-")}</td>
+    </tr>`;
+  }).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No Employee Movement History yet.</td></tr>';
+}
+function renderAll(){
+  fillClientSelect("projectClientFilter",true);
+  fillClientSelect("movementClientFilter",true);
+  renderClients();
+  renderProjects();
+  renderMovementHistory();
+  refreshMobilizationSelectors();
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  document.querySelectorAll("[id]").forEach(el=>{try{if(typeof window[el.id]==="undefined")Object.defineProperty(window,el.id,{value:el,configurable:true})}catch(e){}});
+  renderAll();
+});
+</script>
+</body>
+</html>
