@@ -8,51 +8,52 @@
 :root{
   --navy:#17365d;--blue:#4f86bd;--blue2:#eaf3fb;--orange:#f2a45f;--orange2:#fff3e8;
   --bg:#f5f7fa;--card:#fff;--text:#243140;--muted:#6b7280;--line:#e5e9ef;
-  --green:#198754;--red:#c73b3b;--amber:#b86f11;--purple:#7b61a8;
-  --shadow:0 10px 28px rgba(23,54,93,.08)
+  --green:#198754;--red:#c73b3b;--amber:#b86f11;--shadow:0 10px 28px rgba(23,54,93,.08)
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}.hidden{display:none!important}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 .app{min-height:100vh;display:flex}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:252px;padding:18px 14px;background:linear-gradient(180deg,#17365d,#245282);color:#fff;overflow:auto;z-index:40}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:252px;padding:18px 14px;background:linear-gradient(180deg,#17365d,#245282);color:#fff;overflow:auto}
 .brand{display:flex;gap:12px;align-items:center;padding:5px 7px 18px;border-bottom:1px solid rgba(255,255,255,.12)}
 .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#fff,#ffd9b7);display:grid;place-items:center;color:var(--navy);font-weight:900}
 .brand h2{font-size:15px;margin:0}.brand small{font-size:10px;color:#d9e6f3}
 .nav-title{margin:18px 8px 6px;color:#bcd0e5;font-size:9px;text-transform:uppercase;letter-spacing:1.2px}
 .nav{display:flex;flex-direction:column;gap:4px}
-.nav button,.module-link{border:0;background:transparent;color:#edf4fb;border-radius:10px;padding:11px 12px;text-align:left;cursor:pointer;display:flex;gap:10px;align-items:center;text-decoration:none;font-size:12px;width:100%}
+.nav button,.module-link{border:0;background:transparent;color:#edf4fb;border-radius:10px;padding:11px 12px;text-align:left;display:flex;gap:10px;align-items:center;text-decoration:none;font-size:12px;width:100%}
 .nav button:hover,.nav button.active,.module-link:hover{background:rgba(255,255,255,.14)}
-.ico{width:20px;text-align:center}.sidebar-note{margin-top:20px;background:rgba(255,255,255,.08);border-radius:12px;padding:11px;font-size:10px;color:#dbe7f3;line-height:1.5}
+.ico{width:20px;text-align:center}
+.sidebar-note{margin-top:20px;background:rgba(255,255,255,.08);border-radius:12px;padding:11px;font-size:10px;color:#dbe7f3;line-height:1.5}
 .main{margin-left:252px;width:calc(100% - 252px)}
-.topbar{position:sticky;top:0;z-index:30;height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 26px}
+.topbar{position:sticky;top:0;z-index:20;height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 26px}
 .title h1{font-size:19px;margin:0;color:var(--navy)}.title p{margin:4px 0 0;font-size:10px;color:var(--muted)}
 .user{display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--orange2);color:var(--amber);font-weight:800}
 .content{padding:24px 26px 40px}.page{display:none}.page.active{display:block}
-.pagehead{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}.pagehead h2{font-size:20px;color:var(--navy);margin:0}.pagehead p{font-size:11px;color:var(--muted);margin:5px 0 0}
-.btn{border:0;border-radius:9px;padding:9px 13px;font-size:11px;font-weight:700;cursor:pointer}.primary{background:var(--navy);color:#fff}.orange{background:var(--orange);color:#fff}.light{background:#fff;border:1px solid var(--line);color:var(--navy)}.green{background:var(--green);color:#fff}.red{background:var(--red);color:#fff}.purple{background:var(--purple);color:#fff}
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:13px}.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);cursor:pointer}.kpi:hover{transform:translateY(-1px)}.kpi .top{display:flex;justify-content:space-between;gap:10px}.kpi .lab{font-size:11px;color:var(--muted)}.kpi .num{font-size:27px;font-weight:900;color:var(--navy);margin-top:8px}.kpi .hint{font-size:9px;color:var(--muted);margin-top:3px}
+.pagehead{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}
+.pagehead h2{font-size:20px;color:var(--navy);margin:0}.pagehead p{font-size:11px;color:var(--muted);margin:5px 0 0}
+.btn{border:0;border-radius:9px;padding:9px 13px;font-size:11px;font-weight:700}.primary{background:var(--navy);color:#fff}.orange{background:var(--orange);color:#fff}.light{background:#fff;border:1px solid var(--line);color:var(--navy)}.red{background:var(--red);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:15px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.kpi .top{display:flex;justify-content:space-between;gap:10px}.kpi .lab{font-size:11px;color:var(--muted)}.kpi .num{font-size:27px;font-weight:900;color:var(--navy);margin-top:8px}.kpi .hint{font-size:9px;color:var(--muted);margin-top:3px}
 .bubble{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--blue2);color:var(--blue);font-weight:800}.bubble.o{background:var(--orange2);color:var(--amber)}
-.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:var(--shadow);margin-bottom:15px}.card h3{font-size:14px;margin:0 0 13px;color:var(--navy)}
-.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:15px}.grid2eq{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.formgrid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.fg{display:flex;flex-direction:column;gap:5px}.fg.full{grid-column:1/-1}
-label{font-size:10px;font-weight:800;color:#45566c}input,select,textarea{border:1px solid #dce2e9;border-radius:9px;background:#fff;padding:9px 10px;font-size:11px;outline:none;width:100%}textarea{min-height:78px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:#7ca7d3;box-shadow:0 0 0 3px rgba(79,134,189,.08)}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.toolbar .search{min-width:220px;flex:1}
-.tablewrap{overflow:auto;border:1px solid #edf1f5;border-radius:11px}table{width:100%;border-collapse:collapse;font-size:10px;min-width:800px}th{text-align:left;background:#f1f5f9;color:var(--navy);padding:9px;border-bottom:1px solid var(--line);font-size:9px;text-transform:uppercase;white-space:nowrap}td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{background:#fbfcfe}
-.badge{display:inline-flex;border-radius:20px;padding:4px 7px;font-size:8px;font-weight:800}.pending{background:#fff3db;color:#916017}.approved{background:#e9f7ef;color:#19734c}.alert{background:#fdeceb;color:#b83a36}.info{background:#eaf3fb;color:#2c689e}.inactive{background:#eef0f2;color:#666}
-.notice{display:none;border-radius:10px;padding:11px 12px;font-size:10px;margin-top:11px;line-height:1.45}.notice.show{display:block}.nwarn{background:#fff6e9;border:1px solid #efd4a5;color:#815315}.ndanger{background:#fdeeee;border:1px solid #efbaba;color:#9f2f2f}.ninfo{background:#edf5fc;border:1px solid #c8def2;color:#285f91}
-.summary{background:linear-gradient(135deg,#eef5fb,#fff);border:1px solid #d9e7f4;border-radius:11px;padding:12px}.sumrow{display:flex;justify-content:space-between;padding:6px 0;font-size:10px}.sumrow strong{color:var(--navy)}
-.modalwrap{display:none;position:fixed;inset:0;z-index:100;background:rgba(12,23,35,.55);align-items:center;justify-content:center;padding:20px}.modalwrap.show{display:flex}.modal{background:#fff;border-radius:16px;width:min(920px,96vw);max-height:92vh;overflow:auto;padding:19px;box-shadow:0 24px 60px rgba(0,0,0,.25)}.modal.large{width:min(1180px,97vw)}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.modalhead h3{margin:0;color:var(--navy);font-size:16px}.x{width:30px;height:30px;border:0;border-radius:8px;background:#f2f4f7;cursor:pointer}
-.profile-head{background:linear-gradient(135deg,#17365d,#2d5c8e);color:#fff;border-radius:14px;padding:18px;display:flex;justify-content:space-between;gap:15px;margin-bottom:13px}.profile-head h2{margin:0;font-size:22px}.profile-head p{margin:5px 0 0;font-size:11px;color:#dce9f6}.profile-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:13px}.profile-kpi{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);padding:9px;border-radius:10px}.profile-kpi small{display:block;color:#cfe1f2;font-size:9px}.profile-kpi b{display:block;margin-top:4px}
-.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.tab{border:1px solid #d8e4f1;background:#f8fbfe;color:#415b73;padding:8px 11px;border-radius:9px;font-weight:700;font-size:10px}.tab.active{background:#eaf3ff;color:#2d6d9b;border-color:#bdd4ee}.tabpane{display:none}.tabpane.active{display:block}
-.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.ibox{background:#fff;border:1px solid #e1e9f1;border-radius:11px;padding:11px}.ibox small{display:block;color:#7b8da0;font-size:9px}.ibox b{display:block;margin-top:4px;color:#243f58;font-size:11px}
-.history-item{background:#fff;border:1px solid #e1e8ef;border-radius:11px;padding:11px;margin-bottom:8px}.history-item b{color:#23435f}.history-item small{display:block;color:#8190a0;margin-top:3px}
-.alert-list{display:grid;gap:8px}.alert-item{border:1px solid #e7edf3;border-radius:10px;padding:11px;display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff}.alert-item.exp{border-left:4px solid #d65a50}.alert-item.warn{border-left:4px solid #e6a44d}
-.metric{font-size:20px;font-weight:900;color:var(--navy)}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:var(--shadow);margin-bottom:15px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.toolbar .search{min-width:240px;flex:1}
+input,select,textarea{border:1px solid #dce2e9;border-radius:9px;background:#fff;padding:9px 10px;font-size:11px;outline:none;width:100%}
+textarea{min-height:78px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:#7ca7d3;box-shadow:0 0 0 3px rgba(79,134,189,.08)}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.formgrid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.fg{display:flex;flex-direction:column;gap:5px}.fg.full{grid-column:1/-1}label{font-size:10px;font-weight:800;color:#45566c}
+.tablewrap{overflow:auto;border:1px solid #edf1f5;border-radius:11px}
+table{width:100%;border-collapse:collapse;font-size:10px;min-width:850px}
+th{text-align:left;background:#f1f5f9;color:var(--navy);padding:9px;border-bottom:1px solid var(--line);font-size:9px;text-transform:uppercase;white-space:nowrap}
+td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{background:#fbfcfe}
+.badge{display:inline-flex;border-radius:20px;padding:4px 7px;font-size:8px;font-weight:800}
+.activeb{background:#e9f7ef;color:#19734c}.inactiveb{background:#fdeceb;color:#b83a36}.holdb{background:#fff3db;color:#916017}
+.modalwrap{display:none;position:fixed;inset:0;z-index:100;background:rgba(12,23,35,.55);align-items:center;justify-content:center;padding:20px}.modalwrap.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:min(900px,96vw);max-height:92vh;overflow:auto;padding:19px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
+.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.modalhead h3{margin:0;color:var(--navy);font-size:16px}.x{width:30px;height:30px;border:0;border-radius:8px;background:#f2f4f7}
 .muted{color:var(--muted);font-size:10px}
-@media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid2eq{grid-template-columns:1fr}.profile-kpis{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:760px){.sidebar{width:76px}.brand h2,.brand small,.nav span:not(.ico),.module-link span:not(.ico),.nav-title,.sidebar-note{display:none}.main{margin-left:76px;width:calc(100% - 76px)}.content{padding:17px}.kpis{grid-template-columns:1fr}.formgrid,.formgrid.three,.info-grid{grid-template-columns:1fr}.fg.full{grid-column:auto}.profile-kpis{grid-template-columns:1fr}}
+@media(max-width:900px){.kpis{grid-template-columns:1fr}.formgrid,.formgrid.three{grid-template-columns:1fr}}
+@media(max-width:760px){.sidebar{width:76px}.brand h2,.brand small,.nav span:not(.ico),.module-link span:not(.ico),.nav-title,.sidebar-note{display:none}.main{margin-left:76px;width:calc(100% - 76px)}.content{padding:17px}}
 </style>
 </head>
 <body>
@@ -63,152 +64,64 @@ label{font-size:10px;font-weight:800;color:#45566c}input,select,textarea{border:
   <div class="nav">
     <a class="module-link" href="index.html"><span class="ico">👤</span><span>Employee Management</span></a>
     <a class="module-link" href="leave.html"><span class="ico">✈</span><span>Leave Management</span></a>
-    <button class="active" onclick="go('dashboard',this)"><span class="ico">🏗</span><span>Sub Contractor Management</span></button>
   </div>
-
-  <div class="nav-title">Sub Contractor Operations</div>
+  <div class="nav-title">Sub Contractor</div>
   <div class="nav">
-    <button onclick="go('dashboard',this)"><span class="ico">⌂</span><span>Dashboard</span></button>
-    <button onclick="go('master',this)"><span class="ico">▣</span><span>Sub Contractor Master</span></button>
-    <button onclick="go('manpower',this)"><span class="ico">👷</span><span>Manpower Assignment</span></button>
-    <button onclick="go('rates',this)"><span class="ico">₿</span><span>Rate Management</span></button>
-    <button onclick="go('timesheets',this)"><span class="ico">🗓</span><span>Timesheet Management</span></button>
-    <button onclick="go('billing',this)"><span class="ico">🧾</span><span>Billing / Invoices</span></button>
-    <button onclick="go('documents',this)"><span class="ico">📄</span><span>Documents & Expiry</span></button>
-    <button onclick="go('reports',this)"><span class="ico">↗</span><span>Reports</span></button>
-    <button onclick="go('backup',this)"><span class="ico">💾</span><span>Backup / Restore</span></button>
+    <button class="active" onclick="go('contractors',this)"><span class="ico">▣</span><span>Sub Contractors</span></button>
+    <button onclick="go('manpower',this)"><span class="ico">👷</span><span>Sub Contractor Manpower</span></button>
   </div>
-  <div class="sidebar-note">Standalone module. Employee dropdowns read directly from the same Employee Master localStorage used by Employee and Leave portals.</div>
+  <div class="sidebar-note">Only Sub Contractor Master and Sub Contractor Manpower are included in this module.</div>
 </aside>
 
 <main class="main">
 <header class="topbar">
-  <div class="title"><h1 id="pageTitle">Sub Contractor Dashboard</h1><p>Manpower, rates, timesheets, billing, documents and outstanding control</p></div>
-  <div class="user"><div style="text-align:right"><b style="font-size:11px">HR / Accounts</b><div style="font-size:9px;color:var(--muted)">ERP User</div></div><div class="avatar">SC</div></div>
+  <div class="title"><h1 id="pageTitle">Sub Contractors</h1><p>Sub contractor master and manpower control</p></div>
+  <div class="user"><div style="text-align:right"><b style="font-size:11px">HR / Admin</b><div style="font-size:9px;color:var(--muted)">ERP User</div></div><div class="avatar">SC</div></div>
 </header>
-
 <div class="content">
-<div style="font-size:9px;color:#8190a0;margin-bottom:8px">Build: SC-2026-08-26-FIX3</div>
-<div id="portalErrorBox" style="display:none;background:#fdeeee;border:1px solid #efbaba;color:#9f2f2f;padding:11px 12px;border-radius:10px;margin-bottom:12px;font-size:11px"></div>
 
-<section class="page active" id="dashboard">
-  <div class="pagehead"><div><h2>Sub Contractor Dashboard</h2><p>Live operational and commercial overview.</p></div><button class="btn orange" onclick="openContractorModal()">+ New Sub Contractor</button></div>
-  <div class="kpis">
-    <div class="kpi" onclick="goById('master')"><div class="top"><span class="lab">Total Sub Contractors</span><span class="bubble">▣</span></div><div class="num" id="kTotal">0</div><div class="hint">All registered companies</div></div>
-    <div class="kpi" onclick="goById('master')"><div class="top"><span class="lab">Active Sub Contractors</span><span class="bubble">✓</span></div><div class="num" id="kActive">0</div><div class="hint"><span id="kInactiveMini">0</span> inactive</div></div>
-    <div class="kpi" onclick="goById('manpower')"><div class="top"><span class="lab">Assigned Manpower</span><span class="bubble">👷</span></div><div class="num" id="kManpower">0</div><div class="hint">Currently active assignments</div></div>
-    <div class="kpi" onclick="goById('billing')"><div class="top"><span class="lab">Current Month Billing</span><span class="bubble o">₿</span></div><div class="num" id="kBilling">0</div><div class="hint">AED invoiced this month</div></div>
+<section class="page active" id="contractors">
+  <div class="pagehead">
+    <div><h2>Sub Contractors</h2><p>Add, edit and maintain your subcontractor company list.</p></div>
+    <button class="btn orange" onclick="openContractor()">+ Add Sub Contractor</button>
   </div>
   <div class="kpis">
-    <div class="kpi" onclick="goById('billing')"><div class="top"><span class="lab">Outstanding Amount</span><span class="bubble o">!</span></div><div class="num" id="kOutstanding">0</div><div class="hint">AED balance receivable</div></div>
-    <div class="kpi" onclick="goById('documents')"><div class="top"><span class="lab">Expiring Documents</span><span class="bubble o">⚠</span></div><div class="num" id="kExpiring">0</div><div class="hint">Within next 60 days</div></div>
-    <div class="kpi" onclick="goById('timesheets')"><div class="top"><span class="lab">Timesheets Pending</span><span class="bubble">🗓</span></div><div class="num" id="kTsPending">0</div><div class="hint">Waiting for approval</div></div>
-    <div class="kpi" onclick="goById('billing')"><div class="top"><span class="lab">Invoices Overdue</span><span class="bubble o">⌛</span></div><div class="num" id="kOverdue">0</div><div class="hint">Past due date with balance</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Total Sub Contractors</span><span class="bubble">▣</span></div><div class="num" id="kTotal">0</div><div class="hint">All registered companies</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Active Sub Contractors</span><span class="bubble">✓</span></div><div class="num" id="kActive">0</div><div class="hint">Currently active</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Inactive / On Hold</span><span class="bubble o">!</span></div><div class="num" id="kInactive">0</div><div class="hint">Not currently active</div></div>
   </div>
-
-  <div class="grid2">
-    <div class="card"><h3>Active Manpower by Sub Contractor</h3><div class="tablewrap"><table><thead><tr><th>Sub Contractor</th><th>Active Manpower</th><th>Sites</th><th>Current Month Billing</th><th>Outstanding</th></tr></thead><tbody id="dashContractorRows"></tbody></table></div></div>
-    <div class="card"><h3>Action Required</h3><div class="alert-list" id="dashboardAlerts"></div></div>
-  </div>
-</section>
-
-<section class="page" id="master">
-  <div class="pagehead"><div><h2>Sub Contractor Master</h2><p>Company, commercial, bank, agreement and profile history.</p></div><button class="btn orange" onclick="openContractorModal()">+ Add Sub Contractor</button></div>
   <div class="card">
     <div class="toolbar">
-      <input id="contractorSearch" class="search" placeholder="Search company / TRN / contact / license" oninput="renderContractors()">
-      <select id="contractorStatusFilter" onchange="renderContractors()"><option value="">All Status</option><option>Active</option><option>Inactive</option><option>On Hold</option></select>
-      <button class="btn light" onclick="exportContractors()">Export CSV</button>
+      <input id="contractorSearch" class="search" placeholder="Search company / TRN / contact / trade license" oninput="renderContractors()">
+      <select id="contractorStatus" onchange="renderContractors()"><option value="">All Status</option><option>Active</option><option>Inactive</option><option>On Hold</option></select>
     </div>
-    <div class="tablewrap"><table><thead><tr><th>Company</th><th>TRN</th><th>Trade License</th><th>Contact</th><th>Payment Terms</th><th>Agreement</th><th>Status</th><th>Action</th></tr></thead><tbody id="contractorRows"></tbody></table></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Company Name</th><th>TRN</th><th>Trade License</th><th>Contact Person</th><th>Mobile</th><th>Email</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="contractorRows"></tbody>
+    </table></div>
   </div>
 </section>
 
 <section class="page" id="manpower">
-  <div class="pagehead"><div><h2>Manpower Assignment / Movement</h2><p>Track employee source subcontractor, site/client, designation, dates and working status.</p></div><button class="btn orange" onclick="openAssignmentModal()">+ New Assignment</button></div>
-  <div class="card">
-    <div class="toolbar">
-      <input id="assignmentSearch" class="search" placeholder="Search employee / subcontractor / site" oninput="renderAssignments()">
-      <select id="assignmentContractorFilter" onchange="renderAssignments()"></select>
-      <select id="assignmentStatusFilter" onchange="renderAssignments()"><option value="">All Status</option><option>Active</option><option>Ended</option><option>On Hold</option></select>
-      <button class="btn light" onclick="exportAssignments()">Export CSV</button>
-    </div>
-    <div class="tablewrap"><table><thead><tr><th>Employee</th><th>Sub Contractor</th><th>Site / Client</th><th>Designation</th><th>From</th><th>To</th><th>Status</th><th>Rate Ref.</th><th>Action</th></tr></thead><tbody id="assignmentRows"></tbody></table></div>
+  <div class="pagehead">
+    <div><h2>Sub Contractor Manpower</h2><p>Assign employees/manpower against each subcontractor and maintain their current status.</p></div>
+    <button class="btn orange" onclick="openManpower()">+ Add Manpower</button>
   </div>
-</section>
-
-<section class="page" id="rates">
-  <div class="pagehead"><div><h2>Rate Management</h2><p>Effective-dated normal, OT, holiday, daily and monthly billing rates.</p></div><button class="btn orange" onclick="openRateModal()">+ Add Rate</button></div>
-  <div class="card">
-    <div class="toolbar">
-      <input id="rateSearch" class="search" placeholder="Search subcontractor / designation" oninput="renderRates()">
-      <select id="rateContractorFilter" onchange="renderRates()"></select>
-      <button class="btn light" onclick="exportRates()">Export CSV</button>
-    </div>
-    <div class="tablewrap"><table><thead><tr><th>Sub Contractor</th><th>Designation</th><th>Normal / Hr</th><th>OT / Hr</th><th>Fri/Holiday OT</th><th>Daily</th><th>Monthly</th><th>Effective From</th><th>Effective To</th><th>Action</th></tr></thead><tbody id="rateRows"></tbody></table></div>
-  </div>
-</section>
-
-<section class="page" id="timesheets">
-  <div class="pagehead"><div><h2>Timesheet Management</h2><p>Monthly subcontractor manpower hours, OT, absence and billing calculation.</p></div><button class="btn orange" onclick="openTimesheetModal()">+ Add Timesheet</button></div>
-  <div class="card">
-    <div class="toolbar">
-      <input id="tsMonthFilter" type="month" onchange="renderTimesheets()">
-      <select id="tsContractorFilter" onchange="renderTimesheets()"></select>
-      <select id="tsStatusFilter" onchange="renderTimesheets()"><option value="">All Approval Status</option><option>Draft</option><option>Pending</option><option>Approved</option><option>Rejected</option></select>
-      <button class="btn light" onclick="exportTimesheets()">Export CSV</button>
-    </div>
-    <div class="tablewrap"><table><thead><tr><th>Month</th><th>Employee</th><th>Sub Contractor</th><th>Normal Hrs</th><th>OT Hrs</th><th>Fri/Holiday</th><th>Absent Days</th><th>Adjustment</th><th>Billing</th><th>Status</th><th>Action</th></tr></thead><tbody id="timesheetRows"></tbody></table></div>
-  </div>
-</section>
-
-<section class="page" id="billing">
-  <div class="pagehead"><div><h2>Billing / Invoice Management</h2><p>Create invoices from approved timesheets and track payments/outstanding.</p></div><button class="btn orange" onclick="openInvoiceModal()">+ New Invoice</button></div>
-  <div class="card">
-    <div class="toolbar">
-      <input id="invoiceSearch" class="search" placeholder="Search invoice / subcontractor" oninput="renderInvoices()">
-      <select id="invoiceStatusFilter" onchange="renderInvoices()"><option value="">All Status</option><option>Draft</option><option>Submitted</option><option>Partially Paid</option><option>Paid</option><option>Overdue</option></select>
-      <button class="btn light" onclick="exportInvoices()">Export CSV</button>
-    </div>
-    <div class="tablewrap"><table><thead><tr><th>Invoice</th><th>Sub Contractor</th><th>Month</th><th>Date</th><th>Basic Amount</th><th>VAT</th><th>Total</th><th>Paid</th><th>Outstanding</th><th>Due</th><th>Status</th><th>Action</th></tr></thead><tbody id="invoiceRows"></tbody></table></div>
-  </div>
-</section>
-
-<section class="page" id="documents">
-  <div class="pagehead"><div><h2>Documents & Expiry</h2><p>Trade License, VAT, Agreement, Insurance and custom document tracking.</p></div><button class="btn orange" onclick="openDocumentModal()">+ Add Document</button></div>
   <div class="kpis">
-    <div class="kpi"><div class="top"><span class="lab">Expired</span><span class="bubble o">!</span></div><div class="num" id="docExpired">0</div><div class="hint">Already expired</div></div>
-    <div class="kpi"><div class="top"><span class="lab">Next 30 Days</span><span class="bubble o">30</span></div><div class="num" id="doc30">0</div><div class="hint">Expiry follow-up</div></div>
-    <div class="kpi"><div class="top"><span class="lab">31–60 Days</span><span class="bubble">60</span></div><div class="num" id="doc60">0</div><div class="hint">Advance warning</div></div>
-    <div class="kpi"><div class="top"><span class="lab">No Expiry</span><span class="bubble">∞</span></div><div class="num" id="docNoExpiry">0</div><div class="hint">Permanent / not applicable</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Total Manpower Records</span><span class="bubble">👷</span></div><div class="num" id="kMpTotal">0</div><div class="hint">All manpower assignments</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Active Manpower</span><span class="bubble">✓</span></div><div class="num" id="kMpActive">0</div><div class="hint">Currently active</div></div>
+    <div class="kpi"><div class="top"><span class="lab">Ended / On Hold</span><span class="bubble o">!</span></div><div class="num" id="kMpEnded">0</div><div class="hint">Inactive assignments</div></div>
   </div>
   <div class="card">
     <div class="toolbar">
-      <input id="docSearch" class="search" placeholder="Search company / document / number" oninput="renderDocuments()">
-      <select id="docContractorFilter" onchange="renderDocuments()"></select>
-      <select id="docExpiryFilter" onchange="renderDocuments()"><option value="">All Expiry</option><option value="expired">Expired</option><option value="30">Next 30 Days</option><option value="60">31-60 Days</option></select>
-      <button class="btn light" onclick="exportDocuments()">Export CSV</button>
+      <input id="mpSearch" class="search" placeholder="Search employee / subcontractor / site / designation" oninput="renderManpower()">
+      <select id="mpContractorFilter" onchange="renderManpower()"></select>
+      <select id="mpStatusFilter" onchange="renderManpower()"><option value="">All Status</option><option>Active</option><option>Ended</option><option>On Hold</option></select>
     </div>
-    <div class="tablewrap"><table><thead><tr><th>Sub Contractor</th><th>Document</th><th>Number</th><th>Issue</th><th>Expiry</th><th>Days</th><th>Status</th><th>URL</th><th>Action</th></tr></thead><tbody id="documentRows"></tbody></table></div>
-  </div>
-</section>
-
-<section class="page" id="reports">
-  <div class="pagehead"><div><h2>Reports</h2><p>Subcontractor, manpower, rate, timesheet, invoice, outstanding and document reports.</p></div><button class="btn orange" onclick="downloadAllReports()">⬇ Download All Reports</button></div>
-  <div class="kpis">
-    <div class="kpi" onclick="exportContractors()"><div class="top"><span class="lab">Sub Contractor Summary</span><span class="bubble">▣</span></div><div class="num">CSV</div><div class="hint">Company master & status</div></div>
-    <div class="kpi" onclick="exportAssignments()"><div class="top"><span class="lab">Manpower Report</span><span class="bubble">👷</span></div><div class="num">CSV</div><div class="hint">Employee / site / contractor</div></div>
-    <div class="kpi" onclick="exportTimesheets()"><div class="top"><span class="lab">Monthly Timesheets</span><span class="bubble">🗓</span></div><div class="num">CSV</div><div class="hint">Hours and billing</div></div>
-    <div class="kpi" onclick="exportInvoices()"><div class="top"><span class="lab">Invoices & Outstanding</span><span class="bubble o">₿</span></div><div class="num">CSV</div><div class="hint">Invoice/payment register</div></div>
-  </div>
-  <div class="card"><h3>Live Sub Contractor Summary</h3><div class="tablewrap"><table><thead><tr><th>Sub Contractor</th><th>Status</th><th>Active Manpower</th><th>Approved TS Billing</th><th>Total Invoiced</th><th>Paid</th><th>Outstanding</th><th>Expiring Docs</th></tr></thead><tbody id="reportSummaryRows"></tbody></table></div></div>
-</section>
-
-<section class="page" id="backup">
-  <div class="pagehead"><div><h2>Backup / Restore</h2><p>Protect local Sub Contractor data and move it to another system if needed.</p></div></div>
-  <div class="grid2eq">
-    <div class="card"><h3>Export Backup</h3><p class="muted">Downloads the complete Sub Contractor database as JSON.</p><button class="btn primary" onclick="exportBackup()">Export Full Backup</button></div>
-    <div class="card"><h3>Restore Backup</h3><p class="muted">Restoring replaces the current Sub Contractor module data.</p><input type="file" id="backupFile" accept=".json"><button class="btn orange" style="margin-top:10px" onclick="importBackup()">Restore Backup</button></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Employee</th><th>Sub Contractor</th><th>Designation</th><th>Site / Client</th><th>From Date</th><th>To Date</th><th>Status</th><th>Remarks</th><th>Action</th></tr></thead>
+      <tbody id="manpowerRows"></tbody>
+    </table></div>
   </div>
 </section>
 
@@ -216,450 +129,174 @@ label{font-size:10px;font-weight:800;color:#45566c}input,select,textarea{border:
 </main>
 </div>
 
-<!-- CONTRACTOR MODAL -->
-<div class="modalwrap" id="contractorModal"><div class="modal large">
-<div class="modalhead"><h3 id="contractorModalTitle">Add Sub Contractor</h3><button class="x" onclick="closeModal('contractorModal')">×</button></div>
-<input type="hidden" id="scId">
-<div class="formgrid three">
-  <div class="fg"><label>Company Name *</label><input id="scName"></div>
-  <div class="fg"><label>TRN</label><input id="scTrn"></div>
-  <div class="fg"><label>Status</label><select id="scStatus"><option>Active</option><option>Inactive</option><option>On Hold</option></select></div>
-  <div class="fg"><label>Trade License No.</label><input id="scLicense"></div>
-  <div class="fg"><label>Trade License Expiry</label><input type="date" id="scLicenseExpiry"></div>
-  <div class="fg"><label>Contact Person</label><input id="scContact"></div>
-  <div class="fg"><label>Mobile</label><input id="scMobile"></div>
-  <div class="fg"><label>Email</label><input id="scEmail" type="email"></div>
-  <div class="fg"><label>Payment Terms</label><input id="scPaymentTerms" placeholder="e.g. 30 Days"></div>
-  <div class="fg full"><label>Address</label><input id="scAddress"></div>
-  <div class="fg"><label>Bank Name</label><input id="scBank"></div>
-  <div class="fg"><label>Account Name</label><input id="scAccountName"></div>
-  <div class="fg"><label>IBAN</label><input id="scIban"></div>
-  <div class="fg"><label>Agreement No.</label><input id="scAgreement"></div>
-  <div class="fg"><label>Agreement Start</label><input type="date" id="scAgreementStart"></div>
-  <div class="fg"><label>Agreement End</label><input type="date" id="scAgreementEnd"></div>
-  <div class="fg full"><label>Remarks</label><textarea id="scRemarks"></textarea></div>
-</div>
-<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn light" onclick="closeModal('contractorModal')">Cancel</button><button class="btn primary" onclick="saveContractor()">Save Sub Contractor</button></div>
+<div class="modalwrap" id="contractorModal"><div class="modal">
+  <div class="modalhead"><h3 id="contractorModalTitle">Add Sub Contractor</h3><button class="x" onclick="closeModal('contractorModal')">×</button></div>
+  <input type="hidden" id="scId">
+  <div class="formgrid three">
+    <div class="fg full"><label>Company Name *</label><input id="scName"></div>
+    <div class="fg"><label>TRN</label><input id="scTrn"></div>
+    <div class="fg"><label>Trade License No.</label><input id="scLicense"></div>
+    <div class="fg"><label>Trade License Expiry</label><input type="date" id="scLicenseExpiry"></div>
+    <div class="fg"><label>Contact Person</label><input id="scContact"></div>
+    <div class="fg"><label>Mobile</label><input id="scMobile"></div>
+    <div class="fg"><label>Email</label><input id="scEmail" type="email"></div>
+    <div class="fg"><label>Status</label><select id="scStatus"><option>Active</option><option>Inactive</option><option>On Hold</option></select></div>
+    <div class="fg full"><label>Address</label><input id="scAddress"></div>
+    <div class="fg full"><label>Remarks</label><textarea id="scRemarks"></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+    <button class="btn light" onclick="closeModal('contractorModal')">Cancel</button>
+    <button class="btn primary" onclick="saveContractor()">Save Sub Contractor</button>
+  </div>
 </div></div>
 
-<!-- ASSIGNMENT MODAL -->
-<div class="modalwrap" id="assignmentModal"><div class="modal">
-<div class="modalhead"><h3>Manpower Assignment</h3><button class="x" onclick="closeModal('assignmentModal')">×</button></div>
-<input type="hidden" id="asId">
-<div class="formgrid">
-  <div class="fg full"><label>Employee *</label><select id="asEmployee" onchange="fillAssignmentEmployee()"></select></div>
-  <div class="fg"><label>Sub Contractor *</label><select id="asContractor"></select></div>
-  <div class="fg"><label>Site / Client *</label><input id="asSite"></div>
-  <div class="fg"><label>Designation</label><input id="asDesignation"></div>
-  <div class="fg"><label>From Date *</label><input type="date" id="asFrom"></div>
-  <div class="fg"><label>To Date</label><input type="date" id="asTo"></div>
-  <div class="fg"><label>Working Status</label><select id="asStatus"><option>Active</option><option>Ended</option><option>On Hold</option></select></div>
-  <div class="fg"><label>Rate Reference / Note</label><input id="asRateRef" placeholder="Auto/use rate master"></div>
-  <div class="fg full"><label>Remarks</label><textarea id="asRemarks"></textarea></div>
-</div>
-<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn light" onclick="closeModal('assignmentModal')">Cancel</button><button class="btn primary" onclick="saveAssignment()">Save Assignment</button></div>
-</div></div>
-
-<!-- RATE MODAL -->
-<div class="modalwrap" id="rateModal"><div class="modal">
-<div class="modalhead"><h3>Rate Management</h3><button class="x" onclick="closeModal('rateModal')">×</button></div>
-<input type="hidden" id="rtId">
-<div class="formgrid three">
-  <div class="fg full"><label>Sub Contractor *</label><select id="rtContractor"></select></div>
-  <div class="fg"><label>Designation / Category *</label><input id="rtDesignation"></div>
-  <div class="fg"><label>Normal Hour Rate</label><input type="number" min="0" step=".01" id="rtNormal"></div>
-  <div class="fg"><label>OT Hour Rate</label><input type="number" min="0" step=".01" id="rtOt"></div>
-  <div class="fg"><label>Friday / Holiday OT</label><input type="number" min="0" step=".01" id="rtHoliday"></div>
-  <div class="fg"><label>Daily Rate</label><input type="number" min="0" step=".01" id="rtDaily"></div>
-  <div class="fg"><label>Monthly Rate</label><input type="number" min="0" step=".01" id="rtMonthly"></div>
-  <div class="fg"><label>Effective From *</label><input type="date" id="rtFrom"></div>
-  <div class="fg"><label>Effective To</label><input type="date" id="rtTo"></div>
-  <div class="fg full"><label>Remarks</label><textarea id="rtRemarks"></textarea></div>
-</div>
-<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn light" onclick="closeModal('rateModal')">Cancel</button><button class="btn primary" onclick="saveRate()">Save Rate</button></div>
-</div></div>
-
-<!-- TIMESHEET MODAL -->
-<div class="modalwrap" id="timesheetModal"><div class="modal">
-<div class="modalhead"><h3>Timesheet Entry</h3><button class="x" onclick="closeModal('timesheetModal')">×</button></div>
-<input type="hidden" id="tsId">
-<div class="formgrid three">
-  <div class="fg"><label>Month *</label><input type="month" id="tsMonth"></div>
-  <div class="fg"><label>Sub Contractor *</label><select id="tsContractor" onchange="fillTimesheetAssignments()"></select></div>
-  <div class="fg"><label>Employee *</label><select id="tsEmployee" onchange="recalcTimesheetModal()"></select></div>
-  <div class="fg"><label>Normal Hours</label><input type="number" min="0" step=".5" id="tsNormal" oninput="recalcTimesheetModal()"></div>
-  <div class="fg"><label>OT Hours</label><input type="number" min="0" step=".5" id="tsOt" oninput="recalcTimesheetModal()"></div>
-  <div class="fg"><label>Friday / Holiday OT</label><input type="number" min="0" step=".5" id="tsHoliday" oninput="recalcTimesheetModal()"></div>
-  <div class="fg"><label>Absent Days</label><input type="number" min="0" step=".5" id="tsAbsent"></div>
-  <div class="fg"><label>Adjustment (AED)</label><input type="number" step=".01" id="tsAdjustment" oninput="recalcTimesheetModal()"></div>
-  <div class="fg"><label>Approval Status</label><select id="tsApproval"><option>Draft</option><option>Pending</option><option>Approved</option><option>Rejected</option></select></div>
-  <div class="fg full"><div class="summary"><div class="sumrow"><span>Rate Used</span><strong id="tsRateUsed">-</strong></div><div class="sumrow"><span>Calculated Billing</span><strong id="tsCalcBilling">AED 0.00</strong></div></div></div>
-  <div class="fg full"><label>Remarks</label><textarea id="tsRemarks"></textarea></div>
-</div>
-<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn light" onclick="closeModal('timesheetModal')">Cancel</button><button class="btn primary" onclick="saveTimesheet()">Save Timesheet</button></div>
-</div></div>
-
-<!-- INVOICE MODAL -->
-<div class="modalwrap" id="invoiceModal"><div class="modal">
-<div class="modalhead"><h3>Invoice / Billing</h3><button class="x" onclick="closeModal('invoiceModal')">×</button></div>
-<input type="hidden" id="invId">
-<div class="formgrid three">
-  <div class="fg"><label>Sub Contractor *</label><select id="invContractor" onchange="calcInvoiceFromTimesheets()"></select></div>
-  <div class="fg"><label>Billing Month *</label><input type="month" id="invMonth" onchange="calcInvoiceFromTimesheets()"></div>
-  <div class="fg"><label>Invoice No. *</label><input id="invNumber"></div>
-  <div class="fg"><label>Invoice Date *</label><input type="date" id="invDate"></div>
-  <div class="fg"><label>Due Date</label><input type="date" id="invDue"></div>
-  <div class="fg"><label>Status</label><select id="invStatus"><option>Draft</option><option>Submitted</option><option>Partially Paid</option><option>Paid</option></select></div>
-  <div class="fg"><label>Basic Amount (AED)</label><input type="number" step=".01" id="invBasic" oninput="recalcInvoice()"></div>
-  <div class="fg"><label>VAT %</label><input type="number" step=".01" id="invVatPct" value="5" oninput="recalcInvoice()"></div>
-  <div class="fg"><label>VAT Amount</label><input id="invVat" readonly></div>
-  <div class="fg"><label>Total Amount</label><input id="invTotal" readonly></div>
-  <div class="fg"><label>Paid Amount</label><input type="number" step=".01" id="invPaid" oninput="recalcInvoice()"></div>
-  <div class="fg"><label>Outstanding</label><input id="invOutstanding" readonly></div>
-  <div class="fg"><label>Payment Date</label><input type="date" id="invPaymentDate"></div>
-  <div class="fg"><label>Payment Mode</label><select id="invPaymentMode"><option value="">Select</option><option>Bank Transfer</option><option>Cheque</option><option>Cash</option><option>Other</option></select></div>
-  <div class="fg"><label>Payment Reference</label><input id="invPaymentRef"></div>
-  <div class="fg full"><label>Remarks</label><textarea id="invRemarks"></textarea></div>
-</div>
-<div id="invoiceCalcNotice" class="notice ninfo show">Approved timesheets for selected month can populate the Basic Amount automatically.</div>
-<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn light" onclick="closeModal('invoiceModal')">Cancel</button><button class="btn primary" onclick="saveInvoice()">Save Invoice</button></div>
-</div></div>
-
-<!-- DOCUMENT MODAL -->
-<div class="modalwrap" id="documentModal"><div class="modal">
-<div class="modalhead"><h3>Sub Contractor Document</h3><button class="x" onclick="closeModal('documentModal')">×</button></div>
-<input type="hidden" id="docId">
-<div class="formgrid">
-  <div class="fg full"><label>Sub Contractor *</label><select id="docContractor"></select></div>
-  <div class="fg"><label>Document Type *</label><select id="docType"><option>Trade License</option><option>VAT Certificate</option><option>Agreement</option><option>Insurance</option><option>Bank Letter</option><option>Other</option></select></div>
-  <div class="fg"><label>Document No.</label><input id="docNumber"></div>
-  <div class="fg"><label>Issue Date</label><input type="date" id="docIssue"></div>
-  <div class="fg"><label>Expiry Date</label><input type="date" id="docExpiry"></div>
-  <div class="fg"><label>Status</label><select id="docStatus"><option>Valid</option><option>Pending Renewal</option><option>Expired</option><option>Not Applicable</option></select></div>
-  <div class="fg"><label>Document URL</label><input id="docUrl" placeholder="https://..."></div>
-  <div class="fg full"><label>Remarks</label><textarea id="docRemarks"></textarea></div>
-</div>
-<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn light" onclick="closeModal('documentModal')">Cancel</button><button class="btn primary" onclick="saveDocument()">Save Document</button></div>
-</div></div>
-
-<!-- PROFILE MODAL -->
-<div class="modalwrap" id="profileModal"><div class="modal large">
-<div class="modalhead"><h3>Sub Contractor Profile</h3><button class="x" onclick="closeModal('profileModal')">×</button></div>
-<div id="profileContent"></div>
+<div class="modalwrap" id="manpowerModal"><div class="modal">
+  <div class="modalhead"><h3 id="manpowerModalTitle">Add Sub Contractor Manpower</h3><button class="x" onclick="closeModal('manpowerModal')">×</button></div>
+  <input type="hidden" id="mpId">
+  <div class="formgrid">
+    <div class="fg full"><label>Employee *</label><select id="mpEmployee" onchange="fillEmployeeDetails()"></select></div>
+    <div class="fg"><label>Sub Contractor *</label><select id="mpContractor"></select></div>
+    <div class="fg"><label>Designation</label><input id="mpDesignation"></div>
+    <div class="fg"><label>Site / Client</label><input id="mpSite"></div>
+    <div class="fg"><label>From Date *</label><input type="date" id="mpFrom"></div>
+    <div class="fg"><label>To Date</label><input type="date" id="mpTo"></div>
+    <div class="fg"><label>Status</label><select id="mpStatus"><option>Active</option><option>Ended</option><option>On Hold</option></select></div>
+    <div class="fg full"><label>Remarks</label><textarea id="mpRemarks"></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+    <button class="btn light" onclick="closeModal('manpowerModal')">Cancel</button>
+    <button class="btn primary" onclick="saveManpower()">Save Manpower</button>
+  </div>
 </div></div>
 
 <script>
-// Robust DOM binding for browsers that do not expose element IDs as globals.
-document.querySelectorAll('[id]').forEach(function(el){
-  try{ window[el.id]=el; }catch(e){}
-});
-window.addEventListener('error',function(ev){
-  console.error('Sub Contractor Portal error:',ev.error||ev.message);
-  const box=document.getElementById('portalErrorBox');
-  if(box){box.style.display='block';box.textContent='Portal error: '+(ev.message||'Unknown error');}
-});
-const SC_KEY="cm_subcontractor_portal_v1";
+const SC_KEY="cm_subcontractor_simple_v1";
 const EMPLOYEE_DATA_KEY="cm_employee_portal_v3";
 let db=loadDb();
-let profileId="";
 
-function emptyDb(){return {contractors:[],assignments:[],rates:[],timesheets:[],invoices:[],documents:[],history:[]}}
+function emptyDb(){return {contractors:[],manpower:[]}}
 function loadDb(){try{const x=JSON.parse(localStorage.getItem(SC_KEY)||"null");return {...emptyDb(),...(x||{})}}catch(e){return emptyDb()}}
-function saveDb(){
-  try{
-    localStorage.setItem(SC_KEY,JSON.stringify(db));
-    renderAll();
-  }catch(err){
-    console.error("Sub Contractor data save failed",err);
-    const box=document.getElementById("portalErrorBox");
-    if(box){
-      box.style.display="block";
-      box.textContent="Data save error: "+(err?.message||err)+". Please allow site storage and refresh.";
-    }
-    alert("Sub Contractor data could not be saved. Please allow browser site storage and try again.");
-  }
-}
-function nowIso(){return new Date().toISOString()}
-function uid(prefix){return prefix+"-"+Date.now()+"-"+Math.random().toString(16).slice(2,7)}
+function saveDb(){localStorage.setItem(SC_KEY,JSON.stringify(db));renderAll()}
+function uid(p){return p+"-"+Date.now()+"-"+Math.random().toString(16).slice(2,7)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function fmtDate(v){if(!v)return"-";const d=new Date(v+"T00:00:00");return isNaN(d)?v:d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}
-function money(v){return Number(v||0).toLocaleString("en-AE",{minimumFractionDigits:2,maximumFractionDigits:2})}
-function todayYmd(){return new Date().toISOString().slice(0,10)}
-function monthNow(){return new Date().toISOString().slice(0,7)}
-function closeModal(id){document.getElementById(id)?.classList.remove("show")}
-function go(id,btn){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id)?.classList.add("active");document.querySelectorAll(".sidebar .nav button").forEach(x=>x.classList.remove("active"));if(btn)btn.classList.add("active");document.getElementById("pageTitle").textContent=({dashboard:"Sub Contractor Dashboard",master:"Sub Contractor Master",manpower:"Manpower Assignment",rates:"Rate Management",timesheets:"Timesheet Management",billing:"Billing / Invoices",documents:"Documents & Expiry",reports:"Reports",backup:"Backup / Restore"})[id]||"Sub Contractor Management";renderAll()}
-function goById(id){const b=[...document.querySelectorAll(".sidebar button")].find(x=>x.getAttribute("onclick")?.includes("'"+id+"'"));go(id,b)}
+function closeModal(id){document.getElementById(id).classList.remove("show")}
 function contractor(id){return db.contractors.find(x=>x.id===id)||{}}
 function contractorName(id){return contractor(id).name||"-"}
 function employeeData(){try{const x=JSON.parse(localStorage.getItem(EMPLOYEE_DATA_KEY)||"{}");return Array.isArray(x.employees)?x.employees:[]}catch(e){return[]}}
-function employeeByCode(code){return employeeData().find(e=>String(e.employeeCode||"")===String(code||""))||{}}
+function employeeByCode(code){return employeeData().find(e=>String(e.employeeCode||e.employeeName||"")===String(code||""))||{}}
 function employeeLabel(e){return [e.employeeCode,e.employeeName].filter(Boolean).join(" - ")}
-function addScHistory(entityType,entityId,title,detail){db.history.unshift({id:uid("H"),entityType,entityId,title,detail,date:nowIso(),by:"ERP User"})}
 
-function fillContractorSelect(id,allLabel="Select Sub Contractor"){
- const el=document.getElementById(id);if(!el)return;const old=el.value;
- el.innerHTML=`<option value="">${allLabel}</option>`+db.contractors.slice().sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("");
- if([...el.options].some(o=>o.value===old))el.value=old
+function go(id,btn){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".sidebar .nav button").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("pageTitle").textContent=id==="contractors"?"Sub Contractors":"Sub Contractor Manpower";
+  renderAll();
 }
-function fillEmployeeSelect(id){const el=document.getElementById(id);if(!el)return;const old=el.value;const arr=employeeData().filter(e=>String(e.status||"Active").toLowerCase()!=="inactive");el.innerHTML='<option value="">Select Employee</option>'+arr.sort((a,b)=>employeeLabel(a).localeCompare(employeeLabel(b))).map(e=>`<option value="${esc(e.employeeCode||e.employeeName)}">${esc(employeeLabel(e))}</option>`).join("");if([...el.options].some(o=>o.value===old))el.value=old}
-function fillFilters(){
- ["assignmentContractorFilter","rateContractorFilter","tsContractorFilter","docContractorFilter"].forEach(id=>fillContractorSelect(id,"All Sub Contractors"));
- ["asContractor","rtContractor","tsContractor","invContractor","docContractor"].forEach(id=>fillContractorSelect(id));
- fillEmployeeSelect("asEmployee");
-}
-function badge(status){const s=String(status||"");const c=/active|approved|paid|valid/i.test(s)?"approved":/inactive|expired|rejected|overdue/i.test(s)?"alert":/pending|draft|hold|submitted|partial/i.test(s)?"pending":"info";return `<span class="badge ${c}">${esc(s||"-")}</span>`}
-function daysTo(date){if(!date)return null;const t=new Date();t.setHours(0,0,0,0);const d=new Date(date+"T00:00:00");return Math.ceil((d-t)/86400000)}
-function currentMonthInvoiceTotal(){const m=monthNow();return db.invoices.filter(x=>(x.invoiceDate||"").slice(0,7)===m).reduce((s,x)=>s+Number(x.total||0),0)}
-function outstandingTotal(){return db.invoices.reduce((s,x)=>s+Math.max(0,Number(x.total||0)-Number(x.paid||0)),0)}
-function activeAssignmentsFor(cid){return db.assignments.filter(a=>(!cid||a.contractorId===cid)&&a.status==="Active")}
-function invoiceOutstandingFor(cid){return db.invoices.filter(i=>!cid||i.contractorId===cid).reduce((s,i)=>s+Math.max(0,Number(i.total||0)-Number(i.paid||0)),0)}
-function expiringDocsFor(cid,days=60){return db.documents.filter(d=>(!cid||d.contractorId===cid)&&d.expiry&&daysTo(d.expiry)>=0&&daysTo(d.expiry)<=days)}
-function overdueInvoice(i){return i.dueDate&&daysTo(i.dueDate)<0&&Number(i.total||0)>Number(i.paid||0)}
-
-function renderDashboard(){
- document.getElementById("kTotal").textContent=db.contractors.length;
- document.getElementById("kActive").textContent=db.contractors.filter(x=>x.status==="Active").length;
- document.getElementById("kInactiveMini").textContent=db.contractors.filter(x=>x.status!=="Active").length;
- document.getElementById("kManpower").textContent=activeAssignmentsFor().length;
- document.getElementById("kBilling").textContent=money(currentMonthInvoiceTotal());
- document.getElementById("kOutstanding").textContent=money(outstandingTotal());
- document.getElementById("kExpiring").textContent=expiringDocsFor("",60).length;
- document.getElementById("kTsPending").textContent=db.timesheets.filter(x=>x.status==="Pending").length;
- document.getElementById("kOverdue").textContent=db.invoices.filter(overdueInvoice).length;
-
- const tbody=document.getElementById("dashContractorRows");
- const rows=db.contractors.map(c=>{
-   const man=activeAssignmentsFor(c.id);
-   const sites=[...new Set(man.map(x=>x.site).filter(Boolean))];
-   const billing=db.invoices.filter(i=>i.contractorId===c.id&&(i.invoiceDate||"").slice(0,7)===monthNow()).reduce((s,i)=>s+Number(i.total||0),0);
-   return `<tr><td><button class="btn light" onclick="openProfile('${c.id}')">${esc(c.name)}</button></td><td><b>${man.length}</b></td><td>${esc(sites.join(", ")||"-")}</td><td>AED ${money(billing)}</td><td><b>AED ${money(invoiceOutstandingFor(c.id))}</b></td></tr>`
- }).join("");
- tbody.innerHTML=rows||'<tr><td colspan="5" style="text-align:center;color:#7d8da0;padding:20px">No subcontractors yet.</td></tr>';
-
- const alerts=[];
- db.documents.forEach(d=>{const n=daysTo(d.expiry);if(n!==null&&n<0)alerts.push({cls:"exp",text:`${contractorName(d.contractorId)} — ${d.type} expired ${Math.abs(n)} day(s) ago.`});else if(n!==null&&n<=30)alerts.push({cls:"warn",text:`${contractorName(d.contractorId)} — ${d.type} expires in ${n} day(s).`})});
- db.invoices.filter(overdueInvoice).forEach(i=>alerts.push({cls:"exp",text:`${contractorName(i.contractorId)} — Invoice ${i.number} is overdue. Outstanding AED ${money(Number(i.total)-Number(i.paid||0))}.`}));
- db.timesheets.filter(t=>t.status==="Pending").slice(0,5).forEach(t=>alerts.push({cls:"warn",text:`${contractorName(t.contractorId)} — ${t.month} timesheet pending for ${t.employeeName||t.employeeCode}.`}));
- document.getElementById("dashboardAlerts").innerHTML=alerts.slice(0,10).map(a=>`<div class="alert-item ${a.cls}"><span>${esc(a.text)}</span></div>`).join("")||'<div class="notice ninfo show">No urgent actions at the moment.</div>';
+function badge(s){
+  const c=s==="Active"?"activeb":s==="On Hold"?"holdb":"inactiveb";
+  return `<span class="badge ${c}">${esc(s||"-")}</span>`;
 }
 
-function openContractorModal(id=""){
- const c=id?contractor(id):{};
- document.getElementById("contractorModalTitle").textContent=id?"Edit Sub Contractor":"Add Sub Contractor";
- ["Id","Name","Trn","License","LicenseExpiry","Contact","Mobile","Email","PaymentTerms","Address","Bank","AccountName","Iban","Agreement","AgreementStart","AgreementEnd","Remarks"].forEach(k=>{
-   const el=document.getElementById("sc"+k);if(!el)return;
-   const key=({Id:"id",Name:"name",Trn:"trn",License:"license",LicenseExpiry:"licenseExpiry",Contact:"contact",Mobile:"mobile",Email:"email",PaymentTerms:"paymentTerms",Address:"address",Bank:"bank",AccountName:"accountName",Iban:"iban",Agreement:"agreement",AgreementStart:"agreementStart",AgreementEnd:"agreementEnd",Remarks:"remarks"})[k];
-   el.value=c[key]||""
- });
- document.getElementById("scStatus").value=c.status||"Active";document.getElementById("contractorModal").classList.add("show")
+function fillContractorSelect(id,all=false){
+  const el=document.getElementById(id),old=el.value;
+  el.innerHTML=`<option value="">${all?"All Sub Contractors":"Select Sub Contractor"}</option>`+
+    db.contractors.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function fillEmployeeSelect(){
+  const el=document.getElementById("mpEmployee"),old=el.value;
+  const arr=employeeData().filter(e=>String(e.status||"Active").toLowerCase()!=="inactive");
+  el.innerHTML='<option value="">Select Employee</option>'+arr.sort((a,b)=>employeeLabel(a).localeCompare(employeeLabel(b))).map(e=>`<option value="${esc(e.employeeCode||e.employeeName)}">${esc(employeeLabel(e))}</option>`).join("");
+  if([...el.options].some(o=>o.value===old))el.value=old;
+}
+function fillEmployeeDetails(){
+  const e=employeeByCode(document.getElementById("mpEmployee").value);
+  const des=document.getElementById("mpDesignation");
+  if(e && (!document.getElementById("mpId").value || !des.value)) des.value=e.actualDesignation||e.idDesignation||"";
+}
+
+function openContractor(id=""){
+  const c=id?contractor(id):{};
+  document.getElementById("contractorModalTitle").textContent=id?"Edit Sub Contractor":"Add Sub Contractor";
+  const map={scId:"id",scName:"name",scTrn:"trn",scLicense:"license",scLicenseExpiry:"licenseExpiry",scContact:"contact",scMobile:"mobile",scEmail:"email",scStatus:"status",scAddress:"address",scRemarks:"remarks"};
+  Object.entries(map).forEach(([eid,key])=>document.getElementById(eid).value=c[key]|| (eid==="scStatus"?"Active":""));
+  document.getElementById("contractorModal").classList.add("show");
 }
 function saveContractor(){
- const id=document.getElementById("scId").value;const name=document.getElementById("scName").value.trim();if(!name)return alert("Enter Company Name.");
- if(db.contractors.some(x=>x.id!==id&&x.name.trim().toLowerCase()===name.toLowerCase()))return alert("This Sub Contractor already exists.");
- const c={id:id||uid("SC"),name,trn:scTrn.value.trim(),status:scStatus.value,license:scLicense.value.trim(),licenseExpiry:scLicenseExpiry.value,contact:scContact.value.trim(),mobile:scMobile.value.trim(),email:scEmail.value.trim(),paymentTerms:scPaymentTerms.value.trim(),address:scAddress.value.trim(),bank:scBank.value.trim(),accountName:scAccountName.value.trim(),iban:scIban.value.trim(),agreement:scAgreement.value.trim(),agreementStart:scAgreementStart.value,agreementEnd:scAgreementEnd.value,remarks:scRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.contractors.findIndex(x=>x.id===c.id);if(i>=0){c.createdAt=db.contractors[i].createdAt;db.contractors[i]=c;addScHistory("contractor",c.id,"Sub Contractor Updated",name)}else{c.createdAt=nowIso();db.contractors.push(c);addScHistory("contractor",c.id,"Sub Contractor Created",name)}
- // auto sync core license/agreement document shell if date present
- if(c.license&&c.licenseExpiry&&!db.documents.some(d=>d.contractorId===c.id&&d.type==="Trade License"&&d.number===c.license))db.documents.push({id:uid("DOC"),contractorId:c.id,type:"Trade License",number:c.license,issue:"",expiry:c.licenseExpiry,status:"Valid",url:"",remarks:"Auto-created from master",createdAt:nowIso()});
- closeModal("contractorModal");saveDb()
+  const id=document.getElementById("scId").value,name=document.getElementById("scName").value.trim();
+  if(!name)return alert("Enter Company Name.");
+  if(db.contractors.some(c=>c.id!==id&&c.name.trim().toLowerCase()===name.toLowerCase()))return alert("This Sub Contractor already exists.");
+  const c={id:id||uid("SC"),name,trn:scTrn.value.trim(),license:scLicense.value.trim(),licenseExpiry:scLicenseExpiry.value,
+    contact:scContact.value.trim(),mobile:scMobile.value.trim(),email:scEmail.value.trim(),status:scStatus.value,
+    address:scAddress.value.trim(),remarks:scRemarks.value.trim()};
+  const i=db.contractors.findIndex(x=>x.id===c.id); if(i>=0)db.contractors[i]=c;else db.contractors.push(c);
+  closeModal("contractorModal");saveDb();
 }
 function deleteContractor(id){
- if(activeAssignmentsFor(id).length)return alert("Cannot delete: this Sub Contractor has active manpower assignments.");
- if(!confirm("Delete this Sub Contractor? Related history will remain."))return;
- db.contractors=db.contractors.filter(x=>x.id!==id);addScHistory("contractor",id,"Sub Contractor Deleted",contractorName(id));saveDb()
+  if(db.manpower.some(m=>m.contractorId===id&&m.status==="Active"))return alert("Cannot delete. This Sub Contractor has Active Manpower.");
+  if(!confirm("Delete this Sub Contractor?"))return;
+  db.contractors=db.contractors.filter(x=>x.id!==id);saveDb();
 }
 function renderContractors(){
- const q=(contractorSearch.value||"").toLowerCase(),s=contractorStatusFilter.value;
- const arr=db.contractors.filter(c=>(!s||c.status===s)&&[c.name,c.trn,c.contact,c.license,c.mobile].join(" ").toLowerCase().includes(q));
- contractorRows.innerHTML=arr.map(c=>`<tr><td><button class="btn light" onclick="openProfile('${c.id}')"><b>${esc(c.name)}</b></button></td><td>${esc(c.trn||"-")}</td><td>${esc(c.license||"-")}<br><span class="muted">${fmtDate(c.licenseExpiry)}</span></td><td>${esc(c.contact||"-")}<br><span class="muted">${esc(c.mobile||"")}</span></td><td>${esc(c.paymentTerms||"-")}</td><td>${esc(c.agreement||"-")}<br><span class="muted">${fmtDate(c.agreementStart)} → ${fmtDate(c.agreementEnd)}</span></td><td>${badge(c.status)}</td><td><button class="btn light" onclick="openContractorModal('${c.id}')">Edit</button> <button class="btn red" onclick="deleteContractor('${c.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8da0">No records.</td></tr>'
+  const q=document.getElementById("contractorSearch").value.toLowerCase(),s=document.getElementById("contractorStatus").value;
+  const arr=db.contractors.filter(c=>(!s||c.status===s)&&[c.name,c.trn,c.license,c.contact,c.mobile,c.email].join(" ").toLowerCase().includes(q));
+  document.getElementById("contractorRows").innerHTML=arr.map(c=>`<tr>
+    <td><b>${esc(c.name)}</b><br><span class="muted">${esc(c.address||"")}</span></td>
+    <td>${esc(c.trn||"-")}</td>
+    <td>${esc(c.license||"-")}<br><span class="muted">${fmtDate(c.licenseExpiry)}</span></td>
+    <td>${esc(c.contact||"-")}</td><td>${esc(c.mobile||"-")}</td><td>${esc(c.email||"-")}</td>
+    <td>${badge(c.status)}</td>
+    <td><button class="btn light" onclick="openContractor('${c.id}')">Edit</button> <button class="btn red" onclick="deleteContractor('${c.id}')">Delete</button></td>
+  </tr>`).join("")||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8da0">No Sub Contractors added yet.</td></tr>';
+  kTotal.textContent=db.contractors.length;kActive.textContent=db.contractors.filter(x=>x.status==="Active").length;kInactive.textContent=db.contractors.filter(x=>x.status!=="Active").length;
 }
 
-function openAssignmentModal(id=""){
- fillFilters();const a=id?db.assignments.find(x=>x.id===id)||{}:{};
- asId.value=a.id||"";asEmployee.value=a.employeeCode||"";asContractor.value=a.contractorId||"";asSite.value=a.site||"";asDesignation.value=a.designation||"";asFrom.value=a.from||"";asTo.value=a.to||"";asStatus.value=a.status||"Active";asRateRef.value=a.rateRef||"";asRemarks.value=a.remarks||"";fillAssignmentEmployee();assignmentModal.classList.add("show")
+function openManpower(id=""){
+  fillContractorSelect("mpContractor");fillEmployeeSelect();
+  const m=id?db.manpower.find(x=>x.id===id)||{}:{};
+  manpowerModalTitle.textContent=id?"Edit Sub Contractor Manpower":"Add Sub Contractor Manpower";
+  mpId.value=m.id||"";mpEmployee.value=m.employeeCode||"";mpContractor.value=m.contractorId||"";
+  mpDesignation.value=m.designation||"";mpSite.value=m.site||"";mpFrom.value=m.from||"";mpTo.value=m.to||"";
+  mpStatus.value=m.status||"Active";mpRemarks.value=m.remarks||"";
+  fillEmployeeDetails();manpowerModal.classList.add("show");
 }
-function fillAssignmentEmployee(){const e=employeeByCode(asEmployee.value);if(e&&(!asDesignation.value||!asId.value))asDesignation.value=e.actualDesignation||e.idDesignation||""}
-function saveAssignment(){
- const id=asId.value,emp=employeeByCode(asEmployee.value),cid=asContractor.value;if(!emp.employeeCode&&!emp.employeeName)return alert("Select Employee.");if(!cid)return alert("Select Sub Contractor.");if(!asSite.value.trim()||!asFrom.value)return alert("Enter Site / Client and From Date.");if(asTo.value&&new Date(asTo.value)<new Date(asFrom.value))return alert("To Date cannot be earlier than From Date.");
- if(asStatus.value==="Active"&&db.assignments.some(x=>x.id!==id&&x.employeeCode===emp.employeeCode&&x.status==="Active"))return alert("This employee already has an Active subcontractor assignment. End or hold the old assignment first.");
- const a={id:id||uid("AS"),employeeCode:emp.employeeCode||asEmployee.value,employeeName:emp.employeeName||"",contractorId:cid,site:asSite.value.trim(),designation:asDesignation.value.trim(),from:asFrom.value,to:asTo.value,status:asStatus.value,rateRef:asRateRef.value.trim(),remarks:asRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.assignments.findIndex(x=>x.id===a.id);if(i>=0){a.createdAt=db.assignments[i].createdAt;db.assignments[i]=a;addScHistory("contractor",cid,"Manpower Assignment Updated",`${a.employeeCode} ${a.employeeName} → ${a.site}`)}else{a.createdAt=nowIso();db.assignments.push(a);addScHistory("contractor",cid,"Manpower Assigned",`${a.employeeCode} ${a.employeeName} → ${a.site}`)}
- closeModal("assignmentModal");saveDb()
+function saveManpower(){
+  const id=mpId.value,e=employeeByCode(mpEmployee.value),cid=mpContractor.value;
+  if(!mpEmployee.value)return alert("Select Employee.");
+  if(!cid)return alert("Select Sub Contractor.");
+  if(!mpFrom.value)return alert("Enter From Date.");
+  if(mpTo.value&&new Date(mpTo.value)<new Date(mpFrom.value))return alert("To Date cannot be earlier than From Date.");
+  if(mpStatus.value==="Active"&&db.manpower.some(x=>x.id!==id&&x.employeeCode===mpEmployee.value&&x.status==="Active"))
+    return alert("This employee already has an Active Sub Contractor Manpower record. End or hold the old record first.");
+  const m={id:id||uid("MP"),employeeCode:e.employeeCode||mpEmployee.value,employeeName:e.employeeName||"",
+    contractorId:cid,designation:mpDesignation.value.trim(),site:mpSite.value.trim(),from:mpFrom.value,to:mpTo.value,
+    status:mpStatus.value,remarks:mpRemarks.value.trim()};
+  const i=db.manpower.findIndex(x=>x.id===m.id);if(i>=0)db.manpower[i]=m;else db.manpower.push(m);
+  closeModal("manpowerModal");saveDb();
 }
-function renderAssignments(){
- const q=(assignmentSearch.value||"").toLowerCase(),cid=assignmentContractorFilter.value,s=assignmentStatusFilter.value;
- const arr=db.assignments.filter(a=>(!cid||a.contractorId===cid)&&(!s||a.status===s)&&[a.employeeCode,a.employeeName,contractorName(a.contractorId),a.site,a.designation].join(" ").toLowerCase().includes(q));
- assignmentRows.innerHTML=arr.map(a=>`<tr><td><b>${esc(a.employeeName||"-")}</b><br><span class="muted">${esc(a.employeeCode)}</span></td><td>${esc(contractorName(a.contractorId))}</td><td>${esc(a.site)}</td><td>${esc(a.designation||"-")}</td><td>${fmtDate(a.from)}</td><td>${fmtDate(a.to)}</td><td>${badge(a.status)}</td><td>${esc(a.rateRef||"Rate Master")}</td><td><button class="btn light" onclick="openAssignmentModal('${a.id}')">Edit</button> <button class="btn red" onclick="deleteAssignment('${a.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No assignments.</td></tr>'
+function deleteManpower(id){if(!confirm("Delete this Manpower record?"))return;db.manpower=db.manpower.filter(x=>x.id!==id);saveDb();}
+function renderManpower(){
+  const q=mpSearch.value.toLowerCase(),cid=mpContractorFilter.value,s=mpStatusFilter.value;
+  const arr=db.manpower.filter(m=>(!cid||m.contractorId===cid)&&(!s||m.status===s)&&
+    [m.employeeCode,m.employeeName,contractorName(m.contractorId),m.designation,m.site].join(" ").toLowerCase().includes(q));
+  manpowerRows.innerHTML=arr.map(m=>`<tr>
+    <td><b>${esc(m.employeeName||"-")}</b><br><span class="muted">${esc(m.employeeCode)}</span></td>
+    <td>${esc(contractorName(m.contractorId))}</td><td>${esc(m.designation||"-")}</td><td>${esc(m.site||"-")}</td>
+    <td>${fmtDate(m.from)}</td><td>${fmtDate(m.to)}</td><td>${badge(m.status)}</td><td>${esc(m.remarks||"-")}</td>
+    <td><button class="btn light" onclick="openManpower('${m.id}')">Edit</button> <button class="btn red" onclick="deleteManpower('${m.id}')">Delete</button></td>
+  </tr>`).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No Manpower records added yet.</td></tr>';
+  kMpTotal.textContent=db.manpower.length;kMpActive.textContent=db.manpower.filter(x=>x.status==="Active").length;kMpEnded.textContent=db.manpower.filter(x=>x.status!=="Active").length;
 }
-function deleteAssignment(id){if(!confirm("Delete this assignment?"))return;const a=db.assignments.find(x=>x.id===id);db.assignments=db.assignments.filter(x=>x.id!==id);if(a)addScHistory("contractor",a.contractorId,"Manpower Assignment Deleted",`${a.employeeCode} ${a.employeeName}`);saveDb()}
-
-function openRateModal(id=""){
- fillFilters();const r=id?db.rates.find(x=>x.id===id)||{}:{};
- rtId.value=r.id||"";rtContractor.value=r.contractorId||"";rtDesignation.value=r.designation||"";rtNormal.value=r.normal||"";rtOt.value=r.ot||"";rtHoliday.value=r.holiday||"";rtDaily.value=r.daily||"";rtMonthly.value=r.monthly||"";rtFrom.value=r.from||"";rtTo.value=r.to||"";rtRemarks.value=r.remarks||"";rateModal.classList.add("show")
-}
-function saveRate(){
- const id=rtId.value,cid=rtContractor.value,des=rtDesignation.value.trim();if(!cid||!des||!rtFrom.value)return alert("Select Sub Contractor, enter Designation and Effective From.");
- if(rtTo.value&&new Date(rtTo.value)<new Date(rtFrom.value))return alert("Effective To cannot be earlier than Effective From.");
- const r={id:id||uid("RT"),contractorId:cid,designation:des,normal:+rtNormal.value||0,ot:+rtOt.value||0,holiday:+rtHoliday.value||0,daily:+rtDaily.value||0,monthly:+rtMonthly.value||0,from:rtFrom.value,to:rtTo.value,remarks:rtRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.rates.findIndex(x=>x.id===r.id);if(i>=0){r.createdAt=db.rates[i].createdAt;db.rates[i]=r}else{r.createdAt=nowIso();db.rates.push(r)}addScHistory("contractor",cid,i>=0?"Rate Updated":"Rate Added",`${des} effective ${fmtDate(r.from)}`);closeModal("rateModal");saveDb()
-}
-function renderRates(){
- const q=(rateSearch.value||"").toLowerCase(),cid=rateContractorFilter.value;
- const arr=db.rates.filter(r=>(!cid||r.contractorId===cid)&&[contractorName(r.contractorId),r.designation].join(" ").toLowerCase().includes(q)).sort((a,b)=>(b.from||"").localeCompare(a.from||""));
- rateRows.innerHTML=arr.map(r=>`<tr><td>${esc(contractorName(r.contractorId))}</td><td><b>${esc(r.designation)}</b></td><td>${money(r.normal)}</td><td>${money(r.ot)}</td><td>${money(r.holiday)}</td><td>${money(r.daily)}</td><td>${money(r.monthly)}</td><td>${fmtDate(r.from)}</td><td>${fmtDate(r.to)}</td><td><button class="btn light" onclick="openRateModal('${r.id}')">Edit</button> <button class="btn red" onclick="deleteRate('${r.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#7d8da0">No rates.</td></tr>'
-}
-function deleteRate(id){if(!confirm("Delete this rate record?"))return;const r=db.rates.find(x=>x.id===id);db.rates=db.rates.filter(x=>x.id!==id);if(r)addScHistory("contractor",r.contractorId,"Rate Deleted",r.designation);saveDb()}
-function applicableRate(contractorId,designation,date){
- const d=date||todayYmd();const list=db.rates.filter(r=>r.contractorId===contractorId&&String(r.designation||"").toLowerCase()===String(designation||"").toLowerCase()&&(!r.from||r.from<=d)&&(!r.to||r.to>=d)).sort((a,b)=>(b.from||"").localeCompare(a.from||""));return list[0]||{}
-}
-
-function openTimesheetModal(id=""){
- fillFilters();const t=id?db.timesheets.find(x=>x.id===id)||{}:{};
- tsId.value=t.id||"";tsMonth.value=t.month||monthNow();tsContractor.value=t.contractorId||"";fillTimesheetAssignments();tsEmployee.value=t.employeeCode||"";tsNormal.value=t.normalHours||0;tsOt.value=t.otHours||0;tsHoliday.value=t.holidayHours||0;tsAbsent.value=t.absentDays||0;tsAdjustment.value=t.adjustment||0;tsApproval.value=t.status||"Draft";tsRemarks.value=t.remarks||"";recalcTimesheetModal();timesheetModal.classList.add("show")
-}
-function fillTimesheetAssignments(){
- const cid=tsContractor.value,el=tsEmployee,old=el.value;const arr=db.assignments.filter(a=>a.contractorId===cid&&a.status==="Active");el.innerHTML='<option value="">Select Employee</option>'+arr.map(a=>`<option value="${esc(a.employeeCode)}">${esc(a.employeeCode+" - "+a.employeeName+" | "+a.designation)}</option>`).join("");if([...el.options].some(o=>o.value===old))el.value=old
-}
-function tsCalc(contractorId,employeeCode,month,normalH,otH,holidayH,adj){
- const a=db.assignments.find(x=>x.contractorId===contractorId&&x.employeeCode===employeeCode&&x.status==="Active")||db.assignments.find(x=>x.contractorId===contractorId&&x.employeeCode===employeeCode)||{};
- const r=applicableRate(contractorId,a.designation,(month||monthNow())+"-01");
- const amount=(+normalH||0)*(+r.normal||0)+(+otH||0)*(+r.ot||0)+(+holidayH||0)*(+r.holiday||0)+(+adj||0);
- return {amount,rate:r,assignment:a}
-}
-function recalcTimesheetModal(){const c=tsCalc(tsContractor.value,tsEmployee.value,tsMonth.value,tsNormal.value,tsOt.value,tsHoliday.value,tsAdjustment.value);tsRateUsed.textContent=c.rate.id?`Normal ${money(c.rate.normal)} | OT ${money(c.rate.ot)} | Holiday ${money(c.rate.holiday)} (${c.assignment.designation||"-"})`:"No matching effective rate";tsCalcBilling.textContent="AED "+money(c.amount)}
-function saveTimesheet(){
- const id=tsId.value,cid=tsContractor.value,code=tsEmployee.value,month=tsMonth.value;if(!cid||!code||!month)return alert("Select Month, Sub Contractor and Employee.");
- if(db.timesheets.some(x=>x.id!==id&&x.contractorId===cid&&x.employeeCode===code&&x.month===month))return alert("Timesheet already exists for this Employee + Sub Contractor + Month. Use Edit.");
- const e=employeeByCode(code),calc=tsCalc(cid,code,month,tsNormal.value,tsOt.value,tsHoliday.value,tsAdjustment.value);
- if(!calc.rate.id&&(+tsNormal.value||+tsOt.value||+tsHoliday.value))return alert("No effective rate found for this employee's designation. Add Rate Master first.");
- const t={id:id||uid("TS"),month,contractorId:cid,employeeCode:code,employeeName:e.employeeName||calc.assignment.employeeName||"",designation:calc.assignment.designation||"",normalHours:+tsNormal.value||0,otHours:+tsOt.value||0,holidayHours:+tsHoliday.value||0,absentDays:+tsAbsent.value||0,adjustment:+tsAdjustment.value||0,billing:calc.amount,status:tsApproval.value,rateId:calc.rate.id||"",remarks:tsRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.timesheets.findIndex(x=>x.id===t.id);if(i>=0){t.createdAt=db.timesheets[i].createdAt;db.timesheets[i]=t}else{t.createdAt=nowIso();db.timesheets.push(t)}addScHistory("contractor",cid,i>=0?"Timesheet Updated":"Timesheet Added",`${month} — ${t.employeeCode} ${t.employeeName} — AED ${money(t.billing)}`);closeModal("timesheetModal");saveDb()
-}
-function renderTimesheets(){
- const m=tsMonthFilter.value,cid=tsContractorFilter.value,s=tsStatusFilter.value;
- const arr=db.timesheets.filter(t=>(!m||t.month===m)&&(!cid||t.contractorId===cid)&&(!s||t.status===s));
- timesheetRows.innerHTML=arr.map(t=>`<tr><td>${esc(t.month)}</td><td><b>${esc(t.employeeName)}</b><br><span class="muted">${esc(t.employeeCode)}</span></td><td>${esc(contractorName(t.contractorId))}</td><td>${t.normalHours}</td><td>${t.otHours}</td><td>${t.holidayHours}</td><td>${t.absentDays}</td><td>${money(t.adjustment)}</td><td><b>AED ${money(t.billing)}</b></td><td>${badge(t.status)}</td><td><button class="btn light" onclick="openTimesheetModal('${t.id}')">Edit</button> <button class="btn red" onclick="deleteTimesheet('${t.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="11" style="text-align:center;padding:20px;color:#7d8da0">No timesheets.</td></tr>'
-}
-function deleteTimesheet(id){const t=db.timesheets.find(x=>x.id===id);if(!t)return;if(db.invoices.some(i=>i.contractorId===t.contractorId&&i.month===t.month&&i.status!=="Draft"))return alert("Cannot delete: invoice already submitted for this subcontractor/month.");if(!confirm("Delete this timesheet?"))return;db.timesheets=db.timesheets.filter(x=>x.id!==id);addScHistory("contractor",t.contractorId,"Timesheet Deleted",`${t.month} ${t.employeeCode}`);saveDb()}
-
-function openInvoiceModal(id=""){
- fillFilters();const i=id?db.invoices.find(x=>x.id===id)||{}:{};
- invId.value=i.id||"";invContractor.value=i.contractorId||"";invMonth.value=i.month||monthNow();invNumber.value=i.number||"";invDate.value=i.invoiceDate||todayYmd();invDue.value=i.dueDate||"";invStatus.value=i.status||"Draft";invBasic.value=i.basic||0;invVatPct.value=i.vatPct??5;invPaid.value=i.paid||0;invPaymentDate.value=i.paymentDate||"";invPaymentMode.value=i.paymentMode||"";invPaymentRef.value=i.paymentRef||"";invRemarks.value=i.remarks||"";if(!id)calcInvoiceFromTimesheets();else recalcInvoice();invoiceModal.classList.add("show")
-}
-function calcInvoiceFromTimesheets(){
- const cid=invContractor.value,m=invMonth.value;if(!cid||!m){recalcInvoice();return}
- const list=db.timesheets.filter(t=>t.contractorId===cid&&t.month===m&&t.status==="Approved");
- const sum=list.reduce((s,t)=>s+Number(t.billing||0),0);invBasic.value=sum.toFixed(2);invoiceCalcNotice.textContent=`${list.length} approved timesheet(s) included. Basic Amount AED ${money(sum)}.`;recalcInvoice()
-}
-function recalcInvoice(){const basic=+invBasic.value||0,pct=+invVatPct.value||0,vat=basic*pct/100,total=basic+vat,paid=+invPaid.value||0;invVat.value=vat.toFixed(2);invTotal.value=total.toFixed(2);invOutstanding.value=Math.max(0,total-paid).toFixed(2)}
-function saveInvoice(){
- const id=invId.value,cid=invContractor.value,num=invNumber.value.trim(),m=invMonth.value;if(!cid||!num||!m||!invDate.value)return alert("Select Sub Contractor, Month and enter Invoice No. / Date.");
- if(db.invoices.some(x=>x.id!==id&&x.number.trim().toLowerCase()===num.toLowerCase()))return alert("Invoice Number already exists.");
- recalcInvoice();const total=+invTotal.value||0,paid=+invPaid.value||0;let status=invStatus.value;if(paid>=total&&total>0)status="Paid";else if(paid>0)status="Partially Paid";else if(invDue.value&&daysTo(invDue.value)<0&&status!=="Draft")status="Overdue";
- const i={id:id||uid("INV"),contractorId:cid,month:m,number:num,invoiceDate:invDate.value,dueDate:invDue.value,basic:+invBasic.value||0,vatPct:+invVatPct.value||0,vat:+invVat.value||0,total,paid,status,paymentDate:invPaymentDate.value,paymentMode:invPaymentMode.value,paymentRef:invPaymentRef.value.trim(),remarks:invRemarks.value.trim(),updatedAt:nowIso()};
- const ix=db.invoices.findIndex(x=>x.id===i.id);if(ix>=0){i.createdAt=db.invoices[ix].createdAt;db.invoices[ix]=i}else{i.createdAt=nowIso();db.invoices.push(i)}addScHistory("contractor",cid,ix>=0?"Invoice Updated":"Invoice Created",`${num} — AED ${money(total)} — ${status}`);closeModal("invoiceModal");saveDb()
-}
-function renderInvoices(){
- const q=(invoiceSearch.value||"").toLowerCase(),s=invoiceStatusFilter.value;
- const arr=db.invoices.map(i=>({...i,displayStatus:overdueInvoice(i)&&i.status!=="Paid"?"Overdue":i.status})).filter(i=>(!s||i.displayStatus===s)&&[i.number,contractorName(i.contractorId),i.month].join(" ").toLowerCase().includes(q));
- invoiceRows.innerHTML=arr.map(i=>`<tr><td><b>${esc(i.number)}</b></td><td>${esc(contractorName(i.contractorId))}</td><td>${esc(i.month)}</td><td>${fmtDate(i.invoiceDate)}</td><td>${money(i.basic)}</td><td>${money(i.vat)}</td><td><b>${money(i.total)}</b></td><td>${money(i.paid)}</td><td><b>${money(Number(i.total)-Number(i.paid||0))}</b></td><td>${fmtDate(i.dueDate)}</td><td>${badge(i.displayStatus)}</td><td><button class="btn light" onclick="openInvoiceModal('${i.id}')">Edit</button> <button class="btn red" onclick="deleteInvoice('${i.id}')">Delete</button></td></tr>`).join("")||'<tr><td colspan="12" style="text-align:center;padding:20px;color:#7d8da0">No invoices.</td></tr>'
-}
-function deleteInvoice(id){const i=db.invoices.find(x=>x.id===id);if(!i)return;if(Number(i.paid||0)>0)return alert("Cannot delete an invoice with recorded payment. Edit it instead.");if(!confirm("Delete this invoice?"))return;db.invoices=db.invoices.filter(x=>x.id!==id);addScHistory("contractor",i.contractorId,"Invoice Deleted",i.number);saveDb()}
-
-function openDocumentModal(id=""){
- fillFilters();const d=id?db.documents.find(x=>x.id===id)||{}:{};
- docId.value=d.id||"";docContractor.value=d.contractorId||"";docType.value=d.type||"Trade License";docNumber.value=d.number||"";docIssue.value=d.issue||"";docExpiry.value=d.expiry||"";docStatus.value=d.status||"Valid";docUrl.value=d.url||"";docRemarks.value=d.remarks||"";documentModal.classList.add("show")
-}
-function saveDocument(){
- const id=docId.value,cid=docContractor.value;if(!cid||!docType.value)return alert("Select Sub Contractor and Document Type.");
- let status=docStatus.value;if(docExpiry.value&&daysTo(docExpiry.value)<0)status="Expired";
- const d={id:id||uid("DOC"),contractorId:cid,type:docType.value,number:docNumber.value.trim(),issue:docIssue.value,expiry:docExpiry.value,status,url:docUrl.value.trim(),remarks:docRemarks.value.trim(),updatedAt:nowIso()};
- const i=db.documents.findIndex(x=>x.id===d.id);if(i>=0){d.createdAt=db.documents[i].createdAt;db.documents[i]=d}else{d.createdAt=nowIso();db.documents.push(d)}addScHistory("contractor",cid,i>=0?"Document Updated":"Document Added",`${d.type} ${d.number||""}`);closeModal("documentModal");saveDb()
-}
-function renderDocuments(){
- const q=(docSearch.value||"").toLowerCase(),cid=docContractorFilter.value,ef=docExpiryFilter.value;
- const arr=db.documents.filter(d=>{
-   const n=daysTo(d.expiry);let ok=true;if(ef==="expired")ok=n!==null&&n<0;else if(ef==="30")ok=n!==null&&n>=0&&n<=30;else if(ef==="60")ok=n!==null&&n>=31&&n<=60;
-   return (!cid||d.contractorId===cid)&&ok&&[contractorName(d.contractorId),d.type,d.number].join(" ").toLowerCase().includes(q)
- });
- documentRows.innerHTML=arr.map(d=>{const n=daysTo(d.expiry),st=n!==null&&n<0?"Expired":d.status;return `<tr><td>${esc(contractorName(d.contractorId))}</td><td><b>${esc(d.type)}</b></td><td>${esc(d.number||"-")}</td><td>${fmtDate(d.issue)}</td><td>${fmtDate(d.expiry)}</td><td>${n===null?"-":n}</td><td>${badge(st)}</td><td>${d.url?`<a href="${esc(d.url)}" target="_blank">Open</a>`:"-"}</td><td><button class="btn light" onclick="openDocumentModal('${d.id}')">Edit</button> <button class="btn red" onclick="deleteDocument('${d.id}')">Delete</button></td></tr>`}).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No documents.</td></tr>';
- const nums=db.documents.map(d=>daysTo(d.expiry));docExpired.textContent=nums.filter(n=>n!==null&&n<0).length;doc30.textContent=nums.filter(n=>n!==null&&n>=0&&n<=30).length;doc60.textContent=nums.filter(n=>n!==null&&n>=31&&n<=60).length;docNoExpiry.textContent=nums.filter(n=>n===null).length
-}
-function deleteDocument(id){const d=db.documents.find(x=>x.id===id);if(!confirm("Delete this document record?"))return;db.documents=db.documents.filter(x=>x.id!==id);if(d)addScHistory("contractor",d.contractorId,"Document Deleted",d.type);saveDb()}
-
-function renderReports(){
- reportSummaryRows.innerHTML=db.contractors.map(c=>{
-  const active=activeAssignmentsFor(c.id).length;
-  const ts=db.timesheets.filter(t=>t.contractorId===c.id&&t.status==="Approved").reduce((s,t)=>s+Number(t.billing||0),0);
-  const inv=db.invoices.filter(i=>i.contractorId===c.id).reduce((s,i)=>s+Number(i.total||0),0);
-  const paid=db.invoices.filter(i=>i.contractorId===c.id).reduce((s,i)=>s+Number(i.paid||0),0);
-  return `<tr><td><button class="btn light" onclick="openProfile('${c.id}')">${esc(c.name)}</button></td><td>${badge(c.status)}</td><td>${active}</td><td>${money(ts)}</td><td>${money(inv)}</td><td>${money(paid)}</td><td><b>${money(inv-paid)}</b></td><td>${expiringDocsFor(c.id,60).length}</td></tr>`
- }).join("")||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8da0">No data.</td></tr>'
-}
-
-function openProfile(id){profileId=id;const c=contractor(id);const man=activeAssignmentsFor(id).length,inv=db.invoices.filter(i=>i.contractorId===id).reduce((s,i)=>s+Number(i.total||0),0),out=invoiceOutstandingFor(id),docs=expiringDocsFor(id,60).length;
- profileContent.innerHTML=`<div class="profile-head"><div><h2>${esc(c.name)}</h2><p>TRN ${esc(c.trn||"-")} • Trade License ${esc(c.license||"-")} • ${esc(c.contact||"-")} ${esc(c.mobile||"")}</p><div class="profile-kpis"><div class="profile-kpi"><small>Active Manpower</small><b>${man}</b></div><div class="profile-kpi"><small>Total Invoiced</small><b>AED ${money(inv)}</b></div><div class="profile-kpi"><small>Outstanding</small><b>AED ${money(out)}</b></div><div class="profile-kpi"><small>Expiring Docs</small><b>${docs}</b></div></div></div><div>${badge(c.status)}</div></div>
- <div class="tabs">${["overview","manpower","rates","timesheets","invoices","payments","documents","history"].map((x,i)=>`<button class="tab ${i===0?"active":""}" onclick="profileTab('${x}',this)">${x[0].toUpperCase()+x.slice(1)}</button>`).join("")}</div>
- ${["overview","manpower","rates","timesheets","invoices","payments","documents","history"].map((x,i)=>`<div class="tabpane ${i===0?"active":""}" id="pt-${x}">${profilePane(x,id)}</div>`).join("")}`;
- profileModal.classList.add("show")
-}
-function profileTab(id,b){document.querySelectorAll("#profileContent .tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll("#profileContent .tabpane").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById("pt-"+id).classList.add("active")}
-function profilePane(type,id){
- const c=contractor(id);
- if(type==="overview")return `<div class="info-grid">${[["Company",c.name],["TRN",c.trn],["Trade License",c.license],["License Expiry",fmtDate(c.licenseExpiry)],["Contact Person",c.contact],["Mobile",c.mobile],["Email",c.email],["Payment Terms",c.paymentTerms],["Bank",c.bank],["IBAN",c.iban],["Agreement",c.agreement],["Agreement Period",fmtDate(c.agreementStart)+" → "+fmtDate(c.agreementEnd)]].map(x=>`<div class="ibox"><small>${x[0]}</small><b>${esc(x[1]||"-")}</b></div>`).join("")}</div>`;
- if(type==="manpower"){const a=db.assignments.filter(x=>x.contractorId===id);return profileTable(["Employee","Site","Designation","From","To","Status"],a.map(x=>[`${x.employeeCode} - ${x.employeeName}`,x.site,x.designation,fmtDate(x.from),fmtDate(x.to),x.status]))}
- if(type==="rates"){const a=db.rates.filter(x=>x.contractorId===id);return profileTable(["Designation","Normal","OT","Holiday","Daily","Monthly","From","To"],a.map(x=>[x.designation,money(x.normal),money(x.ot),money(x.holiday),money(x.daily),money(x.monthly),fmtDate(x.from),fmtDate(x.to)]))}
- if(type==="timesheets"){const a=db.timesheets.filter(x=>x.contractorId===id);return profileTable(["Month","Employee","Normal","OT","Holiday","Billing","Status"],a.map(x=>[x.month,`${x.employeeCode} - ${x.employeeName}`,x.normalHours,x.otHours,x.holidayHours,"AED "+money(x.billing),x.status]))}
- if(type==="invoices"){const a=db.invoices.filter(x=>x.contractorId===id);return profileTable(["Invoice","Month","Date","Total","Paid","Outstanding","Status"],a.map(x=>[x.number,x.month,fmtDate(x.invoiceDate),"AED "+money(x.total),"AED "+money(x.paid),"AED "+money(Number(x.total)-Number(x.paid||0)),overdueInvoice(x)&&x.status!=="Paid"?"Overdue":x.status]))}
- if(type==="payments"){const a=db.invoices.filter(x=>x.contractorId===id&&Number(x.paid||0)>0);return profileTable(["Invoice","Payment Date","Mode","Reference","Paid Amount"],a.map(x=>[x.number,fmtDate(x.paymentDate),x.paymentMode,x.paymentRef,"AED "+money(x.paid)]))}
- if(type==="documents"){const a=db.documents.filter(x=>x.contractorId===id);return profileTable(["Document","Number","Issue","Expiry","Status"],a.map(x=>[x.type,x.number,fmtDate(x.issue),fmtDate(x.expiry),daysTo(x.expiry)<0?"Expired":x.status]))}
- if(type==="history"){const a=db.history.filter(x=>x.entityType==="contractor"&&x.entityId===id);return a.map(h=>`<div class="history-item"><b>${esc(h.title)}</b><small>${new Date(h.date).toLocaleString()} • ${esc(h.by)}</small><div class="muted" style="margin-top:6px">${esc(h.detail||"")}</div></div>`).join("")||'<div class="notice ninfo show">No history yet.</div>'}
- return ""
-}
-function profileTable(headers,rows){return `<div class="tablewrap"><table><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(v=>`<td>${esc(v??"-")}</td>`).join("")}</tr>`).join("")||`<tr><td colspan="${headers.length}" style="text-align:center;padding:18px;color:#7d8da0">No records.</td></tr>`}</tbody></table></div>`}
-
-function csvDownload(name,headers,rows){
- const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
- const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
-}
-function exportContractors(){csvDownload("subcontractors.csv",["Company","TRN","License","License Expiry","Contact","Mobile","Email","Payment Terms","Agreement","Status"],db.contractors.map(c=>[c.name,c.trn,c.license,c.licenseExpiry,c.contact,c.mobile,c.email,c.paymentTerms,c.agreement,c.status]))}
-function exportAssignments(){csvDownload("manpower_assignments.csv",["Employee Code","Employee Name","Sub Contractor","Site","Designation","From","To","Status","Rate Ref"],db.assignments.map(a=>[a.employeeCode,a.employeeName,contractorName(a.contractorId),a.site,a.designation,a.from,a.to,a.status,a.rateRef]))}
-function exportRates(){csvDownload("rate_history.csv",["Sub Contractor","Designation","Normal Hr","OT Hr","Holiday OT","Daily","Monthly","From","To"],db.rates.map(r=>[contractorName(r.contractorId),r.designation,r.normal,r.ot,r.holiday,r.daily,r.monthly,r.from,r.to]))}
-function exportTimesheets(){csvDownload("timesheets.csv",["Month","Employee Code","Employee Name","Sub Contractor","Normal Hrs","OT Hrs","Holiday Hrs","Absent Days","Adjustment","Billing","Status"],db.timesheets.map(t=>[t.month,t.employeeCode,t.employeeName,contractorName(t.contractorId),t.normalHours,t.otHours,t.holidayHours,t.absentDays,t.adjustment,t.billing,t.status]))}
-function exportInvoices(){csvDownload("invoices_outstanding.csv",["Invoice","Sub Contractor","Month","Date","Due","Basic","VAT","Total","Paid","Outstanding","Status"],db.invoices.map(i=>[i.number,contractorName(i.contractorId),i.month,i.invoiceDate,i.dueDate,i.basic,i.vat,i.total,i.paid,Number(i.total)-Number(i.paid||0),overdueInvoice(i)&&i.status!=="Paid"?"Overdue":i.status]))}
-function exportDocuments(){csvDownload("documents_expiry.csv",["Sub Contractor","Document","Number","Issue","Expiry","Days To Expiry","Status","URL"],db.documents.map(d=>[contractorName(d.contractorId),d.type,d.number,d.issue,d.expiry,daysTo(d.expiry),daysTo(d.expiry)<0?"Expired":d.status,d.url]))}
-function downloadAllReports(){
- const lines=[];
- const sec=(title,headers,rows)=>{lines.push([title],headers,...rows,[])};
- sec("SUB CONTRACTOR SUMMARY",["Company","Status","TRN","License","Payment Terms"],db.contractors.map(c=>[c.name,c.status,c.trn,c.license,c.paymentTerms]));
- sec("MANPOWER ASSIGNMENTS",["Employee","Sub Contractor","Site","Designation","From","To","Status"],db.assignments.map(a=>[`${a.employeeCode} - ${a.employeeName}`,contractorName(a.contractorId),a.site,a.designation,a.from,a.to,a.status]));
- sec("RATE HISTORY",["Sub Contractor","Designation","Normal","OT","Holiday","Daily","Monthly","From","To"],db.rates.map(r=>[contractorName(r.contractorId),r.designation,r.normal,r.ot,r.holiday,r.daily,r.monthly,r.from,r.to]));
- sec("TIMESHEETS",["Month","Employee","Sub Contractor","Normal","OT","Holiday","Billing","Status"],db.timesheets.map(t=>[t.month,`${t.employeeCode} - ${t.employeeName}`,contractorName(t.contractorId),t.normalHours,t.otHours,t.holidayHours,t.billing,t.status]));
- sec("INVOICES & OUTSTANDING",["Invoice","Sub Contractor","Total","Paid","Outstanding","Status"],db.invoices.map(i=>[i.number,contractorName(i.contractorId),i.total,i.paid,Number(i.total)-Number(i.paid||0),i.status]));
- sec("DOCUMENT EXPIRY",["Sub Contractor","Document","Expiry","Days","Status"],db.documents.map(d=>[contractorName(d.contractorId),d.type,d.expiry,daysTo(d.expiry),daysTo(d.expiry)<0?"Expired":d.status]));
- csvDownload("all_subcontractor_reports.csv",[],lines)
-}
-function exportBackup(){const blob=new Blob([JSON.stringify({...db,_exportedAt:nowIso(),_app:"Civil Master ERP Sub Contractor Management"},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`civil-master-subcontractor-backup-${todayYmd()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function importBackup(){const f=backupFile.files?.[0];if(!f)return alert("Choose backup JSON file.");const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x||!Array.isArray(x.contractors))throw 0;if(!confirm(`Restore backup with ${x.contractors.length} subcontractor(s)? Current module data will be replaced.`))return;db={...emptyDb(),...x};saveDb();backupFile.value="";alert("Backup restored successfully.")}catch(e){alert("Invalid Sub Contractor backup file.")}};r.readAsText(f)}
-
-function renderAll(){fillFilters();renderDashboard();renderContractors();renderAssignments();renderRates();renderTimesheets();renderInvoices();renderDocuments();renderReports()}
+function renderAll(){fillContractorSelect("mpContractorFilter",true);renderContractors();renderManpower();}
 document.addEventListener("DOMContentLoaded",()=>{
-  document.querySelectorAll('[id]').forEach(function(el){
-    try{
-      if(typeof window[el.id]==="undefined") Object.defineProperty(window,el.id,{value:el,writable:true,configurable:true});
-    }catch(e){}
-  });
-  try{
-    const monthEl=document.getElementById("tsMonthFilter");
-    if(monthEl) monthEl.value=monthNow();
-    renderAll();
-    window.addEventListener("focus",()=>{db=loadDb();renderAll()});
-    window.addEventListener("storage",e=>{if(e.key===EMPLOYEE_DATA_KEY||e.key===SC_KEY){db=loadDb();renderAll()}});
-  }catch(err){
-    console.error(err);
-    const box=document.getElementById("portalErrorBox");
-    if(box){box.style.display="block";box.textContent="Portal startup error: "+(err?.message||err);}
-  }
-})
+  document.querySelectorAll("[id]").forEach(el=>{try{if(typeof window[el.id]==="undefined")Object.defineProperty(window,el.id,{value:el,configurable:true})}catch(e){}});
+  renderAll();
+  window.addEventListener("focus",()=>{fillEmployeeSelect();renderAll()});
+  window.addEventListener("storage",e=>{if(e.key===EMPLOYEE_DATA_KEY){fillEmployeeSelect();renderAll()}});
+});
 </script>
 </body>
 </html>
