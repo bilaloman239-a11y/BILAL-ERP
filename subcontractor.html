@@ -52,6 +52,19 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
 .modal{background:#fff;border-radius:16px;width:min(900px,96vw);max-height:92vh;overflow:auto;padding:19px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
 .modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.modalhead h3{margin:0;color:var(--navy);font-size:16px}.x{width:30px;height:30px;border:0;border-radius:8px;background:#f2f4f7}
 .muted{color:var(--muted);font-size:10px}
+.mp-editor{display:none;position:fixed;inset:0;z-index:250;background:#f5f7fa;overflow:auto;padding:22px 26px 40px}
+.mp-editor.show{display:block!important}
+.mp-list.hidden-view{display:none}
+.mp-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.mp-tab{border:1px solid #d8e4f2;background:#f8fbfe;color:#415a72;padding:9px 12px;border-radius:9px;font-weight:700;font-size:11px}
+.mp-tab.active{background:#eaf3ff;color:#2e6d99;border-color:#bdd5ef}
+.mp-pane{display:none}.mp-pane.active{display:block}
+.mp-editor>.card{max-width:1400px;margin:0 auto}.mp-editor-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+.mp-editor-head h3{margin:0;color:var(--navy);font-size:18px}.mp-editor-head p{margin:5px 0 0;color:var(--muted);font-size:10px}
+.mp-doc-row,.mp-attach-row{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr 1.4fr auto;gap:8px;align-items:end;border:1px solid #e5e9ef;border-radius:10px;padding:10px;background:#fbfdff;margin-bottom:9px}
+.mp-savebar{position:sticky;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--line);padding:12px 0 0;margin-top:18px;display:flex;justify-content:flex-end;gap:8px}
+@media(max-width:1000px){.mp-doc-row,.mp-attach-row{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.mp-doc-row,.mp-attach-row{grid-template-columns:1fr}}
 .section-title{grid-column:1/-1;margin-top:4px;padding:9px 10px;border-left:4px solid var(--orange);background:#fff8f1;border-radius:8px;font-size:11px;font-weight:900;color:var(--navy)}
 .doc-list{grid-column:1/-1;display:grid;gap:9px}
 .doc-row{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1.4fr auto;gap:8px;align-items:end;border:1px solid #e5e9ef;border-radius:10px;padding:10px;background:#fbfdff}
@@ -109,25 +122,110 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
 </section>
 
 <section class="page" id="manpower">
-  <div class="pagehead">
-    <div><h2>Sub Contractor Manpower</h2><p>Assign employees/manpower against each subcontractor and maintain their current status.</p></div>
-    <button class="btn orange" onclick="openManpower()">+ Add Manpower</button>
-  </div>
-  <div class="kpis">
-    <div class="kpi"><div class="top"><span class="lab">Total Manpower Records</span><span class="bubble">👷</span></div><div class="num" id="kMpTotal">0</div><div class="hint">All manpower assignments</div></div>
-    <div class="kpi"><div class="top"><span class="lab">Active Manpower</span><span class="bubble">✓</span></div><div class="num" id="kMpActive">0</div><div class="hint">Currently active</div></div>
-    <div class="kpi"><div class="top"><span class="lab">Ended / On Hold</span><span class="bubble o">!</span></div><div class="num" id="kMpEnded">0</div><div class="hint">Inactive assignments</div></div>
-  </div>
-  <div class="card">
-    <div class="toolbar">
-      <input id="mpSearch" class="search" placeholder="Search employee / subcontractor / site / designation" oninput="renderManpower()">
-      <select id="mpContractorFilter" onchange="renderManpower()"></select>
-      <select id="mpStatusFilter" onchange="renderManpower()"><option value="">All Status</option><option>Active</option><option>Ended</option><option>On Hold</option></select>
+  <div id="manpowerListView" class="mp-list">
+    <div class="pagehead">
+      <div><h2>Sub Contractor Manpower</h2><p>Complete subcontractor manpower master with employee-style profile form.</p></div>
+      <button type="button" class="btn orange" onclick="openManpowerForm()">+ Add Manpower</button>
     </div>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Employee</th><th>Sub Contractor</th><th>Designation</th><th>Site / Client</th><th>From Date</th><th>To Date</th><th>Status</th><th>Remarks</th><th>Action</th></tr></thead>
-      <tbody id="manpowerRows"></tbody>
-    </table></div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="top"><span class="lab">Total Manpower Records</span><span class="bubble">👷</span></div><div class="num" id="kMpTotal">0</div><div class="hint">All manpower records</div></div>
+      <div class="kpi"><div class="top"><span class="lab">Active Manpower</span><span class="bubble">✓</span></div><div class="num" id="kMpActive">0</div><div class="hint">Currently active</div></div>
+      <div class="kpi"><div class="top"><span class="lab">Inactive / Ended</span><span class="bubble o">!</span></div><div class="num" id="kMpEnded">0</div><div class="hint">Not currently active</div></div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input id="mpSearch" class="search" placeholder="Search employee / code / subcontractor / site / designation" oninput="renderManpower()">
+        <select id="mpContractorFilter" onchange="renderManpower()"></select>
+        <select id="mpStatusFilter" onchange="renderManpower()">
+          <option value="">All Status</option><option>Active</option><option>Inactive</option><option>Ended</option><option>On Hold</option>
+        </select>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Employee</th><th>Sub Contractor</th><th>Designation</th><th>Nationality</th><th>Mobile</th><th>Joining / From</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="manpowerRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="manpowerEditor" class="mp-editor">
+    <div class="card">
+      <div class="mp-editor-head">
+        <div><div style="font-size:9px;color:#8190a0;margin-bottom:4px">Build: MP-FULLFORM-CLEAN1</div><h3 id="mpEditorTitle">Add Sub Contractor Manpower</h3><p>Complete manpower profile. Data is saved inside Sub Contractor Management.</p></div>
+        <button class="btn light" onclick="closeManpowerEditor()">← Back to Manpower List</button>
+      </div>
+
+      <input type="hidden" id="mpId">
+
+      <div class="mp-tabs">
+        <button type="button" class="mp-tab active" onclick="showMpTab('personal',this)">1. Personal Information</button>
+        <button type="button" class="mp-tab" onclick="showMpTab('employment',this)">2. Assignment / Employment</button>
+        <button type="button" class="mp-tab" onclick="showMpTab('documents',this)">3. UAE Documents</button>
+        <button type="button" class="mp-tab" onclick="showMpTab('emergency',this)">4. Emergency Contact</button>
+        <button type="button" class="mp-tab" onclick="showMpTab('attachments',this)">5. Attachments</button>
+      </div>
+
+      <div class="mp-pane active" id="mp-pane-personal">
+        <div class="section-title">Personal Information</div>
+        <div class="formgrid three">
+          <div class="fg"><label>Manpower / Employee Code *</label><input id="mpEmployeeCode" placeholder="e.g. SC-EMP-001"></div>
+          <div class="fg"><label>Employee Name *</label><input id="mpEmployeeName"></div>
+          <div class="fg"><label>Employee Name in Arabic</label><input id="mpEmployeeNameArabic"></div>
+          <div class="fg"><label>Unified Number</label><input id="mpUnifiedNumber"></div>
+          <div class="fg"><label>Actual Designation *</label><input id="mpActualDesignation"></div>
+          <div class="fg"><label>Nationality</label><input id="mpNationality"></div>
+          <div class="fg"><label>Gender</label><select id="mpGender"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
+          <div class="fg"><label>Date of Birth</label><input type="date" id="mpDob"></div>
+          <div class="fg"><label>Marital Status</label><select id="mpMarital"><option value="">Select</option><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select></div>
+          <div class="fg"><label>Mobile</label><input id="mpMobile"></div>
+          <div class="fg"><label>Photo URL</label><input id="mpPhoto" placeholder="Optional URL"></div>
+        </div>
+      </div>
+
+      <div class="mp-pane" id="mp-pane-employment">
+        <div class="section-title">Sub Contractor Assignment / Employment Information</div>
+        <div class="formgrid three">
+          <div class="fg full"><label>Sub Contractor *</label><select id="mpContractor"></select></div>
+          <div class="fg"><label>Designation as per ID Card</label><input id="mpIdDesignation"></div>
+          <div class="fg"><label>Joining / From Date *</label><input type="date" id="mpFrom"></div>
+          <div class="fg"><label>Manpower Status</label><select id="mpStatus"><option>Active</option><option>Inactive</option><option>Ended</option><option>On Hold</option></select></div>
+          <div class="fg"><label>Employee / Supplier Reference</label><input id="mpSupplierRef"></div>
+          <div class="fg full"><label>Remarks</label><textarea id="mpRemarks"></textarea></div>
+        </div>
+      </div>
+
+      <div class="mp-pane" id="mp-pane-documents">
+        <div class="section-title">UAE Documents</div>
+        <div class="muted" style="margin-bottom:10px">Add Passport, Emirates ID, Visa, Labour Card, Insurance or any custom document. Only URL/reference is stored.</div>
+        <button type="button" class="btn orange" onclick="addMpDocument()">+ Add Document</button>
+        <div id="mpDocumentsEditor" style="margin-top:12px"></div>
+      </div>
+
+      <div class="mp-pane" id="mp-pane-emergency">
+        <div class="section-title">Emergency Contact</div>
+        <div class="formgrid">
+          <div class="fg"><label>Contact Name</label><input id="mpEmergencyName"></div>
+          <div class="fg"><label>Relationship</label><input id="mpEmergencyRelationship"></div>
+          <div class="fg"><label>Mobile</label><input id="mpEmergencyMobile"></div>
+          <div class="fg"><label>Country</label><input id="mpEmergencyCountry"></div>
+        </div>
+      </div>
+
+      <div class="mp-pane" id="mp-pane-attachments">
+        <div class="section-title">Attachments / References</div>
+        <div class="muted" style="margin-bottom:10px">Add CV, certificate, offer letter or any other reference using a URL/path.</div>
+        <button type="button" class="btn orange" onclick="addMpAttachment()">+ Add Attachment</button>
+        <div id="mpAttachmentsEditor" style="margin-top:12px"></div>
+      </div>
+
+      <div class="mp-savebar">
+        <button class="btn light" onclick="closeManpowerEditor()">Cancel</button>
+        <button class="btn primary" onclick="saveManpower()">Save Manpower</button>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -194,25 +292,6 @@ td{padding:9px;border-bottom:1px solid #eef1f5;vertical-align:top}tr:hover td{ba
   <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
     <button class="btn light" onclick="closeModal('contractorModal')">Cancel</button>
     <button class="btn primary" onclick="saveContractor()">Save Sub Contractor</button>
-  </div>
-</div></div>
-
-<div class="modalwrap" id="manpowerModal"><div class="modal">
-  <div class="modalhead"><h3 id="manpowerModalTitle">Add Sub Contractor Manpower</h3><button class="x" onclick="closeModal('manpowerModal')">×</button></div>
-  <input type="hidden" id="mpId">
-  <div class="formgrid">
-    <div class="fg full"><label>Employee *</label><select id="mpEmployee" onchange="fillEmployeeDetails()"></select></div>
-    <div class="fg"><label>Sub Contractor *</label><select id="mpContractor"></select></div>
-    <div class="fg"><label>Designation</label><input id="mpDesignation"></div>
-    <div class="fg"><label>Site / Client</label><input id="mpSite"></div>
-    <div class="fg"><label>From Date *</label><input type="date" id="mpFrom"></div>
-    <div class="fg"><label>To Date</label><input type="date" id="mpTo"></div>
-    <div class="fg"><label>Status</label><select id="mpStatus"><option>Active</option><option>Ended</option><option>On Hold</option></select></div>
-    <div class="fg full"><label>Remarks</label><textarea id="mpRemarks"></textarea></div>
-  </div>
-  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
-    <button class="btn light" onclick="closeModal('manpowerModal')">Cancel</button>
-    <button class="btn primary" onclick="saveManpower()">Save Manpower</button>
   </div>
 </div></div>
 
@@ -379,54 +458,204 @@ function renderContractors(){
     <td>${esc(c.contact2||"-")}<br><span class="muted">${esc(c.mobile2||"")} ${esc(c.email2||"")}</span></td>
     <td>${badge(c.status)}</td>
     <td><button class="btn light" onclick="openContractor('${c.id}')">Edit</button> <button class="btn red" onclick="deleteContractor('${c.id}')">Delete</button></td>
-  </tr>`).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No Sub Contractors added yet.</td></tr>';
+  </tr>`).join("")||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8da0">No Sub Contractors added yet.</td></tr>';
   document.getElementById("kTotal").textContent=db.contractors.length;
   document.getElementById("kActive").textContent=db.contractors.filter(x=>x.status==="Active").length;
   document.getElementById("kInactive").textContent=db.contractors.filter(x=>x.status!=="Active").length;
 }
 
-function openManpower(id=""){
-  fillContractorSelect("mpContractor");fillEmployeeSelect();
+function showMpTab(name,btn){
+  document.querySelectorAll(".mp-pane").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".mp-tab").forEach(x=>x.classList.remove("active"));
+  document.getElementById("mp-pane-"+name).classList.add("active");
+  if(btn)btn.classList.add("active");
+}
+function resetMpTabs(){
+  document.querySelectorAll(".mp-pane").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".mp-tab").forEach(x=>x.classList.remove("active"));
+  document.getElementById("mp-pane-personal").classList.add("active");
+  document.querySelector(".mp-tab").classList.add("active");
+}
+function mpDocHtml(d={}){
+  return `<div class="mp-doc-row">
+    <div class="fg"><label>Document Type</label><input class="mp-doc-type" value="${esc(d.type||"")}" placeholder="Passport / Emirates ID / Visa"></div>
+    <div class="fg"><label>Document No.</label><input class="mp-doc-number" value="${esc(d.number||"")}"></div>
+    <div class="fg"><label>Issue Date</label><input type="date" class="mp-doc-issue" value="${esc(d.issueDate||"")}"></div>
+    <div class="fg"><label>Expiry Date</label><input type="date" class="mp-doc-expiry" value="${esc(d.expiryDate||"")}"></div>
+    <div class="fg"><label>Document URL / Reference</label><input class="mp-doc-url" value="${esc(d.url||"")}"></div>
+    <div><button type="button" class="btn red" onclick="this.closest('.mp-doc-row').remove()">Delete</button></div>
+  </div>`;
+}
+function addMpDocument(d={}){document.getElementById("mpDocumentsEditor").insertAdjacentHTML("beforeend",mpDocHtml(d))}
+function getMpDocuments(){
+  return [...document.querySelectorAll("#mpDocumentsEditor .mp-doc-row")].map(r=>({
+    type:r.querySelector(".mp-doc-type").value.trim(),
+    number:r.querySelector(".mp-doc-number").value.trim(),
+    issueDate:r.querySelector(".mp-doc-issue").value,
+    expiryDate:r.querySelector(".mp-doc-expiry").value,
+    url:r.querySelector(".mp-doc-url").value.trim()
+  })).filter(d=>d.type||d.number||d.issueDate||d.expiryDate||d.url);
+}
+function mpAttachHtml(a={}){
+  return `<div class="mp-attach-row">
+    <div class="fg"><label>Attachment Name</label><input class="mp-att-name" value="${esc(a.name||"")}" placeholder="CV / Certificate / Offer Letter"></div>
+    <div class="fg" style="grid-column:span 4"><label>URL / Reference</label><input class="mp-att-url" value="${esc(a.url||"")}"></div>
+    <div><button type="button" class="btn red" onclick="this.closest('.mp-attach-row').remove()">Delete</button></div>
+  </div>`;
+}
+function addMpAttachment(a={}){document.getElementById("mpAttachmentsEditor").insertAdjacentHTML("beforeend",mpAttachHtml(a))}
+function getMpAttachments(){
+  return [...document.querySelectorAll("#mpAttachmentsEditor .mp-attach-row")].map(r=>({
+    name:r.querySelector(".mp-att-name").value.trim(),
+    url:r.querySelector(".mp-att-url").value.trim()
+  })).filter(a=>a.name||a.url);
+}
+function openManpowerForm(id=""){
+  const editor=document.getElementById("manpowerEditor");
+  if(editor){
+    editor.classList.add("show");
+    editor.style.display="block";
+    document.body.style.overflow="hidden";
+  }
+  try{
+    openManpowerEditor(id);
+  }catch(err){
+    console.error("Add Manpower form error",err);
+    if(editor){
+      editor.classList.add("show");
+      editor.style.display="block";
+      editor.innerHTML='<div class="card" style="max-width:900px;margin:30px auto"><h3 style="color:#b83a36">Manpower Form Error</h3><p>'+String(err?.message||err)+'</p><button class="btn light" onclick="location.reload()">Reload Portal</button></div>';
+    }else{
+      alert("Unable to open Manpower Form: "+(err?.message||err));
+    }
+  }
+}
+function openManpowerEditor(id=""){
+  const editor=document.getElementById("manpowerEditor");
+  if(editor){editor.classList.add("show");editor.style.display="block";}
+  document.body.style.overflow="hidden";
+  fillContractorSelect("mpContractor");
   const m=id?db.manpower.find(x=>x.id===id)||{}:{};
-  manpowerModalTitle.textContent=id?"Edit Sub Contractor Manpower":"Add Sub Contractor Manpower";
-  mpId.value=m.id||"";mpEmployee.value=m.employeeCode||"";mpContractor.value=m.contractorId||"";
-  mpDesignation.value=m.designation||"";mpSite.value=m.site||"";mpFrom.value=m.from||"";mpTo.value=m.to||"";
-  mpStatus.value=m.status||"Active";mpRemarks.value=m.remarks||"";
-  fillEmployeeDetails();manpowerModal.classList.add("show");
+  document.getElementById("mpEditorTitle").textContent=id?"Edit Sub Contractor Manpower":"Add Sub Contractor Manpower";
+  document.getElementById("mpId").value=m.id||"";
+  document.getElementById("mpEmployeeCode").value=m.employeeCode||"";
+  document.getElementById("mpEmployeeName").value=m.employeeName||"";
+  document.getElementById("mpEmployeeNameArabic").value=m.employeeNameArabic||"";
+  document.getElementById("mpUnifiedNumber").value=m.unifiedNumber||"";
+  document.getElementById("mpActualDesignation").value=m.actualDesignation||m.designation||"";
+  document.getElementById("mpNationality").value=m.nationality||"";
+  document.getElementById("mpGender").value=m.gender||"";
+  document.getElementById("mpDob").value=m.dob||"";
+  document.getElementById("mpMarital").value=m.maritalStatus||"";
+  document.getElementById("mpMobile").value=m.mobile||"";
+  document.getElementById("mpPhoto").value=m.photo||"";
+  document.getElementById("mpContractor").value=m.contractorId||"";
+  document.getElementById("mpIdDesignation").value=m.idDesignation||"";
+  document.getElementById("mpFrom").value=m.from||"";
+  document.getElementById("mpStatus").value=m.status||"Active";
+  document.getElementById("mpSupplierRef").value=m.supplierRef||"";
+  document.getElementById("mpRemarks").value=m.remarks||"";
+  document.getElementById("mpEmergencyName").value=m.emergency?.name||"";
+  document.getElementById("mpEmergencyRelationship").value=m.emergency?.relationship||"";
+  document.getElementById("mpEmergencyMobile").value=m.emergency?.mobile||"";
+  document.getElementById("mpEmergencyCountry").value=m.emergency?.country||"";
+  document.getElementById("mpDocumentsEditor").innerHTML="";
+  (Array.isArray(m.documents)?m.documents:[]).forEach(addMpDocument);
+  document.getElementById("mpAttachmentsEditor").innerHTML="";
+  (Array.isArray(m.attachments)?m.attachments:[]).forEach(addMpAttachment);
+  resetMpTabs();
+  document.getElementById("manpowerEditor").classList.add("show");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function closeManpowerEditor(){
+  const editor=document.getElementById("manpowerEditor");
+  if(editor){editor.classList.remove("show");editor.style.display="none";}
+  document.body.style.overflow="";
+  const list=document.getElementById("manpowerListView");
+  if(list)list.classList.remove("hidden-view");
+  renderManpower();
 }
 function saveManpower(){
-  const id=mpId.value,e=employeeByCode(mpEmployee.value),cid=mpContractor.value;
-  if(!mpEmployee.value)return alert("Select Employee.");
+  const id=document.getElementById("mpId").value;
+  const code=document.getElementById("mpEmployeeCode").value.trim();
+  const name=document.getElementById("mpEmployeeName").value.trim();
+  const cid=document.getElementById("mpContractor").value;
+  const designation=document.getElementById("mpActualDesignation").value.trim();
+  const from=document.getElementById("mpFrom").value;
+  if(!code)return alert("Enter Manpower / Employee Code.");
+  if(!name)return alert("Enter Employee Name.");
+  if(!designation)return alert("Enter Actual Designation.");
   if(!cid)return alert("Select Sub Contractor.");
-  if(!mpFrom.value)return alert("Enter From Date.");
-  if(mpTo.value&&new Date(mpTo.value)<new Date(mpFrom.value))return alert("To Date cannot be earlier than From Date.");
-  if(mpStatus.value==="Active"&&db.manpower.some(x=>x.id!==id&&x.employeeCode===mpEmployee.value&&x.status==="Active"))
-    return alert("This employee already has an Active Sub Contractor Manpower record. End or hold the old record first.");
-  const m={id:id||uid("MP"),employeeCode:e.employeeCode||mpEmployee.value,employeeName:e.employeeName||"",
-    contractorId:cid,designation:mpDesignation.value.trim(),site:mpSite.value.trim(),from:mpFrom.value,to:mpTo.value,
-    status:mpStatus.value,remarks:mpRemarks.value.trim()};
-  const i=db.manpower.findIndex(x=>x.id===m.id);if(i>=0)db.manpower[i]=m;else db.manpower.push(m);
-  closeModal("manpowerModal");saveDb();
+  if(!from)return alert("Enter Joining / From Date.");
+  if(db.manpower.some(x=>x.id!==id&&String(x.employeeCode||"").trim().toLowerCase()===code.toLowerCase()))
+    return alert("This Manpower / Employee Code already exists. Use Edit.");
+  const m={
+    id:id||uid("MP"),
+    employeeCode:code,
+    employeeName:name,
+    employeeNameArabic:document.getElementById("mpEmployeeNameArabic").value.trim(),
+    unifiedNumber:document.getElementById("mpUnifiedNumber").value.trim(),
+    actualDesignation:designation,
+    designation,
+    nationality:document.getElementById("mpNationality").value.trim(),
+    gender:document.getElementById("mpGender").value,
+    dob:document.getElementById("mpDob").value,
+    maritalStatus:document.getElementById("mpMarital").value,
+    mobile:document.getElementById("mpMobile").value.trim(),
+    photo:document.getElementById("mpPhoto").value.trim(),
+    contractorId:cid,
+    idDesignation:document.getElementById("mpIdDesignation").value.trim(),
+    from,
+    status:document.getElementById("mpStatus").value,    supplierRef:document.getElementById("mpSupplierRef").value.trim(),
+    remarks:document.getElementById("mpRemarks").value.trim(),
+    documents:getMpDocuments(),
+    emergency:{
+      name:document.getElementById("mpEmergencyName").value.trim(),
+      relationship:document.getElementById("mpEmergencyRelationship").value.trim(),
+      mobile:document.getElementById("mpEmergencyMobile").value.trim(),
+      country:document.getElementById("mpEmergencyCountry").value.trim()
+    },
+    attachments:getMpAttachments(),
+    updatedAt:new Date().toISOString()
+  };
+  const i=db.manpower.findIndex(x=>x.id===m.id);
+  if(i>=0){m.createdAt=db.manpower[i].createdAt||m.updatedAt;db.manpower[i]=m}
+  else{m.createdAt=m.updatedAt;db.manpower.push(m)}
+  saveDb();
+  closeManpowerEditor();
 }
-function deleteManpower(id){if(!confirm("Delete this Manpower record?"))return;db.manpower=db.manpower.filter(x=>x.id!==id);saveDb();}
+function deleteManpower(id){
+  if(!confirm("Delete this Manpower record?"))return;
+  db.manpower=db.manpower.filter(x=>x.id!==id);saveDb();
+}
 function renderManpower(){
-  const q=mpSearch.value.toLowerCase(),cid=mpContractorFilter.value,s=mpStatusFilter.value;
-  const arr=db.manpower.filter(m=>(!cid||m.contractorId===cid)&&(!s||m.status===s)&&
-    [m.employeeCode,m.employeeName,contractorName(m.contractorId),m.designation,m.site].join(" ").toLowerCase().includes(q));
-  manpowerRows.innerHTML=arr.map(m=>`<tr>
-    <td><b>${esc(m.employeeName||"-")}</b><br><span class="muted">${esc(m.employeeCode)}</span></td>
-    <td>${esc(contractorName(m.contractorId))}</td><td>${esc(m.designation||"-")}</td><td>${esc(m.site||"-")}</td>
-    <td>${fmtDate(m.from)}</td><td>${fmtDate(m.to)}</td><td>${badge(m.status)}</td><td>${esc(m.remarks||"-")}</td>
-    <td><button class="btn light" onclick="openManpower('${m.id}')">Edit</button> <button class="btn red" onclick="deleteManpower('${m.id}')">Delete</button></td>
-  </tr>`).join("")||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#7d8da0">No Manpower records added yet.</td></tr>';
-  kMpTotal.textContent=db.manpower.length;kMpActive.textContent=db.manpower.filter(x=>x.status==="Active").length;kMpEnded.textContent=db.manpower.filter(x=>x.status!=="Active").length;
+  const q=(document.getElementById("mpSearch")?.value||"").toLowerCase();
+  const cid=document.getElementById("mpContractorFilter")?.value||"";
+  const s=document.getElementById("mpStatusFilter")?.value||"";
+  const arr=db.manpower.filter(m=>(!cid||m.contractorId===cid)&&(!s||m.status===s)&&[
+    m.employeeCode,m.employeeName,contractorName(m.contractorId),m.actualDesignation,m.idDesignation,m.nationality,m.mobile
+  ].join(" ").toLowerCase().includes(q));
+  document.getElementById("manpowerRows").innerHTML=arr.map(m=>`<tr>
+    <td><b>${esc(m.employeeName||"-")}</b><br><span class="muted">${esc(m.employeeCode||"")}</span></td>
+    <td>${esc(contractorName(m.contractorId))}</td>
+    <td>${esc(m.actualDesignation||m.designation||"-")}<br><span class="muted">${esc(m.idDesignation||"")}</span></td>
+    <td>${esc(m.nationality||"-")}</td>
+    <td>${esc(m.mobile||"-")}</td>
+    <td>${fmtDate(m.from)}</td>
+    <td>${badge(m.status)}</td>
+    <td><button class="btn light" onclick="openManpowerForm('${m.id}')">Edit</button> <button class="btn red" onclick="deleteManpower('${m.id}')">Delete</button></td>
+  </tr>`).join("")||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#7d8da0">No Manpower records added yet.</td></tr>';
+  document.getElementById("kMpTotal").textContent=db.manpower.length;
+  document.getElementById("kMpActive").textContent=db.manpower.filter(x=>x.status==="Active").length;
+  document.getElementById("kMpEnded").textContent=db.manpower.filter(x=>x.status!=="Active").length;
 }
+
 function renderAll(){fillContractorSelect("mpContractorFilter",true);renderContractors();renderManpower();}
 document.addEventListener("DOMContentLoaded",()=>{
   document.querySelectorAll("[id]").forEach(el=>{try{if(typeof window[el.id]==="undefined")Object.defineProperty(window,el.id,{value:el,configurable:true})}catch(e){}});
   renderAll();
-  window.addEventListener("focus",()=>{fillEmployeeSelect();renderAll()});
-  window.addEventListener("storage",e=>{if(e.key===EMPLOYEE_DATA_KEY){fillEmployeeSelect();renderAll()}});
+  window.addEventListener("focus",()=>{renderAll()});
+  window.addEventListener("storage",()=>{renderAll()});
 });
 </script>
 </body>
