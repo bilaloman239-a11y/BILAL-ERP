@@ -313,7 +313,17 @@ let db=loadDb();
 
 function emptyDb(){return {contractors:[],manpower:[]}}
 function loadDb(){try{const x=JSON.parse(localStorage.getItem(SC_KEY)||"null");return {...emptyDb(),...(x||{})}}catch(e){return emptyDb()}}
-function saveDb(){localStorage.setItem(SC_KEY,JSON.stringify(db));renderAll()}
+function saveDb(){
+  try{
+    localStorage.setItem(SC_KEY,JSON.stringify(db));
+    renderAll();
+    return true;
+  }catch(err){
+    console.error("Sub Contractor data save failed",err);
+    alert("Sub Contractor data could not be saved. Browser storage may be full or blocked. Please export a backup and free up space, or contact IT.");
+    return false;
+  }
+}
 function uid(p){return p+"-"+Date.now()+"-"+Math.random().toString(16).slice(2,7)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function fmtDate(v){if(!v)return"-";const d=new Date(v+"T00:00:00");return isNaN(d)?v:d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}
@@ -666,7 +676,10 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.querySelectorAll("[id]").forEach(el=>{try{if(typeof window[el.id]==="undefined")Object.defineProperty(window,el.id,{value:el,configurable:true})}catch(e){}});
   renderAll();
   window.addEventListener("focus",()=>{renderAll()});
-  window.addEventListener("storage",()=>{renderAll()});
+  window.addEventListener("storage",e=>{
+    if(e.key===SC_KEY){ db=loadDb(); renderAll(); }
+    else if(e.key===EMPLOYEE_DATA_KEY){ renderAll(); }
+  });
 });
 </script>
 </body>

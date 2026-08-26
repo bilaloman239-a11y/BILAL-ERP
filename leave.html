@@ -917,7 +917,14 @@ function readLeaveStore(){
 }
 
 function saveLeaveStore(store){
-  localStorage.setItem(LEAVE_DATA_KEY,JSON.stringify(store));
+  try{
+    localStorage.setItem(LEAVE_DATA_KEY,JSON.stringify(store));
+    return true;
+  }catch(err){
+    console.error("Leave data save failed",err);
+    alert("Leave data could not be saved. Browser storage may be full or blocked. Please export a backup and free up space, or contact IT.");
+    return false;
+  }
 }
 
 function escHtml(v){
@@ -1689,15 +1696,7 @@ function submitLeave(){
     status:'Pending Manager Approval',
     createdAt:new Date().toISOString()
   };
-  let store={requests:[],tickets:[],rejoining:[],encashments:[],attendanceAdjustments:[],leavePayroll:[]};
-  try{
-    const raw=localStorage.getItem(LEAVE_DATA_KEY);
-    if(raw) store={...store,...JSON.parse(raw)};
-  }catch(err){}
-  if(!Array.isArray(store.requests)) store.requests=[];
-  if(!Array.isArray(store.attendanceAdjustments)) store.attendanceAdjustments=[];
-  if(!Array.isArray(store.rejoining)) store.rejoining=[];
-  if(!Array.isArray(store.leavePayroll)) store.leavePayroll=[];
+  let store=readLeaveStore();
   store.requests.push(record);
 
   if(record.ticketRequired==="Yes"){
@@ -1717,8 +1716,7 @@ function submitLeave(){
     });
   }
 
-  localStorage.setItem(LEAVE_DATA_KEY,JSON.stringify(store));
-  n.className='notice ninfo show';
+  saveLeaveStore(store);
   n.textContent='Leave request saved for '+employeeOptionLabel(employee||{})+' and routed to Manager: '+manager+'. Leave and ticket (if required) will be approved together.';
   refreshLeaveUI();
 }

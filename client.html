@@ -442,7 +442,17 @@ let db=loadDb();
 
 function emptyDb(){return {clients:[],projects:[],movements:[],timesheetTracker:{}}}
 function loadDb(){try{const x=JSON.parse(localStorage.getItem(CLIENT_KEY)||"null");return {...emptyDb(),...(x||{})}}catch(e){return emptyDb()}}
-function saveDb(){localStorage.setItem(CLIENT_KEY,JSON.stringify(db));renderAll()}
+function saveDb(){
+  try{
+    localStorage.setItem(CLIENT_KEY,JSON.stringify(db));
+    renderAll();
+    return true;
+  }catch(err){
+    console.error("Client data save failed",err);
+    alert("Client data could not be saved. Browser storage may be full or blocked. Please export a backup and free up space, or contact IT.");
+    return false;
+  }
+}
 function uid(p){return p+"-"+Date.now()+"-"+Math.random().toString(16).slice(2,7)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function fmtDate(v){if(!v)return"-";const d=new Date(v+"T00:00:00");return isNaN(d)?v:d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}
@@ -1114,6 +1124,7 @@ function printMonthlyReport(){
   const month=document.getElementById("repMonth")?.value||currentMonthValue();
   const rows=filteredMonthlyReportRows();
   const w=window.open("","_blank");
+  if(!w) return alert("Please allow pop-ups for this site to print the Monthly Manpower Report.");
   const html=`<!doctype html><html><head><title>Monthly Manpower Report ${esc(month)}</title>
     <style>body{font-family:Arial,sans-serif;padding:22px;color:#222}h2{color:#17365d}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #ccc;padding:7px;text-align:left}th{background:#eef3f8}</style>
     </head><body><h2>Monthly Manpower & Timesheet Control Report</h2><p>Month: ${esc(month)}</p>
@@ -1139,6 +1150,12 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.querySelectorAll("[id]").forEach(el=>{try{if(typeof window[el.id]==="undefined")Object.defineProperty(window,el.id,{value:el,configurable:true})}catch(e){}});
   renderAll();
   if(document.getElementById("repMonth"))document.getElementById("repMonth").value=currentMonthValue();
+
+  // Cross-tab sync: pick up changes made in another tab (this module or the Employee Portal) without a manual refresh.
+  window.addEventListener("storage",e=>{
+    if(e.key===CLIENT_KEY){ db=loadDb(); renderAll(); }
+    else if(e.key===EMPLOYEE_DATA_KEY){ renderAll(); }
+  });
 });
 </script>
 </body>

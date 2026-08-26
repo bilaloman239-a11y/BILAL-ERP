@@ -398,7 +398,17 @@ let db=loadDb();
 
 function emptyDb(){return {payroll:[],payrollEmployees:[],deductions:[]}}
 function loadDb(){try{const x=JSON.parse(localStorage.getItem(SALARY_KEY)||"null");return {...emptyDb(),...(x||{})}}catch(e){return emptyDb()}}
-function saveDb(){localStorage.setItem(SALARY_KEY,JSON.stringify(db));renderAll()}
+function saveDb(){
+  try{
+    localStorage.setItem(SALARY_KEY,JSON.stringify(db));
+    renderAll();
+    return true;
+  }catch(err){
+    console.error("Payroll data save failed",err);
+    alert("Payroll data could not be saved. Browser storage may be full or blocked. Please export a backup and free up space, or contact IT.");
+    return false;
+  }
+}
 function uid(p){return p+"-"+Date.now()+"-"+Math.random().toString(16).slice(2,7)}
 function money(v){return Number(v||0).toLocaleString("en-AE",{minimumFractionDigits:2,maximumFractionDigits:2})}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
@@ -952,6 +962,7 @@ function exportPayrollCsv(){
 function printPayrollReport(){
   const rows=db.payroll.slice().sort((a,b)=>(b.month||"").localeCompare(a.month||""));
   const w=window.open("","_blank");
+  if(!w) return alert("Please allow pop-ups for this site to print the Payroll Report.");
   w.document.write(`<!doctype html><html><head><title>Payroll Report</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #ccc;padding:7px;text-align:left}th{background:#eef3f8}h2{color:#17365d}</style></head><body><h2>Salary / Payroll Report</h2><table><thead><tr><th>Month</th><th>Employee</th><th>Basic</th><th>Allowances</th><th>OT</th><th>LOP</th><th>Deductions</th><th>Net</th></tr></thead><tbody>${rows.map(p=>`<tr><td>${esc(p.month)}</td><td>${esc(p.employeeCode+" - "+p.employeeName)}</td><td>${money(p.basic)}</td><td>${money(p.allowances)}</td><td>${money(p.otAmount)}</td><td>${money(p.lopDeduction)}</td><td>${money(Number(p.ledgerDeduction||0)+Number(p.otherDeduction||0)+Number(p.loanDeduction||0))}</td><td>${money(p.net)}</td></tr>`).join("")}</tbody></table></body></html>`);
   w.document.close();w.focus();setTimeout(()=>w.print(),300);
 }
@@ -965,6 +976,12 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("payMonthFilter").value=monthNow();
   renderAll();
   window.addEventListener("focus",renderAll);
+
+  // Cross-tab sync: pick up changes made in another tab (this module or the Employee Portal) without a manual refresh.
+  window.addEventListener("storage",e=>{
+    if(e.key===SALARY_KEY){ db=loadDb(); renderAll(); }
+    else if(e.key===EMPLOYEE_DATA_KEY){ renderAll(); }
+  });
 });
 </script>
 </body>
