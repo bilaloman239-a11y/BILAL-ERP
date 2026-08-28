@@ -706,6 +706,12 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
 }
 </style>
 
+
+<!-- Supabase cloud persistence -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="supabase-bridge.js"></script>
+
 </head>
 <body>
 
@@ -1221,9 +1227,31 @@ document.addEventListener("DOMContentLoaded", () => {
     $("loginView").classList.remove("hidden");
     sessionStorage.removeItem(SESSION_KEY);
   }
-  function doLogin(){
+  async function doLogin(){
     const e=$("loginEmail").value.trim().toLowerCase(), p=$("loginPassword").value;
     $("loginMessage").textContent="";
+    const cloudOn = window.CMSupabase && window.CMSupabase.configured();
+
+    if(cloudOn){
+      try{
+        $("loginMessage").textContent="Signing in securely...";
+        const sb=window.CMSupabase.getClient();
+        const {error}=await sb.auth.signInWithPassword({email:e,password:p});
+        if(error){ $("loginMessage").textContent=error.message||"Invalid email or password."; return; }
+        if($("keepSignedIn").checked) localStorage.setItem(SESSION_KEY,"1"); else localStorage.removeItem(SESSION_KEY);
+        sessionStorage.setItem(SESSION_KEY,"1");
+        if($("rememberMe").checked) localStorage.setItem("cm_saved_email",e); else localStorage.removeItem("cm_saved_email");
+        await window.CMSupabase.hydrate();
+        location.reload();
+        return;
+      }catch(err){
+        console.error("Supabase login failed",err);
+        $("loginMessage").textContent="Cloud login failed. Check Supabase configuration / internet connection.";
+        return;
+      }
+    }
+
+    // Local demo fallback while Supabase is disabled.
     if(e===ADMIN_EMAIL && p===ADMIN_PASSWORD){
       if($("keepSignedIn").checked) localStorage.setItem(SESSION_KEY,"1"); else localStorage.removeItem(SESSION_KEY);
       if($("rememberMe").checked) localStorage.setItem("cm_saved_email",e); else localStorage.removeItem("cm_saved_email");
@@ -1235,7 +1263,13 @@ document.addEventListener("DOMContentLoaded", () => {
   $("loginEmail").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
   $("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
   $("eyeBtn").addEventListener("click",()=>{const p=$("loginPassword");p.type=p.type==="password"?"text":"password";$("eyeBtn").textContent=p.type==="password"?"👁️":"🙈"});
-  $("logoutButton").addEventListener("click",()=>{localStorage.removeItem(SESSION_KEY);closeApp()});
+  $("logoutButton").addEventListener("click",async()=>{
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem("cm_supabase_hydrated_v1");
+    try{ if(window.CMSupabase?.configured()) await window.CMSupabase.getClient().auth.signOut(); }catch(err){ console.warn("Supabase sign out failed",err); }
+    closeApp();
+  });
 
   document.querySelectorAll(".navbtn[data-page]").forEach(btn=>btn.addEventListener("click",()=>{
     document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
