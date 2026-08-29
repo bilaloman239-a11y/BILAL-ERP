@@ -1,0 +1,2725 @@
+<!DOCTYPE html>
+<!-- CIVIL MASTER ERP: EMPLOYEE MANAGEMENT - LOCAL BROWSER STORAGE ONLY -->
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Civil Master ERP - Employee Portal</title>
+<style>
+:root{
+  --blue:#79a9eb; --blue-dark:#17375c; --blue-soft:#eef5ff;
+  --orange:#f7a15f; --orange-dark:#ea7c2e; --ink:#25384d; --muted:#70839a;
+  --line:#d8e4f2; --white:#fff; --bg:#f6f9fd; --danger:#d9534f; --ok:#2f8f5b;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.hidden{display:none!important}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+input,select,textarea{outline:none}
+img{max-width:100%}
+
+/* LOGIN */
+.login{min-height:100vh;display:grid;grid-template-columns:60% 40%;background:white}
+.login-left{position:relative;padding:46px 6vw;overflow:hidden;background:
+radial-gradient(circle at 88% 10%,rgba(111,161,233,.18) 0 21%,transparent 41%),
+radial-gradient(circle at -7% 110%,rgba(249,164,94,.22) 0 19%,transparent 35%),
+linear-gradient(145deg,#fff 0%,#fbfdff 58%,#eff6ff 100%)}
+.small-brand,.hero-brand,.card-brand{text-align:left}
+.brand-main{font-weight:900;letter-spacing:.4px;line-height:1}
+.brand-main .b{color:#75a6e8}.brand-main .o{color:#f4a060}
+.small-brand .brand-main{font-size:30px}
+.brand-sub{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#1e3147;margin-top:7px}
+.hero-wrap{max-width:680px;margin:105px auto 0}
+.hero-brand{text-align:center;margin-bottom:58px}
+.hero-brand .brand-main{font-size:58px}
+.hero-brand .brand-sub{font-size:12px}
+.welcome{color:var(--orange-dark);font-size:24px;font-weight:800}
+.hero-wrap h1{font-size:43px;margin:15px 0 5px;color:#24394f}
+.hero-wrap h2{font-size:31px;margin:0;color:#344b62;font-weight:600}
+.orange-line{width:92px;height:4px;background:var(--orange);margin:28px 0}
+.hero-wrap p{font-size:18px;line-height:1.7;color:#536579;max-width:680px}
+.features{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;margin-top:44px}
+.feature{text-align:center;font-size:13px;font-weight:700}
+.iconbox{height:70px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:11px}
+.login-right{display:flex;align-items:center;justify-content:center;padding:44px;background:linear-gradient(145deg,#f7faff,#eef5ff)}
+.login-card{width:min(590px,96%);background:#fff;border:1px solid #dbe6f4;border-radius:28px;padding:42px;box-shadow:0 25px 65px rgba(69,107,153,.10)}
+.card-brand{text-align:center;margin-bottom:30px}.card-brand .brand-main{font-size:44px}.card-brand .brand-sub{font-size:10px}
+.login-card h2{text-align:center;font-size:38px;margin:0 0 8px;color:#193454}.login-card .sub{text-align:center;color:var(--muted);margin-bottom:34px}
+.field{margin-bottom:16px}.field label{display:block;font-size:13px;font-weight:750;margin-bottom:7px;color:#1b3047}
+.field input,.field select,.field textarea{width:100%;min-height:44px;border:1px solid #c9d8ea;border-radius:10px;padding:10px 12px;font-size:14px;background:white}
+.login-card .field input{height:58px;font-size:16px;padding:0 18px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#8bb5eb;box-shadow:0 0 0 4px rgba(120,170,235,.10)}
+.password-wrap{position:relative}.password-wrap input{padding-right:54px}.eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);border:0;background:transparent;font-size:18px}
+.options{display:flex;justify-content:space-between;margin:10px 0 24px;color:#3f5268;font-size:14px}.options label{display:flex;gap:8px;align-items:center}
+.signin{width:100%;height:58px;border:0;border-radius:12px;background:linear-gradient(90deg,#ffbd7c,#f89a67);color:white;font-weight:800;font-size:16px}
+.login-msg{text-align:center;color:#d63d3d;min-height:20px;margin-top:12px;font-size:13px}
+.security{text-align:center;color:#8492a4;font-size:12px;margin-top:20px}
+.credentials{margin-top:18px;background:#f3f7ff;border:1px solid #d9e5f5;border-radius:12px;padding:13px 16px;font-size:12px;line-height:1.65}.credentials span{color:#2c75d1;font-weight:650}
+
+/* APP */
+.app{min-height:100vh;display:flex}
+.sidebar{width:245px;background:#fff;border-right:1px solid var(--line);padding:22px 16px;position:fixed;inset:0 auto 0 0}
+.side-brand{padding:6px 8px 20px;border-bottom:1px solid var(--line);margin-bottom:18px}.side-brand .brand-main{font-size:22px}.side-brand .brand-sub{font-size:8px}
+.navbtn{width:100%;border:0;background:transparent;text-align:left;padding:12px 14px;border-radius:10px;margin:4px 0;color:var(--ink);font-weight:650}
+.navbtn:hover,.navbtn.active{background:var(--blue-soft);color:#316f9d}.navbtn.master{border-left:4px solid var(--orange)}
+.logout{position:absolute;bottom:20px;left:16px;right:16px;background:#f5f7fa!important}
+.content{margin-left:245px;width:calc(100% - 245px);padding:28px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.topbar h1{margin:0;font-size:26px}.pill{background:#fff1e5;color:#9c5b1c;border-radius:20px;padding:8px 12px;font-size:12px}
+.page{display:none}.page.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px}
+.dashboard-count-card{
+  cursor:pointer;position:relative;overflow:hidden;min-height:142px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  border:1px solid #e1eaf4;background:linear-gradient(145deg,#ffffff,#fbfdff);
+  box-shadow:0 8px 24px rgba(38,76,115,.06);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.dashboard-count-card:before{
+  content:"";position:absolute;left:0;right:0;top:0;height:4px;
+  background:var(--dash-accent,#79a9eb);
+}
+.dashboard-count-card:hover{
+  transform:translateY(-4px);box-shadow:0 15px 34px rgba(38,76,115,.13);
+  border-color:color-mix(in srgb,var(--dash-accent,#79a9eb) 45%,#dbe6f1);
+}
+.dashboard-count-card .dash-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.dashboard-count-card .dash-label{font-size:13px;font-weight:700;color:#5d7288;line-height:1.25}
+.dashboard-count-card .dash-icon{
+  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;background:var(--dash-soft,#eef5ff);color:var(--dash-accent,#79a9eb);
+  border:1px solid rgba(121,169,235,.12)
+}
+.dashboard-count-card b{display:block;font-size:34px;line-height:1;color:#17375c;margin:12px 0 7px;letter-spacing:-1px}
+.dashboard-count-card .dash-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dashboard-count-card .dash-note{font-size:10px;color:#8a9bad;font-weight:650}
+.dashboard-count-card .dash-view{font-size:10px;color:var(--dash-accent,#5f91b4);font-weight:800;opacity:.78}
+.dashboard-count-card:hover .dash-view{opacity:1}
+.dashboard-count-card.selected{border-color:var(--dash-accent,#8eb9e9);box-shadow:0 0 0 3px var(--dash-soft,#eef5ff),0 12px 28px rgba(38,76,115,.10)}
+.dashboard-count-card.total{--dash-accent:#5f91d4;--dash-soft:#edf5ff}
+.dashboard-count-card.active-emp{--dash-accent:#49a06f;--dash-soft:#edf9f2}
+.dashboard-count-card.exp30{--dash-accent:#df665d;--dash-soft:#fff0ee}
+.dashboard-count-card.exp60{--dash-accent:#e39a43;--dash-soft:#fff6e9}
+.dashboard-count-card.exp90{--dash-accent:#6f9fd4;--dash-soft:#eff6ff}
+@media(max-width:1100px){.dashboard-count-card{min-height:128px}}
+
+.dashboard-list-row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 14px;border-bottom:1px solid #e8eef3}
+.dashboard-list-row:last-child{border-bottom:0}
+.dashboard-list-main b{display:block;color:#173a5c;margin-bottom:3px}
+.dashboard-list-meta{font-size:12px;color:#70839a}
+.dashboard-list-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px}.panel h3{margin:0 0 15px}
+.note{background:#fff3e8;border-left:4px solid var(--orange);padding:12px 14px;font-size:13px;margin-bottom:15px}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:15px}.btn{border:0;border-radius:9px;padding:10px 14px;background:#5f91b4;color:white;font-weight:650}.btn.orange{background:var(--orange)}.btn.light{background:#eef3f7;color:#34475b}.btn.danger{background:#d95858}.btn.green{background:#4f9b73}
+.search{height:40px!important;max-width:320px;border:1px solid #cdd8e4;border-radius:9px;padding:0 11px}
+.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}.formgrid.two{grid-template-columns:repeat(2,1fr)}.formgrid.four{grid-template-columns:repeat(4,1fr)}.formgrid .field{margin:0}
+.section-title{margin:20px 0 12px;font-size:15px;color:#24435f;border-left:4px solid var(--blue);padding-left:9px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;border-bottom:1px solid #e8eef3;text-align:left;vertical-align:top}th{background:#f7f9fb;color:#53687d;position:sticky;top:0}
+.table-wrap{overflow:auto;max-height:520px;border:1px solid #edf1f5;border-radius:10px}
+.master-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.master-card{border:1px solid var(--line);border-radius:12px;padding:16px}.master-card h4{margin:0 0 6px}.master-card p{font-size:12px;color:var(--muted);min-height:34px}.inline{display:flex;gap:8px}.inline input{width:100%;height:40px;border:1px solid #ccd9e7;border-radius:8px;padding:0 10px}.tags{margin-top:12px}.tag{display:inline-flex;gap:6px;align-items:center;background:#edf5fb;border-radius:16px;padding:5px 8px;margin:3px;font-size:12px}.tag button{border:0;background:none;color:#b84040;font-weight:800}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}.tab{border:1px solid #d8e4f2;background:#f8fbfe;color:#415a72;padding:9px 12px;border-radius:9px;font-weight:700}.tab.active{background:#eaf3ff;color:#2e6d99;border-color:#bdd5ef}.tab-panel{display:none}.tab-panel.active{display:block}
+.status-reason{display:none;background:#fff6f4;border:1px solid #f2c9c2;border-radius:10px;padding:12px;margin-top:10px}.status-reason.show{display:block}
+.photo-box{display:flex;gap:12px;align-items:center}.photo-preview{width:90px;height:90px;border-radius:12px;border:1px dashed #b9c9d9;object-fit:cover;background:#fafcfe}
+.doc-card{border:1px solid #dfe8f0;border-radius:12px;padding:14px;margin:10px 0;background:#fbfdff}.doc-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.doc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.doc-grid .field{margin:0}.doc-file{font-size:12px;color:#60758a}
+.alert-row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #edf1f5}.alert-row:last-child{border-bottom:0}.alert-badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:800}.a30{background:#ffe2df;color:#b33f34}.a60{background:#fff0d8;color:#9a661b}.a90{background:#e8f0ff;color:#416ba9}.expired{background:#fbd7d7;color:#a52121}
+.small{font-size:12px;color:var(--muted)}
+.attach-list{display:grid;gap:8px}.attach-item{display:flex;justify-content:space-between;gap:10px;border:1px solid #e2eaf1;border-radius:9px;padding:10px;background:#fbfdff}
+.save-bar{position:sticky;bottom:0;background:rgba(255,255,255,.95);border-top:1px solid var(--line);padding:12px 0 0;margin-top:15px}
+.empty{text-align:center;color:#8290a0;padding:20px}
+
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.formgrid,.formgrid.four,.doc-grid{grid-template-columns:repeat(2,1fr)}.master-grid{grid-template-columns:1fr}}
+@media(max-width:800px){.login{grid-template-columns:1fr}.login-left{display:none}.login-right{min-height:100vh}.sidebar{width:200px}.content{margin-left:200px;width:calc(100% - 200px)}.formgrid,.formgrid.two,.formgrid.four,.doc-grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr}}
+
+/* Attractive Master Builder */
+#masters .panel{
+  border:1px solid #e4ebf5;
+  border-radius:22px;
+  background:linear-gradient(145deg,#ffffff,#f8fbff);
+  box-shadow:0 12px 35px rgba(34,78,121,.08);
+}
+#masters .panel > .toolbar:first-child{
+  padding:8px 4px 18px;
+  border-bottom:1px solid #edf2f8;
+}
+#masters h3{
+  color:#163b65;
+  font-size:24px;
+  letter-spacing:-.3px;
+}
+#masters .note{
+  margin:18px 0;
+  padding:15px 18px;
+  border:1px solid #dceaff;
+  border-left:4px solid #f4a261;
+  border-radius:14px;
+  background:linear-gradient(90deg,#f4f9ff,#fffaf5);
+  color:#52677d;
+}
+#createMasterBtn{
+  border-radius:12px;
+  padding:11px 18px;
+  box-shadow:0 7px 18px rgba(244,162,97,.22);
+}
+#masterBuilderForm{
+  margin:18px 0 22px;
+  border:1px solid #dce8f6 !important;
+  border-radius:18px !important;
+  padding:22px !important;
+  background:linear-gradient(135deg,#f7fbff,#fff9f4) !important;
+  box-shadow:0 10px 25px rgba(31,77,121,.07);
+}
+#masterBuilderForm h3{
+  font-size:19px;
+  margin-bottom:16px;
+}
+#masterBuilderForm input,
+#masterBuilderForm select{
+  border:1px solid #cfdef0;
+  border-radius:11px;
+  background:#fff;
+  min-height:44px;
+  transition:.2s ease;
+}
+#masterBuilderForm input:focus,
+#masterBuilderForm select:focus{
+  border-color:#79a9e8;
+  box-shadow:0 0 0 3px rgba(121,169,232,.13);
+  outline:none;
+}
+#masterCards.master-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:18px;
+  margin-top:20px;
+}
+#masterCards .master-card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid #dfe9f5;
+  border-radius:18px;
+  padding:19px;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(38,76,115,.07);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+#masterCards .master-card:before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:5px;
+  background:linear-gradient(#79aaf0,#ffad6f);
+}
+#masterCards .master-card:hover{
+  transform:translateY(-2px);
+  border-color:#c9daf0;
+  box-shadow:0 12px 30px rgba(38,76,115,.12);
+}
+#masterCards .master-card h4{
+  margin:0 0 4px;
+  color:#1c568f;
+  font-size:18px;
+}
+#masterCards .inline{
+  display:flex;
+  gap:8px;
+  margin-top:14px;
+}
+#masterCards .inline input{
+  flex:1;
+  min-width:0;
+  border:1px solid #d7e3f0;
+  border-radius:10px;
+  padding:10px 12px;
+}
+#masterCards .tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+#masterCards .tag{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 10px;
+  border:1px solid #dbe9fb;
+  border-radius:999px;
+  background:#f1f7ff;
+  color:#255f98;
+  font-size:13px;
+  font-weight:600;
+}
+#masterCards .tag button{
+  border:0;
+  background:transparent;
+  color:#e17855;
+  cursor:pointer;
+  font-size:17px;
+  line-height:1;
+  padding:0;
+}
+#masterCards .btn{
+  border-radius:9px;
+}
+#masterCards .empty{
+  grid-column:1/-1;
+  text-align:center;
+  padding:42px 20px;
+  border:2px dashed #d8e5f4;
+  border-radius:18px;
+  background:#fbfdff;
+  color:#70869d;
+}
+@media(max-width:700px){
+  #masters .panel > .toolbar:first-child{align-items:flex-start;gap:14px}
+  #masterCards.master-grid{grid-template-columns:1fr}
+}
+
+
+/* Professional Employee Profile & Audit History */
+.employee-link{
+  border:0;background:none;padding:0;color:#236da7;font-weight:750;
+  cursor:pointer;text-decoration:none;
+}
+.employee-link:hover{text-decoration:underline}
+.profile-modal{
+  position:fixed;inset:0;z-index:9999;background:rgba(18,38,58,.48);
+  display:flex;align-items:center;justify-content:center;padding:26px;
+}
+.profile-modal.hidden{display:none!important}
+.profile-shell{
+  width:min(1180px,96vw);max-height:92vh;overflow:hidden;
+  background:#fff;border-radius:22px;border:1px solid #dce7f3;
+  box-shadow:0 30px 80px rgba(21,49,76,.22);
+  display:flex;flex-direction:column;
+}
+.profile-head{
+  display:flex;justify-content:space-between;gap:18px;align-items:center;
+  padding:20px 22px;border-bottom:1px solid #e9eff5;
+  background:linear-gradient(135deg,#f7fbff,#fffaf5);
+}
+.profile-person{display:flex;align-items:center;gap:15px}
+.profile-photo{
+  width:72px;height:72px;border-radius:16px;object-fit:cover;
+  background:#eef4fa;border:1px solid #dce6ef;
+}
+.profile-photo.placeholder{
+  display:flex;align-items:center;justify-content:center;font-size:28px;color:#7e93a8;
+}
+.profile-name{font-size:22px;font-weight:800;color:#173a5c}
+.profile-meta{font-size:12px;color:#71859a;margin-top:4px}
+.profile-actions{display:flex;gap:8px;flex-wrap:wrap}
+.profile-tabs{
+  display:flex;gap:8px;flex-wrap:wrap;padding:14px 18px;
+  border-bottom:1px solid #edf2f7;background:#fff;
+}
+.profile-tab{
+  border:1px solid #d8e4f1;background:#f8fbfe;color:#415b73;
+  padding:8px 12px;border-radius:9px;font-weight:700;cursor:pointer;
+}
+.profile-tab.active{background:#eaf3ff;color:#2d6d9b;border-color:#bdd4ee}
+.profile-body{padding:20px;overflow:auto;background:#f8fafc}
+.profile-panel{display:none}
+.profile-panel.active{display:block}
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.profile-info{
+  background:#fff;border:1px solid #e1e9f1;border-radius:12px;padding:13px 14px;
+}
+.profile-info small{display:block;color:#7b8da0;font-size:11px;margin-bottom:5px}
+.profile-info b{color:#243f58;font-size:13px;word-break:break-word}
+.profile-section-title{
+  font-size:15px;font-weight:800;color:#234a6c;margin:4px 0 12px;
+  padding-left:9px;border-left:4px solid #79a9eb
+}
+.profile-doc{
+  background:#fff;border:1px solid #e1e9f1;border-radius:12px;padding:14px;
+  margin-bottom:10px
+}
+.profile-doc-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.profile-doc-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.profile-doc-meta div{font-size:12px;color:#607387}
+.profile-doc-meta b{display:block;color:#263f56;margin-top:2px}
+.history-timeline{position:relative;padding-left:24px}
+.history-item{position:relative;background:#fff;border:1px solid #e1e8ef;border-radius:12px;padding:13px 15px;margin-bottom:12px}
+.history-item:before{
+  content:"";position:absolute;left:-22px;top:18px;width:10px;height:10px;border-radius:50%;
+  background:#79a9eb;border:3px solid #edf5ff;
+}
+.history-item:after{
+  content:"";position:absolute;left:-17px;top:31px;bottom:-18px;width:2px;background:#dce7f1
+}
+.history-item:last-child:after{display:none}
+.history-title{font-weight:800;color:#23435f;font-size:13px}
+.history-meta{font-size:11px;color:#8190a0;margin-top:3px}
+.history-change{font-size:12px;color:#53697d;margin-top:7px;line-height:1.55}
+.history-old{color:#a34b4b}.history-new{color:#2f8158}
+.empty-history{text-align:center;color:#8392a0;padding:28px}
+@media(max-width:900px){
+  .profile-grid{grid-template-columns:1fr 1fr}
+  .profile-doc-meta{grid-template-columns:1fr 1fr}
+}
+@media(max-width:650px){
+  .profile-grid,.profile-doc-meta{grid-template-columns:1fr}
+  .profile-head{align-items:flex-start;flex-direction:column}
+}
+
+
+.followup-box{margin-top:10px;padding:10px 12px;border-radius:10px;background:#f8fbfe;border:1px solid #e1eaf3}
+.followup-grid{display:grid;grid-template-columns:1.2fr 1fr 1.6fr auto;gap:8px;align-items:end}
+.followup-grid input,.followup-grid select{width:100%;min-height:38px;border:1px solid #cedbe8;border-radius:8px;padding:7px 9px;background:#fff}
+.followup-status{font-size:11px;font-weight:800;padding:4px 8px;border-radius:20px;display:inline-block}
+.fs-pending{background:#fff0d8;color:#966318}.fs-contacted{background:#e7f0ff;color:#3d68a0}
+.fs-renewal{background:#e5f6ec;color:#28714b}.fs-completed{background:#e2f5e8;color:#277044}.fs-hold{background:#f1e9ff;color:#6d4b9c}
+.followup-history{margin-top:8px;font-size:11px;color:#6f8295}
+@media(max-width:900px){.followup-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.followup-grid{grid-template-columns:1fr}}
+
+/* Compact Document Expiry Action Dashboard */
+.expiry-toolbar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px;
+}
+.expiry-filter{
+  border:1px solid #d8e4f2;background:#f8fbfe;color:#49637a;
+  padding:8px 11px;border-radius:999px;font-size:12px;font-weight:800;
+}
+.expiry-filter.active{background:#eaf3ff;color:#2d6d9b;border-color:#bdd4ee}
+.expiry-list{border:1px solid #e4ecf4;border-radius:14px;overflow:hidden;background:#fff}
+.expiry-item{
+  display:grid;grid-template-columns:1.7fr 1fr .8fr 1fr 1fr auto;
+  gap:12px;align-items:center;padding:13px 14px;border-bottom:1px solid #edf2f6;
+}
+.expiry-item:last-child{border-bottom:0}
+.expiry-item.expired-row{border-left:4px solid #df6b61}
+.expiry-item.d30-row{border-left:4px solid #f0a15f}
+.expiry-item.d60-row{border-left:4px solid #e4bd5a}
+.expiry-item.d90-row{border-left:4px solid #79a9eb}
+.expiry-employee b{display:block;color:#173a5c;font-size:13px}
+.expiry-employee small,.expiry-doc small,.expiry-next small{display:block;color:#7b8da0;font-size:11px;margin-top:3px}
+.expiry-doc b{color:#35506a;font-size:12px}
+.expiry-days{font-weight:800;font-size:12px}
+.expiry-days.bad{color:#b33f34}.expiry-days.warn{color:#a66b17}.expiry-days.ok{color:#416ba9}
+.expiry-action-btn{white-space:nowrap}
+.followup-drawer{
+  position:fixed;inset:0;z-index:10020;background:rgba(18,38,58,.44);
+  display:flex;align-items:flex-end;justify-content:center;padding:20px;
+}
+.followup-drawer.hidden{display:none!important}
+.followup-sheet{
+  width:min(720px,96vw);background:#fff;border-radius:20px 20px 14px 14px;
+  border:1px solid #dce7f3;box-shadow:0 25px 70px rgba(20,45,72,.25);padding:20px;
+}
+.followup-sheet-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px}
+.followup-sheet-title{font-size:20px;font-weight:850;color:#173a5c}
+.followup-sheet-sub{font-size:12px;color:#71859a;margin-top:4px}
+.followup-sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.followup-sheet-grid .field{margin:0}
+.followup-sheet-grid .field.full{grid-column:1/-1}
+.followup-sheet-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+@media(max-width:1000px){
+  .expiry-item{grid-template-columns:1.5fr 1fr .8fr 1fr auto}
+  .expiry-item .expiry-next{display:none}
+}
+@media(max-width:760px){
+  .expiry-item{grid-template-columns:1fr auto;gap:8px}
+  .expiry-doc,.expiry-status,.expiry-next{grid-column:1}
+  .expiry-days,.expiry-action-btn{grid-column:2}
+  .followup-sheet-grid{grid-template-columns:1fr}
+  .followup-sheet-grid .field.full{grid-column:auto}
+}
+
+
+@media(max-width:760px){#exportColumnChoices{grid-template-columns:1fr!important}}
+
+/* Employee List — Expand + Advanced Filter */
+.employee-filter-panel{
+  margin:0 0 15px;padding:16px;border:1px solid #dce8f5;border-radius:14px;
+  background:linear-gradient(135deg,#f8fbff,#fffaf6);box-shadow:0 5px 16px rgba(38,76,115,.05);
+}
+.employee-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:11px}
+.employee-filter-grid .field{margin:0}
+.employee-filter-grid label{display:block;font-size:11px;font-weight:800;color:#51677e;margin-bottom:6px;text-transform:uppercase;letter-spacing:.25px}
+.employee-filter-grid input,.employee-filter-grid select{width:100%;height:40px;border:1px solid #cfdceb;border-radius:9px;padding:0 10px;background:#fff;color:#25384d}
+.employee-filter-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+.employee-filter-count{margin-right:auto;font-size:12px;color:#6f8398;font-weight:700}
+.emp-extra-col{display:none}
+.employee-list-expanded .emp-extra-col{display:table-cell}
+
+.employee-list-expanded table{min-width:3000px}
+.employee-list-expanded th,.employee-list-expanded td{white-space:nowrap}
+#expandEmployeeListBtn.active{background:linear-gradient(180deg,#f9b47f,var(--orange));color:#fff;box-shadow:0 4px 12px rgba(234,124,46,.28)}
+#advancedEmployeeFilterBtn.active{background:#eaf3ff;color:#236da7;box-shadow:inset 0 0 0 1px #c8dcf1}
+@media(max-width:1100px){.employee-filter-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.employee-filter-grid{grid-template-columns:1fr}}
+</style>
+<style>
+/* ============================================================
+   VISUAL POLISH LAYER — purely cosmetic, no IDs/structure touched
+   ============================================================ */
+
+::selection{background:#bcd9ff;color:#123256}
+*{scrollbar-width:thin;scrollbar-color:#c3d5ea #f2f6fb}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:#f2f6fb}
+::-webkit-scrollbar-thumb{background:#c3d5ea;border-radius:20px}
+::-webkit-scrollbar-thumb:hover{background:#9fbde0}
+
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* ---- Sidebar ---- */
+.sidebar{
+  background:linear-gradient(180deg,#ffffff 0%,#fbfdff 60%,#f7fbff 100%);
+  box-shadow:2px 0 24px rgba(38,76,115,.045);
+  border-right:1px solid #e7eef7;
+}
+.side-brand{position:relative}
+.side-brand:after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
+  background:linear-gradient(90deg,#79a9eb,#f7a15f);opacity:.55;
+}
+.navbtn{
+  transition:background .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.navbtn:not(.logout):hover{transform:translateX(2px)}
+.navbtn.active{
+  position:relative;
+  background:linear-gradient(90deg,#eaf3ff,#f3f9ff);
+  color:#1c568f;
+  box-shadow:inset 0 0 0 1px rgba(121,169,235,.25),0 4px 12px rgba(121,169,235,.18);
+  font-weight:800;
+}
+.navbtn.active:before{
+  content:"";position:absolute;left:-16px;top:8px;bottom:8px;width:4px;border-radius:4px;
+  background:linear-gradient(180deg,#79a9eb,#5f91d4);
+}
+.navbtn.master{position:relative}
+.logout{
+  transition:background .18s ease,box-shadow .18s ease,color .18s ease;
+}
+.logout:hover{background:#fdeeee!important;color:#b23b3b;box-shadow:0 4px 12px rgba(217,88,88,.14)}
+
+/* ---- Topbar / pill ---- */
+.topbar h1{
+  background:linear-gradient(90deg,#1a3352,#2f5478);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  letter-spacing:-.4px;
+}
+.pill{
+  background:linear-gradient(135deg,#fff1e5,#ffe6d1);
+  box-shadow:0 4px 12px rgba(234,124,46,.14);
+  font-weight:750;
+}
+
+/* ---- Buttons ---- */
+.btn{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#6ea0c4,#5f91b4);
+  box-shadow:0 4px 12px rgba(95,145,180,.28),inset 0 1px 0 rgba(255,255,255,.18);
+  transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;
+  letter-spacing:.1px;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(95,145,180,.36);filter:brightness(1.04)}
+.btn:active{transform:translateY(0);box-shadow:0 3px 8px rgba(95,145,180,.3)}
+.btn.orange{
+  background:linear-gradient(180deg,#f9b47f,var(--orange));
+  box-shadow:0 4px 12px rgba(234,124,46,.3),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.btn.orange:hover{box-shadow:0 8px 20px rgba(234,124,46,.4)}
+.btn.light{
+  background:linear-gradient(180deg,#f5f8fb,#eef3f7);
+  color:#34475b;box-shadow:0 2px 8px rgba(52,71,91,.08),inset 0 0 0 1px #e3eaf1;
+}
+.btn.light:hover{background:linear-gradient(180deg,#eef4f9,#e6edf4);box-shadow:0 6px 14px rgba(52,71,91,.12)}
+.btn.danger{
+  background:linear-gradient(180deg,#e37975,var(--danger));
+  box-shadow:0 4px 12px rgba(217,83,79,.3),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.btn.danger:hover{box-shadow:0 8px 20px rgba(217,83,79,.4)}
+.btn.green{
+  background:linear-gradient(180deg,#69b28c,var(--ok));
+  box-shadow:0 4px 12px rgba(47,143,91,.3),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.btn.green:hover{box-shadow:0 8px 20px rgba(47,143,91,.4)}
+
+/* ---- Panels ---- */
+.panel{
+  box-shadow:0 6px 22px rgba(38,76,115,.055);
+  transition:box-shadow .2s ease;
+}
+.panel h3{
+  color:#173a5c;letter-spacing:-.2px;
+  position:relative;padding-left:12px;
+}
+.panel h3:before{
+  content:"";position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:4px;
+  background:linear-gradient(180deg,#79a9eb,#f7a15f);
+}
+
+/* ---- Search / inputs on toolbars ---- */
+.search{
+  transition:box-shadow .18s ease,border-color .18s ease;
+  background:#fff;
+}
+.search:focus{border-color:#8bb5eb;box-shadow:0 0 0 4px rgba(120,170,235,.12)}
+
+/* ---- Tables ---- */
+.table-wrap{box-shadow:0 4px 14px rgba(38,76,115,.05)}
+table thead th{
+  background:linear-gradient(180deg,#f9fbfd,#f2f6fa);
+  font-weight:750;letter-spacing:.2px;text-transform:uppercase;font-size:11px;
+  color:#4d6382;
+}
+table tbody tr{transition:background .12s ease}
+table tbody tr:hover{background:#f7fbff}
+table tbody tr:nth-child(even){background:#fbfdff}
+table tbody tr:nth-child(even):hover{background:#f4f9ff}
+
+/* ---- Tabs ---- */
+.tab{
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.tab:hover{transform:translateY(-1px)}
+.tab.active{
+  background:linear-gradient(135deg,#eaf3ff,#f3f9ff);
+  box-shadow:0 4px 12px rgba(121,169,235,.18);
+  font-weight:800;
+}
+
+/* ---- Alert badges ---- */
+.alert-badge{letter-spacing:.3px}
+.a30{box-shadow:0 2px 6px rgba(179,63,52,.12)}
+.a60{box-shadow:0 2px 6px rgba(154,102,27,.12)}
+.a90{box-shadow:0 2px 6px rgba(65,107,169,.12)}
+.expired{box-shadow:0 2px 6px rgba(165,33,33,.14)}
+
+/* ---- Empty states ---- */
+.empty{
+  padding:34px 20px;color:#96a5b8;font-weight:600;
+}
+.empty:before{
+  content:"🗂";display:block;font-size:26px;margin-bottom:8px;opacity:.55;
+}
+
+/* ---- Login polish ---- */
+.signin{
+  box-shadow:0 10px 26px rgba(234,124,46,.28),inset 0 1px 0 rgba(255,255,255,.25);
+  transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;
+}
+.signin:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(234,124,46,.36);filter:brightness(1.03)}
+.login-card{transition:box-shadow .2s ease}
+.iconbox{transition:transform .18s ease,box-shadow .18s ease}
+.feature:hover .iconbox{transform:translateY(-3px);box-shadow:0 10px 20px rgba(121,169,235,.18)}
+
+/* ---- Master cards / doc cards already styled; light extra lift ---- */
+.doc-card{transition:box-shadow .18s ease,border-color .18s ease}
+.doc-card:hover{box-shadow:0 8px 20px rgba(38,76,115,.08);border-color:#d5e3f2}
+
+/* ---- Misc ---- */
+.tag{transition:transform .15s ease}
+.tag:hover{transform:translateY(-1px)}
+
+/* ============================================================
+   ROUND 2 — Masters cards, expiry alerts, profile modal, follow-up drawer
+   ============================================================ */
+
+/* ---- Masters cards ---- */
+.master-card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#ffffff,#fbfdff);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.master-card:before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,#79aaf0,#ffad6f);opacity:.9;
+}
+.master-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 30px rgba(38,76,115,.12);
+  border-color:#c9daf0;
+}
+.master-card h4{color:#1c568f;letter-spacing:-.2px}
+
+/* ---- Document expiry alert list (actual rendered classes) ---- */
+.expiry-list{box-shadow:0 4px 16px rgba(38,76,115,.05)}
+.expiry-item{
+  transition:background .18s ease,box-shadow .18s ease;
+  position:relative;
+}
+.expiry-item:hover{background:#f8fbff}
+.expiry-days{letter-spacing:.2px}
+.expiry-action-btn{padding:8px 12px;font-size:12px}
+.followup-status{
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+  letter-spacing:.2px;
+}
+.expiry-filter{
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.expiry-filter:hover{transform:translateY(-1px)}
+.expiry-filter.active{box-shadow:0 4px 12px rgba(121,169,235,.18);font-weight:800}
+
+/* ---- Employee profile modal ---- */
+.profile-modal{backdrop-filter:blur(2px)}
+.profile-shell{
+  box-shadow:0 40px 90px rgba(15,35,60,.28),0 4px 14px rgba(15,35,60,.08);
+  animation:profilePop .22s ease;
+}
+@keyframes profilePop{
+  from{opacity:0;transform:translateY(10px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.profile-head{
+  background:linear-gradient(90deg,#fbfdff,#f6faff);
+  position:relative;
+}
+.profile-head:after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;
+  background:linear-gradient(90deg,#79a9eb,#f7a15f);opacity:.55;
+}
+.profile-name{
+  background:linear-gradient(90deg,#173a5c,#2f5478);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  font-weight:850;letter-spacing:-.3px;
+}
+.profile-tabs{gap:6px}
+.profile-tab{
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease;
+  border-radius:9px;
+}
+.profile-tab:hover{transform:translateY(-1px)}
+.profile-tab.active{
+  background:linear-gradient(135deg,#eaf3ff,#f3f9ff);
+  box-shadow:0 4px 12px rgba(121,169,235,.18);
+  font-weight:800;
+}
+
+/* ---- Follow-up drawer ---- */
+.followup-drawer{backdrop-filter:blur(2px)}
+.followup-sheet{
+  box-shadow:0 40px 90px rgba(15,35,60,.28),0 4px 14px rgba(15,35,60,.08);
+  animation:profilePop .22s ease;
+}
+.followup-sheet-title{
+  background:linear-gradient(90deg,#173a5c,#2f5478);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+</style>
+<!-- Local browser storage only: no Supabase connection -->
+</head>
+<body>
+
+<div id="loginView" class="login">
+  <section class="login-left">
+    <div class="small-brand">
+      <div class="brand-main"><span class="b">CIVIL</span> <span class="o">MASTER</span></div>
+      <div class="brand-sub">GENERAL MAINTENANCE LLC - OPC</div>
+    </div>
+    <div class="hero-wrap">
+      <div class="hero-brand">
+        <div class="brand-main"><span class="b">CIVIL</span> <span class="o">MASTER</span></div>
+        <div class="brand-sub">GENERAL MAINTENANCE LLC - OPC</div>
+      </div>
+      <div class="welcome">Welcome to</div>
+      <h1>Civil Master ERP</h1>
+      <h2>Employee Portal</h2>
+      <div class="orange-line"></div>
+      <p>Employee information, documents, bank, emergency contacts and attachments — all in one clean employee profile.</p>
+      <div class="features">
+        <div class="feature"><div class="iconbox">🛡️</div>Secure<br>Access</div>
+        <div class="feature"><div class="iconbox">👥</div>Employee<br>Management</div>
+        <div class="feature"><div class="iconbox">📄</div>Document<br>Expiry</div>
+        <div class="feature"><div class="iconbox">⚙️</div>Smart<br>Masters</div>
+      </div>
+    </div>
+  </section>
+  <section class="login-right">
+    <div class="login-card">
+      <div class="card-brand">
+        <div class="brand-main"><span class="b">CIVIL</span> <span class="o">MASTER</span></div>
+        <div class="brand-sub">GENERAL MAINTENANCE LLC - OPC</div>
+      </div>
+      <h2>Sign In</h2>
+      <div class="sub">Enter your credentials to access your account</div>
+      <div class="field"><label>Username / Email</label><input id="loginEmail" type="text" autocomplete="username" placeholder="e.g. admin or name@company.com"></div>
+      <div class="field"><label>Password</label><div class="password-wrap"><input id="loginPassword" type="password" value="Civil123@2024"><button class="eye" type="button" id="eyeBtn">👁️</button></div></div>
+      <div class="options"><label><input id="rememberMe" type="checkbox" checked> Remember me</label><label><input id="keepSignedIn" type="checkbox"> Keep me signed in</label></div>
+      <button id="loginButton" class="signin" type="button">Sign In</button>
+      <div id="loginMessage" class="login-msg"></div>
+      <div class="security">🔒 Your data is secured with enterprise-grade protection</div>
+      <div class="credentials"><b>Secure ERP Login</b><br>Local Browser Mode — employee data is stored only in this browser on this computer.</div>
+    </div>
+  </section>
+</div>
+
+<div id="appView" class="app hidden">
+  <aside class="sidebar">
+    <div class="side-brand">
+      <div class="brand-main"><span class="b">CIVIL</span> <span class="o">MASTER</span></div>
+      <div class="brand-sub">GENERAL MAINTENANCE LLC - OPC</div>
+    </div>
+    <button class="navbtn active" data-page="dashboard">Dashboard</button>
+    <button class="navbtn" data-page="employees">Employees</button>
+    <button class="navbtn master" data-page="masters">Masters</button>
+    <button id="logoutButton" class="navbtn logout">Sign Out</button>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div><h1 id="pageTitle">Employee Portal</h1><div class="small">Civil Master General Maintenance LLC - OPC</div></div>
+      <div class="pill">Administrator</div>
+    </div>
+
+    <section id="dashboard" class="page active">
+      <div class="cards">
+        <div class="card dashboard-count-card total" data-dashboard-filter="total" role="button" tabindex="0" title="Click to view all employees">
+          <div class="dash-top"><span class="dash-label">Total Employees</span><span class="dash-icon">👥</span></div>
+          <b id="totalEmployees">0</b><div class="dash-foot"><span class="dash-note">Employee records</span><span class="dash-view">View list →</span></div>
+        </div>
+        <div class="card dashboard-count-card active-emp" data-dashboard-filter="active" role="button" tabindex="0" title="Click to view active employees">
+          <div class="dash-top"><span class="dash-label">Active Employees</span><span class="dash-icon">✓</span></div>
+          <b id="activeEmployees">0</b><div class="dash-foot"><span class="dash-note">Currently active</span><span class="dash-view">View list →</span></div>
+        </div>
+        <div class="card dashboard-count-card exp30" data-dashboard-filter="exp30" role="button" tabindex="0" title="Click to view documents expiring within 30 days">
+          <div class="dash-top"><span class="dash-label">Expiry ≤ 30 Days</span><span class="dash-icon">!</span></div>
+          <b id="exp30">0</b><div class="dash-foot"><span class="dash-note">Urgent attention</span><span class="dash-view">View docs →</span></div>
+        </div>
+        <div class="card dashboard-count-card exp60" data-dashboard-filter="exp60" role="button" tabindex="0" title="Click to view documents expiring within 60 days">
+          <div class="dash-top"><span class="dash-label">Expiry ≤ 60 Days</span><span class="dash-icon">◷</span></div>
+          <b id="exp60">0</b><div class="dash-foot"><span class="dash-note">Upcoming expiry</span><span class="dash-view">View docs →</span></div>
+        </div>
+        <div class="card dashboard-count-card exp90" data-dashboard-filter="exp90" role="button" tabindex="0" title="Click to view documents expiring within 90 days">
+          <div class="dash-top"><span class="dash-label">Expiry ≤ 90 Days</span><span class="dash-icon">▣</span></div>
+          <b id="exp90">0</b><div class="dash-foot"><span class="dash-note">Plan renewals</span><span class="dash-view">View docs →</span></div>
+        </div>
+      </div>
+
+      <div id="dashboardCountListPanel" class="panel hidden">
+        <div class="toolbar" style="justify-content:space-between;margin-bottom:10px">
+          <div>
+            <h3 id="dashboardCountListTitle" style="margin:0">Dashboard List</h3>
+            <div id="dashboardCountListSub" class="small"></div>
+          </div>
+          <button id="closeDashboardCountList" class="btn light" type="button">Close</button>
+        </div>
+        <div id="dashboardCountList"></div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar" style="justify-content:space-between;margin-bottom:10px">
+          <div>
+            <h3 style="margin:0">Document Expiry Alerts</h3>
+            <div class="small">Compact action view for expiring documents and renewals.</div>
+          </div>
+        </div>
+        <div class="expiry-toolbar" id="expiryFilters">
+          <button class="expiry-filter active" data-expiry-filter="all" type="button">All</button>
+          <button class="expiry-filter" data-expiry-filter="expired" type="button">Expired</button>
+          <button class="expiry-filter" data-expiry-filter="30" type="button">≤ 30 Days</button>
+          <button class="expiry-filter" data-expiry-filter="renewal" type="button">Renewal In Process</button>
+          <button class="expiry-filter" data-expiry-filter="pending" type="button">Pending</button>
+        </div>
+        <div id="expiryAlerts"></div>
+      </div>
+    </section>
+
+    <section id="employees" class="page">
+      <div class="panel">
+        <div class="toolbar">
+          <button id="exportEmployeeListBtn" class="btn light" type="button">Export List</button>
+          <button id="newEmployeeBtn" class="btn" type="button" onclick="window.cmOpenNewEmployee && window.cmOpenNewEmployee()">+ Add Employee</button>
+          <button id="bulkUploadBtn" class="btn light" type="button" title="Download sample Excel and bulk upload employees">Bulk Upload</button>
+          <input id="bulkUploadFile" type="file" accept=".xls,.xml,.csv,text/csv,application/vnd.ms-excel,text/xml,application/xml" class="hidden">
+          <input id="employeeSearch" class="search" placeholder="Search employee...">
+          <button id="expandEmployeeListBtn" class="btn light" type="button" title="Show more employee columns">Expand List</button>
+          <button id="advancedEmployeeFilterBtn" class="btn light" type="button" title="Open advanced employee filters">Advanced Filter</button>
+          <button id="exportBackupBtn" class="btn light" type="button">Export Backup</button>
+          <button id="importBackupBtn" class="btn light" type="button">Restore Backup</button>
+          <input id="importBackupFile" type="file" accept="application/json,.json" class="hidden">
+        </div>
+
+        <div id="advancedEmployeeFilterPanel" class="employee-filter-panel hidden">
+          <div class="employee-filter-grid">
+            <div class="field"><label>Actual Designation</label><select id="afActualDesignation"><option value="">All</option></select></div>
+            <div class="field"><label>Nationality</label><select id="afNationality"><option value="">All</option></select></div>
+            <div class="field"><label>Company</label><select id="afCompany"><option value="">All</option></select></div>
+            <div class="field"><label>ID Card Designation</label><select id="afIdDesignation"><option value="">All</option></select></div>
+            <div class="field"><label>Employee Status</label><select id="afStatus"><option value="">All</option><option>Active</option><option>Inactive</option></select></div>
+            <div class="field"><label>Gender</label><select id="afGender"><option value="">All</option><option>Male</option><option>Female</option></select></div>
+            <div class="field"><label>Joining From</label><input id="afJoiningFrom" type="date"></div>
+            <div class="field"><label>Joining To</label><input id="afJoiningTo" type="date"></div>
+          </div>
+          <div class="employee-filter-actions">
+            <span id="employeeFilterCount" class="employee-filter-count">Showing all employees</span>
+            <button id="clearEmployeeFiltersBtn" class="btn light" type="button">Clear Filters</button>
+          </div>
+        </div>
+
+        <div id="employeeTableWrap" class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Code</th><th>Name</th><th>Actual Designation</th><th>Nationality</th><th>Company</th><th>ID Card Designation</th><th>Status</th>
+              <th class="emp-extra-col">Arabic Name</th><th class="emp-extra-col">Unified No.</th><th class="emp-extra-col">Gender</th><th class="emp-extra-col">Date of Birth</th><th class="emp-extra-col">Marital Status</th><th class="emp-extra-col">Mobile</th><th class="emp-extra-col">Joining Date</th><th class="emp-extra-col">Line Manager</th><th class="emp-extra-col">Inactive Reason</th><th class="emp-extra-col">Inactive Date</th><th class="emp-extra-col">Passport No.</th><th class="emp-extra-col">Passport Expiry</th><th class="emp-extra-col">Emirates ID No.</th><th class="emp-extra-col">Emirates ID Expiry</th><th class="emp-extra-col">Documents</th><th class="emp-extra-col">Emergency Contact</th><th class="emp-extra-col">Emergency Relation</th><th class="emp-extra-col">Emergency Mobile</th><th class="emp-extra-col">Emergency Country</th><th class="emp-extra-col">Attachments</th><th class="emp-extra-col">Last Updated</th>
+              <th>Actions</th>
+            </tr></thead>
+            <tbody id="employeeRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="employeeEditor" class="panel hidden">
+        <div class="toolbar" style="justify-content:space-between">
+          <h3 id="employeeEditorTitle" style="margin:0">Add Employee</h3>
+          <button id="closeEditorBtn" class="btn light">Close</button>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="personal">Employee Information</button>
+          <button class="tab" data-tab="employment">Employment</button>
+          <button class="tab" data-tab="documents">Documents</button>
+          
+          <button class="tab" data-tab="emergency">Emergency Contact</button>
+          <button class="tab" data-tab="attachments">Attachments</button>
+        </div>
+
+        <div id="tab-personal" class="tab-panel active">
+          <div class="section-title">1. Personal Information</div>
+          <div class="formgrid">
+            <div class="field"><label>Employee Code</label><input id="fEmployeeCode"></div>
+            <div class="field"><label>Employee Name</label><input id="fEmployeeName"></div>
+            <div class="field"><label>Employee Name in Arabic</label><input id="fEmployeeNameArabic"></div>
+            <div class="field"><label>Unified Number</label><input id="fUnifiedNumber"></div>
+            <div class="field"><label>Actual Designation</label><select id="fActualDesignation"></select></div>
+            <div class="field"><label>Nationality</label><select id="fNationality"></select></div>
+            <div class="field"><label>Gender</label><select id="fGender"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
+            <div class="field"><label>Date of Birth</label><input id="fDOB" type="date"></div>
+            <div class="field"><label>Marital Status</label><select id="fMaritalStatus"><option value="">Select</option><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select></div>
+            <div class="field"><label>Mobile</label><input id="fMobile"></div>
+            <div class="field"><label>Photo</label><input id="fPhoto" type="file" accept="image/*"></div>
+            <div class="field"><label>Photo Preview</label><div class="photo-box"><img id="photoPreview" class="photo-preview" alt=""><button type="button" id="clearPhotoBtn" class="btn light">Clear</button></div></div>
+          </div>
+        </div>
+
+        <div id="tab-employment" class="tab-panel">
+          <div class="section-title">2. Employment Information</div>
+          <div class="formgrid">
+            <div class="field"><label>Company</label><select id="fCompany"></select></div>
+            <div class="field"><label>Designation as per ID Card</label><select id="fIdDesignation"></select></div>
+            <div class="field"><label>Line Manager / Approving Manager</label><input id="fLineManager" placeholder="Enter manager name"></div>
+            <div class="field"><label>Joining Date</label><input id="fJoiningDate" type="date"></div>
+            <div class="field"><label>Employee Status</label><select id="fEmployeeStatus"><option>Active</option><option>Inactive</option></select></div>
+          </div>
+          <div id="inactiveReasonBox" class="status-reason">
+            <div class="formgrid two">
+              <div class="field"><label>Inactive Reason</label><input id="fInactiveReason" placeholder="Reason for inactivation"></div>
+              <div class="field"><label>Inactive Date</label><input id="fInactiveDate" type="date"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-documents" class="tab-panel">
+          <div class="section-title">3. UAE Documents</div>
+          <div class="note">Document Type fixed nahi hai. Masters → Document Types se list aati hai. Actual PDF/image database mein store nahi hogi; yahan sirf Document URL save hoga.</div>
+          <button id="addDocumentBtn" class="btn orange" type="button">+ Add Document</button>
+          <div id="documentsEditor"></div>
+        </div>
+
+        <div id="tab-emergency" class="tab-panel">
+          <div class="section-title">Emergency Contact</div>
+          <div class="formgrid">
+            <div class="field"><label>Contact Name</label><input id="fEmergencyName"></div>
+            <div class="field"><label>Relationship</label><input id="fEmergencyRelationship"></div>
+            <div class="field"><label>Mobile</label><input id="fEmergencyMobile"></div>
+            <div class="field"><label>Country</label><input id="fEmergencyCountry"></div>
+          </div>
+        </div>
+
+        <div id="tab-attachments" class="tab-panel">
+          <div class="section-title">Attachments</div>
+          <div class="formgrid two">
+            <div class="field"><label>Attachment Name</label><input id="fAttachmentName" placeholder="e.g. CV, Certificate, Offer Letter"></div>
+            <div class="field"><label>Upload File</label><input id="fAttachmentFile" type="file"></div>
+          </div>
+          <button id="addAttachmentBtn" type="button" class="btn orange">+ Add Attachment</button>
+          <div id="attachmentList" class="attach-list" style="margin-top:12px"></div>
+        </div>
+
+        <div class="save-bar">
+          <div class="toolbar">
+            <button id="saveEmployeeBtn" class="btn green">Save Employee</button>
+            <button id="cancelEmployeeBtn" class="btn light">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+<section id="masters" class="page">
+  <div class="panel">
+    <div class="toolbar" style="justify-content:space-between">
+      <div>
+        <h3 style="margin:0">Master Management</h3>
+        <div class="small">Create and manage your dropdown lists easily — no coding required.</div>
+      </div>
+      <button id="createMasterBtn" class="btn orange">+ Create New Master</button>
+    </div>
+
+    <div class="note">
+      <b>How it works:</b> Create a Master, assign it to a dropdown field, then add items.
+      Example: Master Name = Nationality → Assign To Field = Nationality → Items = Pakistani, Indian, Nepali.
+    </div>
+
+    <div id="masterBuilderForm" class="panel hidden" style="background:#fbfdff">
+      <h3>Create / Edit Master</h3>
+      <div class="formgrid">
+        <div class="field">
+          <label>Master Name</label>
+          <input id="builderMasterName" placeholder="e.g. Nationality">
+        </div>
+        <div class="field">
+          <label>Assign To Field</label>
+          <select id="builderAssignField">
+            <option value="">Select field</option>
+            <option value="actualDesignation">Actual Designation</option>
+            <option value="idDesignation">Designation as per ID Card</option>
+            <option value="nationality">Nationality</option>
+            <option value="company">Company</option>
+            <option value="documentType">Document Type</option>
+          </select>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button id="saveMasterBtn" class="btn green">Save Master</button>
+        <button id="cancelMasterBtn" class="btn light">Cancel</button>
+      </div>
+    </div>
+
+    <div id="masterCards" class="master-grid"></div>
+  </div>
+</section>
+
+  </main>
+</div>
+
+<div id="employeeProfileModal" class="profile-modal hidden">
+  <div class="profile-shell">
+    <div class="profile-head">
+      <div class="profile-person">
+        <div id="profilePhotoWrap"></div>
+        <div>
+          <div id="profileEmployeeName" class="profile-name">Employee Profile</div>
+          <div id="profileEmployeeMeta" class="profile-meta"></div>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button id="profileJoiningFormBtn" class="btn orange">🖨 Print Joining Form</button>
+        <button id="profileEditBtn" class="btn">Edit Employee</button>
+        <button id="profileCloseBtn" class="btn light">Close</button>
+      </div>
+    </div>
+    <div class="profile-tabs">
+      <button class="profile-tab active" data-profile-tab="overview">Overview</button>
+      <button class="profile-tab" data-profile-tab="employment">Employment</button>
+      <button class="profile-tab" data-profile-tab="documents">Documents</button>
+      <button class="profile-tab" data-profile-tab="emergency">Emergency Contact</button>
+      <button class="profile-tab" data-profile-tab="attachments">Attachments</button>
+      <button class="profile-tab" data-profile-tab="history">History</button>
+    </div>
+    <div class="profile-body">
+      <div id="profile-overview" class="profile-panel active"></div>
+      <div id="profile-employment" class="profile-panel"></div>
+      <div id="profile-documents" class="profile-panel"></div>
+      <div id="profile-emergency" class="profile-panel"></div>
+      <div id="profile-attachments" class="profile-panel"></div>
+      <div id="profile-history" class="profile-panel"></div>
+    </div>
+  </div>
+</div>
+
+<div id="exportEmployeeModal" class="profile-modal hidden">
+ <div class="profile-shell" style="max-width:780px">
+  <div class="profile-head"><div><div class="profile-name">Export Employee List</div><div class="profile-meta">Select the cells/columns you want to export.</div></div><button id="closeExportEmployeeModal" class="btn light">Close</button></div>
+  <div class="profile-body">
+   <div style="display:flex;gap:8px;margin-bottom:12px"><button id="selectAllExportCols" class="btn light">Select All</button><button id="clearAllExportCols" class="btn light">Clear All</button></div>
+   <div id="exportColumnChoices" style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px"></div>
+   <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button id="exportSelectedExcel" class="btn">Export Excel</button><button id="exportSelectedPdf" class="btn orange">Export PDF</button></div>
+  </div>
+ </div>
+</div>
+
+<div id="followupDrawer" class="followup-drawer hidden">
+  <div class="followup-sheet">
+    <div class="followup-sheet-head">
+      <div>
+        <div id="followupDrawerTitle" class="followup-sheet-title">Update Follow-up</div>
+        <div id="followupDrawerSub" class="followup-sheet-sub"></div>
+      </div>
+      <button id="closeFollowupDrawer" class="btn light" type="button">Close</button>
+    </div>
+    <div class="followup-sheet-grid">
+      <div class="field">
+        <label>Follow-up Status</label>
+        <select id="drawerFollowupStatus">
+          <option>Pending</option>
+          <option>Contacted</option>
+          <option>Renewal In Process</option>
+          <option>Completed</option>
+          <option>On Hold</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Next Follow-up Date</label>
+        <input id="drawerFollowupDate" type="date">
+      </div>
+      <div class="field full">
+        <label>Remarks</label>
+        <textarea id="drawerFollowupRemarks" rows="3" placeholder="e.g. employee informed / renewal submitted"></textarea>
+      </div>
+    </div>
+    <div class="followup-sheet-actions">
+      <button id="cancelFollowupDrawer" class="btn light" type="button">Cancel</button>
+      <button id="saveFollowupDrawer" class="btn orange" type="button">Save Follow-up</button>
+    </div>
+  </div>
+</div>
+
+<div id="bulkUploadModal" class="profile-modal hidden">
+  <div class="profile-shell" style="max-width:760px">
+    <div class="profile-head">
+      <div>
+        <div class="profile-name">Bulk Upload Employees</div>
+        <div class="profile-meta">Step 1: sample Excel download karein. Step 2: usi sheet mein employee data fill karke upload karein.</div>
+      </div>
+      <button id="closeBulkUploadModal" class="btn light" type="button">Close</button>
+    </div>
+    <div class="profile-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="doc-card" style="margin:0">
+          <div class="section-title" style="margin-top:0">1. Download Sample Excel</div>
+          <div class="small" style="line-height:1.6;margin-bottom:14px">Template mein employee list ke required aur common fields already columns ki form mein diye gaye hain. Example row ko replace karke apna data fill karein.</div>
+          <button id="downloadBulkTemplateBtn" class="btn orange" type="button">Download Sample Excel</button>
+        </div>
+        <div class="doc-card" style="margin:0">
+          <div class="section-title" style="margin-top:0">2. Upload Filled Excel</div>
+          <div class="small" style="line-height:1.6;margin-bottom:14px">Filled sample file select karein. Employee Code aur Employee Name required hain. Duplicate Employee Code skip hoga.</div>
+          <button id="chooseBulkUploadBtn" class="btn" type="button">Choose Filled Excel</button>
+        </div>
+      </div>
+      <div class="note" style="margin-top:16px;margin-bottom:0">
+        <b>Important:</b> Download ki hui <b>.xls</b> sample ko Excel mein open karke fill karein aur same Excel 2003 XML / .xls format mein save karein. CSV bhi upload ki ja sakti hai.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+(() => {
+  "use strict";
+
+  const ADMIN_EMAIL = "admin@civilmastergm.com";
+  const ADMIN_PASSWORD = "Civil123@2024";
+  const DATA_KEY = "cm_employee_portal_v3";
+  const SESSION_KEY = "cm_logged_in_v3";
+  const $ = id => document.getElementById(id);
+
+  const freshData = () => ({
+    masters:[],
+    employees:[]
+  });
+
+  const BACKUP_KEY = DATA_KEY + "_backup";
+
+  function parseStored(raw){
+    if(!raw) return null;
+    try{
+      const obj=JSON.parse(raw);
+      if(!obj || typeof obj!=="object") return null;
+      if(!Array.isArray(obj.employees)) obj.employees=[];
+      if(!Array.isArray(obj.masters)) obj.masters=[];
+      return obj;
+    }catch(err){ return null; }
+  }
+
+  function loadDataSafely(){
+    const main=parseStored(localStorage.getItem(DATA_KEY));
+    const backup=parseStored(localStorage.getItem(BACKUP_KEY));
+    // Never replace a populated backup with an empty/corrupt main store.
+    if(main && (main.employees.length || main.masters.length)) return main;
+    if(backup && (backup.employees.length || backup.masters.length)){
+      try{ localStorage.setItem(DATA_KEY,JSON.stringify(backup)); }catch(err){}
+      return backup;
+    }
+    return main || backup || freshData();
+  }
+
+  let data = loadDataSafely();
+
+  if(!Array.isArray(data.masters)){
+    const old=data.masters||{};
+    data.masters=[
+      {name:"Document Types",assignField:"documentType",items:old.documentTypes||[]},
+      {name:"Actual Designations",assignField:"actualDesignation",items:old.actualDesignations||[]},
+      {name:"ID Card Designations",assignField:"idDesignation",items:old.idDesignations||[]},
+      {name:"Nationalities",assignField:"nationality",items:old.nationalities||[]},
+      {name:"Companies",assignField:"company",items:old.companies||[]},
+      {name:"Sites",assignField:"currentSite",items:old.sites||[]}
+    ].filter(m=>m.items.length);
+    localStorage.setItem(DATA_KEY,JSON.stringify(data));
+  }
+
+  let editingIndex = null;
+  let workingDocuments = [];
+  let workingAttachments = [];
+  let workingPhoto = "";
+
+  function saveData(){
+    try{
+      const previous=localStorage.getItem(DATA_KEY);
+      if(previous){
+        const previousObj=parseStored(previous);
+        if(previousObj && (previousObj.employees.length || previousObj.masters.length)){
+          localStorage.setItem(BACKUP_KEY, previous);
+        }
+      }
+      data._savedAt=new Date().toISOString();
+      localStorage.setItem(DATA_KEY, JSON.stringify(data));
+      renderAll();
+      return true;
+    }catch(err){
+      console.error("Save failed",err);
+      alert("Data save nahi hua. Browser storage full/block ho sakti hai. Employee data ko close nahi kiya gaya. Export Backup use karein, ya permanent storage ke liye PostgreSQL backend use karein.");
+      return false;
+    }
+  }
+
+  function esc(v){
+    return String(v ?? "").replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+  }
+
+  function fileToDataURL(file, cb){
+    if(!file) return cb("");
+    const r = new FileReader();
+    r.onload = () => cb(r.result);
+    r.readAsDataURL(file);
+  }
+
+  function openApp(){
+    $("loginView").classList.add("hidden");
+    $("appView").classList.remove("hidden");
+    sessionStorage.setItem(SESSION_KEY,"1");
+    renderAll();
+  }
+  function closeApp(){
+    $("appView").classList.add("hidden");
+    $("loginView").classList.remove("hidden");
+    sessionStorage.removeItem(SESSION_KEY);
+  }
+  async function doLogin(){
+    const loginId=$("loginEmail").value.trim().toLowerCase(), p=$("loginPassword").value;
+    const e=loginId.includes("@")?loginId:(loginId?loginId+"@civilmaster.local":"");
+    $("loginMessage").textContent="";
+
+    // LOCAL BROWSER LOGIN ONLY
+    if(e===ADMIN_EMAIL && p===ADMIN_PASSWORD){
+      if($("keepSignedIn").checked) localStorage.setItem(SESSION_KEY,"1");
+      else localStorage.removeItem(SESSION_KEY);
+
+      sessionStorage.setItem(SESSION_KEY,"1");
+
+      if($("rememberMe").checked) localStorage.setItem("cm_saved_email",loginId);
+      else localStorage.removeItem("cm_saved_email");
+
+      openApp();
+    }else{
+      $("loginMessage").textContent="Invalid email or password.";
+    }
+  }
+
+  $("loginButton").addEventListener("click",doLogin);
+  $("loginEmail").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+  $("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+  $("eyeBtn").addEventListener("click",()=>{const p=$("loginPassword");p.type=p.type==="password"?"text":"password";$("eyeBtn").textContent=p.type==="password"?"👁️":"🙈"});
+  $("logoutButton").addEventListener("click",()=>{
+    closeApp();
+    localStorage.removeItem(SESSION_KEY);
+    location.reload();
+  });
+
+  document.querySelectorAll(".navbtn[data-page]").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    $(btn.dataset.page).classList.add("active");
+    document.querySelectorAll(".navbtn[data-page]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    $("pageTitle").textContent=btn.dataset.page==="dashboard"?"Employee Portal":btn.dataset.page==="employees"?"Employees":"Masters";
+  }));
+
+  document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    $("tab-"+btn.dataset.tab).classList.add("active");
+  }));
+
+  function fillSelect(id,arr,label){
+    $(id).innerHTML='<option value="">'+esc(label)+'</option>'+arr.map(v=>'<option>'+esc(v)+'</option>').join("");
+  }
+
+  
+
+  
+
+  
+
+
+  function getMasterItems(field){
+    const m=(data.masters||[]).find(x=>x.assignField===field);
+    return m ? (m.items||[]) : [];
+  }
+
+  let editingMasterIndex = null;
+
+  function renderMasters(){
+    const cards=$("masterCards");
+    if(!cards) return;
+    const masters=data.masters||[];
+    if(!masters.length){
+      cards.innerHTML='<div class="empty">No masters created yet. Click <b>+ Create New Master</b>.</div>';
+      return;
+    }
+    cards.innerHTML=masters.map((m,i)=>`
+      <div class="master-card">
+        <div class="toolbar" style="justify-content:space-between;margin-bottom:8px">
+          <div>
+            <h4>${esc(m.name)}</h4>
+            <div class="small">Assigned to: ${esc(fieldLabel(m.assignField))}</div>
+          </div>
+          <div>
+            <button class="btn light" data-edit-master="${i}">Edit</button>
+            <button class="btn danger" data-delete-master="${i}">Delete</button>
+          </div>
+        </div>
+        <div class="inline">
+          <input data-master-item-input="${i}" placeholder="Add item">
+          <button class="btn orange" data-add-master-item="${i}">Add</button>
+        </div>
+        <div class="tags">
+          ${(m.items||[]).map((v,j)=>`<span class="tag">${esc(v)} <button data-delete-master-item="${i}" data-item-index="${j}">×</button></span>`).join("")}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function fieldLabel(v){
+    return ({
+      actualDesignation:"Actual Designation",
+      idDesignation:"Designation as per ID Card",
+      nationality:"Nationality",
+      company:"Company",
+      currentSite:"Current Site",
+      documentType:"Document Type"
+    })[v] || v || "-";
+  }
+
+  function openMasterBuilder(index=null){
+    editingMasterIndex=index;
+    $("masterBuilderForm").classList.remove("hidden");
+    if(index===null){
+      $("builderMasterName").value="";
+      $("builderAssignField").value="";
+    }else{
+      const m=data.masters[index];
+      $("builderMasterName").value=m.name||"";
+      $("builderAssignField").value=m.assignField||"";
+    }
+  }
+
+  function closeMasterBuilder(){
+    editingMasterIndex=null;
+    $("masterBuilderForm").classList.add("hidden");
+  }
+
+  $("createMasterBtn").addEventListener("click",()=>openMasterBuilder(null));
+  $("cancelMasterBtn").addEventListener("click",closeMasterBuilder);
+
+  $("saveMasterBtn").addEventListener("click",()=>{
+    const name=$("builderMasterName").value.trim();
+    const assignField=$("builderAssignField").value;
+    if(!name || !assignField) return alert("Master Name and Assign To Field are required.");
+
+    const conflict=(data.masters||[]).findIndex((m,i)=>i!==editingMasterIndex && m.assignField===assignField);
+    if(conflict>=0) return alert("A master is already assigned to this field.");
+
+    if(editingMasterIndex===null){
+      data.masters.push({name,assignField,items:[]});
+    }else{
+      data.masters[editingMasterIndex].name=name;
+      data.masters[editingMasterIndex].assignField=assignField;
+    }
+    saveData();
+    closeMasterBuilder();
+  });
+
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.editMaster!==undefined){
+      openMasterBuilder(Number(e.target.dataset.editMaster));
+    }
+    if(e.target.dataset.deleteMaster!==undefined){
+      const i=Number(e.target.dataset.deleteMaster);
+      if(confirm("Delete this master and all its items?")){
+        data.masters.splice(i,1);
+        saveData();
+      }
+    }
+    if(e.target.dataset.addMasterItem!==undefined){
+      const i=Number(e.target.dataset.addMasterItem);
+      const input=document.querySelector(`[data-master-item-input="${i}"]`);
+      const value=input?.value.trim();
+      if(!value) return alert("Please enter an item.");
+      const items=data.masters[i].items||(data.masters[i].items=[]);
+      if(items.some(v=>v.toLowerCase()===value.toLowerCase())) return alert("This item already exists.");
+      items.push(value);
+      saveData();
+    }
+    if(e.target.dataset.deleteMasterItem!==undefined){
+      const i=Number(e.target.dataset.deleteMasterItem);
+      const j=Number(e.target.dataset.itemIndex);
+      data.masters[i].items.splice(j,1);
+      saveData();
+    }
+  });
+
+
+  function employeeDefaults(){
+    return {
+      employeeCode:"",employeeName:"",employeeNameArabic:"",unifiedNumber:"",actualDesignation:"",nationality:"",
+      gender:"",dob:"",maritalStatus:"",mobile:"",photo:"",
+      company:"",idDesignation:"",lineManager:"",joiningDate:"",status:"Active",inactiveReason:"",inactiveDate:"",
+      documents:[],
+      emergency:{name:"",relationship:"",mobile:"",country:""},
+      attachments:[],history:[]
+    };
+  }
+
+
+  let profileEmployeeIndex = null;
+
+  function nowLabel(){
+    return new Date().toLocaleString();
+  }
+
+  function safeHistory(e){
+    if(!Array.isArray(e.history)) e.history=[];
+    return e.history;
+  }
+
+  function addHistoryEvent(e, event){
+    const history=safeHistory(e);
+    history.unshift({
+      id:String(Date.now())+Math.random().toString(16).slice(2),
+      date:nowLabel(),
+      by:"Administrator",
+      ...event
+    });
+  }
+
+  function diffEmployee(oldE,newE){
+    const changes=[];
+    const fields=[
+      ["employeeName","Employee Name"],["employeeNameArabic","Arabic Name"],["unifiedNumber","Unified Number"],
+      ["actualDesignation","Actual Designation"],
+      ["nationality","Nationality"],["gender","Gender"],["dob","DOB"],
+      ["maritalStatus","Marital Status"],["mobile","Mobile"],["company","Company"],
+      ["idDesignation","ID Card Designation"],["joiningDate","Joining Date"],
+      ["status","Employee Status"],
+      ["inactiveReason","Inactive Reason"],["inactiveDate","Inactive Date"]
+    ];
+    fields.forEach(([k,label])=>{
+      const a=String(oldE?.[k]??"");
+      const b=String(newE?.[k]??"");
+      if(a!==b) changes.push({field:label,old:a,new:b});
+    });
+    return changes;
+  }
+
+  function documentKey(d){
+    return `${String(d.type||"").toLowerCase()}|${String(d.number||"").toLowerCase()}`;
+  }
+
+  function compareDocuments(oldDocs,newDocs){
+    const events=[];
+    const usedOld=new Set();
+
+    newDocs.forEach((n,ni)=>{
+      let oi=oldDocs.findIndex((o,i)=>!usedOld.has(i) && documentKey(o)===documentKey(n));
+      if(oi<0 && n.type){
+        oi=oldDocs.findIndex((o,i)=>!usedOld.has(i) && String(o.type||"").toLowerCase()===String(n.type||"").toLowerCase());
+      }
+      if(oi<0){
+        events.push({type:"Document Added",title:`${n.type||"Document"} added`,changes:[
+          {field:"Number",old:"",new:n.number||""},
+          {field:"Issue Date",old:"",new:n.issueDate||""},
+          {field:"Expiry Date",old:"",new:n.expiryDate||""},
+          {field:"URL",old:"",new:n.url||""}
+        ]});
+        return;
+      }
+
+      usedOld.add(oi);
+      const o=oldDocs[oi];
+      const changes=[];
+      [["number","Number"],["issueDate","Issue Date"],["expiryDate","Expiry Date"],["url","Document URL"],["remarks","Remarks"]].forEach(([k,label])=>{
+        const a=String(o?.[k]??""), b=String(n?.[k]??"");
+        if(a!==b) changes.push({field:label,old:a,new:b});
+      });
+      if(changes.length){
+        const renewal = String(o.expiryDate||"") !== String(n.expiryDate||"") || String(o.number||"") !== String(n.number||"");
+        events.push({
+          type: renewal ? "Document Renewed" : "Document Updated",
+          title:`${n.type||"Document"} ${renewal?"renewed":"updated"}`,
+          changes
+        });
+      }
+    });
+
+    oldDocs.forEach((o,i)=>{
+      if(!usedOld.has(i)){
+        events.push({type:"Document Removed",title:`${o.type||"Document"} removed`,changes:[
+          {field:"Number",old:o.number||"",new:""},
+          {field:"Expiry Date",old:o.expiryDate||"",new:""}
+        ]});
+      }
+    });
+    return events;
+  }
+
+  function profileInfo(label,value){
+    return `<div class="profile-info"><small>${esc(label)}</small><b>${esc(value||"-")}</b></div>`;
+  }
+
+  function openEmployeeProfile(index){
+    profileEmployeeIndex=Number(index);
+    const e=data.employees[profileEmployeeIndex];
+    if(!e) return;
+
+    $("employeeProfileModal").classList.remove("hidden");
+    $("profileEmployeeName").textContent=e.employeeName||"Employee Profile";
+    $("profileEmployeeMeta").textContent=[e.employeeCode,e.actualDesignation,e.status].filter(Boolean).join(" · ");
+
+    $("profilePhotoWrap").innerHTML=e.photo
+      ? `<img class="profile-photo" src="${e.photo}" alt="Employee Photo">`
+      : `<div class="profile-photo placeholder">👤</div>`;
+
+    $("profile-overview").innerHTML=`
+      <div class="profile-section-title">Personal Information</div>
+      <div class="profile-grid">
+        ${profileInfo("Employee Code",e.employeeCode)}
+        ${profileInfo("Employee Name",e.employeeName)}
+        ${profileInfo("Employee Name in Arabic",e.employeeNameArabic)}
+        ${profileInfo("Unified Number",e.unifiedNumber)}
+        ${profileInfo("Actual Designation",e.actualDesignation)}
+        ${profileInfo("Nationality",e.nationality)}
+        ${profileInfo("Gender",e.gender)}
+        ${profileInfo("Date of Birth",e.dob)}
+        ${profileInfo("Marital Status",e.maritalStatus)}
+        ${profileInfo("Mobile",e.mobile)}
+      </div>`;
+
+    $("profile-employment").innerHTML=`
+      <div class="profile-section-title">Employment Information</div>
+      <div class="profile-grid">
+        ${profileInfo("Company",e.company)}
+        ${profileInfo("Designation as per ID Card",e.idDesignation)}
+        ${profileInfo("Line Manager / Approving Manager",e.lineManager)}
+        ${profileInfo("Joining Date",e.joiningDate)}
+        ${profileInfo("Employee Status",e.status)}
+        ${profileInfo("Inactive Reason",e.inactiveReason)}
+        ${profileInfo("Inactive Date",e.inactiveDate)}
+      </div>`;
+
+    const docs=e.documents||[];
+    $("profile-documents").innerHTML=docs.length?`
+      <div class="profile-section-title">Documents</div>
+      ${docs.map(d=>`
+        <div class="profile-doc">
+          <div class="profile-doc-head">
+            <b>${esc(d.type||"Document")}</b>
+            ${d.url?`<a class="btn light" href="${esc(d.url)}" target="_blank" rel="noopener">Open Document</a>`:""}
+          </div>
+          <div class="profile-doc-meta">
+            <div>Number<b>${esc(d.number||"-")}</b></div>
+            <div>Issue Date<b>${esc(d.issueDate||"-")}</b></div>
+            <div>Expiry Date<b>${esc(d.expiryDate||"-")}</b></div>
+            <div>Document URL<b>${d.url?esc(d.url):"-"}</b></div>
+          </div>
+        </div>`).join("")}`:'<div class="empty-history">No documents added.</div>';
+
+    $("profile-emergency").innerHTML=`
+      <div class="profile-section-title">Emergency Contact</div>
+      <div class="profile-grid">
+        ${profileInfo("Contact Name",e.emergency?.name)}
+        ${profileInfo("Relationship",e.emergency?.relationship)}
+        ${profileInfo("Mobile",e.emergency?.mobile)}
+        ${profileInfo("Country",e.emergency?.country)}
+      </div>`;
+
+    const atts=e.attachments||[];
+    $("profile-attachments").innerHTML=atts.length?`
+      <div class="profile-section-title">Attachments</div>
+      ${atts.map(a=>`<div class="attach-item"><div><b>${esc(a.name)}</b><div class="small">${esc(a.fileName||"")}</div></div></div>`).join("")}`
+      :'<div class="empty-history">No attachments added.</div>';
+
+    renderProfileHistory(e);
+
+    document.querySelectorAll(".profile-tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".profile-panel").forEach(p=>p.classList.remove("active"));
+    document.querySelector('.profile-tab[data-profile-tab="overview"]').classList.add("active");
+    $("profile-overview").classList.add("active");
+  }
+
+  function renderProfileHistory(e){
+    const h=safeHistory(e);
+    $("profile-history").innerHTML=`
+      <div class="profile-section-title">Employee Audit History</div>
+      ${h.length?`<div class="history-timeline">${h.map(item=>`
+        <div class="history-item">
+          <div class="history-title">${esc(item.title||item.type||"Update")}</div>
+          <div class="history-meta">${esc(item.date||"")} · ${esc(item.by||"Administrator")}</div>
+          ${(item.changes||[]).length?`<div class="history-change">${item.changes.map(c=>`
+            <div><b>${esc(c.field)}:</b> <span class="history-old">${esc(c.old||"-")}</span> → <span class="history-new">${esc(c.new||"-")}</span></div>
+          `).join("")}</div>`:""}
+        </div>`).join("")}</div>`:'<div class="empty-history">No history yet.</div>'}`;
+  }
+
+  document.querySelectorAll(".profile-tab").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll(".profile-tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".profile-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    $("profile-"+btn.dataset.profileTab).classList.add("active");
+  }));
+
+  $("profileCloseBtn").addEventListener("click",()=>$("employeeProfileModal").classList.add("hidden"));
+  $("employeeProfileModal").addEventListener("click",e=>{
+    if(e.target===$("employeeProfileModal")) $("employeeProfileModal").classList.add("hidden");
+  });
+  $("profileEditBtn").addEventListener("click",()=>{
+    if(profileEmployeeIndex===null) return;
+
+    const editIndex=profileEmployeeIndex;
+    $("employeeProfileModal").classList.add("hidden");
+
+    // Always switch to Employees page before opening the editor.
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    $("employees").classList.add("active");
+
+    document.querySelectorAll(".navbtn[data-page]").forEach(b=>b.classList.remove("active"));
+    const employeeNav=document.querySelector('.navbtn[data-page="employees"]');
+    if(employeeNav) employeeNav.classList.add("active");
+
+    $("pageTitle").textContent="Employees";
+
+    // Open the exact employee selected in the profile.
+    openEditor(editIndex);
+
+    // Ensure editor is visible even if an older inline style was left behind.
+    const editor=$("employeeEditor");
+    if(editor){
+      editor.classList.remove("hidden");
+      editor.style.display="block";
+      setTimeout(()=>editor.scrollIntoView({behavior:"smooth",block:"start"}),50);
+    }
+  });
+
+
+  function joiningFormDate(value){
+    if(!value) return "";
+    const raw=String(value).trim();
+    const m=raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m?`${m[3]}-${m[2]}-${m[1]}`:raw;
+  }
+
+  function joiningDoc(e,keywords){
+    const keys=keywords.map(x=>x.toLowerCase());
+    return (e.documents||[]).find(d=>{
+      const t=String(d.type||"").toLowerCase();
+      return keys.some(k=>t.includes(k));
+    })||null;
+  }
+
+  function printEmployeeJoiningForm(index){
+    const e=data.employees[Number(index)];
+    if(!e) return alert("Employee record not found.");
+    const passport=joiningDoc(e,["passport"]);
+    const visa=joiningDoc(e,["visa","residence"]);
+    const eid=joiningDoc(e,["emirates","id card"]);
+    const contract=joiningDoc(e,["contract","employment contract"]);
+    const medical=joiningDoc(e,["medical"]);
+    const yesNo=(ok)=>ok?'<span class="checked">☑ Yes</span> &nbsp; ☐ No':'☐ Yes &nbsp; ☐ No';
+    const val=(v)=>esc(v||"");
+    const w=window.open("","_blank","width=1000,height=800");
+    if(!w) return alert("Please allow pop-ups to print the Joining Form.");
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Joining Form - ${val(e.employeeCode)} - ${val(e.employeeName)}</title>
+<style>
+@page{size:A4;margin:10mm 12mm}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#263f56;background:#fff;font-size:11px}.page{min-height:277mm;position:relative;padding-bottom:13mm;page-break-after:always}.page:last-child{page-break-after:auto}.header{display:grid;grid-template-columns:1fr 170px;gap:20px;align-items:start}.brand{font-family:Georgia,serif;font-size:30px;font-weight:800;color:#173a5c;letter-spacing:.5px}.sub{font-family:Georgia,serif;color:#71859a;font-weight:700;margin-top:8px}.badge{background:#f4a261;color:#fff;text-align:center;padding:20px 8px;font-family:Georgia,serif;font-size:15px;font-weight:700;line-height:1.5}.title{text-align:center;font-family:Georgia,serif;font-size:24px;font-weight:800;color:#173a5c;margin:12px 0 14px}.accent{height:9px;background:linear-gradient(90deg,#5f91d4 0 80%,#f4a261 80%);margin-bottom:18px}.section{background:#5f91d4;color:#fff;font-family:Georgia,serif;font-size:14px;font-weight:800;padding:9px 10px;margin:0 0 12px}.info{width:100%;border-collapse:collapse;margin-bottom:16px;table-layout:fixed}.info td{border:1px solid #cbd8e6;padding:9px 8px;height:35px;vertical-align:middle}.info td.label{background:#f7f9fc;color:#71859a;font-family:Georgia,serif;font-weight:700;width:25%}.info td.value{width:25%;font-weight:700;color:#263f56}.declaration{font-family:Georgia,serif;font-size:11.5px;line-height:1.45;margin:0 0 12px}.sign{width:100%;border-collapse:collapse;table-layout:fixed}.sign th,.sign td{border:1px solid #cbd8e6;padding:8px}.sign th{background:#edf5ff;color:#173a5c;font-family:Georgia,serif;font-size:12px}.sign td{height:90px;line-height:2.1}.check{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:16px}.check th,.check td{border:1px solid #cbd8e6;padding:6px 8px}.check th{background:#173a5c;color:#fff;font-family:Georgia,serif;text-align:left}.check th:nth-child(2){text-align:center}.check td:nth-child(2){text-align:center;width:28%}.check tr:nth-child(even) td{background:#fafcfe}.checked{font-weight:700;color:#2f8158}.remarks{border:1px solid #cbd8e6;padding:12px;margin:14px 0 18px;min-height:48px}.footer{position:absolute;bottom:0;left:0;right:0;text-align:center;color:#71859a;font-family:Georgia,serif;font-size:9px}.printbar{position:fixed;right:20px;top:20px;z-index:5}.printbar button{border:0;border-radius:8px;padding:10px 16px;background:#173a5c;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 14px #0002}@media print{.printbar{display:none}.page{min-height:277mm}}
+</style></head><body><div class="printbar"><button onclick="window.print()">Print / Save PDF</button></div>
+<div class="page">
+<div class="header"><div><div class="brand">CIVIL MASTER</div><div class="sub">GENERAL MAINTENANCE LLC - OPC</div></div><div class="badge">EMPLOYEE<br>JOINING</div></div>
+<div class="title">EMPLOYEE JOINING FORM</div><div class="accent"></div>
+<div class="section">EMPLOYEE INFORMATION</div>
+<table class="info">
+<tr><td class="label">Employee Code</td><td class="value">${val(e.employeeCode)}</td><td class="label">Employee Name</td><td class="value">${val(e.employeeName)}</td></tr>
+<tr><td class="label">Name in Arabic</td><td class="value" dir="rtl">${val(e.employeeNameArabic)}</td><td class="label">Nationality</td><td class="value">${val(e.nationality)}</td></tr>
+<tr><td class="label">Date of Birth</td><td class="value">${joiningFormDate(e.dob)}</td><td class="label">Gender</td><td class="value">${val(e.gender)}</td></tr>
+<tr><td class="label">Mobile No.</td><td class="value">${val(e.mobile)}</td><td class="label">Marital Status</td><td class="value">${val(e.maritalStatus)}</td></tr>
+<tr><td class="label">Designation</td><td class="value">${val(e.actualDesignation)}</td><td class="label">Unified Number</td><td class="value">${val(e.unifiedNumber)}</td></tr>
+<tr><td class="label">Company</td><td class="value">${val(e.company||"Civil Master General Maintenance LLC - OPC")}</td><td class="label">Joining Date</td><td class="value">${joiningFormDate(e.joiningDate)}</td></tr>
+</table>
+<div class="section">EMERGENCY CONTACT</div>
+<table class="info"><tr><td class="label">Contact Person</td><td class="value">${val(e.emergency?.name)}</td><td class="label">Relationship</td><td class="value">${val(e.emergency?.relationship)}</td></tr><tr><td class="label">Mobile Number</td><td class="value">${val(e.emergency?.mobile)}</td><td class="label">Country</td><td class="value">${val(e.emergency?.country)}</td></tr></table>
+<div class="section">JOINING DECLARATION</div><p class="declaration">I confirm that I have joined Civil Master General Maintenance LLC - OPC on the joining date stated above. I confirm that the information and documents provided by me are correct. I agree to comply with the company's policies, procedures, safety requirements and lawful instructions applicable to my employment.</p>
+<table class="sign"><tr><th>EMPLOYEE</th><th>HR / ADMINISTRATION</th><th>AUTHORIZED SIGNATORY</th></tr><tr><td>Name: ${val(e.employeeName)}<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Company Stamp: ______________</td></tr></table>
+<div class="footer">Civil Master General Maintenance LLC - OPC &nbsp; | &nbsp; Employee Joining Record</div></div>
+
+
+</body></html>`);
+    w.document.close();
+    w.focus();
+  }
+
+  $("profileJoiningFormBtn").addEventListener("click",()=>{
+    if(profileEmployeeIndex===null) return;
+    printEmployeeJoiningForm(profileEmployeeIndex);
+  });
+
+
+  function openEditor(index=null){
+    if(index!==null && (!Number.isInteger(Number(index)) || !data.employees[Number(index)])){
+      alert("Employee record could not be found. Please refresh the employee list.");
+      return;
+    }
+
+    editingIndex=index===null?null:Number(index);
+    const e=editingIndex===null?employeeDefaults():JSON.parse(JSON.stringify(data.employees[editingIndex]));
+    $("employeeEditorTitle").textContent=editingIndex===null?"Add Employee":"Edit Employee";
+    $("employeeEditor").classList.remove("hidden");
+    $("employeeEditor").style.display="block";
+
+    $("fEmployeeCode").value=e.employeeCode||"";
+    $("fEmployeeName").value=e.employeeName||"";
+    $("fEmployeeNameArabic").value=e.employeeNameArabic||"";
+    $("fUnifiedNumber").value=e.unifiedNumber||"";
+    $("fActualDesignation").value=e.actualDesignation||"";
+    $("fNationality").value=e.nationality||"";
+    $("fGender").value=e.gender||"";
+    $("fDOB").value=e.dob||"";
+    $("fMaritalStatus").value=e.maritalStatus||"";
+    $("fMobile").value=e.mobile||"";
+    workingPhoto=e.photo||"";
+    $("photoPreview").src=workingPhoto||"";
+
+    $("fCompany").value=e.company||"";
+    $("fIdDesignation").value=e.idDesignation||"";
+    $("fLineManager").value=e.lineManager||"";
+    $("fJoiningDate").value=e.joiningDate||"";
+    $("fEmployeeStatus").value=e.status||"Active";
+    $("fInactiveReason").value=e.inactiveReason||"";
+    $("fInactiveDate").value=e.inactiveDate||"";
+    updateInactiveBox();
+
+    workingDocuments=e.documents||[];
+    workingAttachments=e.attachments||[];
+    renderDocumentEditor();
+    renderAttachmentList();
+
+
+    $("fEmergencyName").value=e.emergency?.name||"";
+    $("fEmergencyRelationship").value=e.emergency?.relationship||"";
+    $("fEmergencyMobile").value=e.emergency?.mobile||"";
+    $("fEmergencyCountry").value=e.emergency?.country||"";
+
+    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    document.querySelector('.tab[data-tab="personal"]').classList.add("active");
+    $("tab-personal").classList.add("active");
+    $("employeeEditor").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  function closeEditor(){ const ed=$("employeeEditor"); ed.classList.add("hidden"); ed.style.display=""; editingIndex=null; }
+
+  window.cmOpenNewEmployee = function(){
+    try{
+      openEditor(null);
+      const editor=$("employeeEditor");
+      if(editor){
+        editor.classList.remove("hidden");
+        editor.style.display="block";
+        setTimeout(()=>editor.scrollIntoView({behavior:"smooth",block:"start"}),50);
+      }
+    }catch(err){
+      console.error("Add Employee error:",err);
+      alert("Add Employee form could not open. Please refresh the page once.");
+    }
+  };
+
+  $("newEmployeeBtn").addEventListener("click",()=>openEditor(null));
+  $("closeEditorBtn").addEventListener("click",closeEditor);
+  $("cancelEmployeeBtn").addEventListener("click",closeEditor);
+
+  $("fEmployeeStatus").addEventListener("change",updateInactiveBox);
+  function updateInactiveBox(){
+    const inactive=$("fEmployeeStatus").value==="Inactive";
+    $("inactiveReasonBox").classList.toggle("show",inactive);
+  }
+
+  $("fPhoto").addEventListener("change",e=>fileToDataURL(e.target.files[0],url=>{workingPhoto=url;$("photoPreview").src=url||""}));
+  $("clearPhotoBtn").addEventListener("click",()=>{workingPhoto="";$("photoPreview").src="";$("fPhoto").value=""});
+
+  function addDocument(){
+    workingDocuments.push({type:"",number:"",issueDate:"",expiryDate:"",url:""});
+    renderDocumentEditor();
+  }
+  $("addDocumentBtn").addEventListener("click",addDocument);
+
+  function renderDocumentEditor(){
+    if(!workingDocuments.length){
+      $("documentsEditor").innerHTML='<div class="empty">No documents added yet.</div>';
+      return;
+    }
+    $("documentsEditor").innerHTML=workingDocuments.map((d,i)=>`
+      <div class="doc-card">
+        <div class="doc-head"><b>Document ${i+1}</b><button type="button" class="btn danger" data-remove-doc="${i}">Remove</button></div>
+        <div class="doc-grid">
+          <div class="field"><label>Document Type</label><select data-doc-field="type" data-index="${i}">${docTypeOptions(d.type)}</select></div>
+          <div class="field"><label>Number</label><input data-doc-field="number" data-index="${i}" value="${esc(d.number)}"></div>
+          <div class="field"><label>Issue Date</label><input type="date" data-doc-field="issueDate" data-index="${i}" value="${esc(d.issueDate)}"></div>
+          <div class="field"><label>Expiry Date</label><input type="date" data-doc-field="expiryDate" data-index="${i}" value="${esc(d.expiryDate)}"></div>
+          <div class="field"><label>Document URL</label><input type="url" data-doc-field="url" data-index="${i}" value="${esc(d.url||"")}" placeholder="https://..."><div class="doc-file">${d.url?`<a href="${esc(d.url)}" target="_blank" rel="noopener">Open Document</a>`:"URL not added"}</div></div>
+          <div class="field"><label>Remarks</label><input data-doc-field="remarks" data-index="${i}" value="${esc(d.remarks||"")}" placeholder="Remarks"></div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function docTypeOptions(selected){
+    return '<option value="">Select</option>'+getMasterItems("documentType").map(v=>`<option ${v===selected?"selected":""}>${esc(v)}</option>`).join("");
+  }
+
+  document.addEventListener("input",e=>{
+    const field=e.target.dataset.docField;
+    if(field!==undefined){
+      workingDocuments[Number(e.target.dataset.index)][field]=e.target.value;
+    }
+  });
+  document.addEventListener("change",e=>{
+    const field=e.target.dataset.docField;
+    if(field!==undefined){
+      workingDocuments[Number(e.target.dataset.index)][field]=e.target.value;
+    }
+    if(e.target.dataset.docFile!==undefined){
+      const i=Number(e.target.dataset.docFile), file=e.target.files[0];
+      if(!file) return;
+      fileToDataURL(file,url=>{
+        workingDocuments[i].fileName=file.name;
+        workingDocuments[i].fileData=url;
+        renderDocumentEditor();
+      });
+    }
+  });
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.removeDoc!==undefined){
+      workingDocuments.splice(Number(e.target.dataset.removeDoc),1);renderDocumentEditor();
+    }
+  });
+
+  $("addAttachmentBtn").addEventListener("click",()=>{
+    const name=$("fAttachmentName").value.trim(), file=$("fAttachmentFile").files[0];
+    if(!name || !file) return alert("Attachment name and file are required.");
+    fileToDataURL(file,url=>{
+      workingAttachments.push({name,fileName:file.name,fileData:url});
+      $("fAttachmentName").value="";$("fAttachmentFile").value="";
+      renderAttachmentList();
+    });
+  });
+
+  function renderAttachmentList(){
+    $("attachmentList").innerHTML=workingAttachments.length?workingAttachments.map((a,i)=>`
+      <div class="attach-item"><div><b>${esc(a.name)}</b><div class="small">${esc(a.fileName)}</div></div><button type="button" class="btn danger" data-remove-attachment="${i}">Remove</button></div>
+    `).join(""):'<div class="empty">No attachments added yet.</div>';
+  }
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.removeAttachment!==undefined){
+      workingAttachments.splice(Number(e.target.dataset.removeAttachment),1);renderAttachmentList();
+    }
+  });
+
+  function normalizeUniqueNumber(v){
+    return String(v||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
+  }
+
+  function documentNumberLabel(type){
+    const t=String(type||"").trim().toLowerCase();
+    if(t.includes("passport")) return "Passport Number";
+    if(t.includes("emirates") || t.includes("id card") || t==="eid" || t.includes("identity")) return "Emirates ID / ID Card Number";
+    return type ? `${type} Number` : "Document Number";
+  }
+
+  function findDuplicateUniqueNumber(code, unifiedNumber, docs){
+    const normCode=normalizeUniqueNumber(code);
+    const normUnified=normalizeUniqueNumber(unifiedNumber);
+
+    // Employee Code
+    const codeMatch=(data.employees||[]).find((emp,i)=>
+      i!==editingIndex &&
+      normCode &&
+      normalizeUniqueNumber(emp.employeeCode)===normCode
+    );
+    if(codeMatch){
+      return {
+        label:"Employee Code",
+        value:code,
+        employee:codeMatch
+      };
+    }
+
+    // Unified Number
+    if(normUnified){
+      const unifiedMatch=(data.employees||[]).find((emp,i)=>
+        i!==editingIndex &&
+        normalizeUniqueNumber(emp.unifiedNumber)===normUnified
+      );
+      if(unifiedMatch){
+        return {
+          label:"Unified Number",
+          value:unifiedNumber,
+          employee:unifiedMatch
+        };
+      }
+    }
+
+    // Duplicate document numbers inside the employee currently being entered.
+    const seen=new Map();
+    for(let i=0;i<(docs||[]).length;i++){
+      const d=docs[i]||{};
+      const n=normalizeUniqueNumber(d.number);
+      if(!n) continue;
+      if(seen.has(n)){
+        return {
+          label:documentNumberLabel(d.type),
+          value:d.number,
+          employee:null,
+          sameForm:true
+        };
+      }
+      seen.set(n,i);
+    }
+
+    // Document numbers must be unique across all employees.
+    for(const d of (docs||[])){
+      const n=normalizeUniqueNumber(d?.number);
+      if(!n) continue;
+
+      for(let i=0;i<(data.employees||[]).length;i++){
+        if(i===editingIndex) continue;
+        const emp=data.employees[i]||{};
+        const matchedDoc=(emp.documents||[]).find(oldDoc=>
+          normalizeUniqueNumber(oldDoc?.number)===n
+        );
+        if(matchedDoc){
+          return {
+            label:documentNumberLabel(d.type || matchedDoc.type),
+            value:d.number,
+            employee:emp,
+            existingType:matchedDoc.type||"Document"
+          };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  $("saveEmployeeBtn").addEventListener("click",()=>{
+    const code=$("fEmployeeCode").value.trim(), name=$("fEmployeeName").value.trim();
+    if(!code || !name) return alert("Employee Code and Employee Name are required.");
+
+    const unifiedNumber=$("fUnifiedNumber").value.trim();
+    const duplicate=findDuplicateUniqueNumber(code, unifiedNumber, workingDocuments);
+
+    if(duplicate){
+      if(duplicate.sameForm){
+        return alert(`Duplicate ${duplicate.label}: "${duplicate.value}" is entered more than once in this employee form. Please use a unique number.`);
+      }
+      const empName=duplicate.employee?.employeeName||"another employee";
+      const empCode=duplicate.employee?.employeeCode||"";
+      return alert(
+        `Duplicate ${duplicate.label}: "${duplicate.value}" already exists for ${empName}${empCode?` (${empCode})`:""}. Record cannot be saved.`
+      );
+    }
+
+    if($("fEmployeeStatus").value==="Inactive" && (!$("fInactiveReason").value.trim() || !$("fInactiveDate").value)){
+      return alert("Inactive Reason and Inactive Date are required.");
+    }
+
+    const e={
+      employeeCode:code,
+      employeeName:name,
+      employeeNameArabic:$("fEmployeeNameArabic").value.trim(),
+      unifiedNumber:unifiedNumber,
+      actualDesignation:$("fActualDesignation").value,
+      nationality:$("fNationality").value,
+      gender:$("fGender").value,
+      dob:$("fDOB").value,
+      maritalStatus:$("fMaritalStatus").value,
+      mobile:$("fMobile").value.trim(),
+      photo:workingPhoto,
+
+      company:$("fCompany").value,
+      idDesignation:$("fIdDesignation").value,
+      lineManager:$("fLineManager").value.trim(),
+      joiningDate:$("fJoiningDate").value,
+      status:$("fEmployeeStatus").value,
+      inactiveReason:$("fEmployeeStatus").value==="Inactive"?$("fInactiveReason").value.trim():"",
+      inactiveDate:$("fEmployeeStatus").value==="Inactive"?$("fInactiveDate").value:"",
+
+      documents:workingDocuments,
+      emergency:{
+        name:$("fEmergencyName").value.trim(),
+        relationship:$("fEmergencyRelationship").value.trim(),
+        mobile:$("fEmergencyMobile").value.trim(),
+        country:$("fEmergencyCountry").value.trim()
+      },
+      attachments:workingAttachments,
+      updatedAt:new Date().toISOString()
+    };
+
+    if(editingIndex===null){
+      e.history=[];
+      addHistoryEvent(e,{
+        type:"Employee Created",
+        title:"Employee profile created",
+        changes:[
+          {field:"Employee Code",old:"",new:e.employeeCode},
+          {field:"Employee Name",old:"",new:e.employeeName},
+          {field:"Status",old:"",new:e.status}
+        ]
+      });
+      (e.documents||[]).forEach(d=>{
+        addHistoryEvent(e,{
+          type:"Document Added",
+          title:`${d.type||"Document"} added`,
+          changes:[
+            {field:"Number",old:"",new:d.number||""},
+            {field:"Issue Date",old:"",new:d.issueDate||""},
+            {field:"Expiry Date",old:"",new:d.expiryDate||""},
+            {field:"Document URL",old:"",new:d.url||""}
+          ]
+        });
+      });
+      data.employees.push(e);
+    }else{
+      const oldEmployee=JSON.parse(JSON.stringify(data.employees[editingIndex]||{}));
+      e.history=Array.isArray(oldEmployee.history)?oldEmployee.history:[];
+
+      const fieldChanges=diffEmployee(oldEmployee,e);
+      if(fieldChanges.length){
+        addHistoryEvent(e,{
+          type:"Employee Updated",
+          title:"Employee information updated",
+          changes:fieldChanges
+        });
+      }
+
+      compareDocuments(oldEmployee.documents||[],e.documents||[]).forEach(event=>addHistoryEvent(e,event));
+      data.employees[editingIndex]=e;
+    }
+    if(saveData()){ closeEditor(); alert("Employee data saved successfully."); }
+  });
+
+  function uniqueEmployeeValues(key){
+    return [...new Set((data.employees||[]).map(e=>String(e?.[key]||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  }
+  function fillAdvancedEmployeeFilters(){
+    const configs=[
+      ["afActualDesignation","actualDesignation"],["afNationality","nationality"],["afCompany","company"],["afIdDesignation","idDesignation"]
+    ];
+    configs.forEach(([id,key])=>{
+      const el=$(id); if(!el) return;
+      const current=el.value;
+      el.innerHTML='<option value="">All</option>'+uniqueEmployeeValues(key).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+      if([...el.options].some(o=>o.value===current)) el.value=current;
+    });
+  }
+  function getFilteredEmployees(){
+    const q=($("employeeSearch")?.value||"").trim().toLowerCase();
+    const actual=$("afActualDesignation")?.value||"";
+    const nationality=$("afNationality")?.value||"";
+    const company=$("afCompany")?.value||"";
+    const idDes=$("afIdDesignation")?.value||"";
+    const status=$("afStatus")?.value||"";
+    const gender=$("afGender")?.value||"";
+    const joinFrom=$("afJoiningFrom")?.value||"";
+    const joinTo=$("afJoiningTo")?.value||"";
+    return (data.employees||[]).map((e,i)=>({...e,_i:i})).filter(e=>{
+      const text=[e.employeeCode,e.employeeName,e.employeeNameArabic,e.actualDesignation,e.nationality,e.company,e.idDesignation,e.mobile,e.unifiedNumber,e.status].join(" ").toLowerCase();
+      if(q && !text.includes(q)) return false;
+      if(actual && e.actualDesignation!==actual) return false;
+      if(nationality && e.nationality!==nationality) return false;
+      if(company && e.company!==company) return false;
+      if(idDes && e.idDesignation!==idDes) return false;
+      if(status && e.status!==status) return false;
+      if(gender && e.gender!==gender) return false;
+      if(joinFrom && (!e.joiningDate || e.joiningDate<joinFrom)) return false;
+      if(joinTo && (!e.joiningDate || e.joiningDate>joinTo)) return false;
+      return true;
+    });
+  }
+  function renderEmployees(){
+    fillAdvancedEmployeeFilters();
+    const rows=getFilteredEmployees();
+    const total=(data.employees||[]).length;
+    if($("employeeFilterCount")) $("employeeFilterCount").textContent=`Showing ${rows.length} of ${total} employee${total===1?"":"s"}`;
+    $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>
+      <td>${esc(e.employeeCode)}</td>
+      <td><button class="employee-link" data-view-employee="${e._i}">${esc(e.employeeName)}</button></td>
+      <td>${esc(e.actualDesignation)}</td>
+      <td>${esc(e.nationality)}</td>
+      <td>${esc(e.company)}</td>
+      <td>${esc(e.idDesignation)}</td>
+      <td>${esc(e.status)}${e.status==="Inactive"?`<div class="small">${esc(e.inactiveReason)} · ${esc(e.inactiveDate)}</div>`:""}</td>
+      <td class="emp-extra-col">${esc(e.employeeNameArabic)}</td>
+      <td class="emp-extra-col">${esc(e.unifiedNumber)}</td>
+      <td class="emp-extra-col">${esc(e.gender)}</td>
+      <td class="emp-extra-col">${esc(e.dob)}</td>
+      <td class="emp-extra-col">${esc(e.maritalStatus)}</td>
+      <td class="emp-extra-col">${esc(e.mobile)}</td>
+      <td class="emp-extra-col">${esc(e.joiningDate)}</td>
+      <td class="emp-extra-col">${esc(e.lineManager)}</td>
+      <td class="emp-extra-col">${esc(e.inactiveReason)}</td>
+      <td class="emp-extra-col">${esc(e.inactiveDate)}</td>
+      <td class="emp-extra-col">${esc(expDoc(e,"passport").number||"")}</td>
+      <td class="emp-extra-col">${esc(expDoc(e,"passport").expiryDate||"")}</td>
+      <td class="emp-extra-col">${esc(expDoc(e,"eid").number||"")}</td>
+      <td class="emp-extra-col">${esc(expDoc(e,"eid").expiryDate||"")}</td>
+      <td class="emp-extra-col">${(e.documents||[]).length}</td>
+      <td class="emp-extra-col">${esc((e.emergency||{}).name)}</td>
+      <td class="emp-extra-col">${esc((e.emergency||{}).relationship)}</td>
+      <td class="emp-extra-col">${esc((e.emergency||{}).mobile)}</td>
+      <td class="emp-extra-col">${esc((e.emergency||{}).country)}</td>
+      <td class="emp-extra-col">${(e.attachments||[]).length}</td>
+      <td class="emp-extra-col">${esc(e.updatedAt?new Date(e.updatedAt).toLocaleString():"")}</td>
+      <td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td>
+    </tr>`).join(""):'<tr><td colspan="28" class="empty">No employee records match your search / filters.</td></tr>';
+  }
+
+  // BULK EMPLOYEE UPLOAD — Sample Excel first, then upload filled sheet
+  const BULK_HEADERS=[
+    "Employee Code","Employee Name","Arabic Name","Unified Number","Actual Designation","Nationality","Gender","Date of Birth","Marital Status","Mobile",
+    "Company","ID Card Designation","Line Manager","Joining Date","Status","Inactive Reason","Inactive Date",
+    "Passport No.","Passport Issue Date","Passport Expiry","Emirates ID No.","Emirates ID Issue Date","Emirates ID Expiry",
+    "Emergency Contact","Emergency Relation","Emergency Mobile","Emergency Country"
+  ];
+
+  function parseCsv(text){
+    const rows=[]; let row=[], cell="", inQuotes=false;
+    text=String(text||"").replace(/^\uFEFF/,"");
+    for(let i=0;i<text.length;i++){
+      const ch=text[i], next=text[i+1];
+      if(ch==='"'){
+        if(inQuotes && next==='"'){ cell+='"'; i++; }
+        else inQuotes=!inQuotes;
+      }else if(ch===',' && !inQuotes){ row.push(cell.trim()); cell=""; }
+      else if((ch==='\n' || ch==='\r') && !inQuotes){
+        if(ch==='\r' && next==='\n') i++;
+        row.push(cell.trim()); cell="";
+        if(row.some(v=>v!=="")) rows.push(row);
+        row=[];
+      }else cell+=ch;
+    }
+    row.push(cell.trim());
+    if(row.some(v=>v!=="")) rows.push(row);
+    return rows;
+  }
+  function normHeader(v){ return String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,""); }
+  function csvVal(obj,...keys){
+    for(const k of keys){ const v=obj[normHeader(k)]; if(v!==undefined) return String(v).trim(); }
+    return "";
+  }
+  function makeDoc(type,number,issueDate,expiryDate){
+    if(!number && !issueDate && !expiryDate) return null;
+    return {type,number:number||"",issueDate:issueDate||"",expiryDate:expiryDate||"",url:"",followupStatus:"Pending",followupDate:"",followupRemarks:"",followupHistory:[]};
+  }
+  function rowEmployee(rowObj){
+    const code=csvVal(rowObj,"Employee Code","Code");
+    const name=csvVal(rowObj,"Employee Name","Name");
+    const docs=[];
+    const passport=makeDoc("Passport",csvVal(rowObj,"Passport No.","Passport No","Passport Number"),csvVal(rowObj,"Passport Issue Date"),csvVal(rowObj,"Passport Expiry","Passport Expiry Date"));
+    const eid=makeDoc("Emirates ID",csvVal(rowObj,"Emirates ID No.","Emirates ID No","Emirates ID Number"),csvVal(rowObj,"Emirates ID Issue Date"),csvVal(rowObj,"Emirates ID Expiry","Emirates ID Expiry Date"));
+    if(passport) docs.push(passport); if(eid) docs.push(eid);
+    return {
+      employeeCode:code, employeeName:name,
+      employeeNameArabic:csvVal(rowObj,"Employee Name Arabic","Arabic Name","Employee Name in Arabic"),
+      unifiedNumber:csvVal(rowObj,"Unified Number","Unified No","Unified No."),
+      actualDesignation:csvVal(rowObj,"Actual Designation"), nationality:csvVal(rowObj,"Nationality"), gender:csvVal(rowObj,"Gender"),
+      dob:csvVal(rowObj,"Date of Birth","DOB"), maritalStatus:csvVal(rowObj,"Marital Status"), mobile:csvVal(rowObj,"Mobile","Mobile Number"), photo:"",
+      company:csvVal(rowObj,"Company"), idDesignation:csvVal(rowObj,"ID Card Designation","Designation as per ID Card"), lineManager:csvVal(rowObj,"Line Manager","Approving Manager"), joiningDate:csvVal(rowObj,"Joining Date"),
+      status:csvVal(rowObj,"Status","Employee Status")||"Active", inactiveReason:csvVal(rowObj,"Inactive Reason"), inactiveDate:csvVal(rowObj,"Inactive Date"),
+      documents:docs,
+      emergency:{name:csvVal(rowObj,"Emergency Contact","Emergency Name"),relationship:csvVal(rowObj,"Emergency Relation","Emergency Relationship"),mobile:csvVal(rowObj,"Emergency Mobile"),country:csvVal(rowObj,"Emergency Country")},
+      attachments:[], history:[], updatedAt:new Date().toISOString()
+    };
+  }
+
+  function xmlEsc(v){ return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function downloadBulkTemplate(){
+    const example=["CM-004","Sample Employee","","","PIPE FITTER","INDIAN","Male","1990-01-15","Married","0500000000","CIVIL MASTER GENERAL MAINTENANCE LLC-OPC","Pipe Fitter","2026-08-01","Active","","","P1234567","2025-01-01","2030-01-01","784-0000-0000000-0","2026-01-01","2028-01-01","Contact Name","Brother","0500000001","India"];
+    const headerCells=BULK_HEADERS.map(h=>`<Cell ss:StyleID="Header"><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`).join("");
+    const sampleCells=example.map(v=>`<Cell><Data ss:Type="String">${xmlEsc(v)}</Data></Cell>`).join("");
+    const widths=BULK_HEADERS.map((_,i)=>`<Column ss:AutoFitWidth="0" ss:Width="${i===1?150:i===10?220:105}"/>`).join("");
+    const xml=`<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n<Styles><Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Bottom"/><Font ss:FontName="Calibri" ss:Size="11"/></Style><Style ss:ID="Header"><Font ss:Bold="1"/><Interior ss:Color="#DCEBFA" ss:Pattern="Solid"/><Alignment ss:WrapText="1"/></Style></Styles>\n<Worksheet ss:Name="Employees"><Table>${widths}<Row>${headerCells}</Row><Row>${sampleCells}</Row></Table><WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel"><FreezePanes/><FrozenNoSplit/><SplitHorizontal>1</SplitHorizontal><TopRowBottomPane>1</TopRowBottomPane><ActivePane>2</ActivePane></WorksheetOptions></Worksheet>\n<Worksheet ss:Name="Instructions"><Table><Row><Cell ss:StyleID="Header"><Data ss:Type="String">Bulk Upload Instructions</Data></Cell></Row><Row><Cell><Data ss:Type="String">1. Employees sheet mein sample row replace karke employee data fill karein.</Data></Cell></Row><Row><Cell><Data ss:Type="String">2. Employee Code aur Employee Name required hain.</Data></Cell></Row><Row><Cell><Data ss:Type="String">3. Dates ko YYYY-MM-DD format mein rakhein.</Data></Cell></Row><Row><Cell><Data ss:Type="String">4. Status Active ya Inactive likhein.</Data></Cell></Row><Row><Cell><Data ss:Type="String">5. Duplicate Employee Code import nahi hoga.</Data></Cell></Row><Row><Cell><Data ss:Type="String">6. File ko same .xls / XML Spreadsheet format mein save karke Bulk Upload se upload karein.</Data></Cell></Row></Table></Worksheet>\n</Workbook>`;
+    const blob=new Blob([xml],{type:"application/vnd.ms-excel;charset=utf-8"});
+    const url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download="Civil_Master_Employee_Bulk_Upload_Sample.xls"; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+
+  function parseSpreadsheetXml(text){
+    const doc=new DOMParser().parseFromString(String(text||""),"application/xml");
+    if(doc.querySelector("parsererror")) throw new Error("Excel file could not be read. Please use the downloaded sample file and save it in the same .xls format.");
+    const worksheets=[...doc.getElementsByTagNameNS("*","Worksheet")];
+    const ws=worksheets.find(x=>x.getAttributeNS("urn:schemas-microsoft-com:office:spreadsheet","Name")==="Employees" || x.getAttribute("ss:Name")==="Employees") || worksheets[0];
+    if(!ws) throw new Error("Employees sheet not found.");
+
+    // IMPORTANT: Excel 2003 XML can omit blank cells and use ss:Index to jump
+    // to the real column number. If ss:Index is ignored, every value after a
+    // blank cell shifts left and gets saved into the wrong field.
+    return [...ws.getElementsByTagNameNS("*","Row")].map(row=>{
+      const values=[];
+      let currentCol=1; // SpreadsheetML columns are 1-based
+      const cells=[...row.getElementsByTagNameNS("*","Cell")];
+      cells.forEach(cell=>{
+        const idxRaw=cell.getAttributeNS("urn:schemas-microsoft-com:office:spreadsheet","Index") || cell.getAttribute("ss:Index") || cell.getAttribute("Index");
+        const idx=parseInt(idxRaw||"",10);
+        if(Number.isFinite(idx) && idx>0) currentCol=idx;
+        while(values.length<currentCol-1) values.push("");
+        const d=cell.getElementsByTagNameNS("*","Data")[0];
+        values[currentCol-1]=d?String(d.textContent||"").trim():"";
+        currentCol++;
+      });
+      return values;
+    }).filter(r=>r.some(v=>String(v||"").trim()!==""));
+  }
+
+  function importEmployeeRows(rows){
+    if(rows.length<2) throw new Error("Excel sheet has no employee rows.");
+    const headers=rows[0].map(normHeader);
+    if(!headers.includes(normHeader("Employee Code")) && !headers.includes(normHeader("Code"))) throw new Error("Employee Code column is required.");
+    if(!headers.includes(normHeader("Employee Name")) && !headers.includes(normHeader("Name"))) throw new Error("Employee Name column is required.");
+
+    // Map by heading name only — column position is never trusted.
+    // Also reject duplicate headings because they can silently overwrite data.
+    const headerSeen=new Set();
+    for(const h of headers){
+      if(!h) continue;
+      if(headerSeen.has(h)) throw new Error("Duplicate heading found in Excel sheet. Please use the downloaded sample without changing heading names.");
+      headerSeen.add(h);
+    }
+    const existingCodes=new Set((data.employees||[]).map(x=>String(x.employeeCode||"").trim().toLowerCase()).filter(Boolean));
+    const batchCodes=new Set(); const imported=[]; let skipped=0;
+    rows.slice(1).forEach(cols=>{
+      const obj={}; headers.forEach((h,i)=>obj[h]=cols[i]??"");
+      const emp=rowEmployee(obj), k=emp.employeeCode.toLowerCase();
+      if(!emp.employeeCode || !emp.employeeName || existingCodes.has(k) || batchCodes.has(k)){ skipped++; return; }
+      batchCodes.add(k);
+      addHistoryEvent(emp,{type:"Employee Created",title:"Employee profile created by bulk upload",changes:[
+        {field:"Employee Code",old:"",new:emp.employeeCode},{field:"Employee Name",old:"",new:emp.employeeName},{field:"Status",old:"",new:emp.status}
+      ]});
+      imported.push(emp);
+    });
+    if(!imported.length) throw new Error(`No employee imported. ${skipped} row(s) skipped because Code/Name was missing or Employee Code already exists.`);
+    if(!confirm(`Bulk Upload Summary\n\nReady to import: ${imported.length}\nSkipped: ${skipped}\n\nContinue?`)) return;
+    data.employees.push(...imported);
+    if(saveData()) alert(`Bulk upload completed. ${imported.length} employee(s) imported. ${skipped} row(s) skipped.`);
+  }
+
+  $("bulkUploadBtn")?.addEventListener("click",()=>$("bulkUploadModal")?.classList.remove("hidden"));
+  $("closeBulkUploadModal")?.addEventListener("click",()=>$("bulkUploadModal")?.classList.add("hidden"));
+  $("bulkUploadModal")?.addEventListener("click",e=>{ if(e.target===$("bulkUploadModal")) $("bulkUploadModal").classList.add("hidden"); });
+  $("downloadBulkTemplateBtn")?.addEventListener("click",downloadBulkTemplate);
+  $("chooseBulkUploadBtn")?.addEventListener("click",()=>$("bulkUploadFile")?.click());
+  $("bulkUploadFile")?.addEventListener("change",e=>{
+    const file=e.target.files?.[0]; if(!file) return;
+    const name=(file.name||"").toLowerCase();
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const text=String(reader.result||"");
+        const rows=name.endsWith(".csv")?parseCsv(text):parseSpreadsheetXml(text);
+        importEmployeeRows(rows);
+        $("bulkUploadModal")?.classList.add("hidden");
+      }catch(err){ console.error(err); alert("Bulk upload failed: "+(err?.message||"Invalid file.")); }
+      finally{ e.target.value=""; }
+    };
+    reader.onerror=()=>{ alert("Bulk upload failed: file could not be read."); e.target.value=""; };
+    reader.readAsText(file);
+  });
+
+  $("employeeSearch").addEventListener("input",renderEmployees);
+  ["afActualDesignation","afNationality","afCompany","afIdDesignation","afStatus","afGender","afJoiningFrom","afJoiningTo"].forEach(id=>{
+    $(id)?.addEventListener("change",renderEmployees);
+  });
+  $("advancedEmployeeFilterBtn")?.addEventListener("click",()=>{
+    const panel=$("advancedEmployeeFilterPanel");
+    panel.classList.toggle("hidden");
+    $("advancedEmployeeFilterBtn").classList.toggle("active",!panel.classList.contains("hidden"));
+    fillAdvancedEmployeeFilters();
+  });
+  $("expandEmployeeListBtn")?.addEventListener("click",()=>{
+    const wrap=$("employeeTableWrap");
+    const expanded=wrap.classList.toggle("employee-list-expanded");
+    $("expandEmployeeListBtn").classList.toggle("active",expanded);
+    $("expandEmployeeListBtn").textContent=expanded?"Compact List":"Expand List";
+  });
+  $("clearEmployeeFiltersBtn")?.addEventListener("click",()=>{
+    ["afActualDesignation","afNationality","afCompany","afIdDesignation","afStatus","afGender","afJoiningFrom","afJoiningTo"].forEach(id=>{if($(id)) $(id).value="";});
+    if($("employeeSearch")) $("employeeSearch").value="";
+    renderEmployees();
+  });
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.viewEmployee!==undefined) openEmployeeProfile(Number(e.target.dataset.viewEmployee));
+    if(e.target.dataset.editEmployee!==undefined) openEditor(Number(e.target.dataset.editEmployee));
+    if(e.target.dataset.deleteEmployee!==undefined){
+      if(confirm("Delete this employee record?")){
+        data.employees.splice(Number(e.target.dataset.deleteEmployee),1);saveData();
+      }
+    }
+  });
+
+
+  function ensureDocFollowup(d){
+    if(!d.followup || typeof d.followup!=="object") d.followup={status:"Pending",nextDate:"",remarks:"",history:[]};
+    if(!Array.isArray(d.followup.history)) d.followup.history=[];
+    return d.followup;
+  }
+  function followupClass(status){
+    return ({"Pending":"fs-pending","Employee Contacted":"fs-contacted","Renewal In Process":"fs-renewal","Completed":"fs-completed","On Hold":"fs-hold"})[status]||"fs-pending";
+  }
+  function saveDocumentFollowup(employeeIndex,docIndex){
+    const e=data.employees[employeeIndex], d=e?.documents?.[docIndex];
+    if(!d) return;
+    const f=ensureDocFollowup(d);
+    const status=document.querySelector(`[data-fu-status="${employeeIndex}-${docIndex}"]`)?.value||"Pending";
+    const nextDate=document.querySelector(`[data-fu-date="${employeeIndex}-${docIndex}"]`)?.value||"";
+    const remarks=document.querySelector(`[data-fu-remarks="${employeeIndex}-${docIndex}"]`)?.value.trim()||"";
+    const oldStatus=f.status||"", oldDate=f.nextDate||"", oldRemarks=f.remarks||"";
+    if(status!==oldStatus || nextDate!==oldDate || remarks!==oldRemarks){
+      f.status=status; f.nextDate=nextDate; f.remarks=remarks;
+      f.history.unshift({date:nowLabel(),by:"Administrator",status,nextDate,remarks});
+      addHistoryEvent(e,{type:"Document Follow-up",title:`${d.type||"Document"} follow-up updated`,changes:[
+        {field:"Follow-up Status",old:oldStatus,new:status},
+        {field:"Next Follow-up Date",old:oldDate,new:nextDate},
+        {field:"Remarks",old:oldRemarks,new:remarks}
+      ]});
+      saveData();
+      renderDashboard();
+      alert("Follow-up saved.");
+    }
+  }
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.saveFollowup!==undefined){
+      const parts=e.target.dataset.saveFollowup.split("-");
+      saveDocumentFollowup(Number(parts[0]),Number(parts[1]));
+    }
+  });
+
+  function dashboardExpiryAlerts(){
+    const today=new Date(); today.setHours(0,0,0,0);
+    const alerts=[];
+    data.employees.forEach((e,employeeIndex)=>(e.documents||[]).forEach((d,docIndex)=>{
+      if(!d.expiryDate) return;
+      const dt=new Date(d.expiryDate+"T00:00:00");
+      const days=Math.ceil((dt-today)/86400000);
+      alerts.push({employee:e.employeeName,code:e.employeeCode,type:d.type,number:d.number||"",expiry:d.expiryDate,days,employeeIndex,docIndex});
+    }));
+    return alerts;
+  }
+
+  function renderDashboardCountList(filter){
+    const panel=$("dashboardCountListPanel");
+    const box=$("dashboardCountList");
+    const title=$("dashboardCountListTitle");
+    const sub=$("dashboardCountListSub");
+    if(!panel || !box) return;
+
+    document.querySelectorAll(".dashboard-count-card").forEach(c=>c.classList.toggle("selected",c.dataset.dashboardFilter===filter));
+
+    if(filter==="total" || filter==="active"){
+      const rows=(data.employees||[])
+        .map((e,i)=>({...e,_i:i}))
+        .filter(e=>filter==="total" || e.status==="Active");
+
+      title.textContent=filter==="total"?"All Employees":"Active Employees";
+      sub.textContent=`${rows.length} employee${rows.length===1?"":"s"}`;
+
+      box.innerHTML=rows.length?rows.map(e=>`
+        <div class="dashboard-list-row">
+          <div class="dashboard-list-main">
+            <b>${esc(e.employeeName||"-")} (${esc(e.employeeCode||"-")})</b>
+            <div class="dashboard-list-meta">${esc(e.actualDesignation||"-")} · ${esc(e.company||"-")} · ${esc(e.status||"-")}</div>
+          </div>
+          <div class="dashboard-list-actions">
+            <button class="btn light" type="button" data-view-employee="${e._i}">Open Profile</button>
+          </div>
+        </div>`).join(""):'<div class="empty">No employees found.</div>';
+    }else{
+      const limit=filter==="exp30"?30:filter==="exp60"?60:90;
+      const rows=dashboardExpiryAlerts()
+        .filter(a=>a.days>=0 && a.days<=limit)
+        .sort((a,b)=>a.days-b.days);
+
+      title.textContent=`Documents Expiring Within ${limit} Days`;
+      sub.textContent=`${rows.length} document${rows.length===1?"":"s"}`;
+
+      box.innerHTML=rows.length?rows.map(a=>{
+        const cls=a.days<=30?"a30":a.days<=60?"a60":"a90";
+        const label=a.days===0?"Expires today":`${a.days} days left`;
+        return `<div class="dashboard-list-row">
+          <div class="dashboard-list-main">
+            <b>${esc(a.employee||"-")} (${esc(a.code||"-")})</b>
+            <div class="dashboard-list-meta">${esc(a.type||"Document")}${a.number?` · ${esc(a.number)}`:""} · Expiry: ${esc(a.expiry)}</div>
+          </div>
+          <div class="dashboard-list-actions">
+            <span class="alert-badge ${cls}">${label}</span>
+            <button class="btn light" type="button" data-view-employee="${a.employeeIndex}">Open Profile</button>
+          </div>
+        </div>`;
+      }).join(""):'<div class="empty">No documents found in this expiry range.</div>';
+    }
+
+    panel.classList.remove("hidden");
+    panel.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  document.addEventListener("click",e=>{
+    const card=e.target.closest?.(".dashboard-count-card");
+    if(card) renderDashboardCountList(card.dataset.dashboardFilter);
+  });
+  document.addEventListener("keydown",e=>{
+    const card=e.target.closest?.(".dashboard-count-card");
+    if(card && (e.key==="Enter" || e.key===" ")){
+      e.preventDefault();
+      renderDashboardCountList(card.dataset.dashboardFilter);
+    }
+  });
+  $("closeDashboardCountList")?.addEventListener("click",()=>{
+    $("dashboardCountListPanel")?.classList.add("hidden");
+    document.querySelectorAll(".dashboard-count-card").forEach(c=>c.classList.remove("selected"));
+  });
+
+  let currentExpiryFilter="all";
+  let followupDrawerTarget=null;
+
+  function ensureDocFollowup(d){
+    if(!d.followup || typeof d.followup!=="object") d.followup={status:"Pending",nextDate:"",remarks:"",history:[]};
+    if(!Array.isArray(d.followup.history)) d.followup.history=[];
+    if(!d.followup.status) d.followup.status="Pending";
+    return d.followup;
+  }
+
+  function expiryStatusClass(status){
+    const s=String(status||"Pending").toLowerCase();
+    if(s.includes("renewal")) return "fs-renewal";
+    if(s.includes("contacted")) return "fs-contacted";
+    if(s.includes("completed")) return "fs-completed";
+    if(s.includes("hold")) return "fs-hold";
+    return "fs-pending";
+  }
+
+  function getExpiryAlerts(){
+    const today=new Date(); today.setHours(0,0,0,0);
+    const alerts=[];
+    data.employees.forEach((e,employeeIndex)=>(e.documents||[]).forEach((d,docIndex)=>{
+      if(!d.expiryDate) return;
+      const dt=new Date(d.expiryDate+"T00:00:00");
+      const days=Math.ceil((dt-today)/86400000);
+      if(days>90) return;
+      const f=ensureDocFollowup(d);
+      alerts.push({employeeIndex,docIndex,e,d,days,f});
+    }));
+    return alerts.sort((a,b)=>a.days-b.days);
+  }
+
+  function expiryMatchesFilter(a){
+    if(currentExpiryFilter==="expired") return a.days<0;
+    if(currentExpiryFilter==="30") return a.days>=0 && a.days<=30;
+    if(currentExpiryFilter==="renewal") return a.f.status==="Renewal In Process";
+    if(currentExpiryFilter==="pending") return a.f.status==="Pending";
+    return true;
+  }
+
+  function renderExpiryAlerts(){
+    const alerts=getExpiryAlerts().filter(expiryMatchesFilter);
+
+    $("expiryAlerts").innerHTML=alerts.length?`
+      <div class="expiry-list">
+        ${alerts.map(a=>{
+          const rowClass=a.days<0?"expired-row":a.days<=30?"d30-row":a.days<=60?"d60-row":"d90-row";
+          const dayClass=a.days<0?"bad":a.days<=30?"warn":"ok";
+          const dayText=a.days<0?`Expired ${Math.abs(a.days)} day${Math.abs(a.days)===1?"":"s"} ago`:a.days===0?"Expires today":`${a.days} days left`;
+          const next=a.f.nextDate||"Not set";
+          return `<div class="expiry-item ${rowClass}">
+            <div class="expiry-employee">
+              <b>${esc(a.e.employeeName||"-")} (${esc(a.e.employeeCode||"-")})</b>
+              <small>${esc(a.e.actualDesignation||"")}</small>
+            </div>
+            <div class="expiry-doc">
+              <b>${esc(a.d.type||"Document")}</b>
+              <small>Expiry: ${esc(a.d.expiryDate)}</small>
+            </div>
+            <div class="expiry-days ${dayClass}">${dayText}</div>
+            <div class="expiry-status">
+              <span class="followup-status ${expiryStatusClass(a.f.status)}">${esc(a.f.status||"Pending")}</span>
+            </div>
+            <div class="expiry-next">
+              <b style="font-size:12px;color:#35506a">${esc(next)}</b>
+              <small>Next follow-up</small>
+            </div>
+            <div>
+              <button class="btn orange expiry-action-btn" type="button" data-open-followup="${a.employeeIndex}-${a.docIndex}">Update</button>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>`:'<div class="empty">No document alerts for this filter.</div>';
+  }
+
+  function renderDashboard(){
+    $("totalEmployees").textContent=data.employees.length;
+    $("activeEmployees").textContent=data.employees.filter(e=>e.status==="Active").length;
+
+    const alerts=getExpiryAlerts();
+    $("exp30").textContent=alerts.filter(a=>a.days>=0 && a.days<=30).length;
+    $("exp60").textContent=alerts.filter(a=>a.days>=0 && a.days<=60).length;
+    $("exp90").textContent=alerts.filter(a=>a.days>=0 && a.days<=90).length;
+
+    renderExpiryAlerts();
+  }
+
+  document.addEventListener("click",e=>{
+    if(e.target.matches?.(".expiry-filter")){
+      currentExpiryFilter=e.target.dataset.expiryFilter||"all";
+      document.querySelectorAll(".expiry-filter").forEach(b=>b.classList.toggle("active",b===e.target));
+      renderExpiryAlerts();
+    }
+
+    if(e.target.dataset.openFollowup!==undefined){
+      const [employeeIndex,docIndex]=e.target.dataset.openFollowup.split("-").map(Number);
+      const emp=data.employees[employeeIndex];
+      const doc=emp?.documents?.[docIndex];
+      if(!emp || !doc) return;
+      const f=ensureDocFollowup(doc);
+      followupDrawerTarget={employeeIndex,docIndex};
+      $("followupDrawerTitle").textContent=`Update Follow-up — ${doc.type||"Document"}`;
+      $("followupDrawerSub").textContent=`${emp.employeeName||"-"} (${emp.employeeCode||"-"}) · Expiry: ${doc.expiryDate||"-"}`;
+      $("drawerFollowupStatus").value=f.status||"Pending";
+      $("drawerFollowupDate").value=f.nextDate||"";
+      $("drawerFollowupRemarks").value=f.remarks||"";
+      $("followupDrawer").classList.remove("hidden");
+    }
+  });
+
+  function closeFollowupDrawer(){
+    followupDrawerTarget=null;
+    $("followupDrawer").classList.add("hidden");
+  }
+  $("closeFollowupDrawer").addEventListener("click",closeFollowupDrawer);
+  $("cancelFollowupDrawer").addEventListener("click",closeFollowupDrawer);
+  $("followupDrawer").addEventListener("click",e=>{if(e.target===$("followupDrawer")) closeFollowupDrawer();});
+
+  $("saveFollowupDrawer").addEventListener("click",()=>{
+    if(!followupDrawerTarget) return;
+    const {employeeIndex,docIndex}=followupDrawerTarget;
+    const emp=data.employees[employeeIndex];
+    const doc=emp?.documents?.[docIndex];
+    if(!doc) return;
+    const f=ensureDocFollowup(doc);
+
+    f.status=$("drawerFollowupStatus").value;
+    f.nextDate=$("drawerFollowupDate").value;
+    f.remarks=$("drawerFollowupRemarks").value.trim();
+    f.history.unshift({
+      date:new Date().toLocaleString(),
+      by:"Administrator",
+      status:f.status,
+      nextDate:f.nextDate,
+      remarks:f.remarks
+    });
+
+    saveData();
+    closeFollowupDrawer();
+  });
+
+
+  const EMP_EXPORT_COLS=[
+    ["employeeCode","Employee Code"],["employeeName","Employee Name"],["employeeNameArabic","Employee Name Arabic"],
+    ["actualDesignation","Actual Designation"],["nationality","Nationality"],["gender","Gender"],["dob","Date of Birth"],
+    ["maritalStatus","Marital Status"],["mobile","Mobile"],["company","Company"],["idDesignation","Designation as per ID Card"],
+    ["joiningDate","Joining Date"],["status","Employee Status"],["unifiedNumber","Unified Number"],["passportNumber","Passport Number"],
+    ["passportExpiry","Passport Expiry"],["emiratesIdNumber","Emirates ID Number"],["emiratesIdExpiry","Emirates ID Expiry"],
+    ["documents","Documents Summary"],["updatedAt","Last Updated"]
+  ];
+  function expDoc(e,kind){
+    return (e.documents||[]).find(d=>{const t=String(d.type||"").toLowerCase();return kind==="passport"?t.includes("passport"):(t.includes("emirates")||t.includes("id card"));})||{};
+  }
+  function expVal(e,k){
+    if(k==="passportNumber")return expDoc(e,"passport").number||"";
+    if(k==="passportExpiry")return expDoc(e,"passport").expiryDate||"";
+    if(k==="emiratesIdNumber")return expDoc(e,"eid").number||"";
+    if(k==="emiratesIdExpiry")return expDoc(e,"eid").expiryDate||"";
+    if(k==="documents")return (e.documents||[]).map(d=>`${d.type||"Document"}: ${d.number||"-"} | Expiry: ${d.expiryDate||"-"}`).join("; ");
+    return e[k]||"";
+  }
+  function exportRows(){
+    return getFilteredEmployees();
+  }
+  function openExportEmployee(){
+    $("exportColumnChoices").innerHTML=EMP_EXPORT_COLS.map(([k,l],i)=>`<label style="display:flex;gap:8px;align-items:center;padding:10px;border:1px solid #e1e9f2;border-radius:10px;background:#fafcff"><input type="checkbox" class="emp-exp-col" value="${k}" ${i<14?"checked":""}><span style="font-size:13px;font-weight:700">${esc(l)}</span></label>`).join("");
+    $("exportEmployeeModal").classList.remove("hidden");
+  }
+  function chosenCols(){const s=[...document.querySelectorAll(".emp-exp-col:checked")].map(x=>x.value);return EMP_EXPORT_COLS.filter(([k])=>s.includes(k));}
+  function exportTable(cols,rows){return `<table border="1" cellspacing="0" cellpadding="6"><thead><tr>${cols.map(([,l])=>`<th>${esc(l)}</th>`).join("")}</tr></thead><tbody>${rows.map(e=>`<tr>${cols.map(([k])=>`<td>${esc(expVal(e,k))}</td>`).join("")}</tr>`).join("")}</tbody></table>`;}
+  function exportExcelSelected(){
+    const c=chosenCols(),r=exportRows();if(!c.length)return alert("Please select at least one column.");if(!r.length)return alert("No employee records available.");
+    const b=new Blob(["\ufeff",`<!doctype html><meta charset="UTF-8">${exportTable(c,r)}`],{type:"application/vnd.ms-excel"});
+    const u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=`Employee_List_${new Date().toISOString().slice(0,10)}.xls`;a.click();URL.revokeObjectURL(u);
+  }
+  function exportPdfSelected(){
+    const c=chosenCols(),r=exportRows();if(!c.length)return alert("Please select at least one column.");if(!r.length)return alert("No employee records available.");
+    const w=window.open("","_blank");if(!w)return alert("Please allow pop-ups for PDF export.");
+    w.document.write(`<!doctype html><html><head><title>Employee List</title></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script>
+
+</body></html>`);w.document.close();
+  }
+  $("exportEmployeeListBtn")?.addEventListener("click",openExportEmployee);
+  $("closeExportEmployeeModal")?.addEventListener("click",()=>$("exportEmployeeModal").classList.add("hidden"));
+  $("selectAllExportCols")?.addEventListener("click",()=>document.querySelectorAll(".emp-exp-col").forEach(x=>x.checked=true));
+  $("clearAllExportCols")?.addEventListener("click",()=>document.querySelectorAll(".emp-exp-col").forEach(x=>x.checked=false));
+  $("exportSelectedExcel")?.addEventListener("click",exportExcelSelected);
+  $("exportSelectedPdf")?.addEventListener("click",exportPdfSelected);
+
+  function renderAll(){
+    renderMasters();
+    fillSelect("fActualDesignation",getMasterItems("actualDesignation"),"Select actual designation");
+    fillSelect("fIdDesignation",getMasterItems("idDesignation"),"Select ID card designation");
+    fillSelect("fNationality",getMasterItems("nationality"),"Select nationality");
+    fillSelect("fCompany",getMasterItems("company"),"Select company");
+    renderEmployees();
+    renderDashboard();
+    if(!$("employeeEditor").classList.contains("hidden")){
+      renderDocumentEditor();
+    }
+  }
+
+
+  // Keep older saved employee data compatible with the new audit-trail system.
+  (data.employees||[]).forEach(e=>{
+    if(!Array.isArray(e.history)) e.history=[];
+    (e.documents||[]).forEach(d=>ensureDocFollowup(d));
+  });
+  try{
+    const mainNow=parseStored(localStorage.getItem(DATA_KEY));
+    if(!mainNow || (!mainNow.employees.length && !mainNow.masters.length && (data.employees.length || data.masters.length))){
+      localStorage.setItem(DATA_KEY,JSON.stringify(data));
+    }
+  }catch(err){ console.warn("Initial persistence skipped",err); }
+
+  // Manual backup/restore so browser cleanup or a new HTML version cannot silently cost data.
+  $("exportBackupBtn").addEventListener("click",()=>{
+    const payload={...data,_exportedAt:new Date().toISOString(),_app:"Civil Master ERP Employee Portal"};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    const stamp=new Date().toISOString().slice(0,10);
+    a.href=url; a.download=`civil-master-employee-backup-${stamp}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+
+  $("importBackupBtn").addEventListener("click",()=>$("importBackupFile").click());
+  $("importBackupFile").addEventListener("change",e=>{
+    const file=e.target.files?.[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const restored=parseStored(String(reader.result||""));
+      if(!restored) return alert("Invalid backup file.");
+      if(!confirm(`Restore backup? ${restored.employees.length} employee record(s) milay hain. Current data replace ho ga.`)) return;
+      const current=localStorage.getItem(DATA_KEY);
+      try{ if(current) localStorage.setItem(BACKUP_KEY,current); }catch(err){}
+      data=restored;
+      if(saveData()) alert("Backup restored successfully.");
+      e.target.value="";
+    };
+    reader.readAsText(file);
+  });
+
+  const savedEmail=localStorage.getItem("cm_saved_email"); if(savedEmail) $("loginEmail").value=savedEmail;
+  renderAll();
+  if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1") openApp();
+})();
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+(function(){
+  const ROLES=['Admin','HR','Accounts','Payroll','Manager','Viewer'];
+  function esc2(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+  async function buildUserManager(){
+    const p=window.CMERPUser;
+    if(!p || p.role!=='Admin') return;
+    const nav=document.querySelector('.sidebar .nav');
+    if(!nav || document.getElementById('cmUsersRoleNav')) return;
+    const b=document.createElement('button'); b.id='cmUsersRoleNav'; b.className='navbtn';
+    b.innerHTML='<span class="ico">🔐</span><span>Users & Roles</span>';
+    nav.appendChild(b);
+    const host=document.querySelector('.content'); if(!host) return;
+    const sec=document.createElement('section'); sec.className='page'; sec.id='cmUsersRolesPage';
+    sec.innerHTML=`<div class="pagehead"><div><h2>Users & Roles</h2><p>Control ERP module access by role.</p></div><button class="btn orange" id="cmRefreshUsers">Refresh Users</button></div>
+      <div class="card" style="padding:18px;margin-bottom:16px"><b>Add a new login</b><div class="small" style="margin-top:7px;line-height:1.6">Supabase → Authentication → Users → Add user. For a simple username, use email format <b>username@civilmaster.local</b>, set a password and Auto Confirm. The new user appears here as Viewer; then assign the required role.</div></div>
+      <div class="card" style="padding:0;overflow:auto"><table style="width:100%;min-width:850px"><thead><tr><th>Username</th><th>Email / Login ID</th><th>Role</th><th>Read Access</th><th>Write Access</th><th>Status</th><th>Action</th></tr></thead><tbody id="cmUserRows"><tr><td colspan="7">Loading...</td></tr></tbody></table></div>`;
+    host.appendChild(sec);
+    async function load(){
+      const rows=document.getElementById('cmUserRows'); rows.innerHTML='<tr><td colspan="7">Loading...</td></tr>';
+      try{
+        const users=await window.CMSupabase.listUserProfiles();
+        rows.innerHTML=users.map(u=>`<tr><td><b>${esc2(u.username)}</b></td><td>${esc2(u.email)}</td><td><select class="cm-role" data-id="${u.user_id}">${ROLES.map(r=>`<option ${r===u.role?'selected':''}>${r}</option>`).join('')}</select></td><td>${esc2((u.allowed_modules||[]).join(', '))}</td><td>${esc2((u.write_modules||[]).join(', ')||'Read only')}</td><td>${u.active?'Active':'Disabled'}</td><td><button class="btn light cm-toggle" data-id="${u.user_id}" data-active="${u.active?'1':'0'}">${u.active?'Disable':'Enable'}</button></td></tr>`).join('') || '<tr><td colspan="7">No users found.</td></tr>';
+        rows.querySelectorAll('.cm-role').forEach(s=>s.addEventListener('change',async()=>{try{await window.CMSupabase.updateUserRole(s.dataset.id,s.value); await load(); alert('Role updated.');}catch(e){alert(e.message||e)}}));
+        rows.querySelectorAll('.cm-toggle').forEach(x=>x.addEventListener('click',async()=>{try{await window.CMSupabase.setUserActive(x.dataset.id,x.dataset.active!=='1'); await load();}catch(e){alert(e.message||e)}}));
+      }catch(e){rows.innerHTML='<tr><td colspan="7">'+esc2(e.message||e)+'</td></tr>';}
+    }
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); sec.classList.add('active');
+      document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+      const t=document.getElementById('pageTitle'); if(t)t.textContent='Users & Roles'; load();
+    });
+    document.getElementById('cmRefreshUsers').addEventListener('click',load);
+  }
+  window.addEventListener('cm:erp-profile-ready',buildUserManager);
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(buildUserManager,500));
+})();
+</script>
+
+</body>
+</html>
