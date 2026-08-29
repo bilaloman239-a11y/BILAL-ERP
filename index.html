@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CIVIL MASTER ERP: EMPLOYEE MANAGEMENT - LOCAL BROWSER STORAGE ONLY -->
+<!-- CIVIL MASTER ERP: EMPLOYEE MANAGEMENT - LOCAL LOGIN LOCKED BUILD -->
 
 <html lang="en">
 <head>
@@ -707,7 +707,7 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 </style>
-<!-- Local browser storage only: no Supabase connection -->
+<!-- Local browser storage only: no Cloud DB connection -->
 </head>
 <body>
 
@@ -1122,12 +1122,15 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
 </div>
 
 <script>
+
+  // LOCAL LOGIN — LOCKED SECTION. Keep separate from other ERP features.
+  const ADMIN_USERNAME = "admin";
+  const ADMIN_EMAIL = "admin@civilmastergm.com";
+  const ADMIN_PASSWORD = "Civil123@2024";
 document.addEventListener("DOMContentLoaded", () => {
 (() => {
   "use strict";
 
-  const ADMIN_EMAIL = "admin@civilmastergm.com";
-  const ADMIN_PASSWORD = "Civil123@2024";
   const DATA_KEY = "cm_employee_portal_v3";
   const SESSION_KEY = "cm_logged_in_v3";
   const $ = id => document.getElementById(id);
@@ -1227,24 +1230,38 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionStorage.removeItem(SESSION_KEY);
   }
   async function doLogin(){
-    const loginId=$("loginEmail").value.trim().toLowerCase(), p=$("loginPassword").value;
-    const e=loginId.includes("@")?loginId:(loginId?loginId+"@civilmaster.local":"");
-    $("loginMessage").textContent="";
+    const loginId = ($("loginEmail")?.value || "").trim();
+    const password = $("loginPassword")?.value || "";
+    const msg = $("loginMessage");
 
-    // LOCAL BROWSER LOGIN ONLY
-    if(e===ADMIN_EMAIL && p===ADMIN_PASSWORD){
-      if($("keepSignedIn").checked) localStorage.setItem(SESSION_KEY,"1");
-      else localStorage.removeItem(SESSION_KEY);
+    if(msg) msg.textContent = "";
 
+    const normalized = loginId.toLowerCase();
+    const validLogin = (
+      normalized === ADMIN_USERNAME ||
+      normalized === ADMIN_EMAIL.toLowerCase()
+    );
+
+    if(validLogin && password === ADMIN_PASSWORD){
       sessionStorage.setItem(SESSION_KEY,"1");
 
-      if($("rememberMe").checked) localStorage.setItem("cm_saved_email",loginId);
-      else localStorage.removeItem("cm_saved_email");
+      if($("keepSignedIn")?.checked){
+        localStorage.setItem(SESSION_KEY,"1");
+      }else{
+        localStorage.removeItem(SESSION_KEY);
+      }
+
+      if($("rememberMe")?.checked){
+        localStorage.setItem("cm_saved_email", loginId);
+      }else{
+        localStorage.removeItem("cm_saved_email");
+      }
 
       openApp();
-    }else{
-      $("loginMessage").textContent="Invalid email or password.";
+      return;
     }
+
+    if(msg) msg.textContent = "Invalid username/email or password.";
   }
 
   $("loginButton").addEventListener("click",doLogin);
@@ -1252,7 +1269,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
   $("eyeBtn").addEventListener("click",()=>{const p=$("loginPassword");p.type=p.type==="password"?"text":"password";$("eyeBtn").textContent=p.type==="password"?"👁️":"🙈"});
   $("logoutButton").addEventListener("click",()=>{
-    closeApp();
+    sessionStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(SESSION_KEY);
     location.reload();
   });
@@ -2817,16 +2834,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const host=document.querySelector('.content'); if(!host) return;
     const sec=document.createElement('section'); sec.className='page'; sec.id='cmUsersRolesPage';
     sec.innerHTML=`<div class="pagehead"><div><h2>Users & Roles</h2><p>Control ERP module access by role.</p></div><button class="btn orange" id="cmRefreshUsers">Refresh Users</button></div>
-      <div class="card" style="padding:18px;margin-bottom:16px"><b>Add a new login</b><div class="small" style="margin-top:7px;line-height:1.6">Supabase → Authentication → Users → Add user. For a simple username, use email format <b>username@civilmaster.local</b>, set a password and Auto Confirm. The new user appears here as Viewer; then assign the required role.</div></div>
+      <div class="card" style="padding:18px;margin-bottom:16px"><b>Add a new login</b><div class="small" style="margin-top:7px;line-height:1.6">Cloud DB → Authentication → Users → Add user. For a simple username, use email format <b>username@civilmaster.local</b>, set a password and Auto Confirm. The new user appears here as Viewer; then assign the required role.</div></div>
       <div class="card" style="padding:0;overflow:auto"><table style="width:100%;min-width:850px"><thead><tr><th>Username</th><th>Email / Login ID</th><th>Role</th><th>Read Access</th><th>Write Access</th><th>Status</th><th>Action</th></tr></thead><tbody id="cmUserRows"><tr><td colspan="7">Loading...</td></tr></tbody></table></div>`;
     host.appendChild(sec);
     async function load(){
       const rows=document.getElementById('cmUserRows'); rows.innerHTML='<tr><td colspan="7">Loading...</td></tr>';
       try{
-        const users=await window.CMSupabase.listUserProfiles();
+        const users=await 
         rows.innerHTML=users.map(u=>`<tr><td><b>${esc2(u.username)}</b></td><td>${esc2(u.email)}</td><td><select class="cm-role" data-id="${u.user_id}">${ROLES.map(r=>`<option ${r===u.role?'selected':''}>${r}</option>`).join('')}</select></td><td>${esc2((u.allowed_modules||[]).join(', '))}</td><td>${esc2((u.write_modules||[]).join(', ')||'Read only')}</td><td>${u.active?'Active':'Disabled'}</td><td><button class="btn light cm-toggle" data-id="${u.user_id}" data-active="${u.active?'1':'0'}">${u.active?'Disable':'Enable'}</button></td></tr>`).join('') || '<tr><td colspan="7">No users found.</td></tr>';
-        rows.querySelectorAll('.cm-role').forEach(s=>s.addEventListener('change',async()=>{try{await window.CMSupabase.updateUserRole(s.dataset.id,s.value); await load(); alert('Role updated.');}catch(e){alert(e.message||e)}}));
-        rows.querySelectorAll('.cm-toggle').forEach(x=>x.addEventListener('click',async()=>{try{await window.CMSupabase.setUserActive(x.dataset.id,x.dataset.active!=='1'); await load();}catch(e){alert(e.message||e)}}));
+        rows.querySelectorAll('.cm-role').forEach(s=>s.addEventListener('change',async()=>{try{await  await load(); alert('Role updated.');}catch(e){alert(e.message||e)}}));
+        rows.querySelectorAll('.cm-toggle').forEach(x=>x.addEventListener('click',async()=>{try{await  await load();}catch(e){alert(e.message||e)}}));
       }catch(e){rows.innerHTML='<tr><td colspan="7">'+esc2(e.message||e)+'</td></tr>';}
     }
     b.addEventListener('click',()=>{
