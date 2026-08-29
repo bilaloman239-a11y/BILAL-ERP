@@ -889,7 +889,14 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
           <div class="formgrid">
             <div class="field"><label>Employee Code</label><input id="fEmployeeCode"></div>
             <div class="field"><label>Employee Name</label><input id="fEmployeeName"></div>
-            <div class="field"><label>Employee Name in Arabic</label><input id="fEmployeeNameArabic"></div>
+            <div class="field">
+  <label>Employee Name in Arabic</label>
+  <div style="display:flex;gap:8px;align-items:center">
+    <input id="fEmployeeNameArabic" dir="rtl" style="flex:1">
+    <button id="autoArabicNameBtn" class="btn light" type="button" title="Translate employee name to Arabic" style="white-space:nowrap;padding:10px 12px">Auto Arabic</button>
+  </div>
+  <div id="arabicNameStatus" class="small" style="margin-top:5px;min-height:16px"></div>
+</div>
             <div class="field"><label>Unified Number</label><input id="fUnifiedNumber"></div>
             <div class="field"><label>Actual Designation</label><select id="fActualDesignation"></select></div>
             <div class="field"><label>Nationality</label><select id="fNationality"></select></div>
@@ -1684,6 +1691,119 @@ document.addEventListener("DOMContentLoaded", () => {
 <table class="sign"><tr><th>EMPLOYEE</th><th>HR / ADMINISTRATION</th><th>AUTHORIZED SIGNATORY</th></tr><tr><td>Name: ${val(e.employeeName)}<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Company Stamp: ______________</td></tr></table>
 <div class="footer">Civil Master General Maintenance LLC - OPC &nbsp; | &nbsp; Employee Joining Record</div></div>
 
+
+
+<script>
+/* Online English → Arabic employee-name helper.
+   Uses MyMemory's public translation API. Arabic remains manually editable. */
+(function(){
+  "use strict";
+
+  let arabicTimer = null;
+  let lastTranslatedEnglish = "";
+  let manualArabicEdit = false;
+
+  function byId(id){ return document.getElementById(id); }
+
+  async function translateEmployeeNameToArabic(force){
+    const en = (byId("fEmployeeName")?.value || "").trim();
+    const arInput = byId("fEmployeeNameArabic");
+    const status = byId("arabicNameStatus");
+    const btn = byId("autoArabicNameBtn");
+
+    if(!en || !arInput) {
+      if(status) status.textContent = "";
+      return;
+    }
+
+    // Do not overwrite a manually edited Arabic name unless user clicks Auto Arabic.
+    if(!force && manualArabicEdit && arInput.value.trim()) return;
+    if(!force && en === lastTranslatedEnglish && arInput.value.trim()) return;
+
+    try{
+      if(status) status.textContent = "Translating to Arabic...";
+      if(btn) btn.disabled = true;
+
+      const url = "https://api.mymemory.translated.net/get?q=" +
+                  encodeURIComponent(en) + "&langpair=en|ar";
+
+      const res = await fetch(url, { method:"GET" });
+      if(!res.ok) throw new Error("Translation service unavailable");
+
+      const data = await res.json();
+      let translated = (data?.responseData?.translatedText || "").trim();
+
+      // Decode occasional HTML entities returned by APIs.
+      const decoder = document.createElement("textarea");
+      decoder.innerHTML = translated;
+      translated = decoder.value.trim();
+
+      if(!translated) throw new Error("No Arabic translation returned");
+
+      arInput.value = translated;
+      lastTranslatedEnglish = en;
+      manualArabicEdit = false;
+      arInput.dispatchEvent(new Event("input", {bubbles:true}));
+      arInput.dispatchEvent(new Event("change", {bubbles:true}));
+
+      if(status) status.textContent = "Arabic name added automatically — you can edit it if needed.";
+    }catch(err){
+      console.error("Arabic translation failed:", err);
+      if(status) status.textContent = "Auto Arabic unavailable. Check internet and try again.";
+    }finally{
+      if(btn) btn.disabled = false;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    const enInput = byId("fEmployeeName");
+    const arInput = byId("fEmployeeNameArabic");
+    const btn = byId("autoArabicNameBtn");
+
+    if(arInput){
+      arInput.addEventListener("input", function(e){
+        if(e.isTrusted) manualArabicEdit = true;
+      });
+    }
+
+    if(enInput){
+      enInput.addEventListener("input", function(){
+        clearTimeout(arabicTimer);
+        const val = enInput.value.trim();
+
+        if(!val){
+          const status = byId("arabicNameStatus");
+          if(status) status.textContent = "";
+          return;
+        }
+
+        // Auto-translate after user stops typing.
+        arabicTimer = setTimeout(function(){
+          translateEmployeeNameToArabic(false);
+        }, 900);
+      });
+
+      // Also translate when user leaves the English-name field.
+      enInput.addEventListener("blur", function(){
+        clearTimeout(arabicTimer);
+        translateEmployeeNameToArabic(false);
+      });
+    }
+
+    if(btn){
+      btn.addEventListener("click", function(){
+        manualArabicEdit = false;
+        translateEmployeeNameToArabic(true);
+      });
+    }
+  });
+
+  window.cmAutoArabicName = function(){
+    manualArabicEdit = false;
+    return translateEmployeeNameToArabic(true);
+  };
+})();
+</script>
 
 </body></html>`);
     w.document.close();
