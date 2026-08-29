@@ -240,6 +240,102 @@
     return true;
   }
 
+
+  const MODULE_BY_FILE = {
+    'index.html':'employee', '':'employee',
+    'leave.html':'leave', 'client.html':'client',
+    'subcontractor.html':'subcontractor', 'salary.html':'salary'
+  };
+  const ROLE_DEFAULTS = {
+    Admin:{allowed:['employee','leave','client','subcontractor','salary'],write:['employee','leave','client','subcontractor','salary']},
+    HR:{allowed:['employee','leave'],write:['employee','leave']},
+    Accounts:{allowed:['employee','leave','client','salary'],write:['leave','client','salary']},
+    Payroll:{allowed:['employee','leave','salary'],write:['salary']},
+    Manager:{allowed:['employee','leave','client','subcontractor'],write:['leave']},
+    Viewer:{allowed:['employee','leave','client','subcontractor','salary'],write:[]}
+  };
+  let currentProfile = null;
+
+  function currentModule(){
+    const f=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+    return MODULE_BY_FILE[f] || 'employee';
+  }
+  function canReadModule(module){
+    if(!currentProfile || currentProfile.active===false) return false;
+    if(currentProfile.role==='Admin') return true;
+    return Array.isArray(currentProfile.allowed_modules) && currentProfile.allowed_modules.includes(module);
+  }
+  function canWriteModule(module){
+    if(!currentProfile || currentProfile.active===false) return false;
+    if(currentProfile.role==='Admin') return true;
+    return Array.isArray(currentProfile.write_modules) && currentProfile.write_modules.includes(module);
+  }
+  async function loadCurrentProfile(){
+    const sb=getClient(); if(!sb) return null;
+    const {data:{user}}=await sb.auth.getUser();
+    if(!user){ currentProfile=null; return null; }
+    const {data,error}=await sb.from('erp_user_profiles')
+      .select('user_id,email,username,role,allowed_modules,write_modules,active')
+      .eq('user_id',user.id).maybeSingle();
+    if(error){ console.error('[Supabase] profile load failed',error.message||error); return null; }
+    currentProfile=data||null;
+    window.CMERPUser=currentProfile;
+    return currentProfile;
+  }
+  function firstAllowedPage(){
+    const map={employee:'index.html',leave:'leave.html',client:'client.html',subcontractor:'subcontractor.html',salary:'salary.html'};
+    const a=currentProfile?.allowed_modules||[];
+    return map[a[0]]||'index.html';
+  }
+  function applyRoleUI(){
+    if(!currentProfile) return;
+    const hrefModule={'index.html':'employee','leave.html':'leave','client.html':'client','subcontractor.html':'subcontractor','salary.html':'salary'};
+    document.querySelectorAll('a[href]').forEach(a=>{
+      const href=(a.getAttribute('href')||'').split('?')[0].split('#')[0];
+      const m=hrefModule[href]; if(m && !canReadModule(m)) a.style.display='none';
+    });
+    document.querySelectorAll('.user').forEach(el=>{
+      if(el.querySelector('.cm-role-badge')) return;
+      const b=document.createElement('span'); b.className='cm-role-badge';
+      b.textContent=(currentProfile.username||currentProfile.email||'User')+' · '+currentProfile.role;
+      b.style.cssText='font-size:10px;padding:5px 8px;border-radius:999px;background:#eef5ff;color:#173b63;margin-right:6px;white-space:nowrap';
+      el.prepend(b);
+    });
+    const m=currentModule();
+    if(!canReadModule(m)){
+      alert('Your role does not have access to this module.');
+      location.replace(firstAllowedPage());
+      return;
+    }
+    if(!canWriteModule(m)){
+      document.querySelectorAll('button').forEach(btn=>{
+        const t=(btn.textContent||'').toLowerCase();
+        if(/add|save|delete|remove|approve|reject|upload|import|edit|update|create|process|pay/.test(t)){
+          if(!/export|download|filter|search|view|close|cancel|print/.test(t)){
+            btn.disabled=true; btn.title='Read-only access for '+currentProfile.role;
+            btn.style.opacity='.55'; btn.style.cursor='not-allowed';
+          }
+        }
+      });
+    }
+  }
+  async function updateUserRole(userId, role){
+    const sb=getClient(); if(!sb || currentProfile?.role!=='Admin') throw new Error('Admin access required.');
+    const d=ROLE_DEFAULTS[role]||ROLE_DEFAULTS.Viewer;
+    const {error}=await sb.from('erp_user_profiles').update({role,allowed_modules:d.allowed,write_modules:d.write,updated_at:new Date().toISOString()}).eq('user_id',userId);
+    if(error) throw error; return true;
+  }
+  async function setUserActive(userId, active){
+    const sb=getClient(); if(!sb || currentProfile?.role!=='Admin') throw new Error('Admin access required.');
+    const {error}=await sb.from('erp_user_profiles').update({active:!!active,updated_at:new Date().toISOString()}).eq('user_id',userId);
+    if(error) throw error; return true;
+  }
+  async function listUserProfiles(){
+    const sb=getClient(); if(!sb || currentProfile?.role!=='Admin') return [];
+    const {data,error}=await sb.from('erp_user_profiles').select('*').order('created_at',{ascending:true});
+    if(error) throw error; return data||[];
+  }
+
   window.CMSupabase = {
     keys: CLOUD_KEYS.slice(),
     configured,
@@ -247,7 +343,8 @@
     hydrate,
     forceSync,
     clearCloudBusinessData,
-    mode: 'supabase-only'
+    loadCurrentProfile, currentModule, canReadModule, canWriteModule, applyRoleUI, listUserProfiles, updateUserRole, setUserActive, roleDefaults: ROLE_DEFAULTS,
+    mode: 'supabase-only-roles'
   };
 
   // Remove old browser-persisted ERP records immediately, before page scripts read them.
@@ -262,4 +359,11 @@
       if(originalGetItem.call(sessionStorage, BOOT_KEY) === '1') location.reload();
     });
   }
+
+  document.addEventListener('DOMContentLoaded', async()=>{
+    if(!configured()) return;
+    const p=await loadCurrentProfile();
+    if(p) applyRoleUI();
+    window.dispatchEvent(new CustomEvent('cm:erp-profile-ready',{detail:p}));
+  });
 })();

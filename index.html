@@ -749,13 +749,13 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
       </div>
       <h2>Sign In</h2>
       <div class="sub">Enter your credentials to access your account</div>
-      <div class="field"><label>Email Address</label><input id="loginEmail" type="email" value="admin@civilmastergm.com"></div>
+      <div class="field"><label>Username / Email</label><input id="loginEmail" type="text" autocomplete="username" placeholder="e.g. admin or name@company.com"></div>
       <div class="field"><label>Password</label><div class="password-wrap"><input id="loginPassword" type="password" value="Civil123@2024"><button class="eye" type="button" id="eyeBtn">👁️</button></div></div>
       <div class="options"><label><input id="rememberMe" type="checkbox" checked> Remember me</label><label><input id="keepSignedIn" type="checkbox"> Keep me signed in</label></div>
       <button id="loginButton" class="signin" type="button">Sign In</button>
       <div id="loginMessage" class="login-msg"></div>
       <div class="security">🔒 Your data is secured with enterprise-grade protection</div>
-      <div class="credentials"><b>Default Login Credentials</b><br>Email: <span>admin@civilmastergm.com</span><br>Password: <span>Civil123@2024</span></div>
+      <div class="credentials"><b>Secure ERP Login</b><br>Use your assigned Username + Password. Admin can assign roles after the Auth user is created in Supabase.</div>
     </div>
   </section>
 </div>
@@ -1230,7 +1230,8 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionStorage.removeItem(SESSION_KEY);
   }
   async function doLogin(){
-    const e=$("loginEmail").value.trim().toLowerCase(), p=$("loginPassword").value;
+    const loginId=$("loginEmail").value.trim().toLowerCase(), p=$("loginPassword").value;
+    const e=loginId.includes("@")?loginId:(loginId?loginId+"@civilmaster.local":"");
     $("loginMessage").textContent="";
     const cloudOn = window.CMSupabase && window.CMSupabase.configured();
 
@@ -1242,7 +1243,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if(error){ $("loginMessage").textContent=error.message||"Invalid email or password."; return; }
         if($("keepSignedIn").checked) localStorage.setItem(SESSION_KEY,"1"); else localStorage.removeItem(SESSION_KEY);
         sessionStorage.setItem(SESSION_KEY,"1");
-        if($("rememberMe").checked) localStorage.setItem("cm_saved_email",e); else localStorage.removeItem("cm_saved_email");
+        if($("rememberMe").checked) localStorage.setItem("cm_saved_email",loginId); else localStorage.removeItem("cm_saved_email");
         await window.CMSupabase.hydrate();
         location.reload();
         return;
@@ -1256,7 +1257,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Local demo fallback while Supabase is disabled.
     if(e===ADMIN_EMAIL && p===ADMIN_PASSWORD){
       if($("keepSignedIn").checked) localStorage.setItem(SESSION_KEY,"1"); else localStorage.removeItem(SESSION_KEY);
-      if($("rememberMe").checked) localStorage.setItem("cm_saved_email",e); else localStorage.removeItem("cm_saved_email");
+      if($("rememberMe").checked) localStorage.setItem("cm_saved_email",loginId); else localStorage.removeItem("cm_saved_email");
       openApp();
     }else $("loginMessage").textContent="Invalid email or password.";
   }
@@ -1706,6 +1707,46 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="section">JOINING DECLARATION</div><p class="declaration">I confirm that I have joined Civil Master General Maintenance LLC - OPC on the joining date stated above. I confirm that the information and documents provided by me are correct. I agree to comply with the company's policies, procedures, safety requirements and lawful instructions applicable to my employment.</p>
 <table class="sign"><tr><th>EMPLOYEE</th><th>HR / ADMINISTRATION</th><th>AUTHORIZED SIGNATORY</th></tr><tr><td>Name: ${val(e.employeeName)}<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Date: ______________________</td><td>Name: ______________________<br>Signature: __________________<br>Company Stamp: ______________</td></tr></table>
 <div class="footer">Civil Master General Maintenance LLC - OPC &nbsp; | &nbsp; Employee Joining Record</div></div>
+
+<script>
+(function(){
+  const ROLES=['Admin','HR','Accounts','Payroll','Manager','Viewer'];
+  function esc2(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+  async function buildUserManager(){
+    const p=window.CMERPUser;
+    if(!p || p.role!=='Admin' || location.pathname.toLowerCase().includes('leave.html')) return;
+    const nav=document.querySelector('.sidebar .nav');
+    if(!nav || document.getElementById('cmUsersRoleNav')) return;
+    const b=document.createElement('button'); b.id='cmUsersRoleNav'; b.className='navbtn';
+    b.innerHTML='<span class="ico">🔐</span><span>Users & Roles</span>';
+    nav.appendChild(b);
+    const host=document.querySelector('.content'); if(!host) return;
+    const sec=document.createElement('section'); sec.className='page'; sec.id='cmUsersRolesPage';
+    sec.innerHTML=`<div class="pagehead"><div><h2>Users & Roles</h2><p>Control ERP module access by role.</p></div><button class="btn orange" id="cmRefreshUsers">Refresh Users</button></div>
+      <div class="card" style="padding:18px;margin-bottom:16px"><b>Add a new login</b><div class="small" style="margin-top:7px;line-height:1.6">Supabase → Authentication → Users → Add user. For a simple username, use email format <b>username@civilmaster.local</b>, set a password and Auto Confirm. The new user appears here as Viewer; then assign the required role.</div></div>
+      <div class="card" style="padding:0;overflow:auto"><table style="width:100%;min-width:850px"><thead><tr><th>Username</th><th>Email / Login ID</th><th>Role</th><th>Read Access</th><th>Write Access</th><th>Status</th><th>Action</th></tr></thead><tbody id="cmUserRows"><tr><td colspan="7">Loading...</td></tr></tbody></table></div>`;
+    host.appendChild(sec);
+    async function load(){
+      const rows=document.getElementById('cmUserRows'); rows.innerHTML='<tr><td colspan="7">Loading...</td></tr>';
+      try{
+        const users=await window.CMSupabase.listUserProfiles();
+        rows.innerHTML=users.map(u=>`<tr><td><b>${esc2(u.username)}</b></td><td>${esc2(u.email)}</td><td><select class="cm-role" data-id="${u.user_id}">${ROLES.map(r=>`<option ${r===u.role?'selected':''}>${r}</option>`).join('')}</select></td><td>${esc2((u.allowed_modules||[]).join(', '))}</td><td>${esc2((u.write_modules||[]).join(', ')||'Read only')}</td><td>${u.active?'Active':'Disabled'}</td><td><button class="btn light cm-toggle" data-id="${u.user_id}" data-active="${u.active?'1':'0'}">${u.active?'Disable':'Enable'}</button></td></tr>`).join('') || '<tr><td colspan="7">No users found.</td></tr>';
+        rows.querySelectorAll('.cm-role').forEach(s=>s.addEventListener('change',async()=>{try{await window.CMSupabase.updateUserRole(s.dataset.id,s.value); await load(); alert('Role updated.');}catch(e){alert(e.message||e)}}));
+        rows.querySelectorAll('.cm-toggle').forEach(x=>x.addEventListener('click',async()=>{try{await window.CMSupabase.setUserActive(x.dataset.id,x.dataset.active!=='1'); await load();}catch(e){alert(e.message||e)}}));
+      }catch(e){rows.innerHTML='<tr><td colspan="7">'+esc2(e.message||e)+'</td></tr>';}
+    }
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); sec.classList.add('active');
+      document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+      const t=document.getElementById('pageTitle'); if(t)t.textContent='Users & Roles'; load();
+    });
+    document.getElementById('cmRefreshUsers').addEventListener('click',load);
+  }
+  window.addEventListener('cm:erp-profile-ready',buildUserManager);
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(buildUserManager,500));
+})();
+</script>
+
 </body></html>`);
     w.document.close();
     w.focus();
@@ -2619,7 +2660,47 @@ document.addEventListener("DOMContentLoaded", () => {
   function exportPdfSelected(){
     const c=chosenCols(),r=exportRows();if(!c.length)return alert("Please select at least one column.");if(!r.length)return alert("No employee records available.");
     const w=window.open("","_blank");if(!w)return alert("Please allow pop-ups for PDF export.");
-    w.document.write(`<!doctype html><html><head><title>Employee List</title></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
+    w.document.write(`<!doctype html><html><head><title>Employee List</title></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script>
+<script>
+(function(){
+  const ROLES=['Admin','HR','Accounts','Payroll','Manager','Viewer'];
+  function esc2(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+  async function buildUserManager(){
+    const p=window.CMERPUser;
+    if(!p || p.role!=='Admin' || location.pathname.toLowerCase().includes('leave.html')) return;
+    const nav=document.querySelector('.sidebar .nav');
+    if(!nav || document.getElementById('cmUsersRoleNav')) return;
+    const b=document.createElement('button'); b.id='cmUsersRoleNav'; b.className='navbtn';
+    b.innerHTML='<span class="ico">🔐</span><span>Users & Roles</span>';
+    nav.appendChild(b);
+    const host=document.querySelector('.content'); if(!host) return;
+    const sec=document.createElement('section'); sec.className='page'; sec.id='cmUsersRolesPage';
+    sec.innerHTML=`<div class="pagehead"><div><h2>Users & Roles</h2><p>Control ERP module access by role.</p></div><button class="btn orange" id="cmRefreshUsers">Refresh Users</button></div>
+      <div class="card" style="padding:18px;margin-bottom:16px"><b>Add a new login</b><div class="small" style="margin-top:7px;line-height:1.6">Supabase → Authentication → Users → Add user. For a simple username, use email format <b>username@civilmaster.local</b>, set a password and Auto Confirm. The new user appears here as Viewer; then assign the required role.</div></div>
+      <div class="card" style="padding:0;overflow:auto"><table style="width:100%;min-width:850px"><thead><tr><th>Username</th><th>Email / Login ID</th><th>Role</th><th>Read Access</th><th>Write Access</th><th>Status</th><th>Action</th></tr></thead><tbody id="cmUserRows"><tr><td colspan="7">Loading...</td></tr></tbody></table></div>`;
+    host.appendChild(sec);
+    async function load(){
+      const rows=document.getElementById('cmUserRows'); rows.innerHTML='<tr><td colspan="7">Loading...</td></tr>';
+      try{
+        const users=await window.CMSupabase.listUserProfiles();
+        rows.innerHTML=users.map(u=>`<tr><td><b>${esc2(u.username)}</b></td><td>${esc2(u.email)}</td><td><select class="cm-role" data-id="${u.user_id}">${ROLES.map(r=>`<option ${r===u.role?'selected':''}>${r}</option>`).join('')}</select></td><td>${esc2((u.allowed_modules||[]).join(', '))}</td><td>${esc2((u.write_modules||[]).join(', ')||'Read only')}</td><td>${u.active?'Active':'Disabled'}</td><td><button class="btn light cm-toggle" data-id="${u.user_id}" data-active="${u.active?'1':'0'}">${u.active?'Disable':'Enable'}</button></td></tr>`).join('') || '<tr><td colspan="7">No users found.</td></tr>';
+        rows.querySelectorAll('.cm-role').forEach(s=>s.addEventListener('change',async()=>{try{await window.CMSupabase.updateUserRole(s.dataset.id,s.value); await load(); alert('Role updated.');}catch(e){alert(e.message||e)}}));
+        rows.querySelectorAll('.cm-toggle').forEach(x=>x.addEventListener('click',async()=>{try{await window.CMSupabase.setUserActive(x.dataset.id,x.dataset.active!=='1'); await load();}catch(e){alert(e.message||e)}}));
+      }catch(e){rows.innerHTML='<tr><td colspan="7">'+esc2(e.message||e)+'</td></tr>';}
+    }
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); sec.classList.add('active');
+      document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+      const t=document.getElementById('pageTitle'); if(t)t.textContent='Users & Roles'; load();
+    });
+    document.getElementById('cmRefreshUsers').addEventListener('click',load);
+  }
+  window.addEventListener('cm:erp-profile-ready',buildUserManager);
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(buildUserManager,500));
+})();
+</script>
+
+</body></html>`);w.document.close();
   }
   $("exportEmployeeListBtn")?.addEventListener("click",openExportEmployee);
   $("closeExportEmployeeModal")?.addEventListener("click",()=>$("exportEmployeeModal").classList.add("hidden"));
@@ -2699,6 +2780,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+
+
+<script>
+(function(){
+  const ROLES=['Admin','HR','Accounts','Payroll','Manager','Viewer'];
+  function esc2(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+  async function buildUserManager(){
+    const p=window.CMERPUser;
+    if(!p || p.role!=='Admin' || location.pathname.toLowerCase().includes('leave.html')) return;
+    const nav=document.querySelector('.sidebar .nav');
+    if(!nav || document.getElementById('cmUsersRoleNav')) return;
+    const b=document.createElement('button'); b.id='cmUsersRoleNav'; b.className='navbtn';
+    b.innerHTML='<span class="ico">🔐</span><span>Users & Roles</span>';
+    nav.appendChild(b);
+    const host=document.querySelector('.content'); if(!host) return;
+    const sec=document.createElement('section'); sec.className='page'; sec.id='cmUsersRolesPage';
+    sec.innerHTML=`<div class="pagehead"><div><h2>Users & Roles</h2><p>Control ERP module access by role.</p></div><button class="btn orange" id="cmRefreshUsers">Refresh Users</button></div>
+      <div class="card" style="padding:18px;margin-bottom:16px"><b>Add a new login</b><div class="small" style="margin-top:7px;line-height:1.6">Supabase → Authentication → Users → Add user. For a simple username, use email format <b>username@civilmaster.local</b>, set a password and Auto Confirm. The new user appears here as Viewer; then assign the required role.</div></div>
+      <div class="card" style="padding:0;overflow:auto"><table style="width:100%;min-width:850px"><thead><tr><th>Username</th><th>Email / Login ID</th><th>Role</th><th>Read Access</th><th>Write Access</th><th>Status</th><th>Action</th></tr></thead><tbody id="cmUserRows"><tr><td colspan="7">Loading...</td></tr></tbody></table></div>`;
+    host.appendChild(sec);
+    async function load(){
+      const rows=document.getElementById('cmUserRows'); rows.innerHTML='<tr><td colspan="7">Loading...</td></tr>';
+      try{
+        const users=await window.CMSupabase.listUserProfiles();
+        rows.innerHTML=users.map(u=>`<tr><td><b>${esc2(u.username)}</b></td><td>${esc2(u.email)}</td><td><select class="cm-role" data-id="${u.user_id}">${ROLES.map(r=>`<option ${r===u.role?'selected':''}>${r}</option>`).join('')}</select></td><td>${esc2((u.allowed_modules||[]).join(', '))}</td><td>${esc2((u.write_modules||[]).join(', ')||'Read only')}</td><td>${u.active?'Active':'Disabled'}</td><td><button class="btn light cm-toggle" data-id="${u.user_id}" data-active="${u.active?'1':'0'}">${u.active?'Disable':'Enable'}</button></td></tr>`).join('') || '<tr><td colspan="7">No users found.</td></tr>';
+        rows.querySelectorAll('.cm-role').forEach(s=>s.addEventListener('change',async()=>{try{await window.CMSupabase.updateUserRole(s.dataset.id,s.value); await load(); alert('Role updated.');}catch(e){alert(e.message||e)}}));
+        rows.querySelectorAll('.cm-toggle').forEach(x=>x.addEventListener('click',async()=>{try{await window.CMSupabase.setUserActive(x.dataset.id,x.dataset.active!=='1'); await load();}catch(e){alert(e.message||e)}}));
+      }catch(e){rows.innerHTML='<tr><td colspan="7">'+esc2(e.message||e)+'</td></tr>';}
+    }
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); sec.classList.add('active');
+      document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+      const t=document.getElementById('pageTitle'); if(t)t.textContent='Users & Roles'; load();
+    });
+    document.getElementById('cmRefreshUsers').addEventListener('click',load);
+  }
+  window.addEventListener('cm:erp-profile-ready',buildUserManager);
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(buildUserManager,500));
+})();
+</script>
 
 </body>
 </html>
