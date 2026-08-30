@@ -2644,14 +2644,33 @@ document.addEventListener("DOMContentLoaded", () => {
   function getExpiryAlerts(){
     const today=new Date(); today.setHours(0,0,0,0);
     const alerts=[];
-    data.employees.forEach((e,employeeIndex)=>(e.documents||[]).forEach((d,docIndex)=>{
-      if(!d.expiryDate) return;
-      const dt=new Date(d.expiryDate+"T00:00:00");
-      const days=Math.ceil((dt-today)/86400000);
-      if(days>90) return;
-      const f=ensureDocFollowup(d);
-      alerts.push({employeeIndex,docIndex,e,d,days,f});
-    }));
+    (data.employees||[]).forEach((e,employeeIndex)=>{
+      // Employee documents
+      (e.documents||[]).forEach((d,itemIndex)=>{
+        const expiry=d.expiryDate||d.expiry||d.expiry_date||"";
+        if(!expiry) return;
+        const dt=new Date(expiry+"T00:00:00");
+        if(Number.isNaN(dt.getTime())) return;
+        const days=Math.ceil((dt-today)/86400000);
+        if(days>90) return;
+        const f=ensureDocFollowup(d);
+        alerts.push({employeeIndex,itemIndex,kind:"document",e,item:d,days,f,expiry,
+          type:d.type||d.documentType||"Document"});
+      });
+
+      // Technical certificates
+      (e.technicalCertificates||[]).forEach((c,itemIndex)=>{
+        const expiry=c.expiryDate||c.expiry||c.expiry_date||"";
+        if(!expiry) return;
+        const dt=new Date(expiry+"T00:00:00");
+        if(Number.isNaN(dt.getTime())) return;
+        const days=Math.ceil((dt-today)/86400000);
+        if(days>90) return;
+        const f=ensureDocFollowup(c);
+        alerts.push({employeeIndex,itemIndex,kind:"certificate",e,item:c,days,f,expiry,
+          type:c.type||c.certificateType||c.name||"Technical Certificate"});
+      });
+    });
     return alerts.sort((a,b)=>a.days-b.days);
   }
 
@@ -2679,8 +2698,8 @@ document.addEventListener("DOMContentLoaded", () => {
               <small>${esc(a.e.actualDesignation||"")}</small>
             </div>
             <div class="expiry-doc">
-              <b>${esc(a.d.type||"Document")}</b>
-              <small>Expiry: ${esc(a.d.expiryDate)}</small>
+              <b>${esc(a.type||"Document")}${a.kind==="certificate"?" · Technical Certificate":""}</b>
+              <small>Expiry: ${esc(a.expiry||"-")}</small>
             </div>
             <div class="expiry-days ${dayClass}">${dayText}</div>
             <div class="expiry-status">
@@ -2691,7 +2710,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <small>Next follow-up</small>
             </div>
             <div>
-              <button class="btn orange expiry-action-btn" type="button" data-open-followup="${a.employeeIndex}-${a.docIndex}">Update</button>
+              <button class="btn orange expiry-action-btn" type="button" data-open-followup="${a.employeeIndex}|${a.kind}|${a.itemIndex}">Update</button>
             </div>
           </div>`;
         }).join("")}
@@ -2722,14 +2741,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if(e.target.dataset.openFollowup!==undefined){
-      const [employeeIndex,docIndex]=e.target.dataset.openFollowup.split("-").map(Number);
+      const [employeeIndexRaw,kind,itemIndexRaw]=e.target.dataset.openFollowup.split("|");
+      const employeeIndex=Number(employeeIndexRaw), itemIndex=Number(itemIndexRaw);
       const emp=data.employees[employeeIndex];
-      const doc=emp?.documents?.[docIndex];
-      if(!emp || !doc) return;
-      const f=ensureDocFollowup(doc);
-      followupDrawerTarget={employeeIndex,docIndex};
-      $("followupDrawerTitle").textContent=`Update Follow-up — ${doc.type||"Document"}`;
-      $("followupDrawerSub").textContent=`${emp.employeeName||"-"} (${emp.employeeCode||"-"}) · Expiry: ${doc.expiryDate||"-"}`;
+      const item=kind==="certificate" ? emp?.technicalCertificates?.[itemIndex] : emp?.documents?.[itemIndex];
+      if(!emp || !item) return;
+      const f=ensureDocFollowup(item);
+      followupDrawerTarget={employeeIndex,kind,itemIndex};
+      const itemType=item.type||item.certificateType||item.documentType||item.name||(kind==="certificate"?"Technical Certificate":"Document");
+      const expiry=item.expiryDate||item.expiry||item.expiry_date||"";
+      $("followupDrawerTitle").textContent=`Update Follow-up — ${itemType}`;
+      $("followupDrawerSub").textContent=`${emp.employeeName||"-"} (${emp.employeeCode||"-"}) · Expiry: ${expiry||"-"}`;
       $("drawerFollowupStatus").value=f.status||"Pending";
       $("drawerFollowupDate").value=f.nextDate||"";
       $("drawerFollowupRemarks").value=f.remarks||"";
@@ -2747,11 +2769,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   $("saveFollowupDrawer").addEventListener("click",()=>{
     if(!followupDrawerTarget) return;
-    const {employeeIndex,docIndex}=followupDrawerTarget;
+    const {employeeIndex,kind,itemIndex}=followupDrawerTarget;
     const emp=data.employees[employeeIndex];
-    const doc=emp?.documents?.[docIndex];
-    if(!doc) return;
-    const f=ensureDocFollowup(doc);
+    const item=kind==="certificate" ? emp?.technicalCertificates?.[itemIndex] : emp?.documents?.[itemIndex];
+    if(!item) return;
+    const f=ensureDocFollowup(item);
 
     f.status=$("drawerFollowupStatus").value;
     f.nextDate=$("drawerFollowupDate").value;
