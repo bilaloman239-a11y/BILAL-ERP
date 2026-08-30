@@ -2177,6 +2177,19 @@ document.addEventListener("DOMContentLoaded", () => {
       if([...el.options].some(o=>o.value===current)) el.value=current;
     });
   }
+  function expDoc(e, kind){
+    const docs = Array.isArray(e?.documents) ? e.documents : [];
+    let found;
+    if(kind==="passport"){
+      found = docs.find(d => String(d?.type||"").toLowerCase().includes("passport"));
+    }else if(kind==="eid"){
+      found = docs.find(d => {
+        const t = String(d?.type||"").toLowerCase();
+        return t.includes("emirates") || t.includes("id card") || t==="eid" || t.includes("identity");
+      });
+    }
+    return found || {number:"", expiryDate:""};
+  }
   function getFilteredEmployees(){
     const q=($("employeeSearch")?.value||"").trim().toLowerCase();
     const actual=$("afActualDesignation")?.value||"";
