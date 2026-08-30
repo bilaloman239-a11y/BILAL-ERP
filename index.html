@@ -2567,15 +2567,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }else{
       const limit=filter==="exp30"?30:filter==="exp60"?60:90;
       const rows=dashboardExpiryAlerts()
-        .filter(a=>a.days>=0 && a.days<=limit)
+        .filter(a=>a.days<=limit)
         .sort((a,b)=>a.days-b.days);
 
       title.textContent=`Documents Expiring Within ${limit} Days`;
       sub.textContent=`${rows.length} document${rows.length===1?"":"s"}`;
 
       box.innerHTML=rows.length?rows.map(a=>{
-        const cls=a.days<=30?"a30":a.days<=60?"a60":"a90";
-        const label=a.days===0?"Expires today":`${a.days} days left`;
+        const cls=a.days<0?"a30":a.days<=30?"a30":a.days<=60?"a60":"a90";
+        const label=a.days<0?`Expired ${Math.abs(a.days)} day${Math.abs(a.days)===1?"":"s"} ago`:a.days===0?"Expires today":`${a.days} days left`;
         return `<div class="dashboard-list-row">
           <div class="dashboard-list-main">
             <b>${esc(a.employee||"-")} (${esc(a.code||"-")})</b>
@@ -2693,7 +2693,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Count unique employees with at least one Document or Technical Certificate
     // expiring in the selected window, so one employee is not counted many times.
     const alerts=dashboardExpiryAlerts();
-    const uniqueCount=limit=>new Set(alerts.filter(a=>a.days>=0 && a.days<=limit).map(a=>a.employeeIndex)).size;
+    const uniqueCount=limit=>new Set(alerts.filter(a=>a.days<=limit).map(a=>a.employeeIndex)).size;
     $("exp30").textContent=uniqueCount(30);
     $("exp60").textContent=uniqueCount(60);
     $("exp90").textContent=uniqueCount(90);
