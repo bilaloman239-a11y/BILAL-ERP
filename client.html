@@ -92,12 +92,16 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 
 </head>
 <body>
+<script>
+(function(){var k='cm_logged_in_v3';if(sessionStorage.getItem(k)!=='1'&&localStorage.getItem(k)!=='1')location.replace('index.html');})();
+</script>
 <header>
   <div><h1>Client Management Portal</h1><div class="sub">Clients • Projects • Documents</div></div>
   <div class="header-actions">
     <button class="btn btn-light" onclick="location.href='index.html'">← Employee Portal</button>
     <button class="btn btn-light" type="button" onclick="location.href='subcontractor.html'">🏗️ Sub Contractor Portal</button>
     <button class="btn btn-light" type="button" onclick="location.href='site.html'">📍 Site Management</button>
+    <button class="btn btn-light" type="button" onclick="location.href='payroll.html'">💵 Payroll</button>
     <button class="btn btn-orange" onclick="openClientForm()">+ Add New Client</button>
   </div>
 </header>
@@ -115,6 +119,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 
   <div class="cm-erp-sidebar-title">Human Capital</div>
   <button class="nav-btn cm-erp-link" type="button" onclick="location.href='index.html'"><span class="cm-erp-icon">👥</span><span class="cm-erp-label">Employee Management</span></button>
+  <button class="nav-btn cm-erp-link" type="button" onclick="location.href='payroll.html'"><span class="cm-erp-icon">💵</span><span class="cm-erp-label">Payroll / Salary</span></button>
 
   <div class="cm-erp-sidebar-title">Vendor Management</div>
   <button class="nav-btn cm-erp-link" type="button" onclick="location.href='subcontractor.html'"><span class="cm-erp-icon">🏗</span><span class="cm-erp-label">Sub Contractors</span></button>
@@ -236,8 +241,9 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 const CLIENT_KEY='cm_client_portal_clients_v1';
 const PROJECT_KEY='cm_client_portal_projects_v1';
 const EMIRATES=['Abu Dhabi','Dubai','Sharjah','Ajman','Umm Al Quwain','Ras Al Khaimah','Fujairah'];
-let clients=JSON.parse(localStorage.getItem(CLIENT_KEY)||'[]');
-let projects=JSON.parse(localStorage.getItem(PROJECT_KEY)||'[]');
+function loadJson(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}}
+let clients=loadJson(CLIENT_KEY,[]);
+let projects=loadJson(PROJECT_KEY,[]);
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
@@ -245,16 +251,31 @@ const daysTo=d=>{if(!d)return null;const x=new Date(d+'T00:00:00');const t=new D
 const expiryBadge=d=>{const n=daysTo(d);if(n===null)return '<span class="badge gray">No Date</span>';if(n<0)return '<span class="badge red">Expired</span>';if(n<=60)return '<span class="badge orange">Expiring</span>';return '<span class="badge green">Valid</span>'};
 
 function saveAll(){localStorage.setItem(CLIENT_KEY,JSON.stringify(clients));localStorage.setItem(PROJECT_KEY,JSON.stringify(projects));renderAll()}
-function switchView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav-btn[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));window.scrollTo(0,0)}
+function switchView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn[data-view]').forEach(b=>{
+    const on=b.dataset.view===id;
+    b.classList.toggle('active',on);
+    b.classList.toggle('cm-active',on);
+  });
+  window.scrollTo(0,0);
+}
 document.querySelectorAll('.nav-btn[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
 
 function fillSelects(){
+  const keepState=document.getElementById('clientStateFilter')?.value||'';
+  const keepProjectClient=document.getElementById('projectClientFilter')?.value||'';
   const opts='<option value="">Select Emirate</option>'+EMIRATES.map(x=>`<option>${x}</option>`).join('');
   ['cState'].forEach(id=>document.getElementById(id).innerHTML=opts);
   document.getElementById('clientStateFilter').innerHTML='<option value="">All Emirates</option>'+EMIRATES.map(x=>`<option>${x}</option>`).join('');
   const cOpts='<option value="">Select Client</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
   document.getElementById('pClient').innerHTML=cOpts;
   document.getElementById('projectClientFilter').innerHTML='<option value="">All Clients</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  const st=document.getElementById('clientStateFilter');
+  const pc=document.getElementById('projectClientFilter');
+  if(st&&[...st.options].some(o=>o.value===keepState)) st.value=keepState;
+  if(pc&&[...pc.options].some(o=>o.value===keepProjectClient)) pc.value=keepProjectClient;
 }
 function clientName(id){return clients.find(c=>c.id===id)?.name||'-'}
 

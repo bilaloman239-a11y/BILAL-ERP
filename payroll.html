@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payroll & Salary Management Portal</title>
+<style>
+:root{
+ --navy:#12344a;--navy2:#173b67;--blue:#2e6fae;--orange:#f59e0b;--bg:#f4f7fb;
+ --card:#fff;--text:#1f2937;--muted:#6b7280;--line:#dbe4ef;--green:#15803d;--red:#dc2626;--amber:#d97706
+}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{height:68px;background:linear-gradient(90deg,var(--navy2),var(--blue));color:white;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:40;box-shadow:0 2px 10px #0002}
+header h1{margin:0;font-size:20px}.sub{font-size:12px;opacity:.86;margin-top:3px}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap}
+.app{display:flex;min-height:calc(100vh - 68px)}
+.sidebar{width:255px;background:var(--navy);color:white;padding:14px 10px;flex-shrink:0}
+.nav-title{color:#89bfdc;font-size:11px;letter-spacing:.09em;text-transform:uppercase;padding:10px 7px 6px;margin-top:6px}
+.nav-btn{width:100%;min-height:43px;border:0;background:transparent;color:#f4f8fb;display:flex;align-items:center;gap:11px;text-align:left;padding:10px 12px;border-radius:7px;margin:1px 0;font-size:14px;font-weight:600;cursor:pointer}
+.nav-btn:hover{background:#17465f}.nav-btn.active{background:#1976c9}.ico{width:20px;text-align:center}
+.content{flex:1;padding:22px;overflow:auto}.view{display:none}.view.active{display:block}
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.page-head h2{margin:0;font-size:24px}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:750;font-size:13px;cursor:pointer}.btn-primary{background:var(--blue);color:#fff}.btn-orange{background:var(--orange);color:#fff}.btn-light{background:#edf3f8;color:var(--navy2)}.btn-danger{background:#fee2e2;color:#991b1b}.btn-green{background:#dcfce7;color:#166534}
+.cards{display:grid;grid-template-columns:repeat(5,minmax(155px,1fr));gap:12px;margin-bottom:16px}
+.card,.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(36,91,149,.06);margin-bottom:14px}
+.stat .label{font-size:12px;color:var(--muted)}.stat .value{font-size:28px;font-weight:850;color:var(--navy2);margin-top:7px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;font:inherit;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#73a9d8;box-shadow:0 0 0 3px #dcecf9}
+.search{max-width:330px}
+.wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:1150px}th,td{padding:10px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px;vertical-align:top}th{background:#f7f9fc;color:#374151;white-space:nowrap}
+tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:pointer}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}.green{background:#dcfce7;color:#166534}.red{background:#fee2e2;color:#991b1b}.orange{background:#ffedd5;color:#9a3412}.gray{background:#e5e7eb;color:#374151}.blue{background:#dbeafe;color:#1d4ed8}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.field label{display:block;font-size:12px;font-weight:750;margin-bottom:6px}.span2{grid-column:span 2}.span3{grid-column:span 3}
+.section-title{font-size:16px;font-weight:850;color:var(--navy2);padding-bottom:9px;border-bottom:2px solid #e9eff6;margin:0 0 14px}
+.notice{padding:11px 13px;border:1px solid #bfdbfe;background:#eff6ff;color:#1e40af;border-radius:9px;font-size:13px;margin-bottom:12px}
+.warn{padding:11px 13px;border:1px solid #fed7aa;background:#fff7ed;color:#9a3412;border-radius:9px;font-size:13px;margin-bottom:12px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:100;align-items:center;justify-content:center;padding:18px}.modal.show{display:flex}
+.modalbox{background:#fff;width:min(900px,96vw);max-height:92vh;overflow:auto;border-radius:16px;padding:20px}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modalhead h3{margin:0;color:var(--navy2)}
+.pay-input{min-width:105px;padding:7px!important}
+.mini{font-size:11px;color:var(--muted)}
+.total-row td{font-weight:850;background:#f7fbff}.holiday-changed td{background:#fffaf0}
+@media(max-width:1050px){.cards{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.app{display:block}.sidebar{width:100%;display:flex;overflow:auto}.nav-title{display:none}.nav-btn{min-width:175px}.content{padding:13px}.cards,.form-grid{grid-template-columns:1fr}.span2,.span3{grid-column:span 1}}
+</style>
+</head>
+<body>
+<script>
+(function(){var k='cm_logged_in_v3';if(sessionStorage.getItem(k)!=='1'&&localStorage.getItem(k)!=='1')location.replace('index.html');})();
+</script>
+<header>
+ <div><h1>Payroll & Salary Management Portal</h1><div class="sub">Salary Setup • Timesheet • Allowance • Deduction Ledger • Payroll History</div></div>
+ <div class="header-actions">
+  <button class="btn btn-light" type="button" onclick="location.href='index.html'">Employee Portal</button>
+  <button class="btn btn-light" type="button" onclick="location.href='client.html'">Client Portal</button>
+  <button class="btn btn-light" type="button" onclick="location.href='subcontractor.html'">Sub Contractor Portal</button>
+  <button class="btn btn-light" type="button" onclick="location.href='site.html'">Site Management</button>
+ </div>
+</header>
+<div class="app">
+<aside class="sidebar">
+ <div class="nav-title">Launchpad</div>
+ <button class="nav-btn active" data-view="dashboard"><span class="ico">⌂</span>Dashboard</button>
+ <div class="nav-title">Payroll Master</div>
+ <button class="nav-btn" data-view="employees"><span class="ico">👥</span>Payroll Employees</button>
+ <button class="nav-btn" data-view="rates"><span class="ico">💵</span>Salary / Rate History</button>
+ <button class="nav-btn" data-view="deductions"><span class="ico">📒</span>Deduction Ledger</button>
+ <div class="nav-title">Monthly Process</div>
+ <button class="nav-btn" data-view="timesheet"><span class="ico">🕒</span>Timesheet</button>
+ <button class="nav-btn" data-view="payroll"><span class="ico">🧮</span>Payroll Calculation</button>
+ <button class="nav-btn" data-view="history"><span class="ico">📚</span>Payroll History</button>
+ <div class="nav-title">Master Portals</div>
+ <button class="nav-btn" type="button" onclick="location.href='index.html'"><span class="ico">👥</span>Employee Management</button>
+ <button class="nav-btn" type="button" onclick="location.href='client.html'"><span class="ico">🏢</span>Clients & Projects</button>
+ <button class="nav-btn" type="button" onclick="location.href='subcontractor.html'"><span class="ico">🏗</span>Sub Contractors</button>
+ <button class="nav-btn" type="button" onclick="location.href='site.html'"><span class="ico">📍</span>Site Management</button>
+</aside>
+
+<main class="content">
+<section id="dashboard" class="view active">
+ <div class="page-head"><h2>Dashboard</h2></div>
+ <div class="cards">
+  <div class="card stat"><div class="label">Active Company Employees</div><div class="value" id="dActive">0</div></div>
+  <div class="card stat"><div class="label">Payroll Setup Complete</div><div class="value" id="dSetup">0</div></div>
+  <div class="card stat"><div class="label">Hourly Employees</div><div class="value" id="dHourly">0</div></div>
+  <div class="card stat"><div class="label">Monthly Employees</div><div class="value" id="dMonthly">0</div></div>
+  <div class="card stat"><div class="label">Outstanding Deductions</div><div class="value" id="dDeduct">0.00</div></div>
+ </div>
+ <div class="box"><h3 style="margin-top:0;color:var(--navy2)">Payroll Status</h3><div id="dashboardStatus"></div></div>
+</section>
+
+<section id="employees" class="view">
+ <div class="page-head"><h2>Payroll Employees</h2><button class="btn btn-primary" onclick="syncEmployees()">Sync Active Employees</button></div>
+ <div class="notice">Active Company Employees from the Employee Portal are read here automatically. When setting up salary, select Hourly or Monthly Basic.</div>
+ <div class="toolbar"><input id="empSearch" class="search" placeholder="Search employee, code, designation..." oninput="renderEmployees()"></div>
+ <div class="wrap"><table><thead><tr><th>Code</th><th>Employee</th><th>Designation</th><th>Salary Type</th><th>Current Rate / Basic</th><th>Basic Hours</th><th>Deduction Balance</th><th>Status</th><th>Action</th></tr></thead><tbody id="empRows"></tbody></table></div>
+</section>
+
+<section id="rates" class="view">
+ <div class="page-head"><h2>Salary / Rate History</h2></div>
+ <div class="toolbar"><input id="rateSearch" class="search" placeholder="Search employee..." oninput="renderRateHistory()"></div>
+ <div class="wrap"><table><thead><tr><th>Employee</th><th>Effective From</th><th>Salary Type</th><th>Hourly Rate</th><th>Basic Salary</th><th>Basic Hours</th><th>NOT Multiplier</th><th>HOT Multiplier</th><th>Remarks</th></tr></thead><tbody id="rateRows"></tbody></table></div>
+</section>
+
+<section id="deductions" class="view">
+ <div class="page-head"><h2>Deduction Ledger</h2><button class="btn btn-orange" onclick="openDeduction()">+ Add Deduction / Advance</button></div>
+ <div class="toolbar"><input id="dedSearch" class="search" placeholder="Search employee, type, reference..." oninput="renderDeductions()"><select id="dedEmployeeFilter" style="max-width:250px" onchange="renderDeductions()"></select></div>
+ <div class="wrap"><table><thead><tr><th>Date</th><th>Employee</th><th>Type</th><th>Description</th><th>Added</th><th>Recovery / Credit</th><th>Balance After</th><th>Reference</th></tr></thead><tbody id="dedRows"></tbody></table></div>
+</section>
+
+<section id="timesheet" class="view">
+ <div class="page-head"><h2>Timesheet</h2></div>
+ <div class="box">
+  <div class="form-grid">
+   <div class="field"><label>Month</label><input id="tsMonth" type="month" onchange="renderTimesheet()"></div>
+   <div class="field"><label>Upload Timesheet (CSV or Excel)</label><input id="tsFile" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" onchange="importTimesheet(event)"></div>
+   <div class="field"><label>Sample Format</label><button class="btn btn-light" type="button" onclick="downloadTimesheetSample()">Download Sample CSV</button></div>
+  </div>
+  <div class="mini" style="margin-top:9px">Default weekly holiday is Sunday. After uploading a timesheet, you can change each employee's Holiday Day below to Friday / Saturday / Sunday. Hours worked on the employee's selected weekly holiday count as HOT; on a normal working day, hours up to Basic Hours count as Normal and any extra hours count as NOT.</div>
+ </div>
+ 
+ <div class="box">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+   <div>
+    <h3 style="margin:0;color:var(--navy2)">Employee Weekly Holiday Review</h3>
+    <div class="mini" style="margin-top:4px">Default = Sunday. Change only the employees whose weekly holiday is Friday or Saturday. Setting is saved month-wise.</div>
+   </div>
+   <button class="btn btn-light" type="button" onclick="resetMonthHolidays()">Reset Month to Sunday</button>
+  </div>
+  <div class="wrap">
+   <table style="min-width:900px">
+    <thead><tr><th>Employee Code</th><th>Employee Name</th><th>Salary Type</th><th>Basic Hours</th><th>Holiday Day</th><th>Effect</th></tr></thead>
+    <tbody id="holidayRows"></tbody>
+   </table>
+  </div>
+ </div>
+<div class="page-head" style="margin-top:10px"><h3 style="margin:0">Manual Timesheet Entry</h3><button class="btn btn-primary" onclick="openTimesheetEntry()">+ Add Entry</button></div>
+ <div class="wrap"><table><thead><tr><th>Date</th><th>Employee</th><th>Day Type</th><th>Total Worked Hours</th><th>Normal Hours</th><th>NOT</th><th>HOT</th><th>Action</th></tr></thead><tbody id="tsRows"></tbody></table></div>
+</section>
+
+<section id="payroll" class="view">
+ <div class="page-head"><h2>Payroll Calculation</h2><div><button class="btn btn-light" onclick="calculatePayroll()">Recalculate</button> <button class="btn btn-green" onclick="finalizePayroll()">Finalize Payroll</button></div></div>
+ <div class="box">
+  <div class="form-grid">
+   <div class="field"><label>Payroll Month</label><input id="payMonth" type="month" onchange="calculatePayroll()"></div>
+   <div class="field"><label>Payroll Status</label><input id="payStatusText" value="Draft" readonly></div>
+   <div class="field"><label>Rule</label><input value="Allowance editable • Deduction recovery editable" readonly></div>
+  </div>
+ </div>
+ <div class="wrap"><table style="min-width:1900px"><thead><tr>
+  <th>Code</th><th>Employee</th><th>Salary Type</th><th>Basic / Rate</th><th>Normal Hrs</th><th>NOT Hrs</th><th>HOT Hrs</th>
+  <th>Normal / Basic Amount</th><th>NOT Amount</th><th>HOT Amount</th><th>Allowance Type / Remarks</th><th>Allowance</th>
+  <th>Deduction Balance</th><th>Deduct This Month</th><th>Gross</th><th>Net Salary</th>
+ </tr></thead><tbody id="payRows"></tbody></table></div>
+</section>
+
+<section id="history" class="view">
+ <div class="page-head"><h2>Payroll History</h2></div>
+ <div class="toolbar"><input id="histSearch" class="search" placeholder="Search month, employee..." oninput="renderPayrollHistory()"></div>
+ <div class="wrap"><table><thead><tr><th>Month</th><th>Finalized Date</th><th>Employee</th><th>Gross</th><th>Deduction</th><th>Net Salary</th><th>Allowance</th><th>Salary Type</th></tr></thead><tbody id="histRows"></tbody></table></div>
+</section>
+</main>
+</div>
+
+<!-- Salary Setup Modal -->
+<div id="salaryModal" class="modal"><div class="modalbox">
+ <div class="modalhead"><h3>Salary Setup</h3><button class="btn btn-light" onclick="closeSalary()">✕</button></div>
+ <div id="salaryEmpInfo" class="notice"></div>
+ <form onsubmit="saveSalarySetup(event)">
+  <input type="hidden" id="salaryEmpKey">
+  <div class="form-grid">
+   <div class="field"><label>Effective From *</label><input id="salaryEffective" type="date" required></div>
+   <div class="field"><label>Salary Type *</label><select id="salaryType" onchange="toggleSalaryType()" required><option value="">Select</option><option value="Hourly">Hourly</option><option value="Monthly">Monthly Basic</option></select></div>
+   <div class="field" id="hourlyBox"><label>Per Hour Rate</label><input id="hourlyRate" type="number" min="0" step="0.01"></div>
+   <div class="field" id="monthlyBox"><label>Basic Salary</label><input id="basicSalary" type="number" min="0" step="0.01"></div>
+   <div class="field"><label>Basic Hours / Day *</label><select id="basicHours"><option value="8">8 Hours</option><option value="10">10 Hours</option></select></div>
+   <div class="field"><label>NOT Multiplier</label><input id="notMultiplier" type="number" min="0" step="0.01" value="1.25"></div>
+   <div class="field"><label>HOT Multiplier</label><input id="hotMultiplier" type="number" min="0" step="0.01" value="1.50"></div>
+   <div class="field span3"><label>Remarks</label><textarea id="salaryRemarks" rows="2"></textarea></div>
+  </div><br>
+  <button type="button" class="btn btn-light" onclick="closeSalary()">Cancel</button>
+  <button class="btn btn-primary">Save Salary Setup</button>
+ </form>
+</div></div>
+
+<!-- Deduction Modal -->
+<div id="dedModal" class="modal"><div class="modalbox" style="max-width:650px">
+ <div class="modalhead"><h3>Add Deduction / Advance</h3><button class="btn btn-light" onclick="closeDeduction()">✕</button></div>
+ <form onsubmit="saveDeduction(event)">
+  <div class="form-grid">
+   <div class="field span2"><label>Employee *</label><select id="dedEmp" required></select></div>
+   <div class="field"><label>Date *</label><input id="dedDate" type="date" required></div>
+   <div class="field"><label>Type *</label><select id="dedType"><option>Salary Advance</option><option>Loan</option><option>Other Deduction</option><option>Fine</option><option>Ticket Recovery</option><option>Visa Recovery</option></select></div>
+   <div class="field"><label>Amount *</label><input id="dedAmount" type="number" min="0.01" step="0.01" required></div>
+   <div class="field"><label>Reference #</label><input id="dedRef"></div>
+   <div class="field span3"><label>Description / Remarks</label><textarea id="dedDesc" rows="2"></textarea></div>
+  </div><br>
+  <button type="button" class="btn btn-light" onclick="closeDeduction()">Cancel</button>
+  <button class="btn btn-orange">Add to Ledger</button>
+ </form>
+</div></div>
+
+<!-- Timesheet Modal -->
+<div id="tsModal" class="modal"><div class="modalbox" style="max-width:650px">
+ <div class="modalhead"><h3>Timesheet Entry</h3><button class="btn btn-light" onclick="closeTimesheetEntry()">✕</button></div>
+ <form onsubmit="saveTimesheetEntry(event)">
+  <div class="form-grid">
+   <div class="field span2"><label>Employee *</label><select id="tsEmp" required></select></div>
+   <div class="field"><label>Date *</label><input id="tsDate" type="date" required></div>
+   <div class="field"><label>Total Worked Hours *</label><input id="tsHours" type="number" min="0" step="0.25" required></div>
+   <div class="field"><label>Day Type *</label><select id="tsDayType"><option>Normal</option><option>Holiday</option></select></div>
+   <div class="field span3"><label>Remarks</label><textarea id="tsRemarks" rows="2"></textarea></div>
+  </div><br>
+  <button type="button" class="btn btn-light" onclick="closeTimesheetEntry()">Cancel</button>
+  <button class="btn btn-primary">Save Entry</button>
+ </form>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const EMP_KEY='cm_employee_portal_v3';
+const PAY_KEY='cm_payroll_master_v1';
+const DED_KEY='cm_payroll_deduction_ledger_v1';
+const TS_KEY='cm_payroll_timesheets_v1';
+const HIST_KEY='cm_payroll_history_v1';
+const HOL_KEY='cm_payroll_holiday_settings_v1';
+
+let employees=[],allEmployees=[],payMaster=get(PAY_KEY,{}),deductions=get(DED_KEY,[]),timesheets=get(TS_KEY,[]),payHistory=get(HIST_KEY,[]),holidaySettings=get(HOL_KEY,{}),currentPayroll=[];
+
+function get(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}}
+function set(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
+function norm(v){return String(v??'').trim().toLowerCase()}
+function pad2(n){return String(n).padStart(2,'0')}
+function ymd(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
+function today(){return ymd(new Date())}
+function month(){return today().slice(0,7)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function money(v){return Number(v||0).toFixed(2)}
+
+function loadEmployees(){
+ const raw=get(EMP_KEY,{});
+ const arr=Array.isArray(raw)?raw:(raw.employees||raw.employeeList||raw.data?.employees||[]);
+ allEmployees=arr.map((e,i)=>({
+  key:'e:'+(e.id||e.employeeCode||e.empCode||e.code||i),
+  code:e.employeeCode||e.empCode||e.code||'',
+  name:e.employeeName||e.name||e.fullName||'',
+  designation:e.actualDesignation||e.designation||e.craft||'',
+  status:e.employeeStatus||e.status||'Active',
+  joiningDate:e.joiningDate||e.joinDate||''
+ })).filter(e=>e.name);
+ employees=allEmployees.filter(e=>norm(e.status)!=='inactive');
+}
+function empByKey(k){return employees.find(e=>e.key===k)}
+// Looks up an employee by key across active AND inactive records, so payroll/ledger
+// history for someone who has since left still shows their real name instead of a raw key.
+function empByKeyAny(k){return allEmployees.find(e=>e.key===k)||employees.find(e=>e.key===k)}
+function setup(k){return payMaster[k]||null}
+function currentRate(k,ym){
+ const p=payMaster[k]; if(!p||!Array.isArray(p.history)||!p.history.length)return null;
+ const end=ym+'-31';
+ return p.history.filter(h=>h.effectiveFrom<=end).sort((a,b)=>b.effectiveFrom.localeCompare(a.effectiveFrom))[0]||null
+}
+function ledgerBalance(empKey){
+ return deductions.filter(x=>x.empKey===empKey).reduce((s,x)=>s+Number(x.added||0)-Number(x.recovery||0),0)
+}
+function syncEmployees(){loadEmployees();renderAll();alert('Active Company Employees synchronized from Employee Portal.')}
+function showView(id,b){
+ document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav-btn[data-view]').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');renderAll()
+}
+document.querySelectorAll('.nav-btn[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view,b)));
+
+function renderDashboard(){
+ dActive.textContent=employees.length;
+ const setups=employees.filter(e=>setup(e.key)?.history?.length);
+ dSetup.textContent=setups.length;
+ dHourly.textContent=setups.filter(e=>currentRate(e.key,month())?.salaryType==='Hourly').length;
+ dMonthly.textContent=setups.filter(e=>currentRate(e.key,month())?.salaryType==='Monthly').length;
+ // Outstanding balance must include anyone with ledger history, even if they've since
+ // gone Inactive/left — otherwise unpaid advances/loans silently vanish from this total.
+ const ledgerEmpKeys=[...new Set(deductions.map(x=>x.empKey))];
+ dDeduct.textContent=money(ledgerEmpKeys.reduce((s,k)=>s+Math.max(0,ledgerBalance(k)),0));
+ const inactiveWithBalance=ledgerEmpKeys.filter(k=>!employees.some(e=>e.key===k)&&ledgerBalance(k)>0);
+ dashboardStatus.innerHTML=`<div class="wrap"><table><thead><tr><th>Employee</th><th>Salary Setup</th><th>Current Type</th><th>Deduction Balance</th></tr></thead><tbody>${employees.map(e=>{let r=currentRate(e.key,month());return `<tr><td>${esc(e.name)} (${esc(e.code||'-')})</td><td>${r?'<span class="badge green">Complete</span>':'<span class="badge orange">Pending</span>'}</td><td>${esc(r?.salaryType||'-')}</td><td>${money(Math.max(0,ledgerBalance(e.key)))}</td></tr>`}).join('')}${inactiveWithBalance.map(k=>{const e=empByKeyAny(k);return `<tr><td>${esc(e?.name||k)} (${esc(e?.code||'-')})</td><td><span class="badge gray">Inactive</span></td><td>-</td><td>${money(ledgerBalance(k))}</td></tr>`}).join('')}</tbody></table></div>`
+}
+function renderEmployees(){
+ const q=norm(empSearch.value);
+ const rows=employees.filter(e=>norm([e.code,e.name,e.designation].join(' ')).includes(q));
+ empRows.innerHTML=rows.length?rows.map(e=>{const r=currentRate(e.key,month());return `<tr>
+ <td>${esc(e.code||'-')}</td><td><b>${esc(e.name)}</b></td><td>${esc(e.designation||'-')}</td><td>${esc(r?.salaryType||'Not Set')}</td>
+ <td>${r?(r.salaryType==='Hourly'?'AED '+money(r.hourlyRate)+'/hr':'AED '+money(r.basicSalary)):'-'}</td><td>${r?.basicHours||'-'}</td>
+ <td>${money(Math.max(0,ledgerBalance(e.key)))}</td><td>${r?'<span class="badge green">Setup</span>':'<span class="badge orange">Pending</span>'}</td>
+ <td><button class="btn btn-primary" onclick="openSalary('${e.key}')">${r?'Change Salary / Rate':'Setup Salary'}</button></td></tr>`}).join(''):'<tr><td colspan="9">No active employees found.</td></tr>'
+}
+function openSalary(k){
+ const e=empByKey(k);if(!e)return;
+ salaryEmpKey.value=k;salaryEmpInfo.innerHTML='<b>'+esc(e.name)+'</b> | '+esc(e.code||'-')+' | '+esc(e.designation||'-');
+ salaryEffective.value=today();salaryType.value='';hourlyRate.value='';basicSalary.value='';basicHours.value='8';notMultiplier.value='1.25';hotMultiplier.value='1.50';salaryRemarks.value='';
+ const r=currentRate(k,month());if(r){salaryType.value=r.salaryType;hourlyRate.value=r.hourlyRate||'';basicSalary.value=r.basicSalary||'';basicHours.value=r.basicHours||8;notMultiplier.value=r.notMultiplier??1.25;hotMultiplier.value=r.hotMultiplier??1.5}
+ toggleSalaryType();salaryModal.classList.add('show')
+}
+function closeSalary(){salaryModal.classList.remove('show')}
+function toggleSalaryType(){hourlyBox.style.display=salaryType.value==='Hourly'?'block':'none';monthlyBox.style.display=salaryType.value==='Monthly'?'block':'none'}
+function saveSalarySetup(e){
+ e.preventDefault();const k=salaryEmpKey.value;if(!salaryType.value)return alert('Select Salary Type.');
+ if(salaryType.value==='Hourly'&&Number(hourlyRate.value)<=0)return alert('Per Hour Rate required.');
+ if(salaryType.value==='Monthly'&&Number(basicSalary.value)<=0)return alert('Basic Salary required.');
+ if(!payMaster[k])payMaster[k]={history:[]};
+ if(payMaster[k].history.some(x=>x.effectiveFrom===salaryEffective.value))return alert('Salary setup already exists for this Effective From date.');
+ payMaster[k].history.push({id:uid(),effectiveFrom:salaryEffective.value,salaryType:salaryType.value,hourlyRate:Number(hourlyRate.value||0),basicSalary:Number(basicSalary.value||0),basicHours:Number(basicHours.value),notMultiplier:Number(notMultiplier.value||1.25),hotMultiplier:Number(hotMultiplier.value||1.5),remarks:salaryRemarks.value.trim(),changedAt:new Date().toISOString()});
+ set(PAY_KEY,payMaster);
+ // A new/changed rate (e.g. Basic Hours) can change how already-entered timesheet
+ // hours split into Normal vs NOT/HOT, so recalculate every month that already has
+ // timesheet entries for this employee instead of leaving old splits stale.
+ const affectedMonths=[...new Set(timesheets.filter(x=>x.empKey===k).map(x=>x.date.slice(0,7)))];
+ affectedMonths.forEach(ym=>recalculateEmployeeMonth(k,ym));
+ closeSalary();renderAll()
+}
+function renderRateHistory(){
+ const q=norm(rateSearch.value),rows=[];
+ allEmployees.forEach(e=>(payMaster[e.key]?.history||[]).forEach(h=>rows.push({...h,emp:e})));
+ rows.sort((a,b)=>b.effectiveFrom.localeCompare(a.effectiveFrom));
+ rateRows.innerHTML=rows.filter(x=>norm([x.emp.name,x.emp.code].join(' ')).includes(q)).map(x=>`<tr><td>${esc(x.emp.name)} (${esc(x.emp.code||'-')})</td><td>${esc(x.effectiveFrom)}</td><td>${esc(x.salaryType)}</td><td>${x.salaryType==='Hourly'?money(x.hourlyRate):'-'}</td><td>${x.salaryType==='Monthly'?money(x.basicSalary):'-'}</td><td>${x.basicHours}</td><td>${x.notMultiplier}</td><td>${x.hotMultiplier}</td><td>${esc(x.remarks||'-')}</td></tr>`).join('')||'<tr><td colspan="9">No salary/rate history.</td></tr>'
+}
+function fillEmployeeSelects(){
+ const keepDedEmp=dedEmp.value,keepTsEmp=tsEmp.value,keepFilter=dedEmployeeFilter.value;
+ const opts='<option value="">Select Employee</option>'+employees.map(e=>`<option value="${e.key}">${esc(e.code||'-')} - ${esc(e.name)}</option>`).join('');
+ dedEmp.innerHTML=opts;tsEmp.innerHTML=opts;
+ if([...dedEmp.options].some(o=>o.value===keepDedEmp)) dedEmp.value=keepDedEmp;
+ if([...tsEmp.options].some(o=>o.value===keepTsEmp)) tsEmp.value=keepTsEmp;
+ // Filter dropdown also includes inactive employees who still have ledger history,
+ // so their entries can be found/filtered even after they've left.
+ const ledgerKeys=[...new Set(deductions.map(x=>x.empKey))];
+ const inactiveLedgerEmps=ledgerKeys.filter(k=>!employees.some(e=>e.key===k)).map(k=>empByKeyAny(k)).filter(Boolean);
+ dedEmployeeFilter.innerHTML='<option value="">All Employees</option>'
+  +employees.map(e=>`<option value="${e.key}">${esc(e.name)}</option>`).join('')
+  +inactiveLedgerEmps.map(e=>`<option value="${e.key}">${esc(e.name)} (Inactive)</option>`).join('');
+ if([...dedEmployeeFilter.options].some(o=>o.value===keepFilter)) dedEmployeeFilter.value=keepFilter;
+}
+function openDeduction(){fillEmployeeSelects();dedDate.value=today();dedAmount.value='';dedRef.value='';dedDesc.value='';dedModal.classList.add('show')}
+function closeDeduction(){dedModal.classList.remove('show')}
+function saveDeduction(e){
+ e.preventDefault();const emp=empByKey(dedEmp.value);if(!emp)return alert('Select employee.');
+ const amt=Number(dedAmount.value);if(amt<=0)return alert('Amount must be greater than zero.');
+ const before=ledgerBalance(emp.key),after=before+amt;
+ deductions.push({id:uid(),empKey:emp.key,date:dedDate.value,type:dedType.value,description:dedDesc.value.trim(),added:amt,recovery:0,balanceAfter:after,reference:dedRef.value.trim(),source:'Manual'});
+ set(DED_KEY,deductions);closeDeduction();renderAll()
+}
+function renderDeductions(){
+ const q=norm(dedSearch.value),ef=dedEmployeeFilter.value;
+ let bal={}; const rows=[...deductions].sort((a,b)=>(a.date+a.id).localeCompare(b.date+b.id)).map(x=>{bal[x.empKey]=(bal[x.empKey]||0)+Number(x.added||0)-Number(x.recovery||0);return {...x,calcBal:bal[x.empKey]}}).reverse();
+ dedRows.innerHTML=rows.filter(x=>(!ef||x.empKey===ef)&&norm([empByKeyAny(x.empKey)?.name,x.type,x.reference,x.description].join(' ')).includes(q)).map(x=>{const emp=empByKeyAny(x.empKey),isInactive=emp&&!employees.some(e=>e.key===x.empKey);return `<tr><td>${esc(x.date)}</td><td>${esc(emp?.name||x.empKey)}${isInactive?' <span class="badge gray">Inactive</span>':''}</td><td>${esc(x.type)}</td><td>${esc(x.description||'-')}</td><td>${x.added?money(x.added):'-'}</td><td>${x.recovery?money(x.recovery):'-'}</td><td><b>${money(x.calcBal)}</b></td><td>${esc(x.reference||'-')}</td></tr>`}).join('')||'<tr><td colspan="8">No deduction ledger entries.</td></tr>'
+}
+function openTimesheetEntry(){fillEmployeeSelects();tsDate.value=today();tsHours.value='';tsDayType.value='Normal';tsRemarks.value='';tsModal.classList.add('show')}
+function closeTimesheetEntry(){tsModal.classList.remove('show')}
+function weekdayName(date){
+ const d=new Date(date+'T12:00:00');
+ return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()];
+}
+function getHolidayDay(empKey,ym){
+ return holidaySettings?.[ym]?.[empKey]||'Sunday';
+}
+function setHolidayDay(empKey,day){
+ const ym=tsMonth.value||month();
+ if(!holidaySettings[ym])holidaySettings[ym]={};
+ holidaySettings[ym][empKey]=day||'Sunday';
+ set(HOL_KEY,holidaySettings);
+ recalculateEmployeeMonth(empKey,ym);
+ renderTimesheet();renderHolidayReview();calculatePayroll();
+}
+function resetMonthHolidays(){
+ const ym=tsMonth.value||month();
+ if(!confirm('Reset all employee weekly holidays for '+ym+' to Sunday?'))return;
+ holidaySettings[ym]={};
+ set(HOL_KEY,holidaySettings);
+ recalculateMonthTimesheets(ym);
+ renderTimesheet();renderHolidayReview();calculatePayroll();
+}
+function calculateHours(empKey,date,hours,dayType){
+ const r=currentRate(empKey,date.slice(0,7)); 
+ const basic=Number(r?.basicHours||8),h=Number(hours||0);
+ const holidayDay=getHolidayDay(empKey,date.slice(0,7));
+ const isWeeklyHoliday=weekdayName(date)===holidayDay;
+ const explicitHoliday=String(dayType||'').toLowerCase()==='holiday';
+ if(isWeeklyHoliday||explicitHoliday)return {normal:0,not:0,hot:h};
+ return {normal:Math.min(h,basic),not:Math.max(0,h-basic),hot:0}
+}
+function recalculateEmployeeMonth(empKey,ym){
+ timesheets.filter(x=>x.empKey===empKey&&x.date.startsWith(ym)).forEach(x=>{
+   const calc=calculateHours(x.empKey,x.date,x.hours,x.manualHoliday?'Holiday':'Normal');
+   x.normal=calc.normal;x.not=calc.not;x.hot=calc.hot;
+   x.dayType=(x.manualHoliday||weekdayName(x.date)===getHolidayDay(x.empKey,ym))?'Holiday':'Normal';
+ });
+ set(TS_KEY,timesheets);
+}
+function recalculateMonthTimesheets(ym){
+ employees.forEach(e=>recalculateEmployeeMonth(e.key,ym));
+}
+function renderHolidayReview(){
+ if(!document.getElementById('holidayRows'))return;
+ const ym=tsMonth.value||month();
+ holidayRows.innerHTML=employees.map(e=>{
+   const r=currentRate(e.key,ym),day=getHolidayDay(e.key,ym),changed=day!=='Sunday';
+   return `<tr class="${changed?'holiday-changed':''}">
+    <td>${esc(e.code||'-')}</td><td><b>${esc(e.name)}</b></td><td>${esc(r?.salaryType||'Not Set')}</td><td>${r?.basicHours||'-'}</td>
+    <td><select onchange="setHolidayDay('${e.key}',this.value)">
+      <option value="Sunday" ${day==='Sunday'?'selected':''}>Sunday</option>
+      <option value="Friday" ${day==='Friday'?'selected':''}>Friday</option>
+      <option value="Saturday" ${day==='Saturday'?'selected':''}>Saturday</option>
+    </select></td>
+    <td>${changed?'<span class="badge orange">Changed for '+esc(ym)+'</span>':'<span class="badge gray">Default Sunday</span>'}</td>
+   </tr>`
+ }).join('')||'<tr><td colspan="6">No active employees.</td></tr>';
+}
+function saveTimesheetEntry(e){
+ e.preventDefault();if(!empByKey(tsEmp.value))return alert('Select employee.');
+ const manualHoliday=tsDayType.value==='Holiday';
+ const calc=calculateHours(tsEmp.value,tsDate.value,tsHours.value,manualHoliday?'Holiday':'Normal');
+ const existing=timesheets.find(x=>x.empKey===tsEmp.value&&x.date===tsDate.value);
+ const autoType=(manualHoliday||weekdayName(tsDate.value)===getHolidayDay(tsEmp.value,tsDate.value.slice(0,7)))?'Holiday':'Normal';
+ const obj={id:existing?.id||uid(),empKey:tsEmp.value,date:tsDate.value,hours:Number(tsHours.value),dayType:autoType,manualHoliday,normal:calc.normal,not:calc.not,hot:calc.hot,remarks:tsRemarks.value.trim()};
+ if(existing)Object.assign(existing,obj);else timesheets.push(obj);
+ set(TS_KEY,timesheets);closeTimesheetEntry();renderAll()
+}
+function renderTimesheet(){
+ const ym=tsMonth.value||month();
+ renderHolidayReview();
+ const rows=timesheets.filter(x=>x.date.startsWith(ym)).sort((a,b)=>a.date.localeCompare(b.date));
+ tsRows.innerHTML=rows.map(x=>{
+  const hd=getHolidayDay(x.empKey,ym),isOff=weekdayName(x.date)===hd;
+  return `<tr><td>${x.date}<div class="mini">${weekdayName(x.date)}</div></td><td>${esc(empByKeyAny(x.empKey)?.name||x.empKey)}</td>
+  <td>${esc(x.dayType)}${isOff?'<div class="mini">Weekly Holiday: '+esc(hd)+'</div>':''}</td><td>${x.hours}</td><td>${x.normal}</td><td>${x.not}</td><td>${x.hot}</td>
+  <td><button class="btn btn-danger" onclick="deleteTs('${x.id}')">Delete</button></td></tr>`
+ }).join('')||'<tr><td colspan="8">No timesheet records for selected month.</td></tr>'
+}
+function deleteTs(id){if(!confirm('Delete this timesheet entry?'))return;timesheets=timesheets.filter(x=>x.id!==id);set(TS_KEY,timesheets);renderAll()}
+function downloadTimesheetSample(){
+ const csv='Employee Code,Date,Hours,Day Type\nCM001,2026-08-01,10,Normal\nCM001,2026-08-02,12,Normal\nCM001,2026-08-03,10,Normal\n';
+ const b=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Payroll_Timesheet_Sample.csv';a.click();URL.revokeObjectURL(a.href)
+}
+function normalizeImportedDate(v){
+ v=String(v??'').trim();if(!v)return '';
+ if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;
+ const m=v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+ if(m){
+  let day=Number(m[1]),mon=Number(m[2]);
+  if(mon>12&&day<=12){const t=day;day=mon;mon=t} // looks like it was actually M/D/Y, swap
+  return `${m[3]}-${String(mon).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+ }
+ const dt=new Date(v);
+ if(!Number.isNaN(dt.getTime()))return ymd(dt);
+ return '';
+}
+function processTimesheetRows(rows,sourceLabel){
+ const clean=rows.map(r=>r.map(c=>String(c??'').trim())).filter(r=>r.some(c=>c!==''));
+ if(clean.length<2)throw new Error('No rows');
+ const hdr=clean[0].map(x=>norm(x.replace(/^"|"$/g,'')));
+ const ixCode=hdr.findIndex(x=>x.includes('employee code')||x.includes('emp-no')||x==='code');
+ const ixDate=hdr.findIndex(x=>x==='date');
+ const ixHours=hdr.findIndex(x=>x.includes('hours')||x==='hour');
+ const ixType=hdr.findIndex(x=>x.includes('day type'));
+ if([ixCode,ixDate,ixHours].some(x=>x<0))throw new Error('Required columns missing: Employee Code, Date, Hours.');
+ let count=0;
+ clean.slice(1).forEach(c=>{
+  const emp=employees.find(e=>norm(e.code)===norm((c[ixCode]||'').replace(/^"|"$/g,'')));if(!emp)return;
+  const date=normalizeImportedDate((c[ixDate]||'').replace(/^"|"$/g,'')),hours=Number((c[ixHours]||'').replace(/^"|"$/g,'')||0);if(!date||Number.isNaN(hours))return;
+  const manualHoliday=ixType>=0 && /holiday/i.test(c[ixType]||'');
+  const calc=calculateHours(emp.key,date,hours,manualHoliday?'Holiday':'Normal');
+  const autoType=(manualHoliday||weekdayName(date)===getHolidayDay(emp.key,date.slice(0,7)))?'Holiday':'Normal';
+  let ex=timesheets.find(x=>x.empKey===emp.key&&x.date===date);
+  const obj={id:ex?.id||uid(),empKey:emp.key,date,hours,dayType:autoType,manualHoliday,normal:calc.normal,not:calc.not,hot:calc.hot,remarks:sourceLabel};
+  if(ex)Object.assign(ex,obj);else timesheets.push(obj);count++
+ });
+ set(TS_KEY,timesheets);renderAll();alert(count+' timesheet rows imported. Review Holiday Day employee-wise, then payroll will auto recalculate.');
+}
+function importTimesheet(ev){
+ const f=ev.target.files[0];if(!f)return;
+ const ext=(f.name.split('.').pop()||'').toLowerCase();
+ if(ext==='csv'){
+  const rd=new FileReader();
+  rd.onload=()=>{try{
+   const lines=String(rd.result).split(/\r?\n/).filter(x=>x.trim());
+   const rows=lines.map(line=>line.split(','));
+   processTimesheetRows(rows,'CSV Upload');
+  }catch(err){alert('Timesheet import failed: '+err.message)}finally{tsFile.value=''}};
+  rd.readAsText(f);
+  return;
+ }
+ if(ext==='xlsx'||ext==='xls'){
+  if(typeof XLSX==='undefined'){
+   alert('Excel reader could not load (needs an internet connection the first time). Please Save As CSV and try again, or reload the page while online.');
+   tsFile.value='';return;
+  }
+  const rd=new FileReader();
+  rd.onload=()=>{try{
+   const wb=XLSX.read(new Uint8Array(rd.result),{type:'array',cellDates:true});
+   const sheet=wb.Sheets[wb.SheetNames[0]];
+   const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,dateNF:'yyyy-mm-dd',defval:''});
+   processTimesheetRows(rows,'Excel Upload');
+  }catch(err){alert('Timesheet import failed: '+err.message)}finally{tsFile.value=''}};
+  rd.readAsArrayBuffer(f);
+  return;
+ }
+ alert('Unsupported file type. Please upload a .csv or .xlsx/.xls file.');
+ tsFile.value='';
+}
+function calcEmployeePayroll(emp,ym){
+ const r=currentRate(emp.key,ym);if(!r)return null;
+ const ts=timesheets.filter(x=>x.empKey===emp.key&&x.date.startsWith(ym));
+ const normalH=ts.reduce((s,x)=>s+Number(x.normal||0),0),notH=ts.reduce((s,x)=>s+Number(x.not||0),0),hotH=ts.reduce((s,x)=>s+Number(x.hot||0),0);
+ let normalAmt=0,notAmt=0,hotAmt=0;
+ if(r.salaryType==='Hourly'){
+  normalAmt=normalH*Number(r.hourlyRate||0);notAmt=notH*Number(r.hourlyRate||0)*Number(r.notMultiplier||1.25);hotAmt=hotH*Number(r.hourlyRate||0)*Number(r.hotMultiplier||1.5)
+ }else{
+  normalAmt=Number(r.basicSalary||0);
+  const baseHr=Number(r.basicSalary||0)/30/Number(r.basicHours||8);
+  notAmt=notH*baseHr*Number(r.notMultiplier||1.25);hotAmt=hotH*baseHr*Number(r.hotMultiplier||1.5)
+ }
+ return {emp,r,normalH,notH,hotH,normalAmt,notAmt,hotAmt,allowance:0,allowanceText:'',deduct:0,balance:Math.max(0,ledgerBalance(emp.key))}
+}
+let payrollDraftMonth='';
+function calculatePayroll(){
+ const ym=payMonth.value||month();
+ const existing=payHistory.find(x=>x.month===ym);
+ payStatusText.value=existing?'Finalized':'Draft';
+ if(existing){
+  payrollDraftMonth='';
+  // This month is locked. Show exactly what was finalized/paid — never a live
+  // recalculation — so screen numbers can't drift from the saved record just
+  // because timesheets/salary were edited afterward. No editable inputs either.
+  currentPayroll=[];
+  payRows.innerHTML=`<tr><td colspan="16"><div class="warn" style="margin:0">This month is already <b>Finalized</b> (on ${new Date(existing.finalizedAt).toLocaleString()}). The rows below are the locked, saved record — not a live recalculation. To change a finalized month's pay, adjustments must go through a new entry/correction; this table cannot be edited here.</div></td></tr>`
+   +existing.entries.map(x=>`<tr>
+    <td>${esc(x.employeeCode||'-')}</td><td><b>${esc(x.employeeName)}</b></td><td>${esc(x.salaryType)}</td><td>-</td>
+    <td>${x.normalH}</td><td>${x.notH}</td><td>${x.hotH}</td><td>${money(x.normalAmt)}</td><td>${money(x.notAmt)}</td><td>${money(x.hotAmt)}</td>
+    <td>${esc(x.allowanceText||'-')}</td><td>${money(x.allowance)}</td>
+    <td>-</td><td>${money(x.deduction)}</td>
+    <td>${money(x.gross)}</td><td><b>${money(x.net)}</b></td></tr>`).join('');
+  return;
+ }
+ const prev=payrollDraftMonth===ym?Object.fromEntries(currentPayroll.map(x=>[x.emp.key,{allowance:x.allowance,allowanceText:x.allowanceText,deduct:x.deduct}])):{};
+ payrollDraftMonth=ym;
+ currentPayroll=employees.map(e=>calcEmployeePayroll(e,ym)).filter(Boolean);
+ currentPayroll.forEach(x=>{const p=prev[x.emp.key];if(p){x.allowance=p.allowance;x.allowanceText=p.allowanceText;x.deduct=Math.min(Number(p.deduct||0),x.balance)}});
+ payRows.innerHTML=currentPayroll.map((x,i)=>{
+  const gross=x.normalAmt+x.notAmt+x.hotAmt+x.allowance,net=gross-x.deduct;
+  return `<tr><td>${esc(x.emp.code||'-')}</td><td><b>${esc(x.emp.name)}</b></td><td>${x.r.salaryType}</td><td>${x.r.salaryType==='Hourly'?money(x.r.hourlyRate)+'/hr':money(x.r.basicSalary)}</td>
+  <td>${x.normalH}</td><td>${x.notH}</td><td>${x.hotH}</td><td>${money(x.normalAmt)}</td><td>${money(x.notAmt)}</td><td>${money(x.hotAmt)}</td>
+  <td><input class="pay-input" value="${esc(x.allowanceText)}" oninput="setAllowanceText(${i},this.value)" placeholder="Site / Food / Other"></td>
+  <td><input class="pay-input" type="number" min="0" step="0.01" value="${x.allowance}" oninput="setAllowance(${i},this.value)"></td>
+  <td>${money(x.balance)}</td><td><input class="pay-input" type="number" min="0" max="${x.balance}" step="0.01" value="${x.deduct}" oninput="setDeduction(${i},this.value)"></td>
+  <td id="gross${i}">${money(gross)}</td><td id="net${i}"><b>${money(net)}</b></td></tr>`
+ }).join('')||'<tr><td colspan="16">No employees with salary setup.</td></tr>'
+}
+function refreshPayrollRow(i){
+ const x=currentPayroll[i];if(!x)return;const gross=x.normalAmt+x.notAmt+x.hotAmt+x.allowance,net=gross-x.deduct;
+ document.getElementById('gross'+i).textContent=money(gross);document.getElementById('net'+i).innerHTML='<b>'+money(net)+'</b>'
+}
+function setAllowance(i,v){currentPayroll[i].allowance=Math.max(0,Number(v||0));refreshPayrollRow(i)}
+function setAllowanceText(i,v){currentPayroll[i].allowanceText=v}
+function setDeduction(i,v){const x=currentPayroll[i];let n=Math.max(0,Number(v||0));if(n>x.balance){alert('Outstanding balance is only AED '+money(x.balance));n=x.balance}x.deduct=n;refreshPayrollRow(i)}
+function finalizePayroll(){
+ const ym=payMonth.value||month();if(payHistory.some(x=>x.month===ym))return alert('Payroll for this month is already finalized.');
+ if(!currentPayroll.length)calculatePayroll();if(!currentPayroll.length)return alert('No payroll data.');
+ if(!confirm('Finalize '+ym+' payroll? This will post deduction recoveries to ledger and save payroll history.'))return;
+ const entries=currentPayroll.map(x=>{
+  const gross=x.normalAmt+x.notAmt+x.hotAmt+x.allowance,net=gross-x.deduct;
+  if(x.deduct>0){
+   const before=ledgerBalance(x.emp.key),amt=Math.min(x.deduct,Math.max(0,before));
+   deductions.push({id:uid(),empKey:x.emp.key,date:ym+'-28',type:'Payroll Recovery',description:'Salary deduction for '+ym,added:0,recovery:amt,balanceAfter:before-amt,reference:'PAY-'+ym,source:'Payroll'})
+  }
+  return {empKey:x.emp.key,employeeCode:x.emp.code,employeeName:x.emp.name,salaryType:x.r.salaryType,normalH:x.normalH,notH:x.notH,hotH:x.hotH,normalAmt:x.normalAmt,notAmt:x.notAmt,hotAmt:x.hotAmt,allowance:x.allowance,allowanceText:x.allowanceText,deduction:x.deduct,gross,net}
+ });
+ deductions && set(DED_KEY,deductions);payHistory.push({id:uid(),month:ym,finalizedAt:new Date().toISOString(),entries});set(HIST_KEY,payHistory);renderAll();alert('Payroll finalized successfully.')
+}
+function renderPayrollHistory(){
+ const q=norm(histSearch.value),rows=[];payHistory.forEach(h=>(h.entries||[]).forEach(e=>rows.push({...e,month:h.month,finalizedAt:h.finalizedAt})));
+ histRows.innerHTML=rows.filter(x=>norm([x.month,x.employeeName,x.employeeCode].join(' ')).includes(q)).sort((a,b)=>b.month.localeCompare(a.month)).map(x=>`<tr><td>${x.month}</td><td>${new Date(x.finalizedAt).toLocaleString()}</td><td>${esc(x.employeeName)} (${esc(x.employeeCode||'-')})</td><td>${money(x.gross)}</td><td>${money(x.deduction)}</td><td><b>${money(x.net)}</b></td><td>${money(x.allowance)}${x.allowanceText?' · '+esc(x.allowanceText):''}</td><td>${esc(x.salaryType)}</td></tr>`).join('')||'<tr><td colspan="8">No finalized payroll history.</td></tr>'
+}
+function renderAll(){loadEmployees();fillEmployeeSelects();renderDashboard();renderEmployees();renderRateHistory();renderDeductions();renderTimesheet();renderHolidayReview();calculatePayroll();renderPayrollHistory()}
+tsMonth.value=month();payMonth.value=month();loadEmployees();renderAll();
+</script>
+</body>
+</html>

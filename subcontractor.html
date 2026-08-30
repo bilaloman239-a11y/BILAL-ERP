@@ -175,6 +175,9 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 
 </head>
 <body>
+<script>
+(function(){var k='cm_logged_in_v3';if(sessionStorage.getItem(k)!=='1'&&localStorage.getItem(k)!=='1')location.replace('index.html');})();
+</script>
 <header>
   <div>
     <h1>Sub Contractor Management Portal</h1>
@@ -184,6 +187,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
     <button class="btn btn-light" type="button" onclick="window.location.href='index.html'">← Back to Employee Portal</button>
     <button class="btn btn-light" type="button" onclick="window.location.href='client.html'">🏢 Client Portal</button>
     <button class="btn btn-light" type="button" onclick="window.location.href='site.html'">📍 Site Management</button>
+    <button class="btn btn-light" type="button" onclick="window.location.href='payroll.html'">💵 Payroll</button>
     <button class="btn btn-orange" onclick="openAddForm()">+ Add Sub Contractor</button>
   </div>
 </header>
@@ -206,6 +210,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
     <div class="cm-erp-sidebar-title">Sales & Projects</div>
     <button class="nav-btn cm-erp-link" type="button" onclick="window.location.href='client.html'"><span class="cm-erp-icon">🏢</span><span class="cm-erp-label">Clients & Projects</span></button>
     <button class="nav-btn cm-erp-link" type="button" onclick="window.location.href='site.html'"><span class="cm-erp-icon">📍</span><span class="cm-erp-label">Site Management</span></button>
+    <button class="nav-btn cm-erp-link" type="button" onclick="window.location.href='payroll.html'"><span class="cm-erp-icon">💵</span><span class="cm-erp-label">Payroll / Salary</span></button>
 </aside>
 
   <main class="content">
@@ -547,7 +552,11 @@ document.querySelectorAll('.nav-btn[data-view]').forEach(btn=>{
 function switchView(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const view=document.getElementById(id); if(view) view.classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+  document.querySelectorAll('.nav-btn[data-view]').forEach(b=>{
+    const on=b.dataset.view===id;
+    b.classList.toggle('active',on);
+    b.classList.toggle('cm-active',on);
+  });
   if(id==='dashboard') renderDashboard();
   if(id==='subcontractors') renderList();
   if(id==='docmaster') renderMasters();
