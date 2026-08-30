@@ -763,7 +763,8 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
     <button class="navbtn active" data-page="dashboard">Dashboard</button>
     <button class="navbtn" data-page="employees">Employees</button>
     <button class="navbtn master" data-page="masters">Masters</button>
-    <button id="logoutButton" class="navbtn logout">Sign Out</button>
+    <button class="navbtn" type="button" onclick="window.location.href='subcontractor.html'">🏗️ Sub Contractor Portal</button>
+<button id="logoutButton" class="navbtn logout">Sign Out</button>
   </aside>
 
   <main class="content">
@@ -2465,11 +2466,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  function ensureDocFollowup(d){
-    if(!d.followup || typeof d.followup!=="object") d.followup={status:"Pending",nextDate:"",remarks:"",history:[]};
-    if(!Array.isArray(d.followup.history)) d.followup.history=[];
-    return d.followup;
-  }
   function followupClass(status){
     return ({"Pending":"fs-pending","Employee Contacted":"fs-contacted","Renewal In Process":"fs-renewal","Completed":"fs-completed","On Hold":"fs-hold"})[status]||"fs-pending";
   }
