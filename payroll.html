@@ -43,6 +43,22 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
 .total-row td{font-weight:850;background:#f7fbff}.holiday-changed td{background:#fffaf0}
 @media(max-width:1050px){.cards{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:720px){.app{display:block}.sidebar{width:100%;display:flex;overflow:auto}.nav-title{display:none}.nav-btn{min-width:175px}.content{padding:13px}.cards,.form-grid{grid-template-columns:1fr}.span2,.span3{grid-column:span 1}}
+
+.excel-grid-wrap{max-height:62vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+.excel-grid{min-width:max-content;border-collapse:separate;border-spacing:0}
+.excel-grid th,.excel-grid td{border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;padding:7px 8px;text-align:center;white-space:nowrap;background:#fff}
+.excel-grid thead th{position:sticky;top:0;z-index:5;background:#eef4f9;color:var(--navy2);font-weight:800}
+.excel-grid thead tr:nth-child(2) th{top:34px;background:#f8fafc;font-size:11px}
+.excel-grid .sticky-code{position:sticky;left:0;z-index:6;background:#fff;text-align:left;min-width:110px}
+.excel-grid .sticky-name{position:sticky;left:110px;z-index:6;background:#fff;text-align:left;min-width:220px;max-width:260px}
+.excel-grid thead .sticky-code,.excel-grid thead .sticky-name{z-index:8;background:#eef4f9}
+.excel-grid td.editable-cell{cursor:pointer;min-width:58px;font-weight:650}
+.excel-grid td.editable-cell:hover{background:#fff7ed}
+.excel-grid td.editing{padding:2px;background:#fff7ed}
+.excel-grid td.editing input{min-width:54px;width:58px;padding:6px;border:2px solid #f59e0b;text-align:center}
+.excel-grid td.holiday-cell{background:#fffaf0}
+.excel-grid .total-cell{font-weight:850;background:#f8fafc;min-width:84px}
+
 </style>
 </head>
 <body>
@@ -135,8 +151,18 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
    </table>
   </div>
  </div>
-<div class="page-head" style="margin-top:10px"><h3 style="margin:0">Manual Timesheet Entry</h3><button class="btn btn-primary" onclick="openTimesheetEntry()">+ Add Entry</button></div>
- <div class="wrap"><table><thead><tr><th>Date</th><th>Employee</th><th>Day Type</th><th>Total Worked Hours</th><th>Normal Hours</th><th>NOT</th><th>HOT</th><th>Action</th></tr></thead><tbody id="tsRows"></tbody></table></div>
+<div class="page-head" style="margin-top:10px">
+  <div>
+    <h3 style="margin:0">Manual Timesheet Entry</h3>
+    <div class="mini" style="margin-top:4px">Excel-style monthly grid. Double-click any daily cell to edit. Press Enter to save. Before applying the change, a confirmation popup will ask: Ready? Do you confirm to change?</div>
+  </div>
+ </div>
+ <div class="wrap excel-grid-wrap">
+  <table id="manualGrid" class="excel-grid">
+   <thead id="manualGridHead"></thead>
+   <tbody id="tsRows"></tbody>
+  </table>
+ </div>
 </section>
 
 <section id="payroll" class="view">
@@ -436,14 +462,81 @@ function saveTimesheetEntry(e){
 function renderTimesheet(){
  const ym=tsMonth.value||month();
  renderHolidayReview();
- const rows=timesheets.filter(x=>x.date.startsWith(ym)).sort((a,b)=>a.date.localeCompare(b.date));
- tsRows.innerHTML=rows.map(x=>{
-  const hd=getHolidayDay(x.empKey,ym),isOff=weekdayName(x.date)===hd;
-  return `<tr><td>${x.date}<div class="mini">${weekdayName(x.date)}</div></td><td>${esc(empByKeyAny(x.empKey)?.name||x.empKey)}</td>
-  <td>${esc(x.dayType)}${isOff?'<div class="mini">Weekly Holiday: '+esc(hd)+'</div>':''}</td><td>${x.hours}</td><td>${x.normal}</td><td>${x.not}</td><td>${x.hot}</td>
-  <td><button class="btn btn-danger" onclick="deleteTs('${x.id}')">Delete</button></td></tr>`
- }).join('')||'<tr><td colspan="8">No timesheet records for selected month.</td></tr>'
+ const [yy,mm]=ym.split('-').map(Number);
+ const last=new Date(yy,mm,0).getDate();
+ let h1='<tr><th class="sticky-code" rowspan="2">Employee Code</th><th class="sticky-name" rowspan="2">Employee Name</th>';
+ let h2='<tr>';
+ for(let d=1;d<=last;d++){
+   const date=ym+'-'+String(d).padStart(2,'0');
+   h1+='<th>'+d+'</th>';
+   h2+='<th>'+weekdayName(date).slice(0,3).toUpperCase()+'</th>';
+ }
+ h1+='<th rowspan="2">Total Hours</th><th rowspan="2">Holiday Day</th></tr>';
+ h2+='</tr>';
+ manualGridHead.innerHTML=h1+h2;
+
+ tsRows.innerHTML=employees.map(emp=>{
+   let total=0;
+   let row='<tr><td class="sticky-code"><b>'+esc(emp.code||'-')+'</b></td><td class="sticky-name">'+esc(emp.name)+'</td>';
+   for(let d=1;d<=last;d++){
+     const date=ym+'-'+String(d).padStart(2,'0');
+     const rec=timesheets.find(x=>x.empKey===emp.key&&x.date===date);
+     const val=rec?Number(rec.hours||0):'';
+     if(rec)total+=Number(rec.hours||0);
+     const isHoliday=weekdayName(date)===getHolidayDay(emp.key,ym);
+     row+='<td class="editable-cell '+(isHoliday?'holiday-cell':'')+'" ondblclick="startGridEdit(this,\''+emp.key+'\',\''+date+'\')" title="Double-click to edit">'+esc(val)+'</td>';
+   }
+   row+='<td class="total-cell">'+money(total)+'</td>';
+   row+='<td>'+esc(getHolidayDay(emp.key,ym))+'</td></tr>';
+   return row;
+ }).join('')||'<tr><td colspan="'+(last+4)+'">No active employees.</td></tr>';
 }
+
+function startGridEdit(td,empKey,date){
+ if(td.classList.contains('editing'))return;
+ const oldText=td.textContent.trim();
+ td.classList.add('editing');
+ td.dataset.oldValue=oldText;
+ td.innerHTML='<input type="text" value="'+esc(oldText)+'" onkeydown="gridEditKey(event,this,\''+empKey+'\',\''+date+'\')" onblur="cancelGridEdit(this.parentElement)">';
+ const inp=td.querySelector('input');inp.focus();inp.select();
+}
+function gridEditKey(ev,input,empKey,date){
+ if(ev.key==='Enter'){ev.preventDefault();saveGridEdit(input.parentElement,empKey,date)}
+ if(ev.key==='Escape'){ev.preventDefault();cancelGridEdit(input.parentElement)}
+}
+function cancelGridEdit(td){
+ if(!td||!td.classList.contains('editing'))return;
+ const old=td.dataset.oldValue??'';
+ td.classList.remove('editing');td.textContent=old;
+}
+function saveGridEdit(td,empKey,date){
+ if(!td||!td.classList.contains('editing'))return;
+ const input=td.querySelector('input');
+ const raw=String(input?.value??'').trim();
+ const old=td.dataset.oldValue??'';
+ if(raw===old){cancelGridEdit(td);return;}
+ const parsed=parseWorkedHoursCell(raw);
+ if(raw!==''&&!parsed.hasValue){
+   alert('Please enter valid hours or code, e.g. 8, 10, 12, A, OFF, H.');
+   input.focus();return;
+ }
+ const emp=empByKeyAny(empKey);
+ const ok=confirm('Ready? Do you confirm to change '+(emp?.name||empKey)+' on '+date+' from "'+(old||'blank')+'" to "'+(raw||'blank')+'"?');
+ if(!ok){cancelGridEdit(td);return;}
+ if(raw===''){
+   timesheets=timesheets.filter(x=>!(x.empKey===empKey&&x.date===date));
+ }else{
+   const calc=calculateHours(empKey,date,parsed.hours,parsed.manualHoliday?'Holiday':'Normal');
+   const autoType=(parsed.manualHoliday||weekdayName(date)===getHolidayDay(empKey,date.slice(0,7)))?'Holiday':'Normal';
+   let ex=timesheets.find(x=>x.empKey===empKey&&x.date===date);
+   const obj={id:ex?.id||uid(),empKey,date,hours:parsed.hours,dayType:autoType,manualHoliday:parsed.manualHoliday,normal:calc.normal,not:calc.not,hot:calc.hot,remarks:'Manual Excel Grid Edit'};
+   if(ex)Object.assign(ex,obj);else timesheets.push(obj);
+ }
+ set(TS_KEY,timesheets);
+ renderTimesheet();calculatePayroll();
+ alert('Timesheet change saved successfully.');
+}
+
 function deleteTs(id){if(!confirm('Delete this timesheet entry?'))return;timesheets=timesheets.filter(x=>x.id!==id);set(TS_KEY,timesheets);renderAll()}
 function downloadTimesheetSample(){
  const ym=tsMonth.value||month();
