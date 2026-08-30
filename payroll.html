@@ -117,7 +117,7 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
    <div class="field"><label>Upload Timesheet (CSV or Excel)</label><input id="tsFile" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" onchange="importTimesheet(event)"></div>
    <div class="field"><label>Sample Format</label><button class="btn btn-light" type="button" onclick="downloadTimesheetSample()">Download Sample CSV</button></div>
   </div>
-  <div class="mini" style="margin-top:9px">Default weekly holiday is Sunday. After uploading a timesheet, you can change each employee's Holiday Day below to Friday / Saturday / Sunday. Hours worked on the employee's selected weekly holiday count as HOT; on a normal working day, hours up to Basic Hours count as Normal and any extra hours count as NOT.</div>
+  <div class="mini" style="margin-top:9px">Hourly employees: salary is Total Hours × Rate only — no overtime (NOT/HOT). Monthly employees: default weekly holiday is Sunday; hours on the holiday day are HOT, and extra hours on a working day are NOT.</div>
  </div>
  
  <div class="box">
@@ -145,7 +145,7 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
   <div class="form-grid">
    <div class="field"><label>Payroll Month</label><input id="payMonth" type="month" onchange="calculatePayroll()"></div>
    <div class="field"><label>Payroll Status</label><input id="payStatusText" value="Draft" readonly></div>
-   <div class="field"><label>Rule</label><input value="Allowance editable • Deduction recovery editable" readonly></div>
+   <div class="field"><label>Rule</label><input value="Hourly = Hours × Rate (no OT) • Monthly = Basic + NOT/HOT • Allowance / deduction editable" readonly></div>
   </div>
  </div>
  <div class="wrap"><table style="min-width:1900px"><thead><tr>
@@ -174,9 +174,9 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
    <div class="field"><label>Salary Type *</label><select id="salaryType" onchange="toggleSalaryType()" required><option value="">Select</option><option value="Hourly">Hourly</option><option value="Monthly">Monthly Basic</option></select></div>
    <div class="field" id="hourlyBox"><label>Per Hour Rate</label><input id="hourlyRate" type="number" min="0" step="0.01"></div>
    <div class="field" id="monthlyBox"><label>Basic Salary</label><input id="basicSalary" type="number" min="0" step="0.01"></div>
-   <div class="field"><label>Basic Hours / Day *</label><select id="basicHours"><option value="8">8 Hours</option><option value="10">10 Hours</option></select></div>
-   <div class="field"><label>NOT Multiplier</label><input id="notMultiplier" type="number" min="0" step="0.01" value="1.25"></div>
-   <div class="field"><label>HOT Multiplier</label><input id="hotMultiplier" type="number" min="0" step="0.01" value="1.50"></div>
+   <div class="field" id="basicHoursBox"><label>Basic Hours / Day *</label><select id="basicHours"><option value="8">8 Hours</option><option value="10">10 Hours</option></select></div>
+   <div class="field" id="notBox"><label>NOT Multiplier</label><input id="notMultiplier" type="number" min="0" step="0.01" value="1.25"></div>
+   <div class="field" id="hotBox"><label>HOT Multiplier</label><input id="hotMultiplier" type="number" min="0" step="0.01" value="1.50"></div>
    <div class="field span3"><label>Remarks</label><textarea id="salaryRemarks" rows="2"></textarea></div>
   </div><br>
   <button type="button" class="btn btn-light" onclick="closeSalary()">Cancel</button>
@@ -290,7 +290,7 @@ function renderEmployees(){
  const rows=employees.filter(e=>norm([e.code,e.name,e.designation].join(' ')).includes(q));
  empRows.innerHTML=rows.length?rows.map(e=>{const r=currentRate(e.key,month());return `<tr>
  <td>${esc(e.code||'-')}</td><td><b>${esc(e.name)}</b></td><td>${esc(e.designation||'-')}</td><td>${esc(r?.salaryType||'Not Set')}</td>
- <td>${r?(r.salaryType==='Hourly'?'AED '+money(r.hourlyRate)+'/hr':'AED '+money(r.basicSalary)):'-'}</td><td>${r?.basicHours||'-'}</td>
+ <td>${r?(r.salaryType==='Hourly'?'AED '+money(r.hourlyRate)+'/hr':'AED '+money(r.basicSalary)):'-'}</td><td>${r?(r.salaryType==='Hourly'?'N/A (Hours × Rate)':(r.basicHours||'-')):'-'}</td>
  <td>${money(Math.max(0,ledgerBalance(e.key)))}</td><td>${r?'<span class="badge green">Setup</span>':'<span class="badge orange">Pending</span>'}</td>
  <td><button class="btn btn-primary" onclick="openSalary('${e.key}')">${r?'Change Salary / Rate':'Setup Salary'}</button></td></tr>`}).join(''):'<tr><td colspan="9">No active employees found.</td></tr>'
 }
@@ -302,7 +302,13 @@ function openSalary(k){
  toggleSalaryType();salaryModal.classList.add('show')
 }
 function closeSalary(){salaryModal.classList.remove('show')}
-function toggleSalaryType(){hourlyBox.style.display=salaryType.value==='Hourly'?'block':'none';monthlyBox.style.display=salaryType.value==='Monthly'?'block':'none'}
+function toggleSalaryType(){
+ const hourly=salaryType.value==='Hourly';
+ hourlyBox.style.display=hourly?'block':'none';
+ monthlyBox.style.display=salaryType.value==='Monthly'?'block':'none';
+ const ot=hourly?'none':'block';
+ basicHoursBox.style.display=ot;notBox.style.display=ot;hotBox.style.display=ot;
+}
 function saveSalarySetup(e){
  e.preventDefault();const k=salaryEmpKey.value;if(!salaryType.value)return alert('Select Salary Type.');
  if(salaryType.value==='Hourly'&&Number(hourlyRate.value)<=0)return alert('Per Hour Rate required.');
@@ -379,8 +385,11 @@ function resetMonthHolidays(){
  renderTimesheet();renderHolidayReview();calculatePayroll();
 }
 function calculateHours(empKey,date,hours,dayType){
- const r=currentRate(empKey,date.slice(0,7)); 
- const basic=Number(r?.basicHours||8),h=Number(hours||0);
+ const r=currentRate(empKey,date.slice(0,7));
+ const h=Number(hours||0);
+ // Hourly staff: pay is Hours × Rate only. Do not split Normal / NOT / HOT.
+ if(r?.salaryType==='Hourly') return {normal:h,not:0,hot:0};
+ const basic=Number(r?.basicHours||8);
  const holidayDay=getHolidayDay(empKey,date.slice(0,7));
  const isWeeklyHoliday=weekdayName(date)===holidayDay;
  const explicitHoliday=String(dayType||'').toLowerCase()==='holiday';
@@ -509,10 +518,12 @@ function importTimesheet(ev){
 function calcEmployeePayroll(emp,ym){
  const r=currentRate(emp.key,ym);if(!r)return null;
  const ts=timesheets.filter(x=>x.empKey===emp.key&&x.date.startsWith(ym));
- const normalH=ts.reduce((s,x)=>s+Number(x.normal||0),0),notH=ts.reduce((s,x)=>s+Number(x.not||0),0),hotH=ts.reduce((s,x)=>s+Number(x.hot||0),0);
+ let normalH=ts.reduce((s,x)=>s+Number(x.normal||0),0),notH=ts.reduce((s,x)=>s+Number(x.not||0),0),hotH=ts.reduce((s,x)=>s+Number(x.hot||0),0);
  let normalAmt=0,notAmt=0,hotAmt=0;
  if(r.salaryType==='Hourly'){
-  normalAmt=normalH*Number(r.hourlyRate||0);notAmt=notH*Number(r.hourlyRate||0)*Number(r.notMultiplier||1.25);hotAmt=hotH*Number(r.hourlyRate||0)*Number(r.hotMultiplier||1.5)
+  const totalH=ts.reduce((s,x)=>s+Number(x.hours||0),0);
+  normalH=totalH;notH=0;hotH=0;
+  normalAmt=totalH*Number(r.hourlyRate||0);notAmt=0;hotAmt=0;
  }else{
   normalAmt=Number(r.basicSalary||0);
   const baseHr=Number(r.basicSalary||0)/30/Number(r.basicHours||8);
