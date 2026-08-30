@@ -48,6 +48,18 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 .side button{color:#f4f8fb!important}
 </style>
 
+
+<style id="site-dashboard-clickable-v1">
+#dash .cards .card{cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+#dash .cards .card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(23,59,103,.12);border-color:#bdd5ef}
+#dash .cards .card.selected{border-color:#2e6fae;box-shadow:0 0 0 3px #e8f2fb,0 10px 24px rgba(23,59,103,.10)}
+#dashDetailPanel{display:none}
+#dashDetailPanel.show{display:block}
+#dashDetailHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+#dashDetailHead h3{margin:0;color:#173b67}
+#dashDetailSub{font-size:12px;color:#6b7280;margin-top:3px}
+</style>
+
 </head>
 <body>
 <header><div><h2>Site Management Portal</h2><small>Mobilization • Demobilization • Monthly Reports</small></div><div><button class="btn light" onclick="location.href='index.html'">Employee Portal</button> <button class="btn light" onclick="location.href='client.html'">Client Portal</button> <button class="btn light" onclick="location.href='subcontractor.html'">Sub Contractor Portal</button></div></header>
@@ -72,10 +84,17 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 <section id="dash" class="view active">
 <h2>Dashboard</h2>
 <div class="cards">
-<div class="card">Available Manpower<br><b id="dAvail">0</b></div>
-<div class="card">On-Site Manpower<br><b id="dSite">0</b></div>
-<div class="card">Active Projects<br><b id="dProjects">0</b></div>
-<div class="card">Movements This Month<br><b id="dMove">0</b></div>
+<div class="card" data-dash-filter="available" role="button" tabindex="0">Available Manpower<br><b id="dAvail">0</b></div>
+<div class="card" data-dash-filter="onsite" role="button" tabindex="0">On-Site Manpower<br><b id="dSite">0</b></div>
+<div class="card" data-dash-filter="projects" role="button" tabindex="0">Active Projects<br><b id="dProjects">0</b></div>
+<div class="card" data-dash-filter="movements" role="button" tabindex="0">Movements This Month<br><b id="dMove">0</b></div>
+</div>
+<div id="dashDetailPanel" class="box">
+  <div id="dashDetailHead">
+    <div><h3 id="dashDetailTitle">Dashboard Details</h3><div id="dashDetailSub"></div></div>
+    <button class="btn light" type="button" onclick="closeDashboardDetails()">Close</button>
+  </div>
+  <div id="dashDetailBody"></div>
 </div>
 <div class="box"><h3>Current Site Summary</h3><div id="siteSummary"></div></div>
 </section>
@@ -196,6 +215,66 @@ function overlap(m,ym){let [y,mo]=ym.split('-').map(Number),start=new Date(y,mo-
 function reportData(){let ym=rMonth.value||month();return moves.filter(m=>(!rClient.value||String(m.clientId)===String(rClient.value))&&(!rProject.value||String(m.projectId)===String(rProject.value))&&overlap(m,ym)>0).map(m=>({...m,rd:overlap(m,ym)}))}
 function renderReport(){let rows=reportData();rRows.innerHTML=rows.length?rows.map(m=>`<tr><td>${esc(m.employeeCode||'-')}</td><td>${esc(m.employeeName)}</td><td>${esc(m.designation||'-')}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.location||'-')}</td><td>${esc(m.mobDate)}</td><td>${esc(m.demobDate||'On Site')}</td><td><b>${m.rd}</b></td><td>${Number(m.clientRate||0).toFixed(2)}</td><td>${Number(m.subRate||0).toFixed(2)}</td></tr>`).join(''):'<tr><td colspan="12">No records.</td></tr>';rEmp.textContent=new Set(rows.map(x=>x.employeeKey)).size;rDays.textContent=rows.reduce((s,x)=>s+x.rd,0)}
 function exportCSV(){let rows=reportData();if(!rows.length)return alert('No report data.');let h=['Code','Employee','Designation','Client','Project','Site Craft','Location','Mobilized','Demobilized','Required Days','Client Rate','Sub Contractor Rate'];let d=rows.map(m=>[m.employeeCode,m.employeeName,m.designation,clientName(m.clientId),projectName(m.projectId),m.siteCraft||'',m.location,m.mobDate,m.demobDate||'On Site',m.rd,m.clientRate,m.subRate]);let csv=[h,...d].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');let blob=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Site_Monthly_Report_'+(rMonth.value||month())+'.csv';a.click()}
+
+function closeDashboardDetails(){
+  const p=document.getElementById('dashDetailPanel');
+  if(p)p.classList.remove('show');
+  document.querySelectorAll('#dash .cards .card[data-dash-filter]').forEach(c=>c.classList.remove('selected'));
+}
+function openDashboardDetails(filter){
+  refresh();
+  const panel=document.getElementById('dashDetailPanel');
+  const title=document.getElementById('dashDetailTitle');
+  const sub=document.getElementById('dashDetailSub');
+  const body=document.getElementById('dashDetailBody');
+  if(!panel||!title||!body)return;
+
+  document.querySelectorAll('#dash .cards .card[data-dash-filter]').forEach(c=>c.classList.toggle('selected',c.dataset.dashFilter===filter));
+
+  if(filter==='available'){
+    const rows=staff.filter(e=>!active(e.key));
+    title.textContent='Available Manpower';
+    sub.textContent=rows.length+' employee'+(rows.length===1?'':'s')+' available for mobilization';
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Code</th><th>Employee Name</th><th>Designation</th><th>Source</th><th>Sub Contractor</th><th>Action</th></tr></thead><tbody>${rows.map(e=>`<tr><td>${esc(e.code||'-')}</td><td><span class="link" onclick="openMob('${e.key}')">${esc(e.name)}</span></td><td>${esc(e.des||'-')}</td><td>${esc(e.source||'-')}</td><td>${esc(e.sc||'-')}</td><td><button class="btn primary" onclick="openMob('${e.key}')">Mobilize</button></td></tr>`).join('')}</tbody></table></div>`:'<div>No available manpower.</div>';
+  }else if(filter==='onsite'){
+    const rows=moves.filter(m=>!m.demobDate);
+    title.textContent='On-Site Manpower';
+    sub.textContent=rows.length+' employee'+(rows.length===1?'':'s')+' currently on site';
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Employee</th><th>Code</th><th>Client</th><th>Project</th><th>Site Craft</th><th>Location</th><th>Mobilized Date</th><th>Action</th></tr></thead><tbody>${rows.map(m=>`<tr><td><b>${esc(m.employeeName)}</b></td><td>${esc(m.employeeCode||'-')}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.location||'-')}</td><td>${esc(m.mobDate||'-')}</td><td><button class="btn orange" onclick="openDemob('${m.id}')">Demobilize</button></td></tr>`).join('')}</tbody></table></div>`:'<div>No manpower currently on site.</div>';
+  }else if(filter==='projects'){
+    const activeMoves=moves.filter(m=>!m.demobDate);
+    const map={};
+    activeMoves.forEach(m=>{
+      if(!map[m.projectId]) map[m.projectId]={projectId:m.projectId,clientId:m.clientId,location:m.location||'',count:0};
+      map[m.projectId].count++;
+    });
+    const rows=Object.values(map);
+    title.textContent='Active Projects';
+    sub.textContent=rows.length+' project'+(rows.length===1?'':'s')+' with manpower on site';
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Client</th><th>Project</th><th>Site Location</th><th>On-Site Manpower</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(clientName(x.clientId))}</td><td>${esc(projectName(x.projectId))}</td><td>${esc(x.location||'-')}</td><td><b>${x.count}</b></td></tr>`).join('')}</tbody></table></div>`:'<div>No active project with manpower on site.</div>';
+  }else if(filter==='movements'){
+    const ym=month();
+    const rows=moves.filter(m=>(m.mobDate||'').startsWith(ym)||(m.demobDate||'').startsWith(ym));
+    title.textContent='Movements This Month';
+    sub.textContent=rows.length+' movement'+(rows.length===1?'':'s')+' in '+ym;
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Employee</th><th>Client</th><th>Project</th><th>Site Craft</th><th>Mobilized</th><th>Demobilized</th><th>Status</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${esc(m.employeeName)}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.mobDate||'-')}</td><td>${esc(m.demobDate||'-')}</td><td>${m.demobDate?'Demobilized':'On Site'}</td></tr>`).join('')}</tbody></table></div>`:'<div>No movements this month.</div>';
+  }
+
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+document.addEventListener('click',e=>{
+  const card=e.target.closest?.('#dash .cards .card[data-dash-filter]');
+  if(card) openDashboardDetails(card.dataset.dashFilter);
+});
+document.addEventListener('keydown',e=>{
+  const card=e.target.closest?.('#dash .cards .card[data-dash-filter]');
+  if(card&&(e.key==='Enter'||e.key===' ')){
+    e.preventDefault();
+    openDashboardDetails(card.dataset.dashFilter);
+  }
+});
+
 function renderDash(){let on=moves.filter(x=>!x.demobDate);dAvail.textContent=staff.filter(x=>!active(x.key)).length;dSite.textContent=on.length;dProjects.textContent=new Set(on.map(x=>x.projectId)).size;dMove.textContent=moves.filter(x=>(x.mobDate||'').startsWith(month())||(x.demobDate||'').startsWith(month())).length;let map={};on.forEach(m=>{map[m.projectId]=(map[m.projectId]||0)+1});siteSummary.innerHTML=Object.keys(map).length?Object.entries(map).map(([id,c])=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>'+esc(projectName(id))+'</b> - '+c+' manpower</div>').join(''):'No manpower currently on site.'}
 function fillReportFilters(){rClient.innerHTML='<option value="">All Clients</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');rProject.innerHTML='<option value="">All Projects</option>'+projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}
 function renderAll(){refresh();fillReportFilters();renderAvailable();renderOnsite();renderHistory();renderReport();renderDash()}
