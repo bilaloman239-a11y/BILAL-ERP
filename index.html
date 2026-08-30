@@ -1053,7 +1053,7 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
  <div class="profile-shell" style="max-width:780px">
   <div class="profile-head"><div><div class="profile-name">Export Employee List</div><div class="profile-meta">Select the cells/columns you want to export.</div></div><button id="closeExportEmployeeModal" class="btn light">Close</button></div>
   <div class="profile-body">
-   <div style="display:flex;gap:8px;margin-bottom:12px"><button id="selectAllExportCols" class="btn light">Select All</button><button id="clearAllExportCols" class="btn light">Clear All</button></div>
+   <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px"><input id="reportCellSearch" class="search" type="search" placeholder="Search report cell..." style="flex:1;min-width:240px;max-width:420px"><div style="display:flex;gap:8px"><button id="selectAllExportCols" class="btn light">Select All</button><button id="clearAllExportCols" class="btn light">Clear All</button></div></div>
    <div id="exportColumnChoices" style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px"></div>
    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button id="applySelectedToList" class="btn green">Apply to List</button><button id="exportSelectedExcel" class="btn">Export Excel</button><button id="exportSelectedPdf" class="btn orange">Export PDF</button></div>
   </div>
@@ -2206,13 +2206,13 @@ document.addEventListener("DOMContentLoaded", () => {
     $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>
       <td>${esc(e.employeeCode)}</td>
       <td><button class="employee-link" data-view-employee="${e._i}">${esc(e.employeeName)}</button></td>
+      <td>${esc(e.unifiedNumber)}</td>
       <td>${esc(e.actualDesignation)}</td>
       <td>${esc(e.nationality)}</td>
       <td>${esc(e.company)}</td>
       <td>${esc(e.idDesignation)}</td>
       <td>${esc(e.status)}${e.status==="Inactive"?`<div class="small">${esc(e.inactiveReason)} · ${esc(e.inactiveDate)}</div>`:""}</td>
       <td class="emp-extra-col">${esc(e.employeeNameArabic)}</td>
-      <td class="emp-extra-col">${esc(e.unifiedNumber)}</td>
       <td class="emp-extra-col">${esc(e.gender)}</td>
       <td class="emp-extra-col">${esc(e.dob)}</td>
       <td class="emp-extra-col">${esc(e.maritalStatus)}</td>
@@ -2790,6 +2790,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function openExportEmployee(fromExpand=false){
     const cols=dynamicExportCols();
     $("exportColumnChoices").innerHTML=cols.map(([k,l])=>`<label style="display:flex;gap:8px;align-items:center;padding:10px;border:1px solid #e1e9f2;border-radius:10px;background:#fafcff"><input type="checkbox" class="emp-exp-col" value="${esc(k)}" ${activeListCols.includes(k)?"checked":""}><span style="font-size:13px;font-weight:700">${esc(l)}</span></label>`).join("");
+    if($("reportCellSearch")) $("reportCellSearch").value="";
     $("exportEmployeeModal").querySelector(".profile-name").textContent=fromExpand?"Expand List / Select Report Cells":"Export Employee List";
     $("exportEmployeeModal").querySelector(".profile-meta").textContent="Select any employee field plus every UAE Document and Technical Certificate field. New Document Types and Technical Certificate Types from Masters appear here automatically.";
     $("exportEmployeeModal").classList.remove("hidden");
@@ -2822,6 +2823,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("closeExportEmployeeModal")?.addEventListener("click",()=>$("exportEmployeeModal").classList.add("hidden"));
   $("selectAllExportCols")?.addEventListener("click",()=>document.querySelectorAll(".emp-exp-col").forEach(x=>x.checked=true));
   $("clearAllExportCols")?.addEventListener("click",()=>document.querySelectorAll(".emp-exp-col").forEach(x=>x.checked=false));
+  $("reportCellSearch")?.addEventListener("input",e=>{ const q=String(e.target.value||"").trim().toLowerCase(); document.querySelectorAll("#exportColumnChoices label").forEach(label=>{ label.style.display=(!q||(label.textContent||"").toLowerCase().includes(q))?"flex":"none"; }); });
   $("applySelectedToList")?.addEventListener("click",applySelectedColumnsToList);
   $("exportSelectedExcel")?.addEventListener("click",exportExcelSelected);
   $("exportSelectedPdf")?.addEventListener("click",exportPdfSelected);
