@@ -115,9 +115,9 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
   <div class="form-grid">
    <div class="field"><label>Month</label><input id="tsMonth" type="month" onchange="renderTimesheet()"></div>
    <div class="field"><label>Upload Timesheet (CSV or Excel)</label><input id="tsFile" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" onchange="importTimesheet(event)"></div>
-   <div class="field"><label>Sample Format</label><button class="btn btn-light" type="button" onclick="downloadTimesheetSample()">Download Sample CSV</button></div>
+   <div class="field"><label>Sample Format</label><button class="btn btn-light" type="button" onclick="downloadTimesheetSample()">Download Horizontal Sample CSV</button></div>
   </div>
-  <div class="mini" style="margin-top:9px">Hourly employees: salary is Total Hours × Rate only — no overtime (NOT/HOT). Monthly employees: default weekly holiday is Sunday; hours on the holiday day are HOT, and extra hours on a working day are NOT.</div>
+  <div class="mini" style="margin-top:9px">Upload the horizontal monthly timesheet: Employee Code + Employee Name + date columns (1–31). Default weekly holiday is Sunday; after upload you can change employee-wise Holiday Day to Friday / Saturday / Sunday. Monthly employees: working-day extra hours = NOT, selected weekly holiday worked hours = HOT. Hourly employees remain Total Hours × Rate.</div>
  </div>
  
  <div class="box">
@@ -446,8 +446,22 @@ function renderTimesheet(){
 }
 function deleteTs(id){if(!confirm('Delete this timesheet entry?'))return;timesheets=timesheets.filter(x=>x.id!==id);set(TS_KEY,timesheets);renderAll()}
 function downloadTimesheetSample(){
- const csv='Employee Code,Date,Hours,Day Type\nCM001,2026-08-01,10,Normal\nCM001,2026-08-02,12,Normal\nCM001,2026-08-03,10,Normal\n';
- const b=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Payroll_Timesheet_Sample.csv';a.click();URL.revokeObjectURL(a.href)
+ const ym=tsMonth.value||month();
+ const [yy,mm]=ym.split('-').map(Number);
+ const last=new Date(yy,mm,0).getDate();
+ const dates=[],days=[];
+ for(let d=1;d<=last;d++){
+   const dt=new Date(yy,mm-1,d,12,0,0);
+   dates.push(String(d).padStart(2,'0')+'/'+String(mm).padStart(2,'0')+'/'+yy);
+   days.push(['SUN','MON','TUE','WED','THU','FRI','SAT'][dt.getDay()]);
+ }
+ const top=['Employee Code','Employee Name',...dates,'Total Hours'];
+ const weekday=['','',...days,''];
+ const sample=['CM001','Sample Employee',...Array(last).fill(10),''];
+ const rows=[top,weekday,sample];
+ const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ const b=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(b);a.download='Payroll_Horizontal_Timesheet_'+ym+'.csv';a.click();URL.revokeObjectURL(a.href)
 }
 function normalizeImportedDate(v){
  v=String(v??'').trim();if(!v)return '';
@@ -462,8 +476,106 @@ function normalizeImportedDate(v){
  if(!Number.isNaN(dt.getTime()))return ymd(dt);
  return '';
 }
+
+function parseWorkedHoursCell(v){
+ const raw=String(v??'').trim();
+ if(!raw)return {hours:0,hasValue:false,manualHoliday:false};
+ const upper=raw.toUpperCase().replace(/\s+/g,'');
+ // Pure non-working/status codes. They import as zero worked hours.
+ if(['A','ABSENT','OFF','H','HOLIDAY','SUN','JOIN','M','L','LEAVE','SICK'].includes(upper))
+   return {hours:0,hasValue:true,manualHoliday:false};
+ // Explicit holiday work codes such as H10, HOL10, SUN10, FRI10.
+ const holidayMatch=upper.match(/^(?:H|HOL|HOLIDAY|SUN|FRI|SAT)[\-:]?(\d+(?:\.\d+)?)$/);
+ if(holidayMatch)return {hours:Number(holidayMatch[1]),hasValue:true,manualHoliday:true};
+ // Standard number, including 10 or 10.5.
+ const n=Number(raw);
+ if(Number.isFinite(n))return {hours:n,hasValue:true,manualHoliday:false};
+ // If text contains a single numeric hours value, take it.
+ const match=upper.match(/(\d+(?:\.\d+)?)/);
+ if(match)return {hours:Number(match[1]),hasValue:true,manualHoliday:false};
+ return {hours:0,hasValue:true,manualHoliday:false};
+}
+
+function looksLikeWeekday(v){
+ return /^(SUN|MON|TUE|WED|THU|FRI|SAT|SUNDAY|MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY)$/i.test(String(v??'').trim());
+}
+
+function detectHorizontalTimesheet(clean){
+ // Look through the first rows for a row containing many real dates.
+ let dateRow=-1,dateCols=[];
+ for(let r=0;r<Math.min(clean.length,8);r++){
+   const cols=[];
+   clean[r].forEach((v,c)=>{const d=normalizeImportedDate(v);if(d)cols.push({col:c,date:d})});
+   if(cols.length>=5){dateRow=r;dateCols=cols;break}
+ }
+ if(dateRow<0)return null;
+
+ // Header is usually the row immediately above the date row; if dates are on header row, use it.
+ const headerRow=Math.max(0,dateRow-1);
+ const headers=(clean[headerRow]||[]).map(norm);
+ let codeCol=headers.findIndex(x=>x.includes('employee code')||x.includes('emp-no')||x==='emp no'||x==='code');
+ let nameCol=headers.findIndex(x=>x.includes('employee name')||x==='name'||x.includes('emp name'));
+
+ // Fallback: columns before the first date.
+ const firstDateCol=Math.min(...dateCols.map(x=>x.col));
+ if(codeCol<0)codeCol=0;
+ if(nameCol<0 && firstDateCol>=2)nameCol=1;
+
+ // A weekday row may be directly below the date row.
+ let dataStart=dateRow+1;
+ if(clean[dataStart]){
+   const weekdayHits=dateCols.filter(x=>looksLikeWeekday(clean[dataStart][x.col])).length;
+   if(weekdayHits>=Math.min(5,dateCols.length))dataStart++;
+ }
+ return {dateRow,dateCols,codeCol,nameCol,dataStart};
+}
+
+function processHorizontalTimesheet(clean,sourceLabel,layout){
+ let imported=0,matchedEmployees=new Set(),unmatchedCodes=new Set(),ignoredCells=0;
+ const detectedMonths=new Set(layout.dateCols.map(x=>x.date.slice(0,7)));
+
+ for(let r=layout.dataStart;r<clean.length;r++){
+   const row=clean[r]||[];
+   const code=String(row[layout.codeCol]??'').trim();
+   if(!code)continue;
+   const emp=employees.find(e=>norm(e.code)===norm(code));
+   if(!emp){unmatchedCodes.add(code);continue}
+   matchedEmployees.add(emp.key);
+
+   layout.dateCols.forEach(dc=>{
+     const parsed=parseWorkedHoursCell(row[dc.col]);
+     if(!parsed.hasValue)return;
+     const date=dc.date;
+     const calc=calculateHours(emp.key,date,parsed.hours,parsed.manualHoliday?'Holiday':'Normal');
+     const autoType=(parsed.manualHoliday||weekdayName(date)===getHolidayDay(emp.key,date.slice(0,7)))?'Holiday':'Normal';
+     let ex=timesheets.find(x=>x.empKey===emp.key&&x.date===date);
+     const obj={
+       id:ex?.id||uid(),empKey:emp.key,date,hours:parsed.hours,
+       dayType:autoType,manualHoliday:parsed.manualHoliday,
+       normal:calc.normal,not:calc.not,hot:calc.hot,
+       remarks:sourceLabel+' - Horizontal'
+     };
+     if(ex)Object.assign(ex,obj);else timesheets.push(obj);
+     imported++;
+   });
+ }
+
+ set(TS_KEY,timesheets);
+ if(detectedMonths.size===1){
+   const detected=[...detectedMonths][0];
+   tsMonth.value=detected;payMonth.value=detected;
+ }
+ renderAll();
+ let msg=imported+' daily cells imported for '+matchedEmployees.size+' employees.';
+ if(unmatchedCodes.size)msg+='\n\nEmployee Codes not found in Employee Portal:\n'+[...unmatchedCodes].join(', ');
+ msg+='\n\nNow review Holiday Day (Sunday / Friday / Saturday). Changing it will automatically recalculate NOT / HOT.';
+ alert(msg);
+}
+
 function processTimesheetRows(rows,sourceLabel){
  const clean=rows.map(r=>r.map(c=>String(c??'').trim())).filter(r=>r.some(c=>c!==''));
+ const horizontal=detectHorizontalTimesheet(clean);
+ if(horizontal){processHorizontalTimesheet(clean,sourceLabel,horizontal);return;}
  if(clean.length<2)throw new Error('No rows');
  const hdr=clean[0].map(x=>norm(x.replace(/^"|"$/g,'')));
  const ixCode=hdr.findIndex(x=>x.includes('employee code')||x.includes('emp-no')||x==='code');
