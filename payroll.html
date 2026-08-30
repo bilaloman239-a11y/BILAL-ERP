@@ -59,6 +59,14 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
 .excel-grid td.holiday-cell{background:#fffaf0}
 .excel-grid .total-cell{font-weight:850;background:#f8fafc;min-width:84px}
 
+
+.excel-grid td.editing{padding:3px!important}
+.grid-editor{display:flex;align-items:center;gap:4px;min-width:130px}
+.grid-editor input{width:62px!important;min-width:62px!important;padding:6px!important;text-align:center;border:2px solid #f59e0b!important;border-radius:6px}
+.grid-save,.grid-cancel{border:0;border-radius:6px;padding:6px 8px;font-weight:800;cursor:pointer;line-height:1}
+.grid-save{background:#dcfce7;color:#166534}
+.grid-cancel{background:#fee2e2;color:#991b1b}
+
 </style>
 </head>
 <body>
@@ -154,7 +162,7 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
 <div class="page-head" style="margin-top:10px">
   <div>
     <h3 style="margin:0">Manual Timesheet Entry</h3>
-    <div class="mini" style="margin-top:4px">Excel-style monthly grid. Double-click any daily cell to edit. Press Enter to save. Before applying the change, a confirmation popup will ask: Ready? Do you confirm to change?</div>
+    <div class="mini" style="margin-top:4px">Excel-style monthly grid. Double-click any daily cell to edit. Use ✓ Save or press Enter. A confirmation popup appears before the change is applied.</div>
   </div>
  </div>
  <div class="wrap excel-grid-wrap">
@@ -497,43 +505,93 @@ function startGridEdit(td,empKey,date){
  const oldText=td.textContent.trim();
  td.classList.add('editing');
  td.dataset.oldValue=oldText;
- td.innerHTML='<input type="text" value="'+esc(oldText)+'" onkeydown="gridEditKey(event,this,\''+empKey+'\',\''+date+'\')" onblur="cancelGridEdit(this.parentElement)">';
- const inp=td.querySelector('input');inp.focus();inp.select();
+ td.innerHTML=
+   '<div class="grid-editor">'+
+   '<input type="text" value="'+esc(oldText)+'" onkeydown="gridEditKey(event,this,\''+empKey+'\',\''+date+'\')">'+
+   '<button type="button" class="grid-save" title="Save" onmousedown="event.preventDefault()" onclick="saveGridEdit(this.closest(\'td\'),\''+empKey+'\',\''+date+'\')">✓</button>'+
+   '<button type="button" class="grid-cancel" title="Cancel" onmousedown="event.preventDefault()" onclick="cancelGridEdit(this.closest(\'td\'))">✕</button>'+
+   '</div>';
+ const inp=td.querySelector('input');
+ inp.focus();inp.select();
 }
 function gridEditKey(ev,input,empKey,date){
- if(ev.key==='Enter'){ev.preventDefault();saveGridEdit(input.parentElement,empKey,date)}
- if(ev.key==='Escape'){ev.preventDefault();cancelGridEdit(input.parentElement)}
+ if(ev.key==='Enter'){
+   ev.preventDefault();
+   saveGridEdit(input.closest('td'),empKey,date);
+ }
+ if(ev.key==='Escape'){
+   ev.preventDefault();
+   cancelGridEdit(input.closest('td'));
+ }
 }
 function cancelGridEdit(td){
  if(!td||!td.classList.contains('editing'))return;
  const old=td.dataset.oldValue??'';
- td.classList.remove('editing');td.textContent=old;
+ td.classList.remove('editing');
+ td.textContent=old;
 }
 function saveGridEdit(td,empKey,date){
  if(!td||!td.classList.contains('editing'))return;
  const input=td.querySelector('input');
  const raw=String(input?.value??'').trim();
  const old=td.dataset.oldValue??'';
- if(raw===old){cancelGridEdit(td);return;}
+
+ if(raw===old){
+   td.classList.remove('editing');
+   td.textContent=old;
+   return;
+ }
+
  const parsed=parseWorkedHoursCell(raw);
  if(raw!==''&&!parsed.hasValue){
    alert('Please enter valid hours or code, e.g. 8, 10, 12, A, OFF, H.');
-   input.focus();return;
+   input?.focus();
+   return;
  }
+
  const emp=empByKeyAny(empKey);
- const ok=confirm('Ready? Do you confirm to change '+(emp?.name||empKey)+' on '+date+' from "'+(old||'blank')+'" to "'+(raw||'blank')+'"?');
- if(!ok){cancelGridEdit(td);return;}
+ const ok=confirm(
+   'Ready? Do you confirm to change '+(emp?.name||empKey)+
+   ' on '+date+' from "'+(old||'blank')+'" to "'+(raw||'blank')+'"?'
+ );
+ if(!ok){
+   input?.focus();
+   return;
+ }
+
  if(raw===''){
    timesheets=timesheets.filter(x=>!(x.empKey===empKey&&x.date===date));
  }else{
    const calc=calculateHours(empKey,date,parsed.hours,parsed.manualHoliday?'Holiday':'Normal');
    const autoType=(parsed.manualHoliday||weekdayName(date)===getHolidayDay(empKey,date.slice(0,7)))?'Holiday':'Normal';
    let ex=timesheets.find(x=>x.empKey===empKey&&x.date===date);
-   const obj={id:ex?.id||uid(),empKey,date,hours:parsed.hours,dayType:autoType,manualHoliday:parsed.manualHoliday,normal:calc.normal,not:calc.not,hot:calc.hot,remarks:'Manual Excel Grid Edit'};
-   if(ex)Object.assign(ex,obj);else timesheets.push(obj);
+   const obj={
+     id:ex?.id||uid(),
+     empKey,
+     date,
+     hours:parsed.hours,
+     dayType:autoType,
+     manualHoliday:parsed.manualHoliday,
+     normal:calc.normal,
+     not:calc.not,
+     hot:calc.hot,
+     remarks:'Manual Excel Grid Edit'
+   };
+   if(ex)Object.assign(ex,obj);
+   else timesheets.push(obj);
  }
+
  set(TS_KEY,timesheets);
- renderTimesheet();calculatePayroll();
+
+ // Ensure the edited month is selected for both Timesheet and Payroll.
+ tsMonth.value=date.slice(0,7);
+ payMonth.value=date.slice(0,7);
+
+ // Re-render after saving so the exact persisted value is shown.
+ renderTimesheet();
+ calculatePayroll();
+ renderDashboard();
+
  alert('Timesheet change saved successfully.');
 }
 
