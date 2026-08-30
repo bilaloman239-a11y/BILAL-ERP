@@ -139,6 +139,40 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 .cm-portal-nav a.cm-current{background:#f59e0b;color:#fff}
 </style>
 
+
+<style id="cm-erp-sidebar-v2">
+/* Unified ERP Sidebar */
+:root{--cm-side:#12344a;--cm-side-hover:#17465f;--cm-side-active:#1976c9;--cm-side-text:#f4f8fb;--cm-side-muted:#89bfdc}
+.cm-erp-sidebar-title{
+  color:var(--cm-side-muted);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  padding:10px 4px 6px;margin:6px 0 2px
+}
+.cm-erp-link{
+  width:100%;min-height:43px;border:0;background:transparent;color:var(--cm-side-text)!important;
+  display:flex!important;align-items:center;gap:12px;text-align:left;padding:10px 12px!important;
+  border-radius:7px!important;margin:1px 0!important;font-size:14px!important;font-weight:500!important;
+  text-decoration:none!important;line-height:1.25;box-shadow:none!important
+}
+.cm-erp-link:hover{background:var(--cm-side-hover)!important;transform:none!important}
+.cm-erp-link.cm-active{background:var(--cm-side-active)!important;color:#fff!important}
+.cm-erp-icon{
+  width:20px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:15px;line-height:1
+}
+.cm-erp-label{display:block;white-space:normal}
+.cm-portal-nav{display:none!important}
+.cm-top-portal-strip{display:none!important}
+@media(max-width:720px){
+  .cm-erp-link{min-width:185px}
+}
+</style>
+
+
+<style>
+.sidebar{background:#12344a!important;padding:14px 10px!important}
+.sidebar .nav-btn{color:#f4f8fb!important}
+</style>
+
 </head>
 <body>
 <header>
@@ -153,20 +187,26 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
     <button class="btn btn-orange" onclick="openAddForm()">+ Add Sub Contractor</button>
   </div>
 </header>
-<div style="padding:8px 14px;background:#fff;border-bottom:1px solid #dbe3ee"><div class="cm-portal-nav"><a href="index.html" class="">👥 Employee</a><a href="subcontractor.html" class="cm-current">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a></div></div>
+<div class="cm-top-portal-strip"><div class="cm-portal-nav"><a href="index.html" class="">👥 Employee</a><a href="subcontractor.html" class="cm-current">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a></div></div>
 
 <div class="app">
   <aside class="sidebar">
-    <div class="nav-title">Main</div>
-    <button class="nav-btn active" data-view="dashboard">Dashboard</button>
-    <button class="nav-btn" type="button" onclick="window.location.href='index.html'">👥 Employee Management Portal</button>
-    <button class="nav-btn" type="button" onclick="window.location.href='client.html'">🏢 Client Management Portal</button>
-    <button class="nav-btn" data-view="subcontractors">Sub Contractors</button>
-    <button class="nav-btn" data-view="employees">Sub Contractor Employees</button>
-    <div class="nav-title">Masters</div>
-    <button class="nav-btn" data-view="docmaster">Sub Contractor Documents Master</button>
-    <button class="nav-btn" data-view="techmaster">Technical Certificate Master</button>
-  </aside>
+    <div class="cm-erp-sidebar-title">Launchpad</div>
+    <button class="nav-btn cm-erp-link cm-active active" data-view="dashboard"><span class="cm-erp-icon">⌂</span><span class="cm-erp-label">Dashboard</span></button>
+
+    <div class="cm-erp-sidebar-title">Manpower</div>
+    <button class="nav-btn cm-erp-link" type="button" onclick="window.location.href='index.html'"><span class="cm-erp-icon">👥</span><span class="cm-erp-label">Employee Management</span></button>
+    <button class="nav-btn cm-erp-link" data-view="employees"><span class="cm-erp-icon">👷</span><span class="cm-erp-label">Sub Contractor Employees</span></button>
+
+    <div class="cm-erp-sidebar-title">Vendor Management</div>
+    <button class="nav-btn cm-erp-link" data-view="subcontractors"><span class="cm-erp-icon">🏗</span><span class="cm-erp-label">Sub Contractors</span></button>
+    <button class="nav-btn cm-erp-link" data-view="docmaster"><span class="cm-erp-icon">📄</span><span class="cm-erp-label">Documents Master</span></button>
+    <button class="nav-btn cm-erp-link" data-view="techmaster"><span class="cm-erp-icon">🎓</span><span class="cm-erp-label">Technical Certificate Master</span></button>
+
+    <div class="cm-erp-sidebar-title">Sales & Projects</div>
+    <button class="nav-btn cm-erp-link" type="button" onclick="window.location.href='client.html'"><span class="cm-erp-icon">🏢</span><span class="cm-erp-label">Clients & Projects</span></button>
+    <button class="nav-btn cm-erp-link" type="button" onclick="window.location.href='site.html'"><span class="cm-erp-icon">📍</span><span class="cm-erp-label">Site Management</span></button>
+</aside>
 
   <main class="content">
     <section id="dashboard" class="view active">

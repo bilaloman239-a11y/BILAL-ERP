@@ -14,17 +14,59 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 .cm-portal-nav a.cm-current{background:#f59e0b;color:#fff}
 </style>
 
+
+<style id="cm-erp-sidebar-v2">
+/* Unified ERP Sidebar */
+:root{--cm-side:#12344a;--cm-side-hover:#17465f;--cm-side-active:#1976c9;--cm-side-text:#f4f8fb;--cm-side-muted:#89bfdc}
+.cm-erp-sidebar-title{
+  color:var(--cm-side-muted);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  padding:10px 4px 6px;margin:6px 0 2px
+}
+.cm-erp-link{
+  width:100%;min-height:43px;border:0;background:transparent;color:var(--cm-side-text)!important;
+  display:flex!important;align-items:center;gap:12px;text-align:left;padding:10px 12px!important;
+  border-radius:7px!important;margin:1px 0!important;font-size:14px!important;font-weight:500!important;
+  text-decoration:none!important;line-height:1.25;box-shadow:none!important
+}
+.cm-erp-link:hover{background:var(--cm-side-hover)!important;transform:none!important}
+.cm-erp-link.cm-active{background:var(--cm-side-active)!important;color:#fff!important}
+.cm-erp-icon{
+  width:20px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:15px;line-height:1
+}
+.cm-erp-label{display:block;white-space:normal}
+.cm-portal-nav{display:none!important}
+.cm-top-portal-strip{display:none!important}
+@media(max-width:720px){
+  .cm-erp-link{min-width:185px}
+}
+</style>
+
+
+<style>
+.side{background:#12344a!important;padding:14px 10px!important;width:245px!important}
+.side button{color:#f4f8fb!important}
+</style>
+
 </head>
 <body>
 <header><div><h2>Site Management Portal</h2><small>Mobilization • Demobilization • Monthly Reports</small></div><div><button class="btn light" onclick="location.href='index.html'">Employee Portal</button> <button class="btn light" onclick="location.href='client.html'">Client Portal</button> <button class="btn light" onclick="location.href='subcontractor.html'">Sub Contractor Portal</button></div></header>
-<div style="padding:8px 14px;background:#fff;border-bottom:1px solid #dbe4ef"><div class="cm-portal-nav"><a href="index.html" class="">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a></div></div>
+<div class="cm-top-portal-strip"><div class="cm-portal-nav"><a href="index.html" class="">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a></div></div>
 <div class="app">
 <div class="side">
-<button class="active" onclick="showView('dash',this)">Dashboard</button>
-<button onclick="showView('available',this)">Available Manpower</button>
-<button onclick="showView('onsite',this)">On-Site Manpower</button>
-<button onclick="showView('history',this)">Movement History</button>
-<button onclick="showView('reports',this)">Monthly Reports</button>
+<div class="cm-erp-sidebar-title">Launchpad</div>
+<button class="cm-erp-link cm-active active" onclick="showView('dash',this)"><span class="cm-erp-icon">⌂</span><span class="cm-erp-label">Dashboard</span></button>
+
+<div class="cm-erp-sidebar-title">Site Operations</div>
+<button class="cm-erp-link" onclick="showView('available',this)"><span class="cm-erp-icon">👷</span><span class="cm-erp-label">Available Manpower</span></button>
+<button class="cm-erp-link" onclick="showView('onsite',this)"><span class="cm-erp-icon">📍</span><span class="cm-erp-label">On-Site Manpower</span></button>
+<button class="cm-erp-link" onclick="showView('history',this)"><span class="cm-erp-icon">↔</span><span class="cm-erp-label">Movement History</span></button>
+<button class="cm-erp-link" onclick="showView('reports',this)"><span class="cm-erp-icon">📊</span><span class="cm-erp-label">Monthly Reports</span></button>
+
+<div class="cm-erp-sidebar-title">Master Portals</div>
+<button class="cm-erp-link" onclick="location.href='index.html'"><span class="cm-erp-icon">👥</span><span class="cm-erp-label">Employee Management</span></button>
+<button class="cm-erp-link" onclick="location.href='client.html'"><span class="cm-erp-icon">🏢</span><span class="cm-erp-label">Clients & Projects</span></button>
+<button class="cm-erp-link" onclick="location.href='subcontractor.html'"><span class="cm-erp-icon">🏗</span><span class="cm-erp-label">Sub Contractors</span></button>
 </div>
 <div class="main">
 <section id="dash" class="view active">
