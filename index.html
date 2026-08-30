@@ -1044,7 +1044,7 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
   <div class="profile-body">
    <div style="display:flex;gap:8px;margin-bottom:12px"><button id="selectAllExportCols" class="btn light">Select All</button><button id="clearAllExportCols" class="btn light">Clear All</button></div>
    <div id="exportColumnChoices" style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px"></div>
-   <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button id="exportSelectedExcel" class="btn">Export Excel</button><button id="exportSelectedPdf" class="btn orange">Export PDF</button></div>
+   <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button id="applySelectedToList" class="btn green">Apply to List</button><button id="exportSelectedExcel" class="btn">Export Excel</button><button id="exportSelectedPdf" class="btn orange">Export PDF</button></div>
   </div>
  </div>
 </div>
@@ -2102,6 +2102,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const rows=getFilteredEmployees();
     const total=(data.employees||[]).length;
     if($("employeeFilterCount")) $("employeeFilterCount").textContent=`Showing ${rows.length} of ${total} employee${total===1?"":"s"}`;
+    if($("employeeTableWrap")?.classList.contains("employee-list-expanded") && typeof dynamicExportCols==="function"){
+      const cols=dynamicExportCols().filter(([k])=>activeListCols.includes(k));
+      const table=$("employeeTableWrap").querySelector("table");
+      table.querySelector("thead").innerHTML=`<tr>${cols.map(([,l])=>`<th>${esc(l)}</th>`).join("")}<th>Actions</th></tr>`;
+      $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>${cols.map(([k])=>`<td>${k==="employeeName"?`<button class="employee-link" data-view-employee="${e._i}">${esc(expVal(e,k))}</button>`:esc(expVal(e,k))}</td>`).join("")}<td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td></tr>`).join(""):`<tr><td colspan="${cols.length+1}" class="empty">No employee records match your search / filters.</td></tr>`;
+      return;
+    }
     $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>
       <td>${esc(e.employeeCode)}</td>
       <td><button class="employee-link" data-view-employee="${e._i}">${esc(e.employeeName)}</button></td>
@@ -2298,10 +2305,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fillAdvancedEmployeeFilters();
   });
   $("expandEmployeeListBtn")?.addEventListener("click",()=>{
-    const wrap=$("employeeTableWrap");
-    const expanded=wrap.classList.toggle("employee-list-expanded");
-    $("expandEmployeeListBtn").classList.toggle("active",expanded);
-    $("expandEmployeeListBtn").textContent=expanded?"Compact List":"Expand List";
+    openExportEmployee(true);
   });
   $("clearEmployeeFiltersBtn")?.addEventListener("click",()=>{
     ["afActualDesignation","afNationality","afCompany","afIdDesignation","afStatus","afGender","afJoiningFrom","afJoiningTo"].forEach(id=>{if($(id)) $(id).value="";});
@@ -2582,34 +2586,69 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-  const EMP_EXPORT_COLS=[
+  const EMP_BASE_COLS=[
     ["employeeCode","Employee Code"],["employeeName","Employee Name"],["employeeNameArabic","Employee Name Arabic"],
-    ["actualDesignation","Actual Designation"],["nationality","Nationality"],["gender","Gender"],["dob","Date of Birth"],
-    ["maritalStatus","Marital Status"],["mobile","Mobile"],["company","Company"],["idDesignation","Designation as per ID Card"],
-    ["joiningDate","Joining Date"],["status","Employee Status"],["unifiedNumber","Unified Number"],["passportNumber","Passport Number"],
-    ["passportExpiry","Passport Expiry"],["emiratesIdNumber","Emirates ID Number"],["emiratesIdExpiry","Emirates ID Expiry"],
-    ["documents","Documents Summary"],["updatedAt","Last Updated"]
+    ["unifiedNumber","Unified Number"],["actualDesignation","Actual Designation"],["nationality","Nationality"],
+    ["gender","Gender"],["dob","Date of Birth"],["maritalStatus","Marital Status"],["mobile","Mobile"],
+    ["company","Company"],["idDesignation","Designation as per ID Card"],["lineManager","Line Manager / Approving Manager"],
+    ["joiningDate","Joining Date"],["status","Employee Status"],["inactiveReason","Inactive Reason"],["inactiveDate","Inactive Date"],
+    ["emergencyName","Emergency Contact Name"],["emergencyRelationship","Emergency Relationship"],
+    ["emergencyMobile","Emergency Mobile"],["emergencyCountry","Emergency Country"],
+    ["attachments","Attachments"],["documents","Documents Summary"],["updatedAt","Last Updated"]
   ];
-  function expDoc(e,kind){
-    return (e.documents||[]).find(d=>{const t=String(d.type||"").toLowerCase();return kind==="passport"?t.includes("passport"):(t.includes("emirates")||t.includes("id card"));})||{};
+  let activeListCols=EMP_BASE_COLS.slice(0,7).map(x=>x[0]);
+  function allDocumentTypes(){
+    const out=[];
+    const add=v=>{v=String(v||"").trim();if(v&&!out.some(x=>x.toLowerCase()===v.toLowerCase()))out.push(v);};
+    getMasterItems("documentType").forEach(add);
+    (data.employees||[]).forEach(e=>(e.documents||[]).forEach(d=>add(d.type)));
+    return out;
   }
+  function dynamicExportCols(){
+    const cols=[...EMP_BASE_COLS];
+    allDocumentTypes().forEach((type,di)=>{
+      const p=`doc::${encodeURIComponent(type)}::`;
+      cols.push([p+"number",`${type} - Number`],[p+"issueDate",`${type} - Issue Date`],[p+"expiryDate",`${type} - Expiry Date`],[p+"url",`${type} - Document URL`],[p+"remarks",`${type} - Remarks`]);
+    });
+    return cols;
+  }
+  function docByType(e,type){return (e.documents||[]).find(d=>String(d.type||"").trim().toLowerCase()===String(type).trim().toLowerCase())||{};}
   function expVal(e,k){
-    if(k==="passportNumber")return expDoc(e,"passport").number||"";
-    if(k==="passportExpiry")return expDoc(e,"passport").expiryDate||"";
-    if(k==="emiratesIdNumber")return expDoc(e,"eid").number||"";
-    if(k==="emiratesIdExpiry")return expDoc(e,"eid").expiryDate||"";
-    if(k==="documents")return (e.documents||[]).map(d=>`${d.type||"Document"}: ${d.number||"-"} | Expiry: ${d.expiryDate||"-"}`).join("; ");
+    if(k.startsWith("doc::")){
+      const parts=k.split("::"),type=decodeURIComponent(parts[1]||""),field=parts[2]||"";
+      return docByType(e,type)[field]||"";
+    }
+    if(k==="emergencyName")return (e.emergency||{}).name||"";
+    if(k==="emergencyRelationship")return (e.emergency||{}).relationship||"";
+    if(k==="emergencyMobile")return (e.emergency||{}).mobile||"";
+    if(k==="emergencyCountry")return (e.emergency||{}).country||"";
+    if(k==="attachments")return (e.attachments||[]).map(a=>a.name||"Attachment").join("; ");
+    if(k==="documents")return (e.documents||[]).map(d=>`${d.type||"Document"}: ${d.number||"-"} | Issue: ${d.issueDate||"-"} | Expiry: ${d.expiryDate||"-"} | Remarks: ${d.remarks||"-"}`).join("; ");
+    if(k==="updatedAt")return e.updatedAt?new Date(e.updatedAt).toLocaleString():"";
     return e[k]||"";
   }
-  function exportRows(){
-    return getFilteredEmployees();
-  }
-  function openExportEmployee(){
-    $("exportColumnChoices").innerHTML=EMP_EXPORT_COLS.map(([k,l],i)=>`<label style="display:flex;gap:8px;align-items:center;padding:10px;border:1px solid #e1e9f2;border-radius:10px;background:#fafcff"><input type="checkbox" class="emp-exp-col" value="${k}" ${i<14?"checked":""}><span style="font-size:13px;font-weight:700">${esc(l)}</span></label>`).join("");
+  function exportRows(){return getFilteredEmployees();}
+  function openExportEmployee(fromExpand=false){
+    const cols=dynamicExportCols();
+    $("exportColumnChoices").innerHTML=cols.map(([k,l])=>`<label style="display:flex;gap:8px;align-items:center;padding:10px;border:1px solid #e1e9f2;border-radius:10px;background:#fafcff"><input type="checkbox" class="emp-exp-col" value="${esc(k)}" ${activeListCols.includes(k)?"checked":""}><span style="font-size:13px;font-weight:700">${esc(l)}</span></label>`).join("");
+    $("exportEmployeeModal").querySelector(".profile-name").textContent=fromExpand?"Expand List / Select Report Cells":"Export Employee List";
+    $("exportEmployeeModal").querySelector(".profile-meta").textContent="Select any employee field plus every Document / Certificate field. New Document Types from Masters appear here automatically.";
     $("exportEmployeeModal").classList.remove("hidden");
   }
-  function chosenCols(){const s=[...document.querySelectorAll(".emp-exp-col:checked")].map(x=>x.value);return EMP_EXPORT_COLS.filter(([k])=>s.includes(k));}
+  function chosenCols(){const s=[...document.querySelectorAll(".emp-exp-col:checked")].map(x=>x.value);return dynamicExportCols().filter(([k])=>s.includes(k));}
   function exportTable(cols,rows){return `<table border="1" cellspacing="0" cellpadding="6"><thead><tr>${cols.map(([,l])=>`<th>${esc(l)}</th>`).join("")}</tr></thead><tbody>${rows.map(e=>`<tr>${cols.map(([k])=>`<td>${esc(expVal(e,k))}</td>`).join("")}</tr>`).join("")}</tbody></table>`;}
+  function applySelectedColumnsToList(){
+    const cols=chosenCols(); if(!cols.length)return alert("Please select at least one cell / column.");
+    activeListCols=cols.map(x=>x[0]);
+    const table=$("employeeTableWrap").querySelector("table");
+    table.querySelector("thead").innerHTML=`<tr>${cols.map(([,l])=>`<th>${esc(l)}</th>`).join("")}<th>Actions</th></tr>`;
+    const rows=getFilteredEmployees();
+    $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>${cols.map(([k])=>`<td>${k==="employeeName"?`<button class="employee-link" data-view-employee="${e._i}">${esc(expVal(e,k))}</button>`:esc(expVal(e,k))}</td>`).join("")}<td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td></tr>`).join(""):`<tr><td colspan="${cols.length+1}" class="empty">No employee records match your search / filters.</td></tr>`;
+    $("employeeTableWrap").classList.add("employee-list-expanded");
+    $("expandEmployeeListBtn").classList.add("active");
+    $("expandEmployeeListBtn").textContent="Select Report Cells";
+    $("exportEmployeeModal").classList.add("hidden");
+  }
   function exportExcelSelected(){
     const c=chosenCols(),r=exportRows();if(!c.length)return alert("Please select at least one column.");if(!r.length)return alert("No employee records available.");
     const b=new Blob(["\ufeff",`<!doctype html><meta charset="UTF-8">${exportTable(c,r)}`],{type:"application/vnd.ms-excel"});
@@ -2618,14 +2657,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function exportPdfSelected(){
     const c=chosenCols(),r=exportRows();if(!c.length)return alert("Please select at least one column.");if(!r.length)return alert("No employee records available.");
     const w=window.open("","_blank");if(!w)return alert("Please allow pop-ups for PDF export.");
-    w.document.write(`<!doctype html><html><head><title>Employee List</title></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script>
-
-</body></html>`);w.document.close();
+    w.document.write(`<!doctype html><html><head><title>Employee List</title></head><body><h2>Employee List</h2><div style="margin-bottom:10px">Civil Master General Maintenance LLC - OPC · ${new Date().toLocaleString()}</div>${exportTable(c,r)}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
   }
-  $("exportEmployeeListBtn")?.addEventListener("click",openExportEmployee);
+  $("exportEmployeeListBtn")?.addEventListener("click",()=>openExportEmployee(false));
   $("closeExportEmployeeModal")?.addEventListener("click",()=>$("exportEmployeeModal").classList.add("hidden"));
   $("selectAllExportCols")?.addEventListener("click",()=>document.querySelectorAll(".emp-exp-col").forEach(x=>x.checked=true));
   $("clearAllExportCols")?.addEventListener("click",()=>document.querySelectorAll(".emp-exp-col").forEach(x=>x.checked=false));
+  $("applySelectedToList")?.addEventListener("click",applySelectedColumnsToList);
   $("exportSelectedExcel")?.addEventListener("click",exportExcelSelected);
   $("exportSelectedPdf")?.addEventListener("click",exportPdfSelected);
 
