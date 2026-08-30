@@ -74,6 +74,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 <button class="cm-erp-link" onclick="showView('onsite',this)"><span class="cm-erp-icon">📍</span><span class="cm-erp-label">On-Site Manpower</span></button>
 <button class="cm-erp-link" onclick="showView('history',this)"><span class="cm-erp-icon">↔</span><span class="cm-erp-label">Movement History</span></button>
 <button class="cm-erp-link" onclick="showView('reports',this)"><span class="cm-erp-icon">📊</span><span class="cm-erp-label">Monthly Reports</span></button>
+<button class="cm-erp-link" onclick="showView('utilization',this)"><span class="cm-erp-icon">⏱</span><span class="cm-erp-label">Utilization / Idle Manpower</span></button>
 
 <div class="cm-erp-sidebar-title">Master Portals</div>
 <button class="cm-erp-link" onclick="location.href='index.html'"><span class="cm-erp-icon">👥</span><span class="cm-erp-label">Employee Management</span></button>
@@ -122,6 +123,60 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 <div class="box"><b>Employees:</b> <span id="rEmp">0</span> &nbsp;&nbsp; <b>Total Site Time Required Days:</b> <span id="rDays">0</span></div>
 <div class="wrap"><table><thead><tr><th>Code</th><th>Employee</th><th>Designation</th><th>Client</th><th>Project</th><th>Site Craft</th><th>Location</th><th>Mobilized</th><th>Demobilized</th><th>Required Days</th><th>Client Rate</th><th>Sub Contractor Rate</th></tr></thead><tbody id="rRows"></tbody></table></div>
 </section>
+
+<section id="utilization" class="view">
+  <h2>Utilization / Idle Manpower</h2>
+
+  <div class="box">
+    <div class="toolbar">
+      <input id="uMonth" type="month" onchange="renderUtilization()">
+      <input id="uSearch" placeholder="Search employee, code, designation..." oninput="renderUtilization()">
+      <button class="btn light" type="button" onclick="uSearch.value='';renderUtilization()">Clear</button>
+      <button class="btn primary" type="button" onclick="exportUtilizationCSV()">Export Utilization</button>
+    </div>
+    <div style="font-size:12px;color:#6b7280">
+      Company Employees only. Idle at Camp = Eligible Employment Days − On-Site Days.
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">Company Employees in Report<br><b id="uEmployees">0</b></div>
+    <div class="card">Total Eligible Days<br><b id="uEligibleDays">0</b></div>
+    <div class="card">Total On-Site Days<br><b id="uOnSiteDays">0</b></div>
+    <div class="card">Total Idle at Camp Days<br><b id="uIdleDays">0</b></div>
+  </div>
+
+  <div class="box">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+      <div>
+        <h3 style="margin:0;color:#173b67">Employee Utilization Report</h3>
+        <div style="font-size:12px;color:#6b7280;margin-top:3px">Click employee name to view monthly timeline / site breakdown.</div>
+      </div>
+      <div><b>Average Utilization:</b> <span id="uAvgUtil">0%</span></div>
+    </div>
+    <div class="wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Employee Code</th><th>Employee Name</th><th>Designation</th>
+            <th>Joining Date</th><th>Inactive Date</th>
+            <th>Eligible Days</th><th>On-Site Days</th><th>Idle at Camp Days</th><th>Utilization %</th>
+          </tr>
+        </thead>
+        <tbody id="uRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="uDetailPanel" class="box" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div><h3 id="uDetailTitle" style="margin:0;color:#173b67">Employee Timeline</h3><div id="uDetailSub" style="font-size:12px;color:#6b7280;margin-top:3px"></div></div>
+      <button class="btn light" type="button" onclick="document.getElementById('uDetailPanel').style.display='none'">Close</button>
+    </div>
+    <div id="uDetailBody" style="margin-top:12px"></div>
+  </div>
+</section>
+
 </div>
 </div>
 
@@ -150,7 +205,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 
 <script>
 const MOV='cm_site_management_movements_v1', EMP='cm_employee_portal_v3', SCEMP='sc_portal_employees_v1', SC='sc_portal_subcontractors_v1', CK='cm_client_portal_clients_v1', PK='cm_client_portal_projects_v1';
-let moves=[],clients=[],projects=[],subs=[],staff=[];
+let moves=[],clients=[],projects=[],subs=[],staff=[],companyStaffAll=[];
 
 function get(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}}
 function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
@@ -169,9 +224,35 @@ function refresh(){
  moves=get(MOV,[]);clients=get(CK,[]);projects=get(PK,[]);subs=get(SC,[]);
  let raw=get(EMP,{}), ea=Array.isArray(raw)?raw:(raw.employees||raw.employeeList||raw.data?.employees||[]);
  let sa=get(SCEMP,[]);
- staff=[];
- ea.forEach((e,i)=>{if(norm(e.employeeStatus||e.status||'active')!=='inactive')staff.push({key:'e:'+(e.id||e.employeeCode||i),code:e.employeeCode||e.empCode||e.code||'',name:e.employeeName||e.name||e.fullName||'',des:e.actualDesignation||e.designation||e.craft||'',source:'Company',sc:''})});
- (Array.isArray(sa)?sa:[]).forEach((e,i)=>{if(norm(e.status||'active')!=='inactive')staff.push({key:'s:'+(e.id||e.employeeCode||i),code:e.employeeCode||e.code||'',name:e.name||e.employeeName||'',des:e.actualDesignation||e.craft||e.designation||'',source:'Sub Contractor',sc:scName(e.subContractorId||e.subcontractorId)})});
+ staff=[]; companyStaffAll=[];
+
+ ea.forEach((e,i)=>{
+   const key='e:'+(e.id||e.employeeCode||i);
+   const rec={
+     key,
+     code:e.employeeCode||e.empCode||e.code||'',
+     name:e.employeeName||e.name||e.fullName||'',
+     des:e.actualDesignation||e.designation||e.craft||'',
+     source:'Company',
+     sc:'',
+     status:e.employeeStatus||e.status||'Active',
+     joiningDate:e.joiningDate||e.joinDate||e.dateOfJoining||'',
+     inactiveDate:e.inactiveDate||e.statusDate||e.lastWorkingDate||''
+   };
+   if(rec.name) companyStaffAll.push(rec);
+   if(norm(rec.status)!=='inactive' && rec.name) staff.push(rec);
+ });
+
+ (Array.isArray(sa)?sa:[]).forEach((e,i)=>{
+   if(norm(e.status||'active')!=='inactive') staff.push({
+     key:'s:'+(e.id||e.employeeCode||i),
+     code:e.employeeCode||e.code||'',
+     name:e.name||e.employeeName||'',
+     des:e.actualDesignation||e.craft||e.designation||'',
+     source:'Sub Contractor',
+     sc:scName(e.subContractorId||e.subcontractorId)
+   });
+ });
  staff=staff.filter(x=>x.name)
 }
 function save(){localStorage.setItem(MOV,JSON.stringify(moves));refresh();renderAll()}
@@ -277,8 +358,141 @@ document.addEventListener('keydown',e=>{
 
 function renderDash(){let on=moves.filter(x=>!x.demobDate);dAvail.textContent=staff.filter(x=>!active(x.key)).length;dSite.textContent=on.length;dProjects.textContent=new Set(on.map(x=>x.projectId)).size;dMove.textContent=moves.filter(x=>(x.mobDate||'').startsWith(month())||(x.demobDate||'').startsWith(month())).length;let map={};on.forEach(m=>{map[m.projectId]=(map[m.projectId]||0)+1});siteSummary.innerHTML=Object.keys(map).length?Object.entries(map).map(([id,c])=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>'+esc(projectName(id))+'</b> - '+c+' manpower</div>').join(''):'No manpower currently on site.'}
 function fillReportFilters(){rClient.innerHTML='<option value="">All Clients</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');rProject.innerHTML='<option value="">All Projects</option>'+projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}
-function renderAll(){refresh();fillReportFilters();renderAvailable();renderOnsite();renderHistory();renderReport();renderDash()}
-rMonth.value=month();refresh();renderAll();
+
+function ymBounds(ym){
+  const [y,m]=ym.split('-').map(Number);
+  const start=new Date(y,m-1,1);
+  const end=new Date(y,m,0);
+  const f=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+  return {start:f(start),end:f(end),days:end.getDate()};
+}
+function maxDateStr(a,b){return (!a||a<b)?b:a}
+function minDateStr(a,b){return (!a||a>b)?b:a}
+
+function utilizationForEmployee(emp,ym){
+  const b=ymBounds(ym);
+  let eligibleStart=b.start;
+  if(emp.joiningDate && emp.joiningDate>eligibleStart) eligibleStart=emp.joiningDate;
+
+  let eligibleEnd=b.end;
+  if(emp.inactiveDate && emp.inactiveDate<eligibleEnd) eligibleEnd=emp.inactiveDate;
+
+  // If joining is after selected month, or inactive before selected month, no eligible days.
+  if(eligibleEnd<eligibleStart) return {...emp,eligibleDays:0,onSiteDays:0,idleDays:0,utilPct:0,periods:[]};
+
+  const eligibleDays=days(eligibleStart,eligibleEnd);
+  const periods=[];
+
+  moves.filter(m=>m.employeeKey===emp.key).forEach(m=>{
+    let a=m.mobDate||'';
+    let z=m.demobDate||b.end;
+    if(!a) return;
+    if(a<eligibleStart) a=eligibleStart;
+    if(z>eligibleEnd) z=eligibleEnd;
+    if(z<a) return;
+    periods.push({
+      start:a,end:z,
+      days:days(a,z),
+      client:clientName(m.clientId),
+      project:projectName(m.projectId),
+      craft:m.siteCraft||'',
+      location:m.location||''
+    });
+  });
+
+  // Merge date ranges to avoid accidental double-counting.
+  const sorted=periods.slice().sort((x,y)=>x.start.localeCompare(y.start));
+  const merged=[];
+  sorted.forEach(p=>{
+    if(!merged.length){merged.push({start:p.start,end:p.end});return;}
+    const last=merged[merged.length-1];
+    const nextDay=new Date(last.end+'T00:00:00'); nextDay.setDate(nextDay.getDate()+1);
+    const nextDayStr=nextDay.toISOString().slice(0,10);
+    if(p.start<=nextDayStr){
+      if(p.end>last.end) last.end=p.end;
+    }else merged.push({start:p.start,end:p.end});
+  });
+
+  const onSiteDays=merged.reduce((s,p)=>s+days(p.start,p.end),0);
+  const idleDays=Math.max(0,eligibleDays-onSiteDays);
+  const utilPct=eligibleDays?Math.round((onSiteDays/eligibleDays)*1000)/10:0;
+
+  return {...emp,eligibleStart,eligibleEnd,eligibleDays,onSiteDays,idleDays,utilPct,periods};
+}
+
+function utilizationData(){
+  const ym=uMonth?.value||month();
+  const q=norm(uSearch?.value||'');
+  return companyStaffAll
+    .map(e=>utilizationForEmployee(e,ym))
+    .filter(e=>e.eligibleDays>0)
+    .filter(e=>norm([e.code,e.name,e.des].join(' ')).includes(q));
+}
+
+function renderUtilization(){
+  if(!document.getElementById('uRows')) return;
+  const rows=utilizationData();
+
+  uEmployees.textContent=rows.length;
+  uEligibleDays.textContent=rows.reduce((s,x)=>s+x.eligibleDays,0);
+  uOnSiteDays.textContent=rows.reduce((s,x)=>s+x.onSiteDays,0);
+  uIdleDays.textContent=rows.reduce((s,x)=>s+x.idleDays,0);
+
+  const totalEligible=rows.reduce((s,x)=>s+x.eligibleDays,0);
+  const totalSite=rows.reduce((s,x)=>s+x.onSiteDays,0);
+  uAvgUtil.textContent=(totalEligible?Math.round((totalSite/totalEligible)*1000)/10:0)+'%';
+
+  uRows.innerHTML=rows.length?rows.map(e=>`<tr>
+    <td>${esc(e.code||'-')}</td>
+    <td><span class="link" onclick="openUtilizationDetail('${e.key}')">${esc(e.name)}</span></td>
+    <td>${esc(e.des||'-')}</td>
+    <td>${esc(e.joiningDate||'-')}</td>
+    <td>${esc(e.inactiveDate||'-')}</td>
+    <td><b>${e.eligibleDays}</b></td>
+    <td><b>${e.onSiteDays}</b></td>
+    <td><b>${e.idleDays}</b></td>
+    <td><b>${e.utilPct}%</b></td>
+  </tr>`).join(''):'<tr><td colspan="9">No company employees found for selected month.</td></tr>';
+}
+
+function openUtilizationDetail(key){
+  const ym=uMonth?.value||month();
+  const emp=companyStaffAll.find(e=>e.key===key);
+  if(!emp) return;
+  const r=utilizationForEmployee(emp,ym);
+  const panel=document.getElementById('uDetailPanel');
+  uDetailTitle.textContent=`${r.name} (${r.code||'-'})`;
+  uDetailSub.textContent=`${ym} · Eligible ${r.eligibleDays} days · On Site ${r.onSiteDays} days · Idle ${r.idleDays} days · Utilization ${r.utilPct}%`;
+
+  const periods=r.periods.slice().sort((a,b)=>a.start.localeCompare(b.start));
+  let html='';
+  if(periods.length){
+    html=`<div class="wrap"><table><thead><tr><th>From</th><th>To</th><th>Days</th><th>Client</th><th>Project</th><th>Site Craft</th><th>Location</th></tr></thead><tbody>
+      ${periods.map(p=>`<tr><td>${esc(p.start)}</td><td>${esc(p.end)}</td><td><b>${p.days}</b></td><td>${esc(p.client)}</td><td>${esc(p.project)}</td><td>${esc(p.craft||'-')}</td><td>${esc(p.location||'-')}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  }else{
+    html='<div style="padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;color:#9a3412">No site mobilization in this month. All eligible days are Idle at Camp.</div>';
+  }
+  uDetailBody.innerHTML=html;
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function exportUtilizationCSV(){
+  const rows=utilizationData();
+  if(!rows.length) return alert('No utilization data to export.');
+  const h=['Employee Code','Employee Name','Designation','Joining Date','Inactive Date','Eligible Days','On-Site Days','Idle at Camp Days','Utilization %'];
+  const d=rows.map(e=>[e.code,e.name,e.des,e.joiningDate,e.inactiveDate,e.eligibleDays,e.onSiteDays,e.idleDays,e.utilPct]);
+  const csv=[h,...d].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Employee_Utilization_Idle_'+(uMonth.value||month())+'.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function renderAll(){refresh();fillReportFilters();renderAvailable();renderOnsite();renderHistory();renderReport();renderDash();renderUtilization()}
+rMonth.value=month(); if(document.getElementById('uMonth')) uMonth.value=month(); refresh();renderAll();
 </script>
 </body>
 </html>
