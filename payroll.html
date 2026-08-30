@@ -166,7 +166,7 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
 </section>
 
 <section id="payroll" class="view">
- <div class="page-head"><h2>Payroll Calculation</h2><div><button class="btn btn-light" onclick="calculatePayroll()">Recalculate</button> <button class="btn btn-green" onclick="finalizePayroll()">Finalize Payroll</button></div></div>
+ <div class="page-head"><h2>Payroll Calculation</h2><div><button class="btn btn-light" onclick="calculatePayroll()">Recalculate</button> <button class="btn btn-orange" onclick="reopenSelectedPayroll()">Reopen Finalized Payroll</button> <button class="btn btn-green" onclick="finalizePayroll()">Finalize Payroll</button></div></div>
  <div class="box">
   <div class="form-grid">
    <div class="field"><label>Payroll Month</label><input id="payMonth" type="month" onchange="calculatePayroll()"></div>
@@ -378,7 +378,7 @@ function saveDeduction(e){
  const amt=Number(dedAmount.value);if(amt<=0)return alert('Amount must be greater than zero.');
  const before=ledgerBalance(emp.key),after=before+amt;
  deductions.push({id:uid(),empKey:emp.key,date:dedDate.value,type:dedType.value,description:dedDesc.value.trim(),added:amt,recovery:0,balanceAfter:after,reference:dedRef.value.trim(),source:'Manual'});
- set(DED_KEY,deductions);closeDeduction();renderAll()
+ set(DED_KEY,deductions);closeDeduction();renderAll();calculatePayroll()
 }
 function renderDeductions(){
  const q=norm(dedSearch.value),ef=dedEmployeeFilter.value;
@@ -626,6 +626,14 @@ function detectHorizontalTimesheet(clean){
 function processHorizontalTimesheet(clean,sourceLabel,layout){
  let imported=0,matchedEmployees=new Set(),unmatchedCodes=new Set(),ignoredCells=0;
  const detectedMonths=new Set(layout.dateCols.map(x=>x.date.slice(0,7)));
+ if(detectedMonths.size===1){
+   const importYm=[...detectedMonths][0];
+   if(payHistory.some(x=>x.month===importYm)){
+     const ok=confirm('Payroll '+importYm+' is finalized. Reopen it before importing this timesheet so the uploaded hours can push into payroll calculation?');
+     if(!ok)throw new Error('Import cancelled because payroll month is finalized.');
+     reopenPayrollMonth(importYm,true);
+   }
+ }
 
  for(let r=layout.dataStart;r<clean.length;r++){
    const row=clean[r]||[];
@@ -676,6 +684,15 @@ function processTimesheetRows(rows,sourceLabel){
  const ixHours=hdr.findIndex(x=>x.includes('hours')||x==='hour');
  const ixType=hdr.findIndex(x=>x.includes('day type'));
  if([ixCode,ixDate,ixHours].some(x=>x<0))throw new Error('Required columns missing: Employee Code, Date, Hours.');
+ const rowMonths=new Set(clean.slice(1).map(c=>normalizeImportedDate((c[ixDate]||'').replace(/^"|"$/g,''))).filter(Boolean).map(d=>d.slice(0,7)));
+ if(rowMonths.size===1){
+   const importYm=[...rowMonths][0];
+   if(payHistory.some(x=>x.month===importYm)){
+     const ok=confirm('Payroll '+importYm+' is finalized. Reopen it before importing this timesheet so uploaded hours can push into payroll?');
+     if(!ok)throw new Error('Import cancelled because payroll month is finalized.');
+     reopenPayrollMonth(importYm,true);
+   }
+ }
  let count=0;
  clean.slice(1).forEach(c=>{
   const emp=employees.find(e=>norm(e.code)===norm((c[ixCode]||'').replace(/^"|"$/g,'')));if(!emp)return;
@@ -737,6 +754,33 @@ function calcEmployeePayroll(emp,ym){
  return {emp,r,normalH,notH,hotH,normalAmt,notAmt,hotAmt,allowance:0,allowanceText:'',deduct:0,balance:Math.max(0,ledgerBalance(emp.key))}
 }
 let payrollDraftMonth='';
+
+function rollbackPayrollRecoveries(ym){
+ const ref='PAY-'+ym;
+ deductions=deductions.filter(x=>!(x.source==='Payroll'&&x.type==='Payroll Recovery'&&x.reference===ref));
+ set(DED_KEY,deductions);
+}
+function reopenPayrollMonth(ym,skipConfirm){
+ const existing=payHistory.find(x=>x.month===ym);
+ if(!existing)return true;
+ if(!skipConfirm){
+   const ok=confirm('Payroll '+ym+' is already finalized. Reopen it so latest Timesheet and Deduction Ledger can be recalculated? Previous payroll recovery postings for this month will be rolled back.');
+   if(!ok)return false;
+ }
+ rollbackPayrollRecoveries(ym);
+ payHistory=payHistory.filter(x=>x.month!==ym);
+ set(HIST_KEY,payHistory);
+ payrollDraftMonth='';
+ return true;
+}
+function reopenSelectedPayroll(){
+ const ym=payMonth.value||month();
+ if(!payHistory.some(x=>x.month===ym)){alert('Payroll '+ym+' is not finalized. It is already open for recalculation.');calculatePayroll();return;}
+ if(!reopenPayrollMonth(ym,false))return;
+ renderAll();
+ alert('Payroll '+ym+' reopened. Latest timesheet and deduction balance are now loaded into Payroll Calculation.');
+}
+
 function calculatePayroll(){
  const ym=payMonth.value||month();
  const existing=payHistory.find(x=>x.month===ym);
@@ -747,7 +791,7 @@ function calculatePayroll(){
   // recalculation — so screen numbers can't drift from the saved record just
   // because timesheets/salary were edited afterward. No editable inputs either.
   currentPayroll=[];
-  payRows.innerHTML=`<tr><td colspan="16"><div class="warn" style="margin:0">This month is already <b>Finalized</b> (on ${new Date(existing.finalizedAt).toLocaleString()}). The rows below are the locked, saved record — not a live recalculation. To change a finalized month's pay, adjustments must go through a new entry/correction; this table cannot be edited here.</div></td></tr>`
+  payRows.innerHTML=`<tr><td colspan="16"><div class="warn" style="margin:0">This month is already <b>Finalized</b> (on ${new Date(existing.finalizedAt).toLocaleString()}). The rows below are the locked saved record, so newly uploaded timesheet or new deductions will not appear here until you click <b>Reopen Finalized Payroll</b>.</div></td></tr>`
    +existing.entries.map(x=>`<tr>
     <td>${esc(x.employeeCode||'-')}</td><td><b>${esc(x.employeeName)}</b></td><td>${esc(x.salaryType)}</td><td>-</td>
     <td>${x.normalH}</td><td>${x.notH}</td><td>${x.hotH}</td><td>${money(x.normalAmt)}</td><td>${money(x.notAmt)}</td><td>${money(x.hotAmt)}</td>
