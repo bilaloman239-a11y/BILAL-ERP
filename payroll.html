@@ -174,18 +174,30 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
 </section>
 
 <section id="payroll" class="view">
- <div class="page-head"><h2>Payroll Calculation</h2><div><button class="btn btn-light" onclick="calculatePayroll()">Recalculate</button> <button class="btn btn-orange" onclick="reopenSelectedPayroll()">Reopen Finalized Payroll</button> <button class="btn btn-green" onclick="finalizePayroll()">Finalize Payroll</button></div></div>
+ <div class="page-head"><h2>Payroll Calculation</h2><div><button class="btn btn-light" onclick="exportPayrollExcel()">Export in Excel</button> <button class="btn btn-light" onclick="calculatePayroll()">Recalculate</button> <button class="btn btn-orange" onclick="reopenSelectedPayroll()">Reopen Finalized Payroll</button> <button class="btn btn-green" onclick="finalizePayroll()">Finalize Payroll</button></div></div>
  <div class="box">
   <div class="form-grid">
-   <div class="field"><label>Payroll Month</label><input id="payMonth" type="month" onchange="calculatePayroll()"></div>
+   <div class="field"><label>Payroll Month</label><input id="payMonth" type="month" onchange="calculatePayroll();renderPaymentSummary()"></div>
+   <div class="field"><label>Company Filter</label><select id="payCompanyFilter" onchange="calculatePayroll()"><option value="">All Companies</option></select></div>
    <div class="field"><label>Payroll Status</label><input id="payStatusText" value="Draft" readonly></div>
-   <div class="field"><label>Rule</label><input value="Hourly = Hours × Rate (no OT) • Monthly = Basic + NOT/HOT • Allowance / deduction editable" readonly></div>
+   <div class="field"><label>Rule</label><input value="Balance Salary = Net Salary - Pay by Bank - Pay by Cash" readonly></div>
   </div>
  </div>
- <div class="wrap"><table style="min-width:1900px"><thead><tr>
+ <div class="box">
+  <div class="page-head" style="margin-bottom:10px">
+   <div><h3 style="margin:0;color:var(--navy2)">Bank Salary Register Upload</h3><div class="mini" style="margin-top:4px">Required: EMP CODE, EMP NAME, TOTAL AMOUNT. Matching is by EMP CODE.</div></div>
+   <button class="btn btn-light" type="button" onclick="downloadBankSample()">Download Sample</button>
+  </div>
+  <div class="form-grid">
+   <div class="field span2"><label>Upload Bank Register (Excel / CSV)</label><input id="bankFile" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" onchange="importBankRegister(event)"></div>
+   <div class="field"><label>Bank Upload Status</label><input id="bankUploadStatus" value="No bank register uploaded" readonly></div>
+  </div>
+  <div id="paymentSummary" class="notice" style="margin-top:12px;margin-bottom:0"></div>
+ </div>
+ <div class="wrap"><table style="min-width:2250px"><thead><tr>
   <th>Code</th><th>Employee</th><th>Salary Type</th><th>Basic / Rate</th><th>Normal Hrs</th><th>NOT Hrs</th><th>HOT Hrs</th>
   <th>Normal / Basic Amount</th><th>NOT Amount</th><th>HOT Amount</th><th>Allowance Type / Remarks</th><th>Allowance</th>
-  <th>Deduction Balance</th><th>Deduct This Month</th><th>Gross</th><th>Net Salary</th>
+  <th>Deduction Balance</th><th>Deduct This Month</th><th>Gross</th><th>Net Salary</th><th>Pay by Bank</th><th>Pay by Cash</th><th>Balance Salary</th>
  </tr></thead><tbody id="payRows"></tbody></table></div>
 </section>
 
@@ -259,8 +271,10 @@ const DED_KEY='cm_payroll_deduction_ledger_v1';
 const TS_KEY='cm_payroll_timesheets_v1';
 const HIST_KEY='cm_payroll_history_v1';
 const HOL_KEY='cm_payroll_holiday_settings_v1';
+const PAYMENT_KEY='cm_payroll_payment_register_v1';
+const REOPEN_KEY='cm_payroll_reopen_locked_snapshot_v1';
 
-let employees=[],allEmployees=[],payMaster=get(PAY_KEY,{}),deductions=get(DED_KEY,[]),timesheets=get(TS_KEY,[]),payHistory=get(HIST_KEY,[]),holidaySettings=get(HOL_KEY,{}),currentPayroll=[];
+let employees=[],allEmployees=[],payMaster=get(PAY_KEY,{}),deductions=get(DED_KEY,[]),timesheets=get(TS_KEY,[]),payHistory=get(HIST_KEY,[]),holidaySettings=get(HOL_KEY,{}),paymentRegister=get(PAYMENT_KEY,{}),reopenSnapshots=get(REOPEN_KEY,{}),currentPayroll=[];
 
 function get(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}}
 function set(k,v){localStorage.setItem(k,JSON.stringify(v))}
@@ -281,6 +295,7 @@ function loadEmployees(){
   code:e.employeeCode||e.empCode||e.code||'',
   name:e.employeeName||e.name||e.fullName||'',
   designation:e.actualDesignation||e.designation||e.craft||'',
+  company:e.company||e.companyName||e.employmentCompany||e.currentCompany||'',
   status:e.employeeStatus||e.status||'Active',
   joiningDate:e.joiningDate||e.joinDate||''
  })).filter(e=>e.name);
@@ -687,7 +702,7 @@ function processHorizontalTimesheet(clean,sourceLabel,layout){
  if(detectedMonths.size===1){
    const importYm=[...detectedMonths][0];
    if(payHistory.some(x=>x.month===importYm)){
-     const ok=confirm('Payroll '+importYm+' is finalized. Reopen it before importing this timesheet so the uploaded hours can push into payroll calculation?');
+     const ok=confirm('Payroll '+importYm+' is finalized. Reopen it before importing? Existing salary values will remain locked; only Normal / NOT / HOT hours will update from this timesheet.');
      if(!ok)throw new Error('Import cancelled because payroll month is finalized.');
      reopenPayrollMonth(importYm,true);
    }
@@ -746,7 +761,7 @@ function processTimesheetRows(rows,sourceLabel){
  if(rowMonths.size===1){
    const importYm=[...rowMonths][0];
    if(payHistory.some(x=>x.month===importYm)){
-     const ok=confirm('Payroll '+importYm+' is finalized. Reopen it before importing this timesheet so uploaded hours can push into payroll?');
+     const ok=confirm('Payroll '+importYm+' is finalized. Reopen it before importing? Existing salary values will remain locked; only Normal / NOT / HOT hours will update from this timesheet.');
      if(!ok)throw new Error('Import cancelled because payroll month is finalized.');
      reopenPayrollMonth(importYm,true);
    }
@@ -795,6 +810,129 @@ function importTimesheet(ev){
  alert('Unsupported file type. Please upload a .csv or .xlsx/.xls file.');
  tsFile.value='';
 }
+
+function monthPayment(ym){
+ if(!paymentRegister[ym])paymentRegister[ym]={employees:{},uploads:[]};
+ paymentRegister[ym].employees=paymentRegister[ym].employees||{};
+ paymentRegister[ym].uploads=paymentRegister[ym].uploads||[];
+ return paymentRegister[ym];
+}
+function getPayment(empKey,ym){
+ const m=monthPayment(ym);
+ if(!m.employees[empKey])m.employees[empKey]={bank:0,cash:0,lastUpdated:''};
+ return m.employees[empKey];
+}
+function savePaymentRegister(){set(PAYMENT_KEY,paymentRegister)}
+function paymentNumbers(x,ym){
+ const p=getPayment(x.emp.key,ym);
+ const gross=x.normalAmt+x.notAmt+x.hotAmt+x.allowance;
+ const net=gross-x.deduct,bank=Number(p.bank||0),cash=Number(p.cash||0);
+ return {gross,net,bank,cash,balance:net-bank-cash}
+}
+function setCashPayment(i,v){
+ const x=currentPayroll[i];if(!x)return;
+ const ym=payMonth.value||month(),p=getPayment(x.emp.key,ym);
+ const nums=paymentNumbers(x,ym);
+ let n=Math.max(0,Number(v||0)),max=Math.max(0,nums.net-nums.bank);
+ if(n>max){alert('Maximum cash payment is AED '+money(max));n=max}
+ p.cash=n;p.lastUpdated=new Date().toISOString();savePaymentRegister();refreshPayrollRow(i);renderPaymentSummary()
+}
+function renderPaymentSummary(){
+ const box=document.getElementById('paymentSummary');if(!box)return;
+ const ym=payMonth.value||month(),m=monthPayment(ym),vals=Object.values(m.employees||{});
+ const bank=vals.reduce((s,x)=>s+Number(x.bank||0),0),cash=vals.reduce((s,x)=>s+Number(x.cash||0),0);
+ if(document.getElementById('bankUploadStatus'))bankUploadStatus.value=(m.uploads||[]).length?((m.uploads||[]).length+' upload(s) saved'):'No bank register uploaded';
+ box.innerHTML='<b>'+ym+'</b> · Bank Paid: <b>AED '+money(bank)+'</b> · Cash Paid: <b>AED '+money(cash)+'</b> · Uploads: <b>'+((m.uploads||[]).length)+'</b>'
+}
+function downloadBankSample(){
+ const csv='EMP CODE,EMP NAME,TOTAL AMOUNT\r\nCM001,Sample Employee,2500.00\r\nCM002,Sample Employee 2,1800.00\r\n';
+ const b=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Bank_Salary_Register_Sample.csv';a.click();URL.revokeObjectURL(a.href)
+}
+function processBankRows(rows,fileName){
+ const clean=rows.map(r=>r.map(c=>String(c??'').trim())).filter(r=>r.some(c=>c!==''));
+ let hr=-1,ci=-1,ni=-1,ai=-1;
+ for(let r=0;r<Math.min(clean.length,10);r++){
+  const h=clean[r].map(norm);
+  const c=h.findIndex(x=>['emp code','employee code','emp-code','emp no','emp-no','code'].includes(x));
+  const n=h.findIndex(x=>['emp name','employee name','name'].includes(x));
+  const a=h.findIndex(x=>['total amount','amount','salary amount','net amount'].includes(x));
+  if(c>=0&&a>=0){hr=r;ci=c;ni=n;ai=a;break}
+ }
+ if(hr<0)throw new Error('Columns not found. Required: EMP CODE, EMP NAME, TOTAL AMOUNT.');
+ const ym=payMonth.value||month(),m=monthPayment(ym);
+ let matched=0,total=0;const unmatched=[],dups=[],over=[],seen=new Set();
+ clean.slice(hr+1).forEach(row=>{
+  const code=String(row[ci]??'').trim();if(!code)return;
+  const amount=Number(String(row[ai]??'').replace(/,/g,'').trim());if(!Number.isFinite(amount))return;
+  const emp=employees.find(e=>norm(e.code)===norm(code))||allEmployees.find(e=>norm(e.code)===norm(code));
+  if(!emp){unmatched.push(code);return}
+  if(seen.has(norm(code)))dups.push(code);seen.add(norm(code));
+  const p=getPayment(emp.key,ym);p.bank=amount;p.lastUpdated=new Date().toISOString();matched++;total+=amount;
+  const cp=currentPayroll.find(x=>x.emp.key===emp.key);
+  if(cp){const nums=paymentNumbers(cp,ym);if(amount>nums.net+0.009)over.push(code+' (Bank '+money(amount)+' > Net '+money(nums.net)+')');if(p.cash>Math.max(0,nums.net-amount))p.cash=Math.max(0,nums.net-amount)}
+ });
+ m.uploads.push({id:uid(),fileName:fileName||'Bank Register',uploadedAt:new Date().toISOString(),matched,total});
+ savePaymentRegister();calculatePayroll();renderPaymentSummary();
+ let msg='Bank Register imported.\\nMatched Employees: '+matched+'\\nTotal Bank Amount: AED '+money(total);
+ if(unmatched.length)msg+='\\n\\nUnmatched EMP CODE:\\n'+[...new Set(unmatched)].join(', ');
+ if(dups.length)msg+='\\n\\nDuplicate EMP CODE:\\n'+[...new Set(dups)].join(', ');
+ if(over.length)msg+='\\n\\nWarning - amount exceeds Net Salary:\\n'+[...new Set(over)].join('\\n');
+ alert(msg)
+}
+function importBankRegister(ev){
+ const f=ev.target.files[0];if(!f)return;const ext=(f.name.split('.').pop()||'').toLowerCase();
+ if(ext==='csv'){
+  const rd=new FileReader();rd.onload=()=>{try{
+   const rows=String(rd.result).split(/\r?\n/).filter(x=>x.trim()).map(line=>line.split(',').map(x=>x.replace(/^"|"$/g,'')));
+   processBankRows(rows,f.name)
+  }catch(err){alert('Bank Register import failed: '+err.message)}finally{bankFile.value=''}};rd.readAsText(f);return
+ }
+ if(ext==='xlsx'||ext==='xls'){
+  if(typeof XLSX==='undefined'){alert('Excel reader could not load. Reload page while online or use CSV.');bankFile.value='';return}
+  const rd=new FileReader();rd.onload=()=>{try{
+   const wb=XLSX.read(new Uint8Array(rd.result),{type:'array',cellDates:true}),sh=wb.Sheets[wb.SheetNames[0]];
+   processBankRows(XLSX.utils.sheet_to_json(sh,{header:1,raw:false,defval:''}),f.name)
+  }catch(err){alert('Bank Register import failed: '+err.message)}finally{bankFile.value=''}};rd.readAsArrayBuffer(f);return
+ }
+ alert('Please upload CSV, XLSX or XLS.');bankFile.value=''
+}
+
+
+function liveHoursForEmployee(empKey,ym){
+ const ts=timesheets.filter(x=>x.empKey===empKey&&x.date.startsWith(ym));
+ return {
+   normalH:ts.reduce((s,x)=>s+Number(x.normal||0),0),
+   notH:ts.reduce((s,x)=>s+Number(x.not||0),0),
+   hotH:ts.reduce((s,x)=>s+Number(x.hot||0),0)
+ };
+}
+function lockedReopenPayroll(emp,ym){
+ const snap=getReopenSnapshot(ym);
+ const old=snap?.entries?.[emp.key];
+ if(!old)return null;
+ const hrs=liveHoursForEmployee(emp.key,ym);
+ const r=old.lockedRate||lockedRateFromHistory(old);
+ return {
+   emp,
+   r,
+   // ONLY these three fields are refreshed from the new timesheet.
+   normalH:hrs.normalH,
+   notH:hrs.notH,
+   hotH:hrs.hotH,
+   // Everything below remains exactly as finalized.
+   normalAmt:Number(old.normalAmt||0),
+   notAmt:Number(old.notAmt||0),
+   hotAmt:Number(old.hotAmt||0),
+   allowance:Number(old.allowance||0),
+   allowanceText:old.allowanceText||'',
+   deduct:Number(old.deduction||0),
+   balance:Number(old.deductionBalanceSnapshot||0),
+   reopenLocked:true,
+   lockedNet:Number(old.net||0),
+   lockedGross:Number(old.gross||0)
+ };
+}
+
 function calcEmployeePayroll(emp,ym){
  const r=currentRate(emp.key,ym);if(!r)return null;
  const ts=timesheets.filter(x=>x.empKey===emp.key&&x.date.startsWith(ym));
@@ -813,6 +951,48 @@ function calcEmployeePayroll(emp,ym){
 }
 let payrollDraftMonth='';
 
+
+function lockedRateFromHistory(entry){
+ if(entry.salaryType==='Hourly'){
+   const hr=Number(entry.hourlyRateSnapshot||0) || (Number(entry.normalH||0)>0 ? Number(entry.normalAmt||0)/Number(entry.normalH||0) : 0);
+   return {
+     salaryType:'Hourly',
+     hourlyRate:hr,
+     basicSalary:0,
+     basicHours:Number(entry.basicHoursSnapshot||8),
+     notMultiplier:Number(entry.notMultiplierSnapshot||1.25),
+     hotMultiplier:Number(entry.hotMultiplierSnapshot||1.5)
+   };
+ }
+ return {
+   salaryType:'Monthly',
+   hourlyRate:0,
+   basicSalary:Number(entry.basicSalarySnapshot||entry.normalAmt||0),
+   basicHours:Number(entry.basicHoursSnapshot||8),
+   notMultiplier:Number(entry.notMultiplierSnapshot||1.25),
+   hotMultiplier:Number(entry.hotMultiplierSnapshot||1.5)
+ };
+}
+function saveReopenSnapshot(ym,existing){
+ const snap={month:ym,reopenedAt:new Date().toISOString(),entries:{}};
+ (existing.entries||[]).forEach(e=>{
+   snap.entries[e.empKey]={
+     ...e,
+     lockedRate:lockedRateFromHistory(e),
+     deductionBalanceSnapshot:Number(e.deductionBalanceSnapshot??0)
+   };
+ });
+ reopenSnapshots[ym]=snap;
+ set(REOPEN_KEY,reopenSnapshots);
+}
+function getReopenSnapshot(ym){return reopenSnapshots?.[ym]||null}
+function clearReopenSnapshot(ym){
+ if(reopenSnapshots&&reopenSnapshots[ym]){
+   delete reopenSnapshots[ym];
+   set(REOPEN_KEY,reopenSnapshots);
+ }
+}
+
 function rollbackPayrollRecoveries(ym){
  const ref='PAY-'+ym;
  deductions=deductions.filter(x=>!(x.source==='Payroll'&&x.type==='Payroll Recovery'&&x.reference===ref));
@@ -822,9 +1002,11 @@ function reopenPayrollMonth(ym,skipConfirm){
  const existing=payHistory.find(x=>x.month===ym);
  if(!existing)return true;
  if(!skipConfirm){
-   const ok=confirm('Payroll '+ym+' is already finalized. Reopen it so latest Timesheet and Deduction Ledger can be recalculated? Previous payroll recovery postings for this month will be rolled back.');
+   const ok=confirm('Payroll '+ym+' is finalized. Reopen it? All finalized salary values will stay LOCKED exactly as before. Only Normal / NOT / HOT hours will refresh from the latest timesheet.');
    if(!ok)return false;
  }
+ // Save the complete finalized payroll snapshot BEFORE removing it from history.
+ saveReopenSnapshot(ym,existing);
  rollbackPayrollRecoveries(ym);
  payHistory=payHistory.filter(x=>x.month!==ym);
  set(HIST_KEY,payHistory);
@@ -836,45 +1018,158 @@ function reopenSelectedPayroll(){
  if(!payHistory.some(x=>x.month===ym)){alert('Payroll '+ym+' is not finalized. It is already open for recalculation.');calculatePayroll();return;}
  if(!reopenPayrollMonth(ym,false))return;
  renderAll();
- alert('Payroll '+ym+' reopened. Latest timesheet and deduction balance are now loaded into Payroll Calculation.');
+ alert('Payroll '+ym+' reopened. Previous payroll values are locked. Only Normal / NOT / HOT hours will update from the latest timesheet.');
+}
+
+
+function employeeCompany(empKey){
+ const e=empByKeyAny(empKey);
+ if(e?.company)return String(e.company).trim();
+ for(const h of payHistory){const x=(h.entries||[]).find(z=>z.empKey===empKey);if(x?.company)return String(x.company).trim()}
+ return '';
+}
+function fillPayrollCompanyFilter(){
+ const sel=document.getElementById('payCompanyFilter');if(!sel)return;
+ const keep=sel.value;
+ const companies=[...new Set(allEmployees.map(e=>String(e.company||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ sel.innerHTML='<option value="">All Companies</option>'+companies.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+ if(companies.includes(keep))sel.value=keep;
+}
+function companyMatches(empKey){
+ const f=document.getElementById('payCompanyFilter')?.value||'';
+ if(!f)return true;
+ return norm(employeeCompany(empKey))===norm(f);
+}
+function exportPayrollExcel(){
+ const ym=payMonth.value||month();
+ const company=document.getElementById('payCompanyFilter')?.value||'';
+ const existing=payHistory.find(x=>x.month===ym);
+ let rows=[];
+ if(existing){
+   rows=(existing.entries||[]).filter(x=>companyMatches(x.empKey)).map(x=>{
+     const p=getPayment(x.empKey,ym);
+     const bank=Number(p.bank||x.payByBank||0),cash=Number(p.cash||x.payByCash||0),net=Number(x.net||0);
+     return {
+       'Payroll Month':ym,
+       'Company':employeeCompany(x.empKey),
+       'Employee Code':x.employeeCode||'',
+       'Employee Name':x.employeeName||'',
+       'Salary Type':x.salaryType||'',
+       'Normal Hours':Number(x.normalH||0),
+       'NOT Hours':Number(x.notH||0),
+       'HOT Hours':Number(x.hotH||0),
+       'Normal / Basic Amount':Number(x.normalAmt||0),
+       'NOT Amount':Number(x.notAmt||0),
+       'HOT Amount':Number(x.hotAmt||0),
+       'Allowance Remarks':x.allowanceText||'',
+       'Allowance':Number(x.allowance||0),
+       'Deduct This Month':Number(x.deduction||0),
+       'Gross Salary':Number(x.gross||0),
+       'Net Salary':net,
+       'Pay by Bank':bank,
+       'Pay by Cash':cash,
+       'Balance Salary':net-bank-cash
+     }
+   });
+ }else{
+   rows=currentPayroll.filter(x=>companyMatches(x.emp.key)).map(x=>{
+     const gross=x.reopenLocked?Number(x.lockedGross||0):(x.normalAmt+x.notAmt+x.hotAmt+x.allowance);
+     const net=x.reopenLocked?Number(x.lockedNet||0):(gross-x.deduct);
+     const p=getPayment(x.emp.key,ym),bank=Number(p.bank||0),cash=Number(p.cash||0);
+     return {
+       'Payroll Month':ym,
+       'Company':String(x.emp.company||''),
+       'Employee Code':x.emp.code||'',
+       'Employee Name':x.emp.name||'',
+       'Salary Type':x.r.salaryType||'',
+       'Basic / Rate':x.r.salaryType==='Hourly'?Number(x.r.hourlyRate||0):Number(x.r.basicSalary||0),
+       'Normal Hours':Number(x.normalH||0),
+       'NOT Hours':Number(x.notH||0),
+       'HOT Hours':Number(x.hotH||0),
+       'Normal / Basic Amount':Number(x.normalAmt||0),
+       'NOT Amount':Number(x.notAmt||0),
+       'HOT Amount':Number(x.hotAmt||0),
+       'Allowance Remarks':x.allowanceText||'',
+       'Allowance':Number(x.allowance||0),
+       'Deduction Balance':Number(x.balance||0),
+       'Deduct This Month':Number(x.deduct||0),
+       'Gross Salary':gross,
+       'Net Salary':net,
+       'Pay by Bank':bank,
+       'Pay by Cash':cash,
+       'Balance Salary':net-bank-cash
+     }
+   });
+ }
+ if(!rows.length){alert('No payroll records found for the selected company/month.');return}
+ const safeCompany=(company||'All_Companies').replace(/[\\/:*?"<>|]+/g,'_').replace(/\s+/g,'_');
+ if(typeof XLSX!=='undefined'){
+   const ws=XLSX.utils.json_to_sheet(rows);
+   ws['!cols']=Object.keys(rows[0]).map(k=>({wch:Math.min(28,Math.max(12,k.length+2))}));
+   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Salary');
+   XLSX.writeFile(wb,`Salary_${ym}_${safeCompany}.xlsx`);
+ }else{
+   const headers=Object.keys(rows[0]);
+   const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+   const csv=[headers.map(q).join(','),...rows.map(r=>headers.map(h=>q(r[h])).join(','))].join('\r\n');
+   const b=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');
+   a.href=URL.createObjectURL(b);a.download=`Salary_${ym}_${safeCompany}.csv`;a.click();URL.revokeObjectURL(a.href);
+ }
 }
 
 function calculatePayroll(){
  const ym=payMonth.value||month();
  const existing=payHistory.find(x=>x.month===ym);
- payStatusText.value=existing?'Finalized':'Draft';
+ payStatusText.value=existing?'Finalized':(getReopenSnapshot(ym)?'Reopened - Values Locked':'Draft');
  if(existing){
   payrollDraftMonth='';
   // This month is locked. Show exactly what was finalized/paid — never a live
   // recalculation — so screen numbers can't drift from the saved record just
   // because timesheets/salary were edited afterward. No editable inputs either.
   currentPayroll=[];
-  payRows.innerHTML=`<tr><td colspan="16"><div class="warn" style="margin:0">This month is already <b>Finalized</b> (on ${new Date(existing.finalizedAt).toLocaleString()}). The rows below are the locked saved record, so newly uploaded timesheet or new deductions will not appear here until you click <b>Reopen Finalized Payroll</b>.</div></td></tr>`
-   +existing.entries.map(x=>`<tr>
+  payRows.innerHTML=`<tr><td colspan="19"><div class="warn" style="margin:0">This month is already <b>Finalized</b> (on ${new Date(existing.finalizedAt).toLocaleString()}). The rows below are the locked saved record, so newly uploaded timesheet or new deductions will not appear here until you click <b>Reopen Finalized Payroll</b>.</div></td></tr>`
+   +existing.entries.filter(x=>companyMatches(x.empKey)).map(x=>`<tr>
     <td>${esc(x.employeeCode||'-')}</td><td><b>${esc(x.employeeName)}</b></td><td>${esc(x.salaryType)}</td><td>-</td>
     <td>${x.normalH}</td><td>${x.notH}</td><td>${x.hotH}</td><td>${money(x.normalAmt)}</td><td>${money(x.notAmt)}</td><td>${money(x.hotAmt)}</td>
     <td>${esc(x.allowanceText||'-')}</td><td>${money(x.allowance)}</td>
     <td>-</td><td>${money(x.deduction)}</td>
-    <td>${money(x.gross)}</td><td><b>${money(x.net)}</b></td></tr>`).join('');
+    <td>${money(x.gross)}</td><td><b>${money(x.net)}</b></td>
+    <td><b>${money(getPayment(x.empKey,ym).bank||0)}</b></td><td>${money(getPayment(x.empKey,ym).cash||0)}</td>
+    <td><b>${money(Number(x.net||0)-Number(getPayment(x.empKey,ym).bank||0)-Number(getPayment(x.empKey,ym).cash||0))}</b></td></tr>`).join('');
   return;
  }
  const prev=payrollDraftMonth===ym?Object.fromEntries(currentPayroll.map(x=>[x.emp.key,{allowance:x.allowance,allowanceText:x.allowanceText,deduct:x.deduct}])):{};
  payrollDraftMonth=ym;
- currentPayroll=employees.map(e=>calcEmployeePayroll(e,ym)).filter(Boolean);
- currentPayroll.forEach(x=>{const p=prev[x.emp.key];if(p){x.allowance=p.allowance;x.allowanceText=p.allowanceText;x.deduct=Math.min(Number(p.deduct||0),x.balance)}});
- payRows.innerHTML=currentPayroll.map((x,i)=>{
-  const gross=x.normalAmt+x.notAmt+x.hotAmt+x.allowance,net=gross-x.deduct;
-  return `<tr><td>${esc(x.emp.code||'-')}</td><td><b>${esc(x.emp.name)}</b></td><td>${x.r.salaryType}</td><td>${x.r.salaryType==='Hourly'?money(x.r.hourlyRate)+'/hr':money(x.r.basicSalary)}</td>
+ const lockedSnap=getReopenSnapshot(ym);
+ if(lockedSnap){
+   currentPayroll=employees.map(e=>lockedReopenPayroll(e,ym)).filter(Boolean);
+ }else{
+   currentPayroll=employees.map(e=>calcEmployeePayroll(e,ym)).filter(Boolean);
+   currentPayroll.forEach(x=>{const p=prev[x.emp.key];if(p){x.allowance=p.allowance;x.allowanceText=p.allowanceText;x.deduct=Math.min(Number(p.deduct||0),x.balance)}});
+ }
+ const reopenNotice=getReopenSnapshot(ym)?`<tr><td colspan="19"><div class="warn" style="margin:0"><b>Reopened Payroll:</b> Previous finalized salary values are locked. Only Normal Hrs / NOT Hrs / HOT Hrs refresh from the latest timesheet.</div></td></tr>`:'';
+ payRows.innerHTML=reopenNotice+currentPayroll.map((x,i)=>({x,i})).filter(z=>companyMatches(z.x.emp.key)).map(({x,i})=>{
+  const gross=x.reopenLocked?Number(x.lockedGross||0):(x.normalAmt+x.notAmt+x.hotAmt+x.allowance);
+  const net=x.reopenLocked?Number(x.lockedNet||0):(gross-x.deduct);
+  const lock=x.reopenLocked;
+  return `<tr><td>${esc(x.emp.code||'-')}</td><td><b>${esc(x.emp.name)}</b>${lock?'<div class="mini"><span class="badge orange">Reopened · Values Locked</span></div>':''}</td><td>${x.r.salaryType}</td><td>${x.r.salaryType==='Hourly'?money(x.r.hourlyRate)+'/hr':money(x.r.basicSalary)}</td>
   <td>${x.normalH}</td><td>${x.notH}</td><td>${x.hotH}</td><td>${money(x.normalAmt)}</td><td>${money(x.notAmt)}</td><td>${money(x.hotAmt)}</td>
-  <td><input class="pay-input" value="${esc(x.allowanceText)}" oninput="setAllowanceText(${i},this.value)" placeholder="Site / Food / Other"></td>
-  <td><input class="pay-input" type="number" min="0" step="0.01" value="${x.allowance}" oninput="setAllowance(${i},this.value)"></td>
-  <td>${money(x.balance)}</td><td><input class="pay-input" type="number" min="0" max="${x.balance}" step="0.01" value="${x.deduct}" oninput="setDeduction(${i},this.value)"></td>
-  <td id="gross${i}">${money(gross)}</td><td id="net${i}"><b>${money(net)}</b></td></tr>`
- }).join('')||'<tr><td colspan="16">No employees with salary setup.</td></tr>'
+  <td>${lock?esc(x.allowanceText||'-'):`<input class="pay-input" value="${esc(x.allowanceText)}" oninput="setAllowanceText(${i},this.value)" placeholder="Site / Food / Other">`}</td>
+  <td>${lock?money(x.allowance):`<input class="pay-input" type="number" min="0" step="0.01" value="${x.allowance}" oninput="setAllowance(${i},this.value)">`}</td>
+  <td>${money(x.balance)}</td><td>${lock?money(x.deduct):`<input class="pay-input" type="number" min="0" max="${x.balance}" step="0.01" value="${x.deduct}" oninput="setDeduction(${i},this.value)">`}</td>
+  <td id="gross${i}">${money(gross)}</td><td id="net${i}"><b>${money(net)}</b></td>
+  <td id="bank${i}"><b>${money(getPayment(x.emp.key,ym).bank||0)}</b></td>
+  <td>${lock?money(getPayment(x.emp.key,ym).cash||0):`<input class="pay-input" type="number" min="0" step="0.01" value="${getPayment(x.emp.key,ym).cash||0}" oninput="setCashPayment(${i},this.value)">`}</td>
+  <td id="balance${i}"><b>${money(net-Number(getPayment(x.emp.key,ym).bank||0)-Number(getPayment(x.emp.key,ym).cash||0))}</b></td></tr>`
+ }).join('')||'<tr><td colspan="19">No employees found for selected company / salary setup.</td></tr>'
 }
 function refreshPayrollRow(i){
- const x=currentPayroll[i];if(!x)return;const gross=x.normalAmt+x.notAmt+x.hotAmt+x.allowance,net=gross-x.deduct;
- document.getElementById('gross'+i).textContent=money(gross);document.getElementById('net'+i).innerHTML='<b>'+money(net)+'</b>'
+ const x=currentPayroll[i];if(!x)return;const ym=payMonth.value||month();
+ const gross=x.reopenLocked?Number(x.lockedGross||0):(x.normalAmt+x.notAmt+x.hotAmt+x.allowance);
+ const net=x.reopenLocked?Number(x.lockedNet||0):(gross-x.deduct);
+ const p=getPayment(x.emp.key,ym),bank=Number(p.bank||0),cash=Number(p.cash||0);
+ const g=document.getElementById('gross'+i),n=document.getElementById('net'+i),b=document.getElementById('bank'+i),bal=document.getElementById('balance'+i);
+ if(g)g.textContent=money(gross);if(n)n.innerHTML='<b>'+money(net)+'</b>';if(b)b.innerHTML='<b>'+money(bank)+'</b>';if(bal)bal.innerHTML='<b>'+money(net-bank-cash)+'</b>'
 }
 function setAllowance(i,v){currentPayroll[i].allowance=Math.max(0,Number(v||0));refreshPayrollRow(i)}
 function setAllowanceText(i,v){currentPayroll[i].allowanceText=v}
@@ -884,20 +1179,21 @@ function finalizePayroll(){
  if(!currentPayroll.length)calculatePayroll();if(!currentPayroll.length)return alert('No payroll data.');
  if(!confirm('Finalize '+ym+' payroll? This will post deduction recoveries to ledger and save payroll history.'))return;
  const entries=currentPayroll.map(x=>{
-  const gross=x.normalAmt+x.notAmt+x.hotAmt+x.allowance,net=gross-x.deduct;
+  const gross=x.reopenLocked?Number(x.lockedGross||0):(x.normalAmt+x.notAmt+x.hotAmt+x.allowance);
+  const net=x.reopenLocked?Number(x.lockedNet||0):(gross-x.deduct);
   if(x.deduct>0){
    const before=ledgerBalance(x.emp.key),amt=Math.min(x.deduct,Math.max(0,before));
    deductions.push({id:uid(),empKey:x.emp.key,date:ym+'-28',type:'Payroll Recovery',description:'Salary deduction for '+ym,added:0,recovery:amt,balanceAfter:before-amt,reference:'PAY-'+ym,source:'Payroll'})
   }
-  return {empKey:x.emp.key,employeeCode:x.emp.code,employeeName:x.emp.name,salaryType:x.r.salaryType,normalH:x.normalH,notH:x.notH,hotH:x.hotH,normalAmt:x.normalAmt,notAmt:x.notAmt,hotAmt:x.hotAmt,allowance:x.allowance,allowanceText:x.allowanceText,deduction:x.deduct,gross,net}
+  const pay=getPayment(x.emp.key,ym); return {empKey:x.emp.key,employeeCode:x.emp.code,employeeName:x.emp.name,company:x.emp.company||'',salaryType:x.r.salaryType,normalH:x.normalH,notH:x.notH,hotH:x.hotH,normalAmt:x.normalAmt,notAmt:x.notAmt,hotAmt:x.hotAmt,allowance:x.allowance,allowanceText:x.allowanceText,deduction:x.deduct,gross,net,payByBank:Number(pay.bank||0),payByCash:Number(pay.cash||0),balanceSalary:net-Number(pay.bank||0)-Number(pay.cash||0),hourlyRateSnapshot:Number(x.r.hourlyRate||0),basicSalarySnapshot:Number(x.r.basicSalary||0),basicHoursSnapshot:Number(x.r.basicHours||8),notMultiplierSnapshot:Number(x.r.notMultiplier||1.25),hotMultiplierSnapshot:Number(x.r.hotMultiplier||1.5),deductionBalanceSnapshot:Number(x.balance||0)}
  });
- deductions && set(DED_KEY,deductions);payHistory.push({id:uid(),month:ym,finalizedAt:new Date().toISOString(),entries});set(HIST_KEY,payHistory);renderAll();alert('Payroll finalized successfully.')
+ deductions && set(DED_KEY,deductions);payHistory.push({id:uid(),month:ym,finalizedAt:new Date().toISOString(),entries});set(HIST_KEY,payHistory);clearReopenSnapshot(ym);renderAll();alert('Payroll finalized successfully.')
 }
 function renderPayrollHistory(){
  const q=norm(histSearch.value),rows=[];payHistory.forEach(h=>(h.entries||[]).forEach(e=>rows.push({...e,month:h.month,finalizedAt:h.finalizedAt})));
  histRows.innerHTML=rows.filter(x=>norm([x.month,x.employeeName,x.employeeCode].join(' ')).includes(q)).sort((a,b)=>b.month.localeCompare(a.month)).map(x=>`<tr><td>${x.month}</td><td>${new Date(x.finalizedAt).toLocaleString()}</td><td>${esc(x.employeeName)} (${esc(x.employeeCode||'-')})</td><td>${money(x.gross)}</td><td>${money(x.deduction)}</td><td><b>${money(x.net)}</b></td><td>${money(x.allowance)}${x.allowanceText?' · '+esc(x.allowanceText):''}</td><td>${esc(x.salaryType)}</td></tr>`).join('')||'<tr><td colspan="8">No finalized payroll history.</td></tr>'
 }
-function renderAll(){loadEmployees();fillEmployeeSelects();renderDashboard();renderEmployees();renderRateHistory();renderDeductions();renderTimesheet();renderHolidayReview();calculatePayroll();renderPayrollHistory()}
+function renderAll(){loadEmployees();fillEmployeeSelects();fillPayrollCompanyFilter();renderDashboard();renderEmployees();renderRateHistory();renderDeductions();renderTimesheet();renderHolidayReview();calculatePayroll();renderPayrollHistory();renderPaymentSummary()}
 tsMonth.value=month();payMonth.value=month();loadEmployees();renderAll();
 </script>
 </body>
