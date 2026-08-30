@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Client Management Portal</title>
+<style>
+:root{
+  --blue:#173b67;--blue2:#2e6fae;--orange:#f59e0b;--bg:#f4f7fb;--card:#fff;
+  --text:#1f2937;--muted:#6b7280;--line:#dbe4ef;--danger:#dc2626;--ok:#15803d;--warn:#d97706
+}
+*{box-sizing:border-box} body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{height:68px;background:linear-gradient(90deg,var(--blue),var(--blue2));color:#fff;display:flex;justify-content:space-between;align-items:center;padding:0 24px;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px #0002}
+header h1{font-size:20px;margin:0} header .sub{font-size:12px;opacity:.85;margin-top:3px}
+.header-actions{display:flex;gap:8px}
+.app{display:flex;min-height:calc(100vh - 68px)}
+.sidebar{width:245px;background:#102d4f;color:#fff;padding:18px 14px;flex-shrink:0}
+.nav-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin:12px 10px 8px}
+.nav-btn{width:100%;border:0;background:transparent;color:#eaf2fb;text-align:left;padding:12px 14px;border-radius:10px;margin:3px 0;cursor:pointer;font-weight:600}
+.nav-btn:hover,.nav-btn.active{background:#ffffff1a}
+.content{flex:1;padding:22px;overflow:auto}
+.view{display:none}.view.active{display:block}
+.page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.page-head h2{margin:0;font-size:24px}
+.btn{border:0;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:700;font-size:13px}
+.btn-primary{background:var(--blue2);color:#fff}.btn-orange{background:var(--orange);color:#fff}.btn-light{background:#eef3f8;color:var(--blue)}.btn-danger{background:#fee2e2;color:#991b1b}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:14px;margin-bottom:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:0 4px 14px rgba(36,91,149,.06)}
+.stat{cursor:pointer}.stat .label{font-size:12px;color:var(--muted)}.stat .value{font-size:29px;font-weight:850;color:var(--blue);margin-top:8px}.stat.warn .value{color:var(--warn)}.stat.danger .value{color:var(--danger)}.stat.ok .value{color:var(--ok)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;outline:none;font:inherit}
+input:focus,select:focus,textarea:focus{border-color:#6ea5d8;box-shadow:0 0 0 3px #d9eafb}
+.search{max-width:360px}
+.table-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:1100px} th,td{padding:11px 10px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px;vertical-align:top}
+th{background:#f7f9fc;color:#364152;position:sticky;top:0}
+tr:hover td{background:#fbfdff}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:750}
+.green{background:#dcfce7;color:#166534}.red{background:#fee2e2;color:#991b1b}.orange{background:#ffedd5;color:#9a3412}.gray{background:#e5e7eb;color:#374151}
+.form-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.section-title{font-size:16px;font-weight:800;color:var(--blue);margin:0 0 14px;padding-bottom:9px;border-bottom:2px solid #e9eff6}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.field label{display:block;font-size:12px;font-weight:750;margin-bottom:6px}.span2{grid-column:span 2}.span3{grid-column:span 3}
+.hint{font-size:11px;color:var(--muted);margin-top:4px}
+.doc-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr;gap:10px;align-items:end;border:1px solid var(--line);padding:12px;border-radius:10px;background:#fbfdff;margin-bottom:10px}
+.notice{padding:11px 13px;border-radius:9px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;font-size:13px;margin-bottom:14px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:100;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}
+.modal-box{background:#fff;width:min(900px,96vw);max-height:90vh;overflow:auto;border-radius:16px;padding:20px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.profile-item{background:#f7f9fc;padding:10px;border-radius:9px}.profile-item b{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}.empty{padding:30px;text-align:center;color:var(--muted)}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr 1fr}.sidebar{width:210px}}
+@media(max-width:720px){.app{display:block}.sidebar{width:100%;display:flex;overflow:auto;padding:8px}.nav-title{display:none}.nav-btn{min-width:160px}.content{padding:14px}.cards,.form-grid,.profile-grid,.doc-grid{grid-template-columns:1fr}.span2,.span3{grid-column:span 1}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Client Management Portal</h1><div class="sub">Clients • Projects • Documents</div></div>
+  <div class="header-actions">
+    <button class="btn btn-light" onclick="location.href='index.html'">← Employee Portal</button>
+    <button class="btn btn-light" type="button" onclick="location.href='subcontractor.html'">🏗️ Sub Contractor Portal</button>
+    <button class="btn btn-orange" onclick="openClientForm()">+ Add New Client</button>
+  </div>
+</header>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="nav-title">Main</div>
+  <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+  <button class="nav-btn" type="button" onclick="location.href='index.html'">👥 Employee Management Portal</button>
+  <button class="nav-btn" type="button" onclick="location.href='subcontractor.html'">🏗️ Sub Contractor Management Portal</button>
+  <button class="nav-btn" data-view="clients">Clients</button>
+  <button class="nav-btn" data-view="projects">Projects</button>
+</aside>
+
+<main class="content">
+<section id="dashboard" class="view active">
+  <div class="page-head"><h2>Dashboard</h2></div>
+  <div class="cards">
+    <div class="card stat" onclick="switchView('clients')"><div class="label">Total Clients</div><div class="value" id="dClients">0</div></div>
+    <div class="card stat ok" onclick="showClientStatus('Active')"><div class="label">Active Clients</div><div class="value" id="dActive">0</div></div>
+    <div class="card stat" onclick="switchView('projects')"><div class="label">Total Projects</div><div class="value" id="dProjects">0</div></div>
+    <div class="card stat warn"><div class="label">Trade License Expiring ≤ 60 Days</div><div class="value" id="dTLExp">0</div></div>
+    <div class="card stat danger"><div class="label">Trade License Expired</div><div class="value" id="dTLExpired">0</div></div>
+  </div>
+  <div class="card"><h3 style="margin-top:0;color:var(--blue)">Trade License Expiry Follow-up</h3><div id="expiryList"></div></div>
+</section>
+
+<section id="clients" class="view">
+  <div class="page-head"><h2>Clients</h2><button class="btn btn-primary" onclick="openClientForm()">+ Add New Client</button></div>
+  <div class="toolbar">
+    <input id="clientSearch" class="search" placeholder="Search client, VAT, trade license, contact..." oninput="renderClients()">
+    <select id="clientStateFilter" style="max-width:190px" onchange="renderClients()"><option value="">All Emirates</option></select>
+    <select id="clientStatusFilter" style="max-width:160px" onchange="renderClients()"><option value="">All Status</option><option>Active</option><option>Inactive</option></select>
+    <button class="btn btn-light" onclick="clearClientFilters()">Clear Filter</button>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Client Name</th><th>State</th><th>Trade License #</th><th>TL Expiry</th><th>VAT #</th><th>Contact #</th><th>Contact Person</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="clientRows"></tbody>
+  </table></div>
+</section>
+
+<section id="projects" class="view">
+  <div class="page-head"><h2>Projects</h2><button id="addProjectBtn" type="button" class="btn btn-primary" onclick="return openProjectForm();">+ Add New Project</button></div>
+  <div class="toolbar">
+    <input id="projectSearch" class="search" placeholder="Search project, project no., client, location..." oninput="renderProjects()">
+    <select id="projectClientFilter" style="max-width:230px" onchange="renderProjects()"><option value="">All Clients</option></select>
+    <select id="projectStatusFilter" style="max-width:160px" onchange="renderProjects()"><option value="">All Status</option><option>Active</option><option>Completed</option><option>On Hold</option><option>Inactive</option></select>
+    <button class="btn btn-light" onclick="clearProjectFilters()">Clear Filter</button>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Name of Project</th><th>Reference #</th><th>Client</th><th>Site Location</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="projectRows"></tbody>
+  </table></div>
+</section>
+
+<section id="clientFormView" class="view">
+  <div class="page-head"><h2 id="clientFormTitle">Add New Client</h2><button class="btn btn-light" onclick="switchView('clients')">← Back</button></div>
+  <form id="clientForm" onsubmit="saveClient(event)">
+    <input type="hidden" id="clientEditId">
+    <div class="form-card"><div class="section-title">Client Information</div>
+      <div class="form-grid">
+        <div class="field span2"><label>Client Name *</label><input id="cName" required></div>
+        <div class="field"><label>Status</label><select id="cStatus"><option>Active</option><option>Inactive</option></select></div>
+        <div class="field span2"><label>Address *</label><textarea id="cAddress" rows="3" required></textarea></div>
+        <div class="field"><label>State / Emirate *</label><select id="cState" required></select></div>
+        <div class="field"><label>Trade License Number *</label><input id="cTradeNo" required></div>
+        <div class="field"><label>Trade License Expiry *</label><input id="cTradeExpiry" type="date" required></div>
+        <div class="field"><label>VAT / TRN #</label><input id="cVatNo"></div>
+        <div class="field"><label>Contact #</label><input id="cContact"></div>
+        <div class="field"><label>Contact Person Name</label><input id="cPerson"></div>
+        <div class="field"><label>Email</label><input id="cEmail" type="email"></div>
+      </div>
+    </div>
+
+    <div class="form-card"><div class="section-title">Upload Documents</div>
+      <div class="notice">Documents browser database mein file ke taur par store nahi honge. Yahan URL / document link save hoga.</div>
+      <div class="doc-grid">
+        <div class="field"><label>Trade License</label><input value="Trade License" disabled></div>
+        <div class="field"><label>Document Number</label><input id="docTLNo"></div>
+        <div class="field"><label>Expiry Date</label><input id="docTLExp" type="date"></div>
+        <div class="field"><label>Document URL</label><input id="docTLUrl" placeholder="https://..."></div>
+      </div>
+      <div class="doc-grid">
+        <div class="field"><label>VAT Certificate</label><input value="VAT Certificate" disabled></div>
+        <div class="field"><label>VAT / TRN Number</label><input id="docVatNo"></div>
+        <div class="field"><label>Issue / Expiry Date</label><input id="docVatDate" type="date"></div>
+        <div class="field"><label>Document URL</label><input id="docVatUrl" placeholder="https://..."></div>
+      </div>
+      <div class="doc-grid">
+        <div class="field"><label>POA</label><input value="Power of Attorney (POA)" disabled></div>
+        <div class="field"><label>POA Number</label><input id="docPoaNo"></div>
+        <div class="field"><label>Expiry Date</label><input id="docPoaExp" type="date"></div>
+        <div class="field"><label>Document URL</label><input id="docPoaUrl" placeholder="https://..."></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:30px">
+      <button type="button" class="btn btn-light" onclick="switchView('clients')">Cancel</button>
+      <button type="submit" class="btn btn-primary">Save Client</button>
+    </div>
+  </form>
+</section>
+
+<section id="projectFormView" class="view">
+  <div class="page-head"><h2 id="projectFormTitle">Add New Project</h2><button class="btn btn-light" onclick="switchView('projects')">← Back</button></div>
+  <form id="projectForm" onsubmit="saveProject(event)">
+    <input type="hidden" id="projectEditId">
+    <div class="form-card"><div class="section-title">Project Information</div>
+      <div class="form-grid">
+        <div class="field"><label>Name of Project *</label><input id="pName" required></div>
+        <div class="field"><label>Reference # *</label><input id="pNumber" required></div>
+        <div class="field"><label>Client *</label><select id="pClient" required></select></div>
+        <div class="field span2"><label>Site Location *</label><input id="pLocation" required placeholder="Enter site / project location"></div>
+        <div class="field"><label>Status</label><select id="pStatus"><option>Active</option><option>Completed</option><option>On Hold</option><option>Inactive</option></select></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px">
+      <button type="button" class="btn btn-light" onclick="switchView('projects')">Cancel</button>
+      <button type="submit" class="btn btn-primary">Save Project</button>
+    </div>
+  </form>
+</section>
+</main>
+</div>
+
+<div id="profileModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Client Profile</h3><button class="btn btn-light" onclick="closeProfile()">✕</button></div><div id="profileContent"></div></div></div>
+
+<script>
+const CLIENT_KEY='cm_client_portal_clients_v1';
+const PROJECT_KEY='cm_client_portal_projects_v1';
+const EMIRATES=['Abu Dhabi','Dubai','Sharjah','Ajman','Umm Al Quwain','Ras Al Khaimah','Fujairah'];
+let clients=JSON.parse(localStorage.getItem(CLIENT_KEY)||'[]');
+let projects=JSON.parse(localStorage.getItem(PROJECT_KEY)||'[]');
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const daysTo=d=>{if(!d)return null;const x=new Date(d+'T00:00:00');const t=new Date();t.setHours(0,0,0,0);return Math.ceil((x-t)/86400000)};
+const expiryBadge=d=>{const n=daysTo(d);if(n===null)return '<span class="badge gray">No Date</span>';if(n<0)return '<span class="badge red">Expired</span>';if(n<=60)return '<span class="badge orange">Expiring</span>';return '<span class="badge green">Valid</span>'};
+
+function saveAll(){localStorage.setItem(CLIENT_KEY,JSON.stringify(clients));localStorage.setItem(PROJECT_KEY,JSON.stringify(projects));renderAll()}
+function switchView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav-btn[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));window.scrollTo(0,0)}
+document.querySelectorAll('.nav-btn[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+
+function fillSelects(){
+  const opts='<option value="">Select Emirate</option>'+EMIRATES.map(x=>`<option>${x}</option>`).join('');
+  ['cState'].forEach(id=>document.getElementById(id).innerHTML=opts);
+  document.getElementById('clientStateFilter').innerHTML='<option value="">All Emirates</option>'+EMIRATES.map(x=>`<option>${x}</option>`).join('');
+  const cOpts='<option value="">Select Client</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  document.getElementById('pClient').innerHTML=cOpts;
+  document.getElementById('projectClientFilter').innerHTML='<option value="">All Clients</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+}
+function clientName(id){return clients.find(c=>c.id===id)?.name||'-'}
+
+function openClientForm(id=''){
+  document.getElementById('clientForm').reset();fillSelects();
+  document.getElementById('clientEditId').value='';
+  document.getElementById('clientFormTitle').textContent='Add New Client';
+  if(id){
+    const c=clients.find(x=>x.id===id);if(!c)return;
+    document.getElementById('clientEditId').value=c.id;document.getElementById('clientFormTitle').textContent='Edit Client';
+    cName.value=c.name||'';cStatus.value=c.status||'Active';cAddress.value=c.address||'';cState.value=c.state||'';cTradeNo.value=c.tradeNo||'';cTradeExpiry.value=c.tradeExpiry||'';cVatNo.value=c.vatNo||'';cContact.value=c.contact||'';cPerson.value=c.person||'';cEmail.value=c.email||'';
+    docTLNo.value=c.docs?.tradeLicense?.number||'';docTLExp.value=c.docs?.tradeLicense?.expiry||'';docTLUrl.value=c.docs?.tradeLicense?.url||'';
+    docVatNo.value=c.docs?.vat?.number||'';docVatDate.value=c.docs?.vat?.date||'';docVatUrl.value=c.docs?.vat?.url||'';
+    docPoaNo.value=c.docs?.poa?.number||'';docPoaExp.value=c.docs?.poa?.expiry||'';docPoaUrl.value=c.docs?.poa?.url||'';
+  }
+  switchView('clientFormView')
+}
+function saveClient(e){
+  e.preventDefault();const id=clientEditId.value||uid();const trade=cTradeNo.value.trim();const vat=cVatNo.value.trim();
+  if(clients.some(c=>c.id!==id&&c.tradeNo.trim().toLowerCase()===trade.toLowerCase()))return alert('Duplicate Trade License Number.');
+  if(vat&&clients.some(c=>c.id!==id&&(c.vatNo||'').trim().toLowerCase()===vat.toLowerCase()))return alert('Duplicate VAT / TRN Number.');
+  const obj={id,name:cName.value.trim(),status:cStatus.value,address:cAddress.value.trim(),state:cState.value,tradeNo:trade,tradeExpiry:cTradeExpiry.value,vatNo:vat,contact:cContact.value.trim(),person:cPerson.value.trim(),email:cEmail.value.trim(),
+    docs:{tradeLicense:{number:docTLNo.value.trim(),expiry:docTLExp.value,url:docTLUrl.value.trim()},vat:{number:docVatNo.value.trim(),date:docVatDate.value,url:docVatUrl.value.trim()},poa:{number:docPoaNo.value.trim(),expiry:docPoaExp.value,url:docPoaUrl.value.trim()}}};
+  const i=clients.findIndex(c=>c.id===id);if(i>=0)clients[i]=obj;else clients.push(obj);saveAll();switchView('clients')
+}
+function renderClients(){
+  const searchEl=document.getElementById('clientSearch');
+  const stateEl=document.getElementById('clientStateFilter');
+  const statusEl=document.getElementById('clientStatusFilter');
+  const body=document.getElementById('clientRows');
+  const q=(searchEl?.value||'').toLowerCase(),st=stateEl?.value||'',ss=statusEl?.value||'';
+  const rows=clients.filter(c=>[c.name,c.vatNo,c.tradeNo,c.contact,c.person,c.email].join(' ').toLowerCase().includes(q)&&(!st||c.state===st)&&(!ss||c.status===ss));
+  if(body) body.innerHTML=rows.length?rows.map(c=>`<tr><td><a href="#" onclick="viewClient('${c.id}');return false" style="font-weight:800;color:var(--blue2)">${esc(c.name)}</a></td><td>${esc(c.state)}</td><td>${esc(c.tradeNo)}</td><td>${esc(c.tradeExpiry)} ${expiryBadge(c.tradeExpiry)}</td><td>${esc(c.vatNo||'-')}</td><td>${esc(c.contact||'-')}</td><td>${esc(c.person||'-')}</td><td>${esc(c.email||'-')}</td><td><span class="badge ${c.status==='Active'?'green':'gray'}">${esc(c.status)}</span></td><td><div class="actions"><button class="btn btn-light" onclick="viewClient('${c.id}')">View</button><button class="btn btn-primary" onclick="openClientForm('${c.id}')">Edit</button><button class="btn btn-danger" onclick="deleteClient('${c.id}')">Delete</button></div></td></tr>`).join(''):'<tr><td colspan="10" class="empty">No clients found.</td></tr>';
+}
+function clearClientFilters(){clientSearch.value='';clientStateFilter.value='';clientStatusFilter.value='';renderClients()}
+function showClientStatus(s){switchView('clients');clientStatusFilter.value=s;renderClients()}
+function deleteClient(id){if(projects.some(p=>p.clientId===id))return alert('This client has linked projects. Delete or move projects first.');if(confirm('Delete this client?')){clients=clients.filter(c=>c.id!==id);saveAll()}}
+
+function viewClient(id){
+  const c=clients.find(x=>x.id===id);if(!c)return;const cp=projects.filter(p=>p.clientId===id);
+  profileContent.innerHTML=`<div class="profile-grid">
+  ${[['Client Name',c.name],['State',c.state],['Address',c.address],['Trade License #',c.tradeNo],['Trade License Expiry',c.tradeExpiry],['VAT / TRN #',c.vatNo||'-'],['Contact #',c.contact||'-'],['Contact Person',c.person||'-'],['Email',c.email||'-'],['Status',c.status]].map(x=>`<div class="profile-item"><b>${x[0]}</b>${esc(x[1])}</div>`).join('')}</div>
+  <h3 style="color:var(--blue);margin-top:20px">Documents</h3>
+  <div class="profile-grid">
+  <div class="profile-item"><b>Trade License</b>${esc(c.docs?.tradeLicense?.number||'-')}<br>${c.docs?.tradeLicense?.url?`<a href="${esc(c.docs.tradeLicense.url)}" target="_blank">Open Document</a>`:'No URL'}</div>
+  <div class="profile-item"><b>VAT Certificate</b>${esc(c.docs?.vat?.number||'-')}<br>${c.docs?.vat?.url?`<a href="${esc(c.docs.vat.url)}" target="_blank">Open Document</a>`:'No URL'}</div>
+  <div class="profile-item"><b>POA</b>${esc(c.docs?.poa?.number||'-')}<br>${c.docs?.poa?.url?`<a href="${esc(c.docs.poa.url)}" target="_blank">Open Document</a>`:'No URL'}</div></div>
+  <h3 style="color:var(--blue);margin-top:20px">Projects (${cp.length})</h3>
+  <div class="table-wrap"><table><thead><tr><th>Project</th><th>Reference #</th><th>Site Location</th><th>Status</th></tr></thead><tbody>${cp.length?cp.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.number)}</td><td>${esc(p.location||"-")}</td><td>${esc(p.status)}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">No projects linked.</td></tr>'}</tbody></table></div>`;
+  profileModal.classList.add('show')
+}
+function closeProfile(){profileModal.classList.remove('show')}
+
+function openProjectForm(id=''){
+  const form=document.getElementById('projectForm');
+  const editId=document.getElementById('projectEditId');
+  const title=document.getElementById('projectFormTitle');
+  const nameEl=document.getElementById('pName');
+  const refEl=document.getElementById('pNumber');
+  const clientEl=document.getElementById('pClient');
+  const locationEl=document.getElementById('pLocation');
+  const statusEl=document.getElementById('pStatus');
+
+  if(form) form.reset();
+  fillSelects();
+  if(editId) editId.value='';
+  if(title) title.textContent='Add New Project';
+
+  if(!clients.length && clientEl){
+    clientEl.innerHTML='<option value="">No Client available - add Client first</option>';
+  }
+
+  if(id){
+    const p=projects.find(x=>x.id===id);
+    if(!p) return false;
+    if(editId) editId.value=p.id;
+    if(title) title.textContent='Edit Project';
+    if(nameEl) nameEl.value=p.name||'';
+    if(refEl) refEl.value=p.number||'';
+    if(clientEl) clientEl.value=p.clientId||'';
+    if(locationEl) locationEl.value=p.location||'';
+    if(statusEl) statusEl.value=p.status||'Active';
+  }
+
+  switchView('projectFormView');
+  return false;
+}
+
+function saveProject(e){
+  e.preventDefault();
+  const editId=document.getElementById('projectEditId').value;
+  const name=document.getElementById('pName').value.trim();
+  const num=document.getElementById('pNumber').value.trim();
+  const clientId=document.getElementById('pClient').value;
+  const location=document.getElementById('pLocation').value.trim();
+  const status=document.getElementById('pStatus').value;
+  const id=editId||uid();
+
+  if(!name || !num || !clientId || !location){
+    alert('Name of Project, Reference #, Client and Site Location are required.');
+    return;
+  }
+  if(projects.some(p=>p.id!==id&&(p.number||'').trim().toLowerCase()===num.toLowerCase())){
+    alert('Duplicate Reference #.');
+    return;
+  }
+
+  const obj={id,name,number:num,clientId,location,status};
+  const i=projects.findIndex(p=>p.id===id);
+  if(i>=0) projects[i]=obj; else projects.push(obj);
+  saveAll();
+  switchView('projects');
+}
+
+function renderProjects(){
+  const q=(document.getElementById('projectSearch')?.value||'').toLowerCase();
+  const cf=document.getElementById('projectClientFilter')?.value||'';
+  const sf=document.getElementById('projectStatusFilter')?.value||'';
+  const body=document.getElementById('projectRows');
+  const rows=projects.filter(p=>[p.name,p.number,clientName(p.clientId),p.location].join(' ').toLowerCase().includes(q)&&(!cf||p.clientId===cf)&&(!sf||p.status===sf));
+  body.innerHTML=rows.length?rows.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.number)}</td><td>${esc(clientName(p.clientId))}</td><td>${esc(p.location||'-')}</td><td><span class="badge ${p.status==='Active'?'green':'gray'}">${esc(p.status)}</span></td><td><div class="actions"><button type="button" class="btn btn-primary" onclick="openProjectForm('${p.id}')">Edit</button><button type="button" class="btn btn-danger" onclick="deleteProject('${p.id}')">Delete</button></div></td></tr>`).join(''):'<tr><td colspan="6" class="empty">No projects found.</td></tr>';
+}
+function deleteProject(id){if(confirm('Delete this project?')){projects=projects.filter(p=>p.id!==id);saveAll()}}
+function clearProjectFilters(){
+  document.getElementById('projectSearch').value='';
+  document.getElementById('projectClientFilter').value='';
+  document.getElementById('projectStatusFilter').value='';
+  renderProjects();
+}
+
+function renderDashboard(){
+  const el=id=>document.getElementById(id);
+  if(el('dClients')) el('dClients').textContent=clients.length;
+  if(el('dActive')) el('dActive').textContent=clients.filter(c=>c.status==='Active').length;
+  if(el('dProjects')) el('dProjects').textContent=projects.length;
+  if(el('dTLExp')) el('dTLExp').textContent=clients.filter(c=>{const n=daysTo(c.tradeExpiry);return n!==null&&n>=0&&n<=60}).length;
+  if(el('dTLExpired')) el('dTLExpired').textContent=clients.filter(c=>{const n=daysTo(c.tradeExpiry);return n!==null&&n<0}).length;
+  const due=clients.filter(c=>{const n=daysTo(c.tradeExpiry);return n!==null&&n<=60}).sort((a,b)=>daysTo(a.tradeExpiry)-daysTo(b.tradeExpiry));
+  if(el('expiryList')) el('expiryList').innerHTML=due.length?due.map(c=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #edf1f5"><div><b>${esc(c.name)}</b><div class="hint">${esc(c.tradeNo)}</div></div><div>${esc(c.tradeExpiry)} ${expiryBadge(c.tradeExpiry)}</div></div>`).join(''):'<div class="empty">No Trade License expiry alerts.</div>';
+}
+function renderAll(){fillSelects();renderClients();renderProjects();renderDashboard()}
+
+document.addEventListener('DOMContentLoaded',function(){
+  const btn=document.getElementById('addProjectBtn');
+  if(btn){
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      openProjectForm();
+    });
+  }
+  try{
+    renderAll();
+  }catch(err){
+    console.error('Initial rendering error:',err);
+  }
+});
+
+</script>
+</body>
+</html>
