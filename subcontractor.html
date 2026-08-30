@@ -131,6 +131,14 @@ tr:hover td{background:#fbfdff}
   .span2,.span3{grid-column:span 1}.master-row{grid-template-columns:1fr}
 }
 </style>
+
+<style id="cm-portal-nav-style">
+.cm-portal-nav{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.cm-portal-nav a{display:inline-block;text-decoration:none;border:0;border-radius:8px;padding:8px 10px;
+font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
+.cm-portal-nav a.cm-current{background:#f59e0b;color:#fff}
+</style>
+
 </head>
 <body>
 <header>
@@ -144,6 +152,7 @@ tr:hover td{background:#fbfdff}
     <button class="btn btn-orange" onclick="openAddForm()">+ Add Sub Contractor</button>
   </div>
 </header>
+<div style="padding:8px 14px;background:#fff;border-bottom:1px solid #dbe3ee"><div class="cm-portal-nav"><a href="index.html" class="">👥 Employee</a><a href="subcontractor.html" class="cm-current">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a><a href="site.html" class="">📍 Site Management</a></div></div>
 
 <div class="app">
   <aside class="sidebar">

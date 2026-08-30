@@ -48,6 +48,14 @@ tr:hover td{background:#fbfdff}.badge{display:inline-block;padding:4px 8px;borde
 @media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr 1fr}.sidebar{width:210px}}
 @media(max-width:720px){.app{display:block}.sidebar{width:100%;display:flex;overflow:auto;padding:8px}.nav-title{display:none}.nav-btn{min-width:160px}.content{padding:14px}.cards,.form-grid,.profile-grid,.doc-grid{grid-template-columns:1fr}.span2,.span3{grid-column:span 1}}
 </style>
+
+<style id="cm-portal-nav-style">
+.cm-portal-nav{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.cm-portal-nav a{display:inline-block;text-decoration:none;border:0;border-radius:8px;padding:8px 10px;
+font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
+.cm-portal-nav a.cm-current{background:#f59e0b;color:#fff}
+</style>
+
 </head>
 <body>
 <header>
@@ -58,6 +66,7 @@ tr:hover td{background:#fbfdff}.badge{display:inline-block;padding:4px 8px;borde
     <button class="btn btn-orange" onclick="openClientForm()">+ Add New Client</button>
   </div>
 </header>
+<div style="padding:8px 14px;background:#fff;border-bottom:1px solid #dbe4ef"><div class="cm-portal-nav"><a href="index.html" class="">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="cm-current">🏢 Client</a><a href="site.html" class="">📍 Site Management</a></div></div>
 
 <div class="app">
 <aside class="sidebar">

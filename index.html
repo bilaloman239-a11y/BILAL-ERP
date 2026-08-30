@@ -708,8 +708,16 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
 }
 </style>
 <!-- Local browser storage only: no Cloud DB connection -->
+
+<style id="cm-portal-nav-style">
+.cm-portal-nav{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.cm-portal-nav a{display:inline-block;text-decoration:none;border:0;border-radius:8px;padding:8px 10px;
+font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
+.cm-portal-nav a.cm-current{background:#f59e0b;color:#fff}
+</style>
+
 </head>
-<body>
+<body><div class="cm-portal-nav"><a href="index.html" class="cm-current">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a><a href="site.html" class="">📍 Site Management</a></div>
 
 <div id="loginView" class="login">
   <section class="login-left">

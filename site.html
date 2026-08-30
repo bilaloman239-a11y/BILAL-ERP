@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Site Management Portal</title>
+<style>
+body{margin:0;font-family:Segoe UI,Arial;background:#f4f7fb;color:#1f2937}header{background:#173b67;color:white;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}header h2{margin:0}.app{display:flex}.side{width:230px;background:#102d4f;min-height:calc(100vh - 64px);padding:15px}.side button{width:100%;padding:12px;margin:4px 0;border:0;border-radius:9px;background:transparent;color:white;text-align:left;font-weight:700;cursor:pointer}.side button:hover,.side button.active{background:#ffffff1a}.main{flex:1;padding:20px}.view{display:none}.view.active{display:block}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card,.box{background:white;border:1px solid #dbe4ef;border-radius:12px;padding:15px;margin-bottom:14px}.card b{font-size:28px;color:#173b67}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}input,select,textarea{padding:9px;border:1px solid #dbe4ef;border-radius:8px;width:100%;box-sizing:border-box}.toolbar input,.toolbar select{max-width:260px}table{width:100%;border-collapse:collapse;min-width:1000px;background:white}th,td{padding:10px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px}th{background:#f7f9fc}.wrap{overflow:auto;border:1px solid #dbe4ef;border-radius:10px}.btn{border:0;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer}.primary{background:#2e6fae;color:white}.orange{background:#f59e0b;color:white}.light{background:#edf3f8;color:#173b67}.green{background:#dcfce7;color:#166534}.badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:15px}.modal.show{display:flex}.modalbox{background:white;width:min(760px,96vw);max-height:90vh;overflow:auto;border-radius:14px;padding:18px}.link{color:#2e6fae;font-weight:800;cursor:pointer}@media(max-width:900px){.cards,.grid{grid-template-columns:1fr 1fr}.side{width:190px}}@media(max-width:650px){.app{display:block}.side{width:auto;min-height:auto}.cards,.grid{grid-template-columns:1fr}}
+</style>
+
+<style id="cm-portal-nav-style">
+.cm-portal-nav{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.cm-portal-nav a{display:inline-block;text-decoration:none;border:0;border-radius:8px;padding:8px 10px;
+font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
+.cm-portal-nav a.cm-current{background:#f59e0b;color:#fff}
+</style>
+
+</head>
+<body>
+<header><div><h2>Site Management Portal</h2><small>Mobilization • Demobilization • Monthly Reports</small></div><div><button class="btn light" onclick="location.href='index.html'">Employee Portal</button> <button class="btn light" onclick="location.href='client.html'">Client Portal</button></div></header>
+<div style="padding:8px 14px;background:#fff;border-bottom:1px solid #dbe4ef"><div class="cm-portal-nav"><a href="index.html" class="">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a><a href="site.html" class="cm-current">📍 Site Management</a></div></div>
+<div class="app">
+<div class="side">
+<button class="active" onclick="showView('dash',this)">Dashboard</button>
+<button onclick="showView('available',this)">Available Manpower</button>
+<button onclick="showView('onsite',this)">On-Site Manpower</button>
+<button onclick="showView('history',this)">Movement History</button>
+<button onclick="showView('reports',this)">Monthly Reports</button>
+</div>
+<div class="main">
+<section id="dash" class="view active">
+<h2>Dashboard</h2>
+<div class="cards">
+<div class="card">Available Manpower<br><b id="dAvail">0</b></div>
+<div class="card">On-Site Manpower<br><b id="dSite">0</b></div>
+<div class="card">Active Projects<br><b id="dProjects">0</b></div>
+<div class="card">Movements This Month<br><b id="dMove">0</b></div>
+</div>
+<div class="box"><h3>Current Site Summary</h3><div id="siteSummary"></div></div>
+</section>
+
+<section id="available" class="view">
+<h2>Available Manpower</h2>
+<div class="toolbar"><input id="aSearch" placeholder="Search employee..." oninput="renderAvailable()"><button class="btn light" onclick="aSearch.value='';renderAvailable()">Clear</button></div>
+<div class="wrap"><table><thead><tr><th>Code</th><th>Employee Name</th><th>Designation</th><th>Source</th><th>Sub Contractor</th><th>Status</th><th>Action</th></tr></thead><tbody id="aRows"></tbody></table></div>
+</section>
+
+<section id="onsite" class="view">
+<h2>On-Site Manpower</h2>
+<div class="toolbar"><input id="sSearch" placeholder="Search employee, client, project..." oninput="renderOnsite()"></div>
+<div class="wrap"><table><thead><tr><th>Employee</th><th>Code</th><th>Client</th><th>Project</th><th>Site Craft</th><th>Location</th><th>Mobilized Date</th><th>Client Rate</th><th>Sub Contractor Rate</th><th>Food By</th><th>Accommodation By</th><th>Action</th></tr></thead><tbody id="sRows"></tbody></table></div>
+</section>
+
+<section id="history" class="view">
+<h2>Movement History</h2>
+<div class="wrap"><table><thead><tr><th>Employee</th><th>Client</th><th>Project</th><th>Site Craft</th><th>Mobilized</th><th>Demobilized</th><th>Site Days</th><th>Status</th></tr></thead><tbody id="hRows"></tbody></table></div>
+</section>
+
+<section id="reports" class="view">
+<h2>Monthly Report</h2>
+<div class="toolbar"><input id="rMonth" type="month" onchange="renderReport()"><select id="rClient" onchange="renderReport()"></select><select id="rProject" onchange="renderReport()"></select><button class="btn primary" onclick="exportCSV()">Export Report</button></div>
+<div class="box"><b>Employees:</b> <span id="rEmp">0</span> &nbsp;&nbsp; <b>Total Site Time Required Days:</b> <span id="rDays">0</span></div>
+<div class="wrap"><table><thead><tr><th>Code</th><th>Employee</th><th>Designation</th><th>Client</th><th>Project</th><th>Site Craft</th><th>Location</th><th>Mobilized</th><th>Demobilized</th><th>Required Days</th><th>Client Rate</th><th>Sub Contractor Rate</th></tr></thead><tbody id="rRows"></tbody></table></div>
+</section>
+</div>
+</div>
+
+<div id="mobModal" class="modal"><div class="modalbox"><h3>Site Mobilization</h3><div id="mobInfo" class="box"></div>
+<form onsubmit="saveMob(event)">
+<input type="hidden" id="mobKey">
+<div class="grid">
+<div class="field"><label>Mobilization Date *</label><input id="mobDate" type="date" required></div>
+<div class="field"><label>Client *</label><select id="mobClient" required onchange="loadMobProjects()"></select></div>
+<div class="field"><label>Project *</label><select id="mobProject" required onchange="loadLocation()"></select></div>
+<div class="field"><label>Site Craft *</label><input id="mobSiteCraft" required placeholder="e.g. Electrician, Pipe Fitter, Helper"></div>
+<div class="field"><label>Site Location</label><input id="mobLocation" readonly></div>
+<div class="field"><label>Client Rate</label><input id="mobClientRate" type="number" step="0.01" min="0"></div>
+<div class="field"><label>Sub Contractor Rate</label><input id="mobSubRate" type="number" step="0.01" min="0"></div>
+<div class="field"><label>Food Provided By</label><select id="mobFood"><option value="">Select</option><option>Company</option><option>Client</option><option>Sub Contractor</option><option>Employee / Self</option></select></div>
+<div class="field"><label>Accommodation Provided By</label><select id="mobAcc"><option value="">Select</option><option>Company</option><option>Client</option><option>Sub Contractor</option><option>Employee / Self</option></select></div>
+<div class="field"><label>Remarks</label><textarea id="mobRemarks"></textarea></div>
+</div><br>
+<button type="button" class="btn light" onclick="closeMob()">Cancel</button>
+<button class="btn primary">Mobilize</button>
+</form></div></div>
+
+<div id="demobModal" class="modal"><div class="modalbox" style="max-width:500px"><h3>Site Demobilization</h3><div id="demobInfo" class="box"></div>
+<form onsubmit="saveDemob(event)"><input type="hidden" id="demobId"><div class="field"><label>Demobilization Date *</label><input id="demobDate" type="date" required></div><br><div class="field"><label>Remarks</label><textarea id="demobRemarks"></textarea></div><br><button type="button" class="btn light" onclick="closeDemob()">Cancel</button> <button class="btn orange">Confirm Demobilization</button></form>
+</div></div>
+
+<script>
+const MOV='cm_site_management_movements_v1', EMP='cm_employee_portal_v3', SCEMP='sc_portal_employees_v1', SC='sc_portal_subcontractors_v1', CK='cm_client_portal_clients_v1', PK='cm_client_portal_projects_v1';
+let moves=[],clients=[],projects=[],subs=[],staff=[];
+
+function get(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}}
+function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
+function today(){return new Date().toISOString().slice(0,10)}
+function month(){return today().slice(0,7)}
+function norm(v){return String(v??'').toLowerCase()}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function scName(id){let x=subs.find(s=>String(s.id)===String(id));return x?.name||x?.companyName||x?.subContractorName||''}
+function clientName(id){return clients.find(x=>String(x.id)===String(id))?.name||'-'}
+function project(id){return projects.find(x=>String(x.id)===String(id))}
+function projectName(id){return project(id)?.name||'-'}
+function active(key){return moves.find(x=>x.employeeKey===key&&!x.demobDate)}
+function days(a,b){if(!a||!b)return 0;return Math.floor((new Date(b)-new Date(a))/86400000)+1}
+
+function refresh(){
+ moves=get(MOV,[]);clients=get(CK,[]);projects=get(PK,[]);subs=get(SC,[]);
+ let raw=get(EMP,{}), ea=Array.isArray(raw)?raw:(raw.employees||raw.employeeList||raw.data?.employees||[]);
+ let sa=get(SCEMP,[]);
+ staff=[];
+ ea.forEach((e,i)=>{if(norm(e.employeeStatus||e.status||'active')!=='inactive')staff.push({key:'e:'+(e.id||e.employeeCode||i),code:e.employeeCode||e.empCode||e.code||'',name:e.employeeName||e.name||e.fullName||'',des:e.actualDesignation||e.designation||e.craft||'',source:'Company',sc:''})});
+ (Array.isArray(sa)?sa:[]).forEach((e,i)=>{if(norm(e.status||'active')!=='inactive')staff.push({key:'s:'+(e.id||e.employeeCode||i),code:e.employeeCode||e.code||'',name:e.name||e.employeeName||'',des:e.actualDesignation||e.craft||e.designation||'',source:'Sub Contractor',sc:scName(e.subContractorId||e.subcontractorId)})});
+ staff=staff.filter(x=>x.name)
+}
+function save(){localStorage.setItem(MOV,JSON.stringify(moves));refresh();renderAll()}
+function showView(id,b){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.side button').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');refresh();renderAll()}
+
+function renderAvailable(){
+ let q=norm(aSearch.value);
+ let rows=staff.filter(e=>!active(e.key)&&norm([e.name,e.code,e.des,e.sc].join(' ')).includes(q));
+ aRows.innerHTML=rows.length?rows.map(e=>`<tr><td>${esc(e.code||'-')}</td><td><span class="link" onclick="openMob('${e.key}')">${esc(e.name)}</span></td><td>${esc(e.des||'-')}</td><td>${esc(e.source)}</td><td>${esc(e.sc||'-')}</td><td><span class="badge green">Available</span></td><td><button class="btn primary" onclick="openMob('${e.key}')">Mobilize</button></td></tr>`).join(''):'<tr><td colspan="7">No available manpower.</td></tr>'
+}
+function openMob(key){
+ refresh();let e=staff.find(x=>x.key===key);if(!e)return alert('Employee not found.');
+ let a=active(key);if(a)return alert('He is already on site: '+clientName(a.clientId)+' / '+projectName(a.projectId)+'. Please demobilize first.');
+ mobKey.value=key;mobDate.value=today();mobInfo.innerHTML='<b>'+esc(e.name)+'</b> | '+esc(e.code||'-')+' | '+esc(e.des||'-');
+ mobClient.innerHTML='<option value="">Select Client</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+ mobProject.innerHTML='<option value="">Select Client first</option>';mobSiteCraft.value='';mobLocation.value='';mobClientRate.value='';mobSubRate.value='';mobFood.value='';mobAcc.value='';mobRemarks.value='';
+ if(!clients.length)mobClient.innerHTML='<option value="">No Client available - add in Client Portal first</option>';
+ mobModal.classList.add('show')
+}
+function closeMob(){mobModal.classList.remove('show')}
+function loadMobProjects(){let p=projects.filter(x=>String(x.clientId)===String(mobClient.value));mobProject.innerHTML='<option value="">Select Project</option>'+p.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');mobLocation.value=''}
+function loadLocation(){mobLocation.value=project(mobProject.value)?.location||''}
+function saveMob(e){
+ e.preventDefault();refresh();let emp=staff.find(x=>x.key===mobKey.value);if(!emp)return alert('Employee not found.');
+ if(active(emp.key))return alert('He is already on site. Please demobilize first.');
+ if(!mobClient.value||!mobProject.value||!mobSiteCraft.value.trim())return alert('Client, Project and Site Craft are required.');
+ let p=project(mobProject.value);if(!p||String(p.clientId)!==String(mobClient.value))return alert('Project does not belong to selected Client.');
+ moves.push({id:uid(),employeeKey:emp.key,employeeCode:emp.code,employeeName:emp.name,designation:emp.des,source:emp.source,subcontractor:emp.sc,mobDate:mobDate.value,demobDate:'',clientId:mobClient.value,projectId:mobProject.value,siteCraft:mobSiteCraft.value.trim(),location:mobLocation.value,clientRate:Number(mobClientRate.value||0),subRate:Number(mobSubRate.value||0),foodBy:mobFood.value,accBy:mobAcc.value,mobRemarks:mobRemarks.value,demobRemarks:''});
+ save();closeMob();showView('onsite')
+}
+function renderOnsite(){
+ let q=norm(sSearch.value),rows=moves.filter(m=>!m.demobDate&&norm([m.employeeName,m.employeeCode,clientName(m.clientId),projectName(m.projectId),m.location].join(' ')).includes(q));
+ sRows.innerHTML=rows.length?rows.map(m=>`<tr><td><b>${esc(m.employeeName)}</b></td><td>${esc(m.employeeCode||'-')}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.location||'-')}</td><td>${esc(m.mobDate)}</td><td>${Number(m.clientRate||0).toFixed(2)}</td><td>${Number(m.subRate||0).toFixed(2)}</td><td>${esc(m.foodBy||'-')}</td><td>${esc(m.accBy||'-')}</td><td><button class="btn orange" onclick="openDemob('${m.id}')">Demobilize</button></td></tr>`).join(''):'<tr><td colspan="12">No manpower on site.</td></tr>'
+}
+function openDemob(id){let m=moves.find(x=>x.id===id);if(!m)return;demobId.value=id;demobDate.value=today();demobDate.min=m.mobDate;demobRemarks.value='';demobInfo.innerHTML='<b>'+esc(m.employeeName)+'</b><br>'+esc(clientName(m.clientId))+' / '+esc(projectName(m.projectId))+'<br>Mobilized: '+esc(m.mobDate);demobModal.classList.add('show')}
+function closeDemob(){demobModal.classList.remove('show')}
+function saveDemob(e){e.preventDefault();let m=moves.find(x=>x.id===demobId.value);if(!m)return;if(demobDate.value<m.mobDate)return alert('Demobilization Date cannot be before Mobilization Date.');m.demobDate=demobDate.value;m.demobRemarks=demobRemarks.value;save();closeDemob();showView('available')}
+function renderHistory(){hRows.innerHTML=moves.length?[...moves].reverse().map(m=>`<tr><td>${esc(m.employeeName)}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.mobDate)}</td><td>${esc(m.demobDate||'-')}</td><td>${m.demobDate?days(m.mobDate,m.demobDate):'-'}</td><td>${m.demobDate?'Demobilized':'On Site'}</td></tr>`).join(''):'<tr><td colspan="8">No movement history.</td></tr>'}
+
+function overlap(m,ym){let [y,mo]=ym.split('-').map(Number),start=new Date(y,mo-1,1),end=new Date(y,mo,0),a=new Date(m.mobDate),b=m.demobDate?new Date(m.demobDate):end;if(a<start)a=start;if(b>end)b=end;if(b<a)return 0;return Math.floor((b-a)/86400000)+1}
+function reportData(){let ym=rMonth.value||month();return moves.filter(m=>(!rClient.value||String(m.clientId)===String(rClient.value))&&(!rProject.value||String(m.projectId)===String(rProject.value))&&overlap(m,ym)>0).map(m=>({...m,rd:overlap(m,ym)}))}
+function renderReport(){let rows=reportData();rRows.innerHTML=rows.length?rows.map(m=>`<tr><td>${esc(m.employeeCode||'-')}</td><td>${esc(m.employeeName)}</td><td>${esc(m.designation||'-')}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.location||'-')}</td><td>${esc(m.mobDate)}</td><td>${esc(m.demobDate||'On Site')}</td><td><b>${m.rd}</b></td><td>${Number(m.clientRate||0).toFixed(2)}</td><td>${Number(m.subRate||0).toFixed(2)}</td></tr>`).join(''):'<tr><td colspan="12">No records.</td></tr>';rEmp.textContent=new Set(rows.map(x=>x.employeeKey)).size;rDays.textContent=rows.reduce((s,x)=>s+x.rd,0)}
+function exportCSV(){let rows=reportData();if(!rows.length)return alert('No report data.');let h=['Code','Employee','Designation','Client','Project','Site Craft','Location','Mobilized','Demobilized','Required Days','Client Rate','Sub Contractor Rate'];let d=rows.map(m=>[m.employeeCode,m.employeeName,m.designation,clientName(m.clientId),projectName(m.projectId),m.siteCraft||'',m.location,m.mobDate,m.demobDate||'On Site',m.rd,m.clientRate,m.subRate]);let csv=[h,...d].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');let blob=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Site_Monthly_Report_'+(rMonth.value||month())+'.csv';a.click()}
+function renderDash(){let on=moves.filter(x=>!x.demobDate);dAvail.textContent=staff.filter(x=>!active(x.key)).length;dSite.textContent=on.length;dProjects.textContent=new Set(on.map(x=>x.projectId)).size;dMove.textContent=moves.filter(x=>(x.mobDate||'').startsWith(month())||(x.demobDate||'').startsWith(month())).length;let map={};on.forEach(m=>{map[m.projectId]=(map[m.projectId]||0)+1});siteSummary.innerHTML=Object.keys(map).length?Object.entries(map).map(([id,c])=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>'+esc(projectName(id))+'</b> - '+c+' manpower</div>').join(''):'No manpower currently on site.'}
+function fillReportFilters(){rClient.innerHTML='<option value="">All Clients</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');rProject.innerHTML='<option value="">All Projects</option>'+projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}
+function renderAll(){refresh();fillReportFilters();renderAvailable();renderOnsite();renderHistory();renderReport();renderDash()}
+rMonth.value=month();refresh();renderAll();
+</script>
+</body>
+</html>
