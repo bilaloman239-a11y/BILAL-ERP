@@ -2506,15 +2506,34 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  function normalizeEmployeeStatus(e){
+    return String(e?.status ?? e?.employeeStatus ?? "Active").trim().toLowerCase();
+  }
+
+  function getEmployeeDocumentsAndCertificates(e){
+    const rows=[];
+    (Array.isArray(e?.documents)?e.documents:[]).forEach((d,docIndex)=>{
+      const expiry=d.expiryDate||d.expiry||d.expiry_date||"";
+      if(expiry) rows.push({kind:"document",item:d,itemIndex:docIndex,type:d.type||d.documentType||"Document",number:d.number||d.documentNumber||"",expiry});
+    });
+    (Array.isArray(e?.technicalCertificates)?e.technicalCertificates:[]).forEach((c,certIndex)=>{
+      const expiry=c.expiryDate||c.expiry||c.expiry_date||"";
+      if(expiry) rows.push({kind:"certificate",item:c,itemIndex:certIndex,type:c.type||c.certificateType||c.name||"Technical Certificate",number:c.number||c.certificateNumber||"",expiry});
+    });
+    return rows;
+  }
+
   function dashboardExpiryAlerts(){
     const today=new Date(); today.setHours(0,0,0,0);
     const alerts=[];
-    data.employees.forEach((e,employeeIndex)=>(e.documents||[]).forEach((d,docIndex)=>{
-      if(!d.expiryDate) return;
-      const dt=new Date(d.expiryDate+"T00:00:00");
-      const days=Math.ceil((dt-today)/86400000);
-      alerts.push({employee:e.employeeName,code:e.employeeCode,type:d.type,number:d.number||"",expiry:d.expiryDate,days,employeeIndex,docIndex});
-    }));
+    (data.employees||[]).forEach((e,employeeIndex)=>{
+      getEmployeeDocumentsAndCertificates(e).forEach(x=>{
+        const dt=new Date(x.expiry+"T00:00:00");
+        if(Number.isNaN(dt.getTime())) return;
+        const days=Math.ceil((dt-today)/86400000);
+        alerts.push({employee:e.employeeName,code:e.employeeCode,type:x.type,number:x.number,expiry:x.expiry,days,employeeIndex,docIndex:x.kind==="document"?x.itemIndex:-1,kind:x.kind});
+      });
+    });
     return alerts;
   }
 
@@ -2530,7 +2549,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(filter==="total" || filter==="active"){
       const rows=(data.employees||[])
         .map((e,i)=>({...e,_i:i}))
-        .filter(e=>filter==="total" || e.status==="Active");
+        .filter(e=>filter==="total" || normalizeEmployeeStatus(e)==="active");
 
       title.textContent=filter==="total"?"All Employees":"Active Employees";
       sub.textContent=`${rows.length} employee${rows.length===1?"":"s"}`;
@@ -2667,13 +2686,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderDashboard(){
-    $("totalEmployees").textContent=data.employees.length;
-    $("activeEmployees").textContent=data.employees.filter(e=>e.status==="Active").length;
+    const employees=Array.isArray(data.employees)?data.employees:[];
+    $("totalEmployees").textContent=employees.length;
+    $("activeEmployees").textContent=employees.filter(e=>normalizeEmployeeStatus(e)==="active").length;
 
-    const alerts=getExpiryAlerts();
-    $("exp30").textContent=alerts.filter(a=>a.days>=0 && a.days<=30).length;
-    $("exp60").textContent=alerts.filter(a=>a.days>=0 && a.days<=60).length;
-    $("exp90").textContent=alerts.filter(a=>a.days>=0 && a.days<=90).length;
+    // Count unique employees with at least one Document or Technical Certificate
+    // expiring in the selected window, so one employee is not counted many times.
+    const alerts=dashboardExpiryAlerts();
+    const uniqueCount=limit=>new Set(alerts.filter(a=>a.days>=0 && a.days<=limit).map(a=>a.employeeIndex)).size;
+    $("exp30").textContent=uniqueCount(30);
+    $("exp60").textContent=uniqueCount(60);
+    $("exp90").textContent=uniqueCount(90);
 
     renderExpiryAlerts();
   }
