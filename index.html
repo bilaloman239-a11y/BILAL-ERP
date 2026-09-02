@@ -755,7 +755,11 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 </style>
 
 </head>
-<body><div class="cm-portal-nav"><a href="index.html" class="cm-current">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a><a href="timesheet.html" class="">🕒 Timesheet</a><a href="payroll.html" class="">💵 Payroll</a></div>
+<body>
+<style id="cm-dashboard-shortcut-style">.cm-dashboard-shortcut{position:fixed;right:18px;bottom:18px;z-index:9999;background:#12344a;color:#fff!important;text-decoration:none;padding:10px 13px;border-radius:10px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 8px 22px #0002;border:1px solid #ffffff33}.cm-dashboard-shortcut:hover{background:#1976c9}</style>
+<a id="cmDashboardShortcut" class="cm-dashboard-shortcut" href="dashboard.html">⌂ ERP Dashboard</a>
+<script>(function(){var a=document.getElementById('cmDashboardShortcut');if(a&&sessionStorage.getItem('cm_logged_in_v3')!=='1'&&localStorage.getItem('cm_logged_in_v3')!=='1')a.style.display='none';})();</script>
+<div class="cm-portal-nav"><a href="index.html" class="cm-current">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a><a href="timesheet.html" class="">🕒 Timesheet</a><a href="payroll.html" class="">💵 Payroll</a></div>
 
 <div id="loginView" class="login">
   <section class="login-left">
@@ -808,7 +812,6 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
     </div>
 
     <div class="cm-erp-sidebar-title">Launchpad</div>
-    <button class="navbtn cm-erp-link" type="button" onclick="window.location.href='dashboard.html'"><span class="cm-erp-icon">▦</span><span class="cm-erp-label">ERP Control Center</span></button>
     <button class="navbtn cm-erp-link cm-active active" data-page="dashboard"><span class="cm-erp-icon">⌂</span><span class="cm-erp-label">Dashboard</span></button>
 
     <div class="cm-erp-sidebar-title">Human Capital</div>

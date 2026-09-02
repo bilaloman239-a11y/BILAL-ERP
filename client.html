@@ -92,6 +92,10 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 
 </head>
 <body>
+<style id="cm-dashboard-shortcut-style">.cm-dashboard-shortcut{position:fixed;right:18px;bottom:18px;z-index:9999;background:#12344a;color:#fff!important;text-decoration:none;padding:10px 13px;border-radius:10px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 8px 22px #0002;border:1px solid #ffffff33}.cm-dashboard-shortcut:hover{background:#1976c9}</style>
+<a id="cmDashboardShortcut" class="cm-dashboard-shortcut" href="dashboard.html">⌂ ERP Dashboard</a>
+<script>(function(){var a=document.getElementById('cmDashboardShortcut');if(a&&sessionStorage.getItem('cm_logged_in_v3')!=='1'&&localStorage.getItem('cm_logged_in_v3')!=='1')a.style.display='none';})();</script>
+
 <script>
 (function(){var k='cm_logged_in_v3';if(sessionStorage.getItem(k)!=='1'&&localStorage.getItem(k)!=='1')location.replace('index.html');})();
 </script>
@@ -110,7 +114,6 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 <div class="app">
 <aside class="sidebar">
   <div class="cm-erp-sidebar-title">Launchpad</div>
-<button class="nav-btn cm-erp-link" type="button" onclick="location.href='dashboard.html'"><span class="cm-erp-icon">▦</span><span class="cm-erp-label">ERP Control Center</span></button>
   <button class="nav-btn cm-erp-link cm-active active" data-view="dashboard"><span class="cm-erp-icon">⌂</span><span class="cm-erp-label">Dashboard</span></button>
 
   <div class="cm-erp-sidebar-title">Sales & Projects</div>
