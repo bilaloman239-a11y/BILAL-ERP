@@ -1,6 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+/* ===== Civil Master ERP Central Audit Trail ===== */
+(function(){
+ if(window.__cmAuditInstalled)return; window.__cmAuditInstalled=true;
+ const AUDIT_KEY='cm_erp_audit_trail_v1', nativeSet=Storage.prototype.setItem;
+ function parse(v){try{return JSON.parse(v)}catch(e){return v}}
+ function simple(v){if(v===undefined)return '';if(v===null)return 'null';if(typeof v==='object'){try{const x=JSON.stringify(v);return x.length>600?x.slice(0,600)+'…':x}catch(e){return '[object]'}}return String(v).slice(0,600)}
+ function diff(a,b,path='',out=[]){
+  if(out.length>=80)return out;if(a===b)return out;
+  if(a&&b&&typeof a==='object'&&typeof b==='object'){
+   const keys=new Set([...Object.keys(a),...Object.keys(b)]);for(const k of keys){if(out.length>=80)break;diff(a[k],b[k],path?(path+'.'+k):k,out)};return out;
+  }
+  out.push({field:path||'value',old:simple(a),new:simple(b)});return out;
+ }
+ function moduleName(){const t=document.title||location.pathname; if(/employee/i.test(t))return'Employee';if(/client/i.test(t))return'Client / Project';if(/sub.?contract/i.test(t))return'Sub Contractor';if(/site/i.test(t))return'Site';if(/timesheet/i.test(t))return'Timesheet';if(/payroll/i.test(t))return'Payroll';if(/approval/i.test(t))return'Approval Center';if(/dashboard/i.test(t))return'Dashboard';return'ERP'}
+ function log(key,oldRaw,newRaw){
+  if(key===AUDIT_KEY||/_backup$/i.test(key)||/^cm_logged_in/i.test(key)||/^cm_saved_email/i.test(key))return;
+  if(oldRaw===newRaw)return;
+  let changes=diff(parse(oldRaw),parse(newRaw)); if(!changes.length)return;
+  let trail=[];try{trail=JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]');if(!Array.isArray(trail))trail=[]}catch(e){trail=[]}
+  trail.unshift({id:'AUD-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),at:new Date().toISOString(),user:localStorage.getItem('cm_saved_email')||localStorage.getItem('cm_current_user')||'Administrator',module:moduleName(),storageKey:key,action:oldRaw==null?'Created':'Updated',changes:changes.slice(0,80),url:location.pathname.split('/').pop()||''});
+  if(trail.length>3000)trail=trail.slice(0,3000); nativeSet.call(localStorage,AUDIT_KEY,JSON.stringify(trail));
+ }
+ Storage.prototype.setItem=function(key,value){const old=this.getItem(key);const result=nativeSet.call(this,key,value);try{if(this===localStorage)log(String(key),old,String(value))}catch(e){console.warn('Audit log skipped',e)}return result};
+})();
+</script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Site Management Portal</title>
 <style>
@@ -64,6 +90,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 <body>
 <style id="cm-dashboard-shortcut-style">.cm-dashboard-shortcut{position:fixed;right:18px;bottom:18px;z-index:9999;background:#12344a;color:#fff!important;text-decoration:none;padding:10px 13px;border-radius:10px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 8px 22px #0002;border:1px solid #ffffff33}.cm-dashboard-shortcut:hover{background:#1976c9}</style>
 <a id="cmDashboardShortcut" class="cm-dashboard-shortcut" href="dashboard.html">⌂ ERP Dashboard</a>
+<a class="cm-dashboard-shortcut" href="approval.html" style="margin-left:6px">✓ Approval Center</a>
 <script>(function(){var a=document.getElementById('cmDashboardShortcut');if(a&&sessionStorage.getItem('cm_logged_in_v3')!=='1'&&localStorage.getItem('cm_logged_in_v3')!=='1')a.style.display='none';})();</script>
 
 <script>
@@ -543,5 +570,6 @@ function exportUtilizationCSV(){
 function renderAll(){refresh();fillReportFilters();renderAvailable();renderOnsite();renderHistory();renderReport();renderDash();renderUtilization()}
 rMonth.value=month(); if(document.getElementById('uMonth')) uMonth.value=month(); refresh();renderAll();
 </script>
+<a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>
 </body>
 </html>

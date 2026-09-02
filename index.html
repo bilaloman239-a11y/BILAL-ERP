@@ -3,6 +3,32 @@
 
 <html lang="en">
 <head>
+<script>
+/* ===== Civil Master ERP Central Audit Trail ===== */
+(function(){
+ if(window.__cmAuditInstalled)return; window.__cmAuditInstalled=true;
+ const AUDIT_KEY='cm_erp_audit_trail_v1', nativeSet=Storage.prototype.setItem;
+ function parse(v){try{return JSON.parse(v)}catch(e){return v}}
+ function simple(v){if(v===undefined)return '';if(v===null)return 'null';if(typeof v==='object'){try{const x=JSON.stringify(v);return x.length>600?x.slice(0,600)+'…':x}catch(e){return '[object]'}}return String(v).slice(0,600)}
+ function diff(a,b,path='',out=[]){
+  if(out.length>=80)return out;if(a===b)return out;
+  if(a&&b&&typeof a==='object'&&typeof b==='object'){
+   const keys=new Set([...Object.keys(a),...Object.keys(b)]);for(const k of keys){if(out.length>=80)break;diff(a[k],b[k],path?(path+'.'+k):k,out)};return out;
+  }
+  out.push({field:path||'value',old:simple(a),new:simple(b)});return out;
+ }
+ function moduleName(){const t=document.title||location.pathname; if(/employee/i.test(t))return'Employee';if(/client/i.test(t))return'Client / Project';if(/sub.?contract/i.test(t))return'Sub Contractor';if(/site/i.test(t))return'Site';if(/timesheet/i.test(t))return'Timesheet';if(/payroll/i.test(t))return'Payroll';if(/approval/i.test(t))return'Approval Center';if(/dashboard/i.test(t))return'Dashboard';return'ERP'}
+ function log(key,oldRaw,newRaw){
+  if(key===AUDIT_KEY||/_backup$/i.test(key)||/^cm_logged_in/i.test(key)||/^cm_saved_email/i.test(key))return;
+  if(oldRaw===newRaw)return;
+  let changes=diff(parse(oldRaw),parse(newRaw)); if(!changes.length)return;
+  let trail=[];try{trail=JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]');if(!Array.isArray(trail))trail=[]}catch(e){trail=[]}
+  trail.unshift({id:'AUD-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),at:new Date().toISOString(),user:localStorage.getItem('cm_saved_email')||localStorage.getItem('cm_current_user')||'Administrator',module:moduleName(),storageKey:key,action:oldRaw==null?'Created':'Updated',changes:changes.slice(0,80),url:location.pathname.split('/').pop()||''});
+  if(trail.length>3000)trail=trail.slice(0,3000); nativeSet.call(localStorage,AUDIT_KEY,JSON.stringify(trail));
+ }
+ Storage.prototype.setItem=function(key,value){const old=this.getItem(key);const result=nativeSet.call(this,key,value);try{if(this===localStorage)log(String(key),old,String(value))}catch(e){console.warn('Audit log skipped',e)}return result};
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -454,6 +480,19 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px;bord
 #advancedEmployeeFilterBtn.active{background:#eaf3ff;color:#236da7;box-shadow:inset 0 0 0 1px #c8dcf1}
 @media(max-width:1100px){.employee-filter-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.employee-filter-grid{grid-template-columns:1fr}}
+
+/* ===== Employee 360 + Archive Protection ===== */
+.profile-tabs{overflow-x:auto;white-space:nowrap;scrollbar-width:thin}
+.profile-tab{flex:0 0 auto}
+.profile-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin-bottom:15px}
+.profile-kpi{background:linear-gradient(180deg,#fff,#f7fbff);border:1px solid #dce8f3;border-radius:13px;padding:13px}
+.profile-kpi small{display:block;color:#77899a;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}.profile-kpi b{display:block;color:#153b64;font-size:21px;margin-top:4px}
+.profile-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}.profile-table th{background:#eef5fb;color:#49657e;text-align:left;padding:9px;border-bottom:1px solid #dce7f0}.profile-table td{padding:9px;border-bottom:1px solid #edf2f6;color:#405b73}.profile-table-wrap{overflow:auto;border:1px solid #e0e8ef;border-radius:12px;background:#fff}
+.status-chip{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;background:#e9f4ff;color:#256aa1}.status-chip.on{background:#e5f7ee;color:#25704c}.status-chip.off{background:#fff0e7;color:#a45c25}
+.archive-modal{position:fixed;inset:0;background:rgba(10,34,58,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.archive-modal.hidden{display:none}.archive-shell{width:min(980px,96vw);max-height:86vh;overflow:auto;background:#f7fafc;border-radius:18px;box-shadow:0 28px 70px rgba(0,0,0,.28)}.archive-head{position:sticky;top:0;background:#fff;border-bottom:1px solid #e4ebf1;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;z-index:2}.archive-body{padding:16px}
+.audit-mini{margin-top:10px;padding:10px 12px;border:1px solid #e4ebf2;border-radius:10px;background:#fff}.audit-mini b{color:#214765}.archive-note{font-size:11px;color:#788b9d;margin-top:4px}
+@media(max-width:900px){.profile-kpi-grid{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 <style>
 /* ============================================================
@@ -758,6 +797,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 <body>
 <style id="cm-dashboard-shortcut-style">.cm-dashboard-shortcut{position:fixed;right:18px;bottom:18px;z-index:9999;background:#12344a;color:#fff!important;text-decoration:none;padding:10px 13px;border-radius:10px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 8px 22px #0002;border:1px solid #ffffff33}.cm-dashboard-shortcut:hover{background:#1976c9}</style>
 <a id="cmDashboardShortcut" class="cm-dashboard-shortcut" href="dashboard.html">⌂ ERP Dashboard</a>
+<a class="cm-dashboard-shortcut" href="approval.html" style="margin-left:6px">✓ Approval Center</a>
 <script>(function(){var a=document.getElementById('cmDashboardShortcut');if(a&&sessionStorage.getItem('cm_logged_in_v3')!=='1'&&localStorage.getItem('cm_logged_in_v3')!=='1')a.style.display='none';})();</script>
 <div class="cm-portal-nav"><a href="index.html" class="cm-current">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a><a href="timesheet.html" class="">🕒 Timesheet</a><a href="payroll.html" class="">💵 Payroll</a></div>
 
@@ -890,6 +930,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
       <div class="panel">
         <div class="toolbar">
           <button id="exportEmployeeListBtn" class="btn light" type="button">Export List</button>
+          <button id="archivedEmployeesBtn" class="btn light" type="button">🗄 Archived Employees</button>
           <button id="newEmployeeBtn" class="btn" type="button" onclick="window.cmOpenNewEmployee && window.cmOpenNewEmployee()">+ Add Employee</button>
           <button id="bulkUploadBtn" class="btn light" type="button" title="Download sample Excel and bulk upload employees">Bulk Upload</button>
           <input id="bulkUploadFile" type="file" accept=".xls,.xml,.csv,text/csv,application/vnd.ms-excel,text/xml,application/xml" class="hidden">
@@ -1090,23 +1131,43 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
       </div>
     </div>
     <div class="profile-tabs">
-      <button class="profile-tab active" data-profile-tab="overview">Overview</button>
-      <button class="profile-tab" data-profile-tab="employment">Employment</button>
+      <button class="profile-tab active" data-profile-tab="overview">Personal</button>
       <button class="profile-tab" data-profile-tab="documents">Documents</button>
-      <button class="profile-tab" data-profile-tab="technical-certificates">Technical Certificates</button>
-      <button class="profile-tab" data-profile-tab="emergency">Emergency Contact</button>
+      <button class="profile-tab" data-profile-tab="technical-certificates">Certificates</button>
+      <button class="profile-tab" data-profile-tab="current-project">Current Project</button>
+      <button class="profile-tab" data-profile-tab="movement">Movement</button>
+      <button class="profile-tab" data-profile-tab="timesheets">Timesheets</button>
+      <button class="profile-tab" data-profile-tab="salary">Salary</button>
+      <button class="profile-tab" data-profile-tab="leave">Leave</button>
+      <button class="profile-tab" data-profile-tab="visa-ticket">Visa / Ticket</button>
+      <button class="profile-tab" data-profile-tab="history">Complete History</button>
+      <button class="profile-tab" data-profile-tab="employment">Employment</button>
+      <button class="profile-tab" data-profile-tab="emergency">Emergency</button>
       <button class="profile-tab" data-profile-tab="attachments">Attachments</button>
-      <button class="profile-tab" data-profile-tab="history">History</button>
     </div>
     <div class="profile-body">
       <div id="profile-overview" class="profile-panel active"></div>
-      <div id="profile-employment" class="profile-panel"></div>
       <div id="profile-documents" class="profile-panel"></div>
       <div id="profile-technical-certificates" class="profile-panel"></div>
+      <div id="profile-current-project" class="profile-panel"></div>
+      <div id="profile-movement" class="profile-panel"></div>
+      <div id="profile-timesheets" class="profile-panel"></div>
+      <div id="profile-salary" class="profile-panel"></div>
+      <div id="profile-leave" class="profile-panel"></div>
+      <div id="profile-visa-ticket" class="profile-panel"></div>
+      <div id="profile-history" class="profile-panel"></div>
+      <div id="profile-employment" class="profile-panel"></div>
       <div id="profile-emergency" class="profile-panel"></div>
       <div id="profile-attachments" class="profile-panel"></div>
-      <div id="profile-history" class="profile-panel"></div>
     </div>
+  </div>
+</div>
+
+
+<div id="archivedEmployeesModal" class="archive-modal hidden">
+  <div class="archive-shell">
+    <div class="archive-head"><div><b style="font-size:17px;color:#183f68">Archived Employees</b><div class="archive-note">Records are protected from accidental deletion. Restore any employee at any time.</div></div><button id="closeArchivedEmployeesBtn" class="btn light">Close</button></div>
+    <div class="archive-body"><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Code</th><th>Employee</th><th>Company</th><th>Archived At</th><th>Archived By</th><th>Action</th></tr></thead><tbody id="archivedEmployeeRows"></tbody></table></div></div>
   </div>
 </div>
 
@@ -1498,7 +1559,7 @@ document.addEventListener("DOMContentLoaded", () => {
       company:"",idDesignation:"",lineManager:"",joiningDate:"",status:"Active",inactiveReason:"",inactiveDate:"",
       documents:[],
       emergency:{name:"",relationship:"",mobile:"",country:""},
-      attachments:[],history:[]
+      attachments:[],history:[],archived:false,archivedAt:"",archivedBy:""
     };
   }
 
@@ -1507,6 +1568,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function nowLabel(){
     return new Date().toLocaleString();
+  }
+  function currentERPUser(){
+    return localStorage.getItem("cm_saved_email") || localStorage.getItem("cm_current_user") || "Administrator";
+  }
+  function erpGet(key,def){ try{ const v=JSON.parse(localStorage.getItem(key)); return v??def; }catch(_e){ return def; } }
+  function employeeMatchCode(obj,e){
+    const c=String(e?.employeeCode||"").trim().toLowerCase();
+    const key='e:'+c;
+    return String(obj?.employeeCode||obj?.empCode||"").trim().toLowerCase()===c || String(obj?.empKey||obj?.employeeKey||"").trim().toLowerCase()===key;
+  }
+  function clientProjectMaps(){
+    const cs=erpGet("cm_client_portal_clients_v1",[]), ps=erpGet("cm_client_portal_projects_v1",[]);
+    return {client:id=>cs.find(x=>String(x.id)===String(id))?.name||"",project:id=>ps.find(x=>String(x.id)===String(id))?.name||""};
   }
 
   function safeHistory(e){
@@ -1519,7 +1593,7 @@ document.addEventListener("DOMContentLoaded", () => {
     history.unshift({
       id:String(Date.now())+Math.random().toString(16).slice(2),
       date:nowLabel(),
-      by:"Administrator",
+      by:currentERPUser(),
       ...event
     });
   }
@@ -1688,7 +1762,42 @@ document.addEventListener("DOMContentLoaded", () => {
       ${atts.map(a=>`<div class="attach-item"><div><b>${esc(a.name)}</b><div class="small">${esc(a.fileName||"")}</div></div></div>`).join("")}`
       :'<div class="empty-history">No attachments added.</div>';
 
-    renderProfileHistory(e);
+    // ===== Employee 360 cross-module view =====
+    const maps=clientProjectMaps();
+    const moves=erpGet("cm_site_management_movements_v1",[]).filter(x=>employeeMatchCode(x,e)).sort((a,b)=>String(b.mobDate||"").localeCompare(String(a.mobDate||"")));
+    const currentMove=moves.find(x=>!x.demobDate)||null;
+    $("profile-current-project").innerHTML=currentMove?`
+      <div class="profile-section-title">Current Project / Site Assignment</div>
+      <div class="profile-kpi-grid">
+        <div class="profile-kpi"><small>Status</small><b style="font-size:16px">On Site</b></div>
+        <div class="profile-kpi"><small>Mobilized</small><b style="font-size:16px">${esc(currentMove.mobDate||"-")}</b></div>
+        <div class="profile-kpi"><small>Client Rate</small><b>${Number(currentMove.clientRate||0).toFixed(2)}</b></div>
+        <div class="profile-kpi"><small>Sub Rate</small><b>${Number(currentMove.subRate||0).toFixed(2)}</b></div>
+      </div>
+      <div class="profile-grid">
+        ${profileInfo("Client",maps.client(currentMove.clientId))}${profileInfo("Project",maps.project(currentMove.projectId))}${profileInfo("Location",currentMove.location)}${profileInfo("Site Craft",currentMove.siteCraft)}${profileInfo("Food By",currentMove.foodBy)}${profileInfo("Accommodation By",currentMove.accBy)}
+      </div>`:`<div class="empty-history"><b>No active project assignment.</b><br>Employee is currently shown as available / not mobilized.</div>`;
+
+    $("profile-movement").innerHTML=moves.length?`
+      <div class="profile-section-title">Mobilization / Demobilization History</div><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Client</th><th>Project</th><th>Location</th><th>Mobilized</th><th>Demobilized</th><th>Client Rate</th><th>Sub Rate</th></tr></thead><tbody>${moves.map(m=>`<tr><td>${esc(maps.client(m.clientId)||"-")}</td><td>${esc(maps.project(m.projectId)||"-")}</td><td>${esc(m.location||"-")}</td><td>${esc(m.mobDate||"-")}</td><td>${esc(m.demobDate||"On Site")}</td><td>${Number(m.clientRate||0).toFixed(2)}</td><td>${Number(m.subRate||0).toFixed(2)}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history">No movement history found.</div>';
+
+    const central=erpGet("cm_central_timesheet_v1",{}), ts=(Array.isArray(central.records)?central.records:[]).filter(x=>employeeMatchCode(x,e)).sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+    const totalHours=ts.reduce((a,x)=>a+Number(x.hours||0),0), tsMonths=new Set(ts.map(x=>String(x.date||"").slice(0,7)).filter(Boolean));
+    $("profile-timesheets").innerHTML=`<div class="profile-section-title">Central Timesheet History</div><div class="profile-kpi-grid"><div class="profile-kpi"><small>Total Records</small><b>${ts.length}</b></div><div class="profile-kpi"><small>Total Hours</small><b>${totalHours.toFixed(2)}</b></div><div class="profile-kpi"><small>Months</small><b>${tsMonths.size}</b></div><div class="profile-kpi"><small>Latest Entry</small><b style="font-size:15px">${esc(ts[0]?.date||"-")}</b></div></div>${ts.length?`<div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Date</th><th>Client</th><th>Project</th><th>Hours</th><th>Status</th><th>Batch</th></tr></thead><tbody>${ts.slice(0,250).map(x=>`<tr><td>${esc(x.date||"-")}</td><td>${esc(x.client||"-")}</td><td>${esc(x.project||"-")}</td><td><b>${Number(x.hours||0).toFixed(2)}</b></td><td>${esc(x.status||"")}</td><td>${esc(x.batchId||"-")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history">No central timesheet records found.</div>'}`;
+
+    const payroll=erpGet("cm_payroll_history_v1",[]), salaryRows=[];
+    (Array.isArray(payroll)?payroll:[]).forEach(h=>(h.entries||[]).forEach(x=>{if(employeeMatchCode(x,e)) salaryRows.push({...x,month:h.month,finalizedAt:h.finalizedAt})}));
+    salaryRows.sort((a,b)=>String(b.month||"").localeCompare(String(a.month||"")));
+    const totalNet=salaryRows.reduce((a,x)=>a+Number(x.net||0),0);
+    $("profile-salary").innerHTML=`<div class="profile-section-title">Salary / Payroll History</div><div class="profile-kpi-grid"><div class="profile-kpi"><small>Payroll Months</small><b>${salaryRows.length}</b></div><div class="profile-kpi"><small>Total Net Recorded</small><b>${totalNet.toFixed(2)}</b></div><div class="profile-kpi"><small>Latest Month</small><b style="font-size:16px">${esc(salaryRows[0]?.month||"-")}</b></div><div class="profile-kpi"><small>Latest Net</small><b>${Number(salaryRows[0]?.net||0).toFixed(2)}</b></div></div>${salaryRows.length?`<div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Month</th><th>Normal H</th><th>NOT H</th><th>HOT H</th><th>Gross</th><th>Deduction</th><th>Net</th><th>Bank</th><th>Cash</th><th>Balance</th></tr></thead><tbody>${salaryRows.map(x=>`<tr><td><b>${esc(x.month||"-")}</b></td><td>${Number(x.normalH||0).toFixed(2)}</td><td>${Number(x.notH||0).toFixed(2)}</td><td>${Number(x.hotH||0).toFixed(2)}</td><td>${Number(x.gross||0).toFixed(2)}</td><td>${Number(x.deduction||0).toFixed(2)}</td><td><b>${Number(x.net||0).toFixed(2)}</b></td><td>${Number(x.payByBank||0).toFixed(2)}</td><td>${Number(x.payByCash||0).toFixed(2)}</td><td>${Number(x.balanceSalary||0).toFixed(2)}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history">No finalized payroll history found.</div>'}`;
+
+    const approvals=erpGet("cm_erp_approval_center_v1",{}), leaveItems=(approvals.items||[]).filter(x=>x.type==="Leave Approval" && [x.subject,x.ref,x.remarks].join(" ").toLowerCase().includes(String(e.employeeName||e.employeeCode||"").toLowerCase()));
+    $("profile-leave").innerHTML=leaveItems.length?`<div class="profile-section-title">Leave Approval History</div><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Date / Month</th><th>Reference</th><th>Subject</th><th>Status</th><th>Remarks</th></tr></thead><tbody>${leaveItems.map(x=>`<tr><td>${esc(x.date||"-")}</td><td>${esc(x.ref||"-")}</td><td>${esc(x.subject||"-")}</td><td><span class="status-chip">${esc(x.status||"Draft")}</span></td><td>${esc(x.remarks||"-")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history"><b>No connected leave records yet.</b><br>Leave module/approval records linked to this employee will appear here automatically.</div>';
+
+    const visaKeys=["cm_visa_cases_v1","cm_candidate_visa_v1","cm_visa_ticket_v1"], visa=[]; visaKeys.forEach(k=>{const v=erpGet(k,[]);(Array.isArray(v)?v:(v.items||[])).forEach(x=>{if(employeeMatchCode(x,e)||String(x.employeeName||x.name||"").toLowerCase()===String(e.employeeName||"").toLowerCase())visa.push(x)})});
+    $("profile-visa-ticket").innerHTML=visa.length?`<div class="profile-section-title">Visa / Ticket History</div><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Status</th><th>Visa Type</th><th>Applied</th><th>Flight Date</th><th>Reference</th><th>Remarks</th></tr></thead><tbody>${visa.map(x=>`<tr><td>${esc(x.status||x.visaStatus||"-")}</td><td>${esc(x.visaType||"-")}</td><td>${esc(x.appliedDate||x.visaAppliedDate||"-")}</td><td>${esc(x.flightDate||x.ticketDate||"-")}</td><td>${esc(x.referenceNo||x.ref||"-")}</td><td>${esc(x.remarks||"-")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history"><b>No connected Visa / Ticket records yet.</b><br>When Visa/Ticket module is connected, records will appear here automatically.</div>';
+
+    renderProfileHistory(e, {moves,ts,salaryRows});
 
     document.querySelectorAll(".profile-tab").forEach(b=>b.classList.remove("active"));
     document.querySelectorAll(".profile-panel").forEach(p=>p.classList.remove("active"));
@@ -1696,17 +1805,21 @@ document.addEventListener("DOMContentLoaded", () => {
     $("profile-overview").classList.add("active");
   }
 
-  function renderProfileHistory(e){
-    const h=safeHistory(e);
+  function renderProfileHistory(e, extra={}){
+    const combined=[];
+    safeHistory(e).forEach(x=>combined.push({dateRaw:x.at||x.date||"",date:x.date||x.at||"",title:x.title||x.type||"Employee Update",by:x.by||"Administrator",changes:x.changes||[],source:"Employee"}));
+    (extra.moves||[]).forEach(m=>combined.push({dateRaw:m.demobDate||m.mobDate||"",date:m.demobDate||m.mobDate||"",title:m.demobDate?"Employee demobilized":"Employee mobilized",by:"Site Management",source:"Movement",changes:[{field:"Project",old:"",new:clientProjectMaps().project(m.projectId)||"-"},{field:"Location",old:"",new:m.location||"-"}]}));
+    const byMonth={};(extra.ts||[]).forEach(t=>{const ym=String(t.date||"").slice(0,7);if(!ym)return;if(!byMonth[ym])byMonth[ym]={hours:0,count:0};byMonth[ym].hours+=Number(t.hours||0);byMonth[ym].count++});Object.entries(byMonth).forEach(([ym,v])=>combined.push({dateRaw:ym+'-31',date:ym,title:`Timesheet activity • ${v.hours.toFixed(2)} hrs`,by:"Central Timesheet",source:"Timesheet",changes:[{field:"Records",old:"",new:String(v.count)}]}));
+    (extra.salaryRows||[]).forEach(x=>combined.push({dateRaw:x.finalizedAt||x.month||"",date:x.finalizedAt?new Date(x.finalizedAt).toLocaleString():x.month,title:`Payroll finalized • ${x.month}`,by:"Payroll",source:"Salary",changes:[{field:"Gross",old:"",new:Number(x.gross||0).toFixed(2)},{field:"Net",old:"",new:Number(x.net||0).toFixed(2)}]}));
+    combined.sort((a,b)=>String(b.dateRaw||b.date||"").localeCompare(String(a.dateRaw||a.date||"")));
     $("profile-history").innerHTML=`
-      <div class="profile-section-title">Employee Audit History</div>
-      ${h.length?`<div class="history-timeline">${h.map(item=>`
+      <div class="profile-section-title">Complete Employee History</div>
+      <div class="archive-note" style="margin-bottom:12px">Employee changes + movements + timesheet activity + finalized payroll in one timeline.</div>
+      ${combined.length?`<div class="history-timeline">${combined.map(item=>`
         <div class="history-item">
-          <div class="history-title">${esc(item.title||item.type||"Update")}</div>
+          <div class="history-title">${esc(item.title||"Update")} <span class="status-chip" style="margin-left:6px">${esc(item.source||"ERP")}</span></div>
           <div class="history-meta">${esc(item.date||"")} · ${esc(item.by||"Administrator")}</div>
-          ${(item.changes||[]).length?`<div class="history-change">${item.changes.map(c=>`
-            <div><b>${esc(c.field)}:</b> <span class="history-old">${esc(c.old||"-")}</span> → <span class="history-new">${esc(c.new||"-")}</span></div>
-          `).join("")}</div>`:""}
+          ${(item.changes||[]).length?`<div class="history-change">${item.changes.map(c=>`<div><b>${esc(c.field)}:</b> <span class="history-old">${esc(c.old||"-")}</span> → <span class="history-new">${esc(c.new||"-")}</span></div>`).join("")}</div>`:""}
         </div>`).join("")}</div>`:'<div class="empty-history">No history yet.</div>'}`;
   }
 
@@ -1803,6 +1916,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>
 </body></html>`);
     w.document.close();
     w.focus();
@@ -2252,6 +2366,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const joinFrom=$("afJoiningFrom")?.value||"";
     const joinTo=$("afJoiningTo")?.value||"";
     return (data.employees||[]).map((e,i)=>({...e,_i:i})).filter(e=>{
+      if(e.archived) return false;
       const text=[e.employeeCode,e.employeeName,e.employeeNameArabic,e.actualDesignation,e.nationality,e.company,e.idDesignation,e.mobile,e.unifiedNumber,e.status].join(" ").toLowerCase();
       if(q && !text.includes(q)) return false;
       if(actual && e.actualDesignation!==actual) return false;
@@ -2268,13 +2383,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderEmployees(){
     fillAdvancedEmployeeFilters();
     const rows=getFilteredEmployees();
-    const total=(data.employees||[]).length;
+    const total=(data.employees||[]).filter(e=>!e.archived).length;
     if($("employeeFilterCount")) $("employeeFilterCount").textContent=`Showing ${rows.length} of ${total} employee${total===1?"":"s"}`;
     if($("employeeTableWrap")?.classList.contains("employee-list-expanded") && typeof dynamicExportCols==="function"){
       const cols=dynamicExportCols().filter(([k])=>activeListCols.includes(k));
       const table=$("employeeTableWrap").querySelector("table");
       table.querySelector("thead").innerHTML=`<tr>${cols.map(([,l])=>`<th>${esc(l)}</th>`).join("")}<th>Actions</th></tr>`;
-      $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>${cols.map(([k])=>`<td>${k==="employeeName"?`<button class="employee-link" data-view-employee="${e._i}">${esc(expVal(e,k))}</button>`:esc(expVal(e,k))}</td>`).join("")}<td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td></tr>`).join(""):`<tr><td colspan="${cols.length+1}" class="empty">No employee records match your search / filters.</td></tr>`;
+      $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>${cols.map(([k])=>`<td>${k==="employeeName"?`<button class="employee-link" data-view-employee="${e._i}">${esc(expVal(e,k))}</button>`:esc(expVal(e,k))}</td>`).join("")}<td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Archive</button></td></tr>`).join(""):`<tr><td colspan="${cols.length+1}" class="empty">No employee records match your search / filters.</td></tr>`;
       return;
     }
     $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>
@@ -2306,7 +2421,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <td class="emp-extra-col">${esc((e.emergency||{}).country)}</td>
       <td class="emp-extra-col">${(e.attachments||[]).length}</td>
       <td class="emp-extra-col">${esc(e.updatedAt?new Date(e.updatedAt).toLocaleString():"")}</td>
-      <td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td>
+      <td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Archive</button></td>
     </tr>`).join(""):'<tr><td colspan="28" class="empty">No employee records match your search / filters.</td></tr>';
   }
 
@@ -2532,11 +2647,28 @@ document.addEventListener("DOMContentLoaded", () => {
     if(e.target.dataset.viewEmployee!==undefined) openEmployeeProfile(Number(e.target.dataset.viewEmployee));
     if(e.target.dataset.editEmployee!==undefined) openEditor(Number(e.target.dataset.editEmployee));
     if(e.target.dataset.deleteEmployee!==undefined){
-      if(confirm("Delete this employee record?")){
-        data.employees.splice(Number(e.target.dataset.deleteEmployee),1);saveData();
+      const i=Number(e.target.dataset.deleteEmployee), emp=data.employees[i];
+      if(emp && confirm(`Archive ${emp.employeeName||emp.employeeCode}? Record delete nahi hoga aur baad mein restore ho sakta hai.`)){
+        emp.archived=true; emp.archivedAt=new Date().toISOString(); emp.archivedBy=currentERPUser();
+        addHistoryEvent(emp,{type:"Employee Archived",title:"Employee record archived",changes:[{field:"Archive Status",old:"Active record",new:"Archived"}]});
+        saveData();
+      }
+    }
+    if(e.target.dataset.restoreEmployee!==undefined){
+      const i=Number(e.target.dataset.restoreEmployee), emp=data.employees[i];
+      if(emp && confirm(`Restore ${emp.employeeName||emp.employeeCode} to active employee list?`)){
+        addHistoryEvent(emp,{type:"Employee Restored",title:"Employee record restored",changes:[{field:"Archive Status",old:"Archived",new:"Active record"}]});
+        emp.archived=false; emp.archivedAt=""; emp.archivedBy=""; saveData(); renderArchivedEmployees();
       }
     }
   });
+  function renderArchivedEmployees(){
+    const rows=(data.employees||[]).map((e,i)=>({...e,_i:i})).filter(e=>e.archived);
+    $("archivedEmployeeRows").innerHTML=rows.length?rows.map(e=>`<tr><td>${esc(e.employeeCode||"-")}</td><td><b>${esc(e.employeeName||"-")}</b></td><td>${esc(e.company||"-")}</td><td>${esc(e.archivedAt?new Date(e.archivedAt).toLocaleString():"-")}</td><td>${esc(e.archivedBy||"-")}</td><td><button class="btn green" data-restore-employee="${e._i}">Restore</button></td></tr>`).join(""):'<tr><td colspan="6" class="empty">No archived employees.</td></tr>';
+  }
+  $("archivedEmployeesBtn")?.addEventListener("click",()=>{renderArchivedEmployees();$("archivedEmployeesModal").classList.remove("hidden")});
+  $("closeArchivedEmployeesBtn")?.addEventListener("click",()=>$("archivedEmployeesModal").classList.add("hidden"));
+  $("archivedEmployeesModal")?.addEventListener("click",e=>{if(e.target===$("archivedEmployeesModal"))$("archivedEmployeesModal").classList.add("hidden")});
 
 
   function followupClass(status){
@@ -2917,7 +3049,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const table=$("employeeTableWrap").querySelector("table");
     table.querySelector("thead").innerHTML=`<tr>${cols.map(([,l])=>`<th>${esc(l)}</th>`).join("")}<th>Actions</th></tr>`;
     const rows=getFilteredEmployees();
-    $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>${cols.map(([k])=>`<td>${k==="employeeName"?`<button class="employee-link" data-view-employee="${e._i}">${esc(expVal(e,k))}</button>`:esc(expVal(e,k))}</td>`).join("")}<td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Delete</button></td></tr>`).join(""):`<tr><td colspan="${cols.length+1}" class="empty">No employee records match your search / filters.</td></tr>`;
+    $("employeeRows").innerHTML=rows.length?rows.map(e=>`<tr>${cols.map(([k])=>`<td>${k==="employeeName"?`<button class="employee-link" data-view-employee="${e._i}">${esc(expVal(e,k))}</button>`:esc(expVal(e,k))}</td>`).join("")}<td><button class="btn light" data-edit-employee="${e._i}">Edit</button> <button class="btn danger" data-delete-employee="${e._i}">Archive</button></td></tr>`).join(""):`<tr><td colspan="${cols.length+1}" class="empty">No employee records match your search / filters.</td></tr>`;
     $("employeeTableWrap").classList.add("employee-list-expanded");
     $("expandEmployeeListBtn").classList.add("active");
     $("expandEmployeeListBtn").textContent="Select Report Cells";
