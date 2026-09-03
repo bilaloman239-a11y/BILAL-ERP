@@ -525,7 +525,7 @@ body{background:#f5f7fb}
         </div>
 
         <div class="field"><label>Status *</label>
-          <select id="status">
+          <select id="leaveStatus">
             <option>Pending</option>
             <option>Approved</option>
             <option>Rejected</option>
@@ -759,9 +759,18 @@ function importKey(r){
 
 function load(k,f){try{const x=JSON.parse(localStorage.getItem(k)||'null');return Array.isArray(x)?x:f}catch(e){return f}}
 function allEmployees(){
+  // Real Employee Portal / Sub Contractor Portal storage keys used across the ERP.
+  const EMP_PORTAL_KEY='cm_employee_portal_v3';
+  const SUB_EMP_KEY='sc_portal_employees_v1';
+  // Legacy/guessed key names kept as a fallback in case older data was saved under them.
   const keys=['employee_master','employees','cm_employees','erp_employees','employeeData','employeesData'];
   const subkeys=['subcontractor_employee_master','subcontractorEmployees','subcontractor_employees','subEmployees','scEmployees'];
   let out=[];
+  try{
+    const ep=JSON.parse(localStorage.getItem(EMP_PORTAL_KEY)||'null');
+    if(ep&&typeof ep==='object'&&Array.isArray(ep.employees))out.push(...ep.employees);
+  }catch(e){}
+  out.push(...load(SUB_EMP_KEY,[]));
   [...keys,...subkeys].forEach(k=>{out.push(...load(k,[]))});
   ['erp_portal_state','cm_erp_state','appState'].forEach(k=>{
     try{
@@ -1155,7 +1164,7 @@ function saveLeave(){
     totalDays:Number(totalDays.value),ticketArrangement:ticketArrangement.value,
     companyProvidedSector:companyProvidedSector.value,
     outboundTicketDate:outboundTicketDate.value,returnTicketDate:returnTicketDate.value,
-    status:status.value,returnDate:returnDate.value,actualJoiningDate:actualJoiningDate.value,
+    status:leaveStatus.value,returnDate:returnDate.value,actualJoiningDate:actualJoiningDate.value,
     reason:reason.value.trim(),
     leaveSalaryStatus: canAccessAccounts() ? leaveSalaryStatus.value : ((records.find(r=>r.id===editId)||{}).leaveSalaryStatus||'Pending'),
     paidDate: canAccessAccounts() ? paidDate.value : ((records.find(r=>r.id===editId)||{}).paidDate||''),
@@ -1183,7 +1192,7 @@ function editLeave(id){
   returnTicketDate.value=r.returnTicketDate||'';
   toggleTicketDates();
   calcDays();
-  status.value=r.status;returnDate.value=r.returnDate||'';actualJoiningDate.value=r.actualJoiningDate||'';reason.value=r.reason||'';
+  leaveStatus.value=r.status;returnDate.value=r.returnDate||'';actualJoiningDate.value=r.actualJoiningDate||'';reason.value=r.reason||'';
   if(canAccessAccounts()){
     leaveSalaryStatus.value=r.leaveSalaryStatus||'Pending';
     paidDate.value=r.paidDate||'';
@@ -1202,7 +1211,7 @@ function deleteLeave(id){
 function clearForm(){
   editId=null;employee.value='';empCode.value='';empName.value='';designation.value='';
   leaveType.value='Annual Leave';startDate.value='';endDate.value='';totalDays.value='';
-  status.value='Pending';returnDate.value='';actualJoiningDate.value='';ticketArrangement.value='Not Applicable';companyProvidedSector.value='';
+  leaveStatus.value='Pending';returnDate.value='';actualJoiningDate.value='';ticketArrangement.value='Not Applicable';companyProvidedSector.value='';
   outboundTicketDate.value='';returnTicketDate.value='';toggleTicketSector();reason.value='';
   if(typeof leaveSalaryStatus!=='undefined'){
     leaveSalaryStatus.value='Pending';paidDate.value='';paidAmount.value='';paidDays.value='';unpaidDays.value='';paymentRemarks.value='';

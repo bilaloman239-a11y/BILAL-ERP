@@ -327,8 +327,9 @@ const HIST_KEY='cm_payroll_history_v1';
 const HOL_KEY='cm_payroll_holiday_settings_v1';
 const PAYMENT_KEY='cm_payroll_payment_register_v1';
 const REOPEN_KEY='cm_payroll_reopen_locked_snapshot_v1';
+const LEAVE_KEY='cm_leave_records_v1';
 
-let employees=[],allEmployees=[],payMaster=get(PAY_KEY,{}),deductions=get(DED_KEY,[]),timesheets=get(TS_KEY,[]),payHistory=get(HIST_KEY,[]),holidaySettings=get(HOL_KEY,{}),paymentRegister=get(PAYMENT_KEY,{}),reopenSnapshots=get(REOPEN_KEY,{}),currentPayroll=[];
+let employees=[],allEmployees=[],payMaster=get(PAY_KEY,{}),deductions=get(DED_KEY,[]),timesheets=get(TS_KEY,[]),payHistory=get(HIST_KEY,[]),holidaySettings=get(HOL_KEY,{}),paymentRegister=get(PAYMENT_KEY,{}),reopenSnapshots=get(REOPEN_KEY,{}),currentPayroll=[],leaveRecords=get(LEAVE_KEY,[]);
 
 function get(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}}
 function set(k,v){localStorage.setItem(k,JSON.stringify(v))}
@@ -367,6 +368,33 @@ function currentRate(k,ym){
 }
 function ledgerBalance(empKey){
  return deductions.filter(x=>x.empKey===empKey).reduce((s,x)=>s+Number(x.added||0)-Number(x.recovery||0),0)
+}
+// Posts unpaid-leave amounts (from Leave Management) into the Deduction Ledger, once per
+// leave record, so unpaid leave surfaces in payroll's existing Deduction Balance / Deduct
+// This Month columns instead of being invisible to payroll. Hourly staff are skipped since
+// their pay is already driven purely by logged timesheet hours (no hours = no pay).
+function syncLeaveDeductions(){
+ leaveRecords=get(LEAVE_KEY,[]);
+ const actioned=['Approved','On Leave','Returned'];
+ let changed=false;
+ leaveRecords.forEach(l=>{
+  const unpaidDays=Number(l.unpaidDays||0);
+  if(!unpaidDays||!actioned.includes(String(l.status||'')))return;
+  const ref='LEAVE-'+l.id;
+  if(deductions.some(d=>d.reference===ref))return;
+  const emp=allEmployees.find(e=>e.code&&l.empCode&&norm(e.code)===norm(l.empCode));
+  if(!emp)return;
+  const ym=String(l.startDate||'').slice(0,7);
+  const r=currentRate(emp.key,ym);
+  if(!r||r.salaryType==='Hourly')return;
+  const dailyRate=Number(r.basicSalary||0)/30;
+  const amount=Math.round(unpaidDays*dailyRate*100)/100;
+  if(!amount)return;
+  const before=ledgerBalance(emp.key);
+  deductions.push({id:uid(),empKey:emp.key,date:l.startDate||today(),type:'Unpaid Leave',description:'Unpaid leave: '+unpaidDays+' day(s) ('+(l.leaveType||'Leave')+', '+(l.startDate||'')+' to '+(l.endDate||'')+')',added:amount,recovery:0,balanceAfter:before+amount,reference:ref,source:'Leave Management'});
+  changed=true;
+ });
+ if(changed)set(DED_KEY,deductions);
 }
 function syncEmployees(){loadEmployees();renderAll();alert('Active Company Employees synchronized from Employee Portal.')}
 function showView(id,b){
@@ -1303,7 +1331,7 @@ function renderPayrollHistory(){
  const q=norm(histSearch.value),rows=[];payHistory.forEach(h=>(h.entries||[]).forEach(e=>rows.push({...e,month:h.month,finalizedAt:h.finalizedAt})));
  histRows.innerHTML=rows.filter(x=>norm([x.month,x.employeeName,x.employeeCode].join(' ')).includes(q)).sort((a,b)=>b.month.localeCompare(a.month)).map(x=>`<tr><td>${x.month}</td><td>${new Date(x.finalizedAt).toLocaleString()}</td><td>${esc(x.employeeName)} (${esc(x.employeeCode||'-')})</td><td>${money(x.gross)}</td><td>${money(x.deduction)}</td><td><b>${money(x.net)}</b></td><td>${money(x.allowance)}${x.allowanceText?' · '+esc(x.allowanceText):''}</td><td>${esc(x.salaryType)}</td></tr>`).join('')||'<tr><td colspan="8">No finalized payroll history.</td></tr>'
 }
-function renderAll(){loadEmployees();fillEmployeeSelects();fillPayrollCompanyFilter();renderDashboard();renderEmployees();renderRateHistory();renderDeductions();renderTimesheet();renderHolidayReview();calculatePayroll();renderPayrollHistory();renderPaymentSummary()}
+function renderAll(){loadEmployees();syncLeaveDeductions();fillEmployeeSelects();fillPayrollCompanyFilter();renderDashboard();renderEmployees();renderRateHistory();renderDeductions();renderTimesheet();renderHolidayReview();calculatePayroll();renderPayrollHistory();renderPaymentSummary()}
 tsMonth.value=month();payMonth.value=month();loadEmployees();renderAll();
 </script>
 <a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>
@@ -1312,6 +1340,7 @@ tsMonth.value=month();payMonth.value=month();loadEmployees();renderAll();
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
 <a href="index.html">Employee Management</a>
+<a href="leave.html" class="leave-link">Leave Management</a>
 <a href="subcontractor.html">Sub Contractor</a>
 <a href="client.html">Client / Project</a>
 <a href="site.html">Site Management</a>

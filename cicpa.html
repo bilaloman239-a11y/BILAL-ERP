@@ -364,6 +364,10 @@ th{background:#f0f3f7;color:#13283f;font-weight:800}
 
 <script id="cm-cicpa-erp-bridge">
 (function(){
+ // Primary ERP-wide storage keys (same keys used by the Employee Portal and Sub Contractor portal).
+ const EMP_PORTAL_KEY='cm_employee_portal_v3';
+ const SUB_EMP_KEY='sc_portal_employees_v1';
+ // Legacy/guessed key names kept as a fallback in case older data was saved under them.
  const COMPANY_KEYS=['employee_master','employees','cm_employees','erp_employees','employeeData','employeesData'];
  const SUB_KEYS=['subcontractor_employee_master','subcontractorEmployees','subcontractor_employees','subEmployees','scEmployees'];
  function arrFrom(k){try{const v=JSON.parse(localStorage.getItem(k)||'null');return Array.isArray(v)?v:[]}catch(e){return[]}}
@@ -375,6 +379,14 @@ th{background:#f0f3f7;color:#13283f;font-weight:800}
  }
  window.cmLoadCicpaEmployees=function(){
    let co=[],sub=[];
+   // Real Employee Portal data: {masters:[], employees:[]}
+   try{
+     const ep=JSON.parse(localStorage.getItem(EMP_PORTAL_KEY)||'null');
+     if(ep&&typeof ep==='object'&&Array.isArray(ep.employees))co.push(...ep.employees);
+   }catch(e){}
+   // Real Sub Contractor Portal employees (flat array)
+   sub.push(...arrFrom(SUB_EMP_KEY));
+   // Legacy fallback keys
    COMPANY_KEYS.forEach(k=>co.push(...arrFrom(k)));
    SUB_KEYS.forEach(k=>sub.push(...arrFrom(k)));
    // Also inspect common ERP state objects without modifying them
@@ -607,12 +619,12 @@ function populateEmployee(){
   const idx=document.getElementById('employeeSelect').value;
   const e=idx===''?null:arr[Number(idx)];
   ['empCode','empName','nationality','designation'].forEach(id=>document.getElementById(id).value='');
-  if(!e)return;
+  if(!e){renderExistingCicpa();return;}
   empCode.value=e.code;
   empName.value=e.name;
   nationality.value=e.nationality;
   designation.value=e.designation;
-  renderExistingCICPAForEmployee(e.code);
+  renderExistingCicpa();
 }
 function renderExistingCicpa(){
   const box=document.getElementById('existingCicpaBox'); if(!box)return;
@@ -626,25 +638,6 @@ function renderExistingCicpa(){
   box.innerHTML=`<div class="tablewrap"><table class="mini-table"><thead><tr><th>CICPA #</th><th>Location(s)</th><th>Issue Date</th><th>Expiry Date</th><th>Status</th></tr></thead><tbody>${list.map(r=>{const st=statusInfo(r);return `<tr><td><b>${escapeHtml(r.cicpaNo)}</b></td><td>${escapeHtml(r.locations.join(', '))}</td><td>${r.issueDate}</td><td><b>${r.expiryDate}</b></td><td><span class="badge ${st.cls}">${st.text}</span></td></tr>`}).join('')}</tbody></table></div>`;
 }
 
-
-function renderExistingCICPAForEmployee(code){
-  let panel=document.getElementById('existingCicpaMini');
-  if(!panel){
-    const box=document.querySelector('#register .box');
-    panel=document.createElement('div');
-    panel.id='existingCicpaMini';
-    panel.style.marginTop='16px';
-    panel.innerHTML='<h3 style="font-size:15px;margin:0 0 8px;color:#123b63">Existing CICPA for Selected Employee</h3><div class="tablewrap"><table><thead><tr><th>CICPA #</th><th>Location</th><th>Expiry Date</th><th>Status</th></tr></thead><tbody id="existingCicpaBody"></tbody></table></div>';
-    const grid=box.querySelector('.grid');
-    grid.insertAdjacentElement('afterend',panel);
-  }
-  const body=document.getElementById('existingCicpaBody');
-  const matches=records.filter(r=>r.empCode===code);
-  body.innerHTML=matches.length?matches.map(r=>{
-    const s=statusInfo(r);
-    return `<tr><td>${escapeHtml(r.cicpaNo)}</td><td>${escapeHtml((r.locations||[]).join(', '))}</td><td>${r.expiryDate}</td><td><span class="badge ${s.cls}">${s.text}</span></td></tr>`;
-  }).join(''):'<tr><td colspan="4" style="text-align:center;color:#788">No previous CICPA issued</td></tr>';
-}
 
 function addLocationRow(value=''){
   const wrap=document.getElementById('locationRows');
@@ -857,6 +850,7 @@ loadEmployeeOptions();addLocationRow();renderLocationMaster();refreshDashEmploye
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
 <a href="index.html">Employee Management</a>
+<a href="leave.html" class="leave-link">Leave Management</a>
 <a href="subcontractor.html">Sub Contractor</a>
 <a href="client.html">Client / Project</a>
 <a href="site.html">Site Management</a>
