@@ -416,9 +416,33 @@ th{background:#f0f3f7;color:#13283f;font-weight:800}
 .cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
 </style>
 
+
+<style id="cm-topstrip-style">
+.cm-topstrip{position:fixed;top:0;left:0;right:0;height:50px;z-index:100000;background:#0d2b4d;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;box-shadow:0 3px 14px rgba(0,0,0,.18);font-family:Segoe UI,Arial,sans-serif}
+.cm-topstrip .cm-back-btn{background:#ffffff22;color:#fff;border:0;border-radius:8px;padding:8px 12px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.cm-topstrip .cm-back-btn:hover{background:#ffffff3a}
+.cm-topstrip .cm-all-portals{position:static !important;right:auto !important;top:auto !important}
+.cm-topstrip .cm-all-portals .links{top:50px !important;bottom:auto !important}
+body{padding-top:50px}
+</style>
+<script src="erp-validation.js"></script>
 </head>
 <body>
-<button type="button" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back" style="position:fixed;right:170px;top:14px;z-index:99998;background:#173b67;color:#fff;border:0;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.2)">← Back</button>
+<div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
+<details><summary>☰ ERP Portals</summary><div class="links">
+<a href="dashboard.html">Dashboard</a>
+<a href="index.html">Employee Management</a>
+<a href="leave.html" class="leave-link">Leave Management</a>
+<a href="subcontractor.html">Sub Contractor</a>
+<a href="client.html">Client / Project</a>
+<a href="site.html">Site Management</a>
+<a href="timesheet.html">Timesheet</a>
+<a href="payroll.html">Payroll</a>
+<a href="approval.html">Approval Center</a>
+<a class="cicpa" href="cicpa.html">CICPA Management</a>
+<a href="validation.html">Validation & Controls</a>
+<a href="audit.html">Audit Trail</a>
+</div></details></div></div>
 
 <div class="app">
   
@@ -670,9 +694,12 @@ function saveRecord(){
   const source=selectedEmployee.source;
   if(!cicpaNo.value.trim())return alert('Please enter CICPA number.');
   if(!issueDate.value || !expiryDate.value)return alert('Please enter issue and expiry dates.');
+  if(window.CMV && !CMV.enforce('cicpa.dateRange', !CMV.dateOk(issueDate.value, expiryDate.value), `Expiry Date (${expiryDate.value}) is before Issue Date (${issueDate.value}).`).proceed) return;
   const locs=[...document.querySelectorAll('.loc-select')].map(x=>x.value).filter(Boolean);
   if(!locs.length)return alert('Please select at least one CICPA location.');
-  if(records.some(r=>r.cicpaNo.toLowerCase()===cicpaNo.value.trim().toLowerCase() && r.id!==editId)) return alert('Duplicate CICPA number.');
+  if(records.some(r=>r.cicpaNo.toLowerCase()===cicpaNo.value.trim().toLowerCase() && r.id!==editId)){
+    if(!window.CMV || CMV.enforce('cicpa.cicpaNo.unique', true, `CICPA number "${cicpaNo.value.trim()}" already exists.`).proceed===false) return;
+  }
 
   const obj={id:editId||Date.now(),source,empCode:empCode.value,empName:empName.value,nationality:nationality.value,
     designation:designation.value,subcontractor:selectedEmployee.subcontractor||'',cicpaNo:cicpaNo.value.trim(),
@@ -849,20 +876,7 @@ function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;',
 loadEmployeeOptions();addLocationRow();renderLocationMaster();refreshDashEmployeeOptions();addLocationRowDash();updateDashboard();updateTopDateTime();setInterval(updateTopDateTime,60000);
 </script>
 
-<div class="cm-all-portals">
-<details><summary>☰ ERP Portals</summary><div class="links">
-<a href="dashboard.html">Dashboard</a>
-<a href="index.html">Employee Management</a>
-<a href="leave.html" class="leave-link">Leave Management</a>
-<a href="subcontractor.html">Sub Contractor</a>
-<a href="client.html">Client / Project</a>
-<a href="site.html">Site Management</a>
-<a href="timesheet.html">Timesheet</a>
-<a href="payroll.html">Payroll</a>
-<a href="approval.html">Approval Center</a>
-<a class="cicpa" href="cicpa.html">CICPA Management</a>
-<a href="audit.html">Audit Trail</a>
-</div></details></div>
+
 
 </body>
 </html>

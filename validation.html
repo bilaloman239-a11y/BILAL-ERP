@@ -1,0 +1,167 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Civil Master ERP - Validation & Controls Master</title>
+<style>*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f2f6fa;color:#29455d}
+.top{background:#123a64;color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+.top h2{margin:0;font-size:19px}.top a{color:#fff;text-decoration:none;background:#ffffff1f;padding:9px 12px;border-radius:9px;font-size:12px}
+.wrap{max-width:1300px;margin:auto;padding:20px}
+.hero{background:linear-gradient(135deg,#123a64,#246aa4);color:#fff;border-radius:18px;padding:21px;box-shadow:0 12px 30px #123a6425}
+.hero h1{margin:0 0 6px;font-size:25px}.hero p{margin:0;color:#d9e8f5;max-width:900px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.stat{background:#fff;border:1px solid #dde7ef;border-radius:14px;padding:14px}
+.stat small{color:#7b8d9d;font-weight:800;text-transform:uppercase;font-size:10px}
+.stat b{display:block;font-size:23px;color:#173f68;margin-top:5px}
+.toolbar{display:flex;gap:9px;align-items:center;background:#fff;border:1px solid #dde7ef;border-radius:14px;padding:12px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar input{flex:1;min-width:220px;border:1px solid #cfdce7;border-radius:9px;padding:10px;background:#fff}
+.btn{border:0;border-radius:9px;padding:10px 13px;font-weight:800;cursor:pointer;background:#1c5c94;color:#fff}
+.btn.light{background:#edf4f9;color:#28577d}
+.btn.danger{background:#fdeceb;color:#a5352a}
+.panel{background:#fff;border:1px solid #dde7ef;border-radius:14px;overflow:hidden;margin-bottom:16px}
+.panel-head{padding:13px 15px;border-bottom:1px solid #e5edf3;display:flex;justify-content:space-between;align-items:center;background:#f8fbfd}
+.panel-head b{font-size:14px}
+.rule-row{display:grid;grid-template-columns:1fr 200px;gap:10px;align-items:center;padding:11px 15px;border-top:1px solid #edf2f6}
+.rule-row:first-child{border-top:0}
+.rule-label{font-size:13px;color:#2c4863}
+.rule-key{display:block;font-size:10px;color:#93a4b3;font-family:monospace;margin-top:2px}
+select.mode{width:100%;border:1px solid #cfdce7;border-radius:9px;padding:8px;font-weight:800;font-size:12px}
+select.mode[data-mode="Block"]{background:#fdeceb;color:#a5352a;border-color:#f3c8c4}
+select.mode[data-mode="Warning"]{background:#fff6df;color:#8a6200;border-color:#f0dfa0}
+select.mode[data-mode="Allow with Approval"]{background:#eaf6ee;color:#20713f;border-color:#bfe6ca}
+.module-title{padding:10px 15px;background:#eef4fa;font-weight:900;color:#1c5c94;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:#5c7186;margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot.block{background:#c2453a}.dot.warn{background:#c99a12}.dot.allow{background:#2d9151}
+.queue-row{padding:11px 15px;border-top:1px solid #edf2f6;font-size:12px}
+.queue-row:first-child{border-top:0}
+.queue-row b{color:#1c5c94}
+.empty{text-align:center;padding:35px;color:#8292a0}
+.save-bar{position:sticky;bottom:0;background:#fff;border-top:1px solid #dde7ef;padding:12px 15px;display:flex;justify-content:flex-end;gap:10px;box-shadow:0 -6px 18px #0001}
+.notice{font-size:11px;color:#6f8192;margin-top:10px;line-height:1.6}
+@media(max-width:760px){.rule-row{grid-template-columns:1fr}}
+</style>
+<style id="cm-topstrip-style">
+.cm-topstrip{position:fixed;top:0;left:0;right:0;height:50px;z-index:100000;background:#0d2b4d;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;box-shadow:0 3px 14px rgba(0,0,0,.18);font-family:Segoe UI,Arial,sans-serif}
+.cm-topstrip .cm-back-btn{background:#ffffff22;color:#fff;border:0;border-radius:8px;padding:8px 12px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.cm-topstrip .cm-back-btn:hover{background:#ffffff3a}
+.cm-all-portals{font-family:Segoe UI,Arial,sans-serif}
+.cm-all-portals details{position:relative}
+.cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800;font-size:12px;box-shadow:0 5px 18px #0002}
+.cm-all-portals summary::-webkit-details-marker{display:none}
+.cm-all-portals .links{position:absolute;right:0;top:50px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
+.cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font-weight:700;font-size:12px}
+.cm-all-portals a:hover{background:#eef4fa}
+.cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
+body{padding-top:50px}
+</style>
+</head><body>
+<div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button>
+<div class="cm-all-portals"><details><summary>☰ ERP Portals</summary><div class="links">
+<a href="dashboard.html">⌂ ERP Dashboard</a>
+<a href="index.html">👥 Employee Management</a>
+<a href="leave.html" class="leave-link">🏖 Leave Management</a>
+<a href="subcontractor.html">🏗 Sub Contractor</a>
+<a href="client.html">🏢 Client / Project</a>
+<a href="site.html">📍 Site Management</a>
+<a href="timesheet.html">🕒 Timesheet</a>
+<a href="payroll.html">💰 Payroll</a>
+<a href="approval.html">✓ Approval Center</a>
+<a href="cicpa.html">🛡 CICPA Management</a>
+<a href="audit.html">📋 Audit Trail</a>
+<a href="validation.html">🧩 Validation & Controls</a>
+</div></details></div></div>
+
+<div class="top"><h2>🧩 Validation & Controls Master</h2><div><a href="dashboard.html">⌂ ERP Dashboard</a> <a href="audit.html">📋 Audit Trail</a></div></div>
+<div class="wrap">
+  <div class="hero">
+    <h1>One central rulebook for every ERP module</h1>
+    <p>Employee, Client, Project, Subcontractor, Timesheet, Payroll, Leave, CICPA and Site all read the SAME rules from here. For each rule, decide whether it should <b>Block</b> the save, only show a <b>Warning</b> (user can still proceed), or <b>Allow with Approval</b> (saved, but flagged into a review queue below).</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>Total Rules</small><b id="sTotal">0</b></div>
+    <div class="stat"><small>Blocking</small><b id="sBlock">0</b></div>
+    <div class="stat"><small>Warning Only</small><b id="sWarn">0</b></div>
+    <div class="stat"><small>Allow with Approval</small><b id="sAllow">0</b></div>
+  </div>
+
+  <div class="toolbar">
+    <input id="q" placeholder="Search rule or module..." oninput="renderRules()">
+    <button class="btn light" onclick="resetAll()">↻ Reset to Recommended Defaults</button>
+  </div>
+
+  <div class="panel"><div id="ruleGroups"></div>
+    <div class="save-bar"><span style="align-self:center;font-size:11px;color:#7b8d9d;margin-right:auto">Changes apply immediately to every module — no separate save step needed.</span></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><b>Allow-with-Approval Queue</b><span id="qCount" class="stat" style="padding:4px 10px;font-size:11px">0 pending</span></div>
+    <div id="queueRows"></div>
+  </div>
+
+  <div class="notice">
+    <b>How this works:</b> every module on this ERP loads <code>erp-validation.js</code> and calls a single <code>CMV.enforce(ruleKey, violated, message)</code> function before saving a record. That function reads the mode you set here and either blocks the save, asks the user to confirm, or lets it through while logging it to the Allow-with-Approval queue above — so all modules stay consistent without editing each portal separately.<br><br>
+    <b>Note on database-level constraints:</b> this prototype runs entirely in the browser (localStorage), so there is no real database to attach a UNIQUE constraint to. This page is the equivalent control layer for that environment. When this ERP is migrated to a real database (e.g. Supabase/PostgreSQL), the same fields listed here should additionally get actual UNIQUE constraints / composite indexes at the schema level, plus <code>created_at, created_by, updated_at, updated_by, deleted_at</code> columns on every table so records are soft-deleted (Active/Inactive) instead of hard-deleted — this page defines exactly which fields those constraints should cover.
+  </div>
+</div>
+
+<script src="erp-validation.js"></script>
+<script>
+function q(id){return document.getElementById(id)}
+function renderStats(){
+  const c=CMV.getControls(); const vals=Object.values(c);
+  q('sTotal').textContent=CMV.RULES.length;
+  q('sBlock').textContent=vals.filter(v=>v==='Block').length;
+  q('sWarn').textContent=vals.filter(v=>v==='Warning').length;
+  q('sAllow').textContent=vals.filter(v=>v==='Allow with Approval').length;
+}
+function renderRules(){
+  const term=(q('q').value||'').trim().toLowerCase();
+  const controls=CMV.getControls();
+  const byModule={};
+  CMV.RULES.forEach(r=>{
+    if(term && !(r.label.toLowerCase().includes(term) || r.module.toLowerCase().includes(term) || r.key.toLowerCase().includes(term))) return;
+    (byModule[r.module]=byModule[r.module]||[]).push(r);
+  });
+  const modules=Object.keys(byModule);
+  q('ruleGroups').innerHTML=modules.length?modules.map(m=>`
+    <div class="module-title">${m}</div>
+    ${byModule[m].map(r=>`
+      <div class="rule-row">
+        <div class="rule-label">${r.label}<span class="rule-key">${r.key}</span></div>
+        <select class="mode" data-mode="${controls[r.key]}" onchange="setMode('${r.key}',this)">
+          <option value="Block" ${controls[r.key]==='Block'?'selected':''}>⛔ Block</option>
+          <option value="Warning" ${controls[r.key]==='Warning'?'selected':''}>⚠️ Warning</option>
+          <option value="Allow with Approval" ${controls[r.key]==='Allow with Approval'?'selected':''}>✅ Allow with Approval</option>
+        </select>
+      </div>`).join('')}
+  `).join(''):'<div class="empty">No rule matches your search.</div>';
+}
+function setMode(key,el){
+  CMV.setControl(key, el.value);
+  el.dataset.mode=el.value;
+  renderStats();
+}
+function resetAll(){
+  if(!confirm('Reset every rule to the recommended default (Block/Warning as originally set)? This applies immediately across all modules.')) return;
+  CMV.resetControls();
+  renderRules(); renderStats();
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function renderQueue(){
+  let list=[]; try{ list=JSON.parse(localStorage.getItem(CMV.APPROVAL_QUEUE_KEY))||[]; }catch(e){}
+  q('qCount').textContent=list.filter(x=>x.status==='Pending').length+' pending';
+  q('queueRows').innerHTML=list.length?list.slice(0,200).map(x=>`
+    <div class="queue-row">
+      <b>${esc(x.ruleKey)}</b> · ${new Date(x.at).toLocaleString()}<br>
+      ${esc(x.message)}
+      ${x.status==='Pending'?`<div style="margin-top:6px"><button class="btn light" style="padding:5px 9px;font-size:11px" onclick="ackQueue('${x.id}','Approved')">Mark Approved</button> <button class="btn danger" style="padding:5px 9px;font-size:11px" onclick="ackQueue('${x.id}','Rejected')">Mark Rejected</button></div>`:`<span style="color:${x.status==='Approved'?'#2d9151':'#a5352a'};font-weight:800">${x.status}</span>`}
+    </div>`).join(''):'<div class="empty">No items are currently allowed-with-approval. Records saved under an "Allow with Approval" rule will appear here for review.</div>';
+}
+function ackQueue(id,status){
+  let list=[]; try{ list=JSON.parse(localStorage.getItem(CMV.APPROVAL_QUEUE_KEY))||[]; }catch(e){}
+  list=list.map(x=>x.id===id?{...x,status}:x);
+  localStorage.setItem(CMV.APPROVAL_QUEUE_KEY, JSON.stringify(list));
+  renderQueue();
+}
+renderRules(); renderStats(); renderQueue();
+</script>
+</body></html>

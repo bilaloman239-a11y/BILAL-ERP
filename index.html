@@ -816,14 +816,37 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 .cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
 </style>
 
+
+<style id="cm-topstrip-style">
+.cm-topstrip{position:fixed;top:0;left:0;right:0;height:50px;z-index:100000;background:#0d2b4d;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;box-shadow:0 3px 14px rgba(0,0,0,.18);font-family:Segoe UI,Arial,sans-serif}
+.cm-topstrip .cm-back-btn{background:#ffffff22;color:#fff;border:0;border-radius:8px;padding:8px 12px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.cm-topstrip .cm-back-btn:hover{background:#ffffff3a}
+.cm-topstrip .cm-all-portals{position:static !important;right:auto !important;top:auto !important}
+.cm-topstrip .cm-all-portals .links{top:50px !important;bottom:auto !important}
+body{padding-top:50px}
+</style>
+<script src="erp-validation.js"></script>
 </head>
 <body>
-<button type="button" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back" style="position:fixed;right:170px;top:14px;z-index:99998;background:#173b67;color:#fff;border:0;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.2)">← Back</button>
+<div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
+<details><summary>☰ ERP Portals</summary><div class="links">
+<a href="dashboard.html">Dashboard</a>
+<a href="index.html">Employee Management</a>
+<a href="leave.html" class="leave-link">Leave Management</a>
+<a href="subcontractor.html">Sub Contractor</a>
+<a href="client.html">Client / Project</a>
+<a href="site.html">Site Management</a>
+<a href="timesheet.html">Timesheet</a>
+<a href="payroll.html">Payroll</a>
+<a href="approval.html">Approval Center</a>
+<a class="cicpa" href="cicpa.html">CICPA Management</a>
+<a href="validation.html">Validation & Controls</a>
+<a href="audit.html">Audit Trail</a>
+</div></details></div></div>
 
 <style id="cm-dashboard-shortcut-style">.cm-dashboard-shortcut{position:fixed;right:18px;bottom:18px;z-index:9999;background:#12344a;color:#fff!important;text-decoration:none;padding:10px 13px;border-radius:10px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 8px 22px #0002;border:1px solid #ffffff33}.cm-dashboard-shortcut:hover{background:#1976c9}</style>
 <a id="cmDashboardShortcut" class="cm-dashboard-shortcut" href="dashboard.html">⌂ ERP Dashboard</a>
 <a class="cm-dashboard-shortcut" href="approval.html" style="margin-left:6px">✓ Approval Center</a>
-<a class="cm-dashboard-shortcut" href="cicpa.html" style="margin-left:6px">🛡 CICPA</a>
 <script>(function(){var a=document.getElementById('cmDashboardShortcut');if(a&&sessionStorage.getItem('cm_logged_in_v3')!=='1'&&localStorage.getItem('cm_logged_in_v3')!=='1')a.style.display='none';})();</script>
 <div class="cm-portal-nav"><a href="index.html" class="cm-current">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="">🏢 Client</a><a href="timesheet.html" class="">🕒 Timesheet</a><a href="payroll.html" class="">💵 Payroll</a></div>
 
@@ -1968,20 +1991,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>
 
-<div class="cm-all-portals">
-<details><summary>☰ ERP Portals</summary><div class="links">
-<a href="dashboard.html">Dashboard</a>
-<a href="index.html">Employee Management</a>
-<a href="leave.html" class="leave-link">Leave Management</a>
-<a href="subcontractor.html">Sub Contractor</a>
-<a href="client.html">Client / Project</a>
-<a href="site.html">Site Management</a>
-<a href="timesheet.html">Timesheet</a>
-<a href="payroll.html">Payroll</a>
-<a href="approval.html">Approval Center</a>
-<a class="cicpa" href="cicpa.html">CICPA Management</a>
-<a href="audit.html">Audit Trail</a>
-</div></details></div>
+
 
 </body></html>`);
     w.document.close();
@@ -2300,6 +2310,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const code=$("fEmployeeCode").value.trim(), name=$("fEmployeeName").value.trim();
     if(!code || !name) return alert("Employee Code and Employee Name are required.");
 
+    if(!CMV.enforce("employee.code.nospace", CMV.hasInternalSpace(code), `Employee Code "${code}" has internal spaces. Please remove spaces from the code.`).proceed) return;
+
+    const dobVal=$("fDOB").value, joinVal=$("fJoiningDate").value;
+    if(!CMV.enforce("employee.joiningDate.afterDob", !CMV.dateOk(dobVal, joinVal), `Joining Date (${joinVal||"-"}) is not after Date of Birth (${dobVal||"-"}). Please check these dates.`).proceed) return;
+
+    const eidDoc=(workingDocuments||[]).find(d=>/emirates|eid|identity/i.test(d.type||""));
+    if(eidDoc && eidDoc.number && !CMV.enforce("employee.eid.format", !CMV.isValidEID(eidDoc.number), `Emirates ID "${eidDoc.number}" does not look like a valid EID (expected 784-YYYY-XXXXXXX-X).`).proceed) return;
+
     const unifiedNumber=$("fUnifiedNumber").value.trim();
     const duplicate=findDuplicateUniqueNumber(code, unifiedNumber, workingDocuments);
 
@@ -2309,9 +2327,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const empName=duplicate.employee?.employeeName||"another employee";
       const empCode=duplicate.employee?.employeeCode||"";
-      return alert(
-        `Duplicate ${duplicate.label}: "${duplicate.value}" already exists for ${empName}${empCode?` (${empCode})`:""}. Record cannot be saved.`
-      );
+      const lbl=String(duplicate.label||"");
+      let ruleKey="employee.code.unique";
+      if(/unified/i.test(lbl)) ruleKey="employee.unifiedNumber.unique";
+      else if(/passport/i.test(lbl)) ruleKey="employee.passport.unique";
+      else if(/emirates|eid|identity/i.test(lbl)) ruleKey="employee.eid.unique";
+      else if(/labour|labor|work permit/i.test(lbl)) ruleKey="employee.labourCard.unique";
+      else if(/visa/i.test(lbl)) ruleKey="employee.visaNumber.unique";
+      const msg=`Duplicate ${duplicate.label}: "${duplicate.value}" already exists for ${empName}${empCode?` (${empCode})`:""}. `;
+      if(!CMV.enforce(ruleKey, true, msg).proceed) return;
     }
 
     if($("fEmployeeStatus").value==="Inactive" && (!$("fInactiveReason").value.trim() || !$("fInactiveDate").value)){

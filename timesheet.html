@@ -277,9 +277,33 @@
 .cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
 </style>
 
+
+<style id="cm-topstrip-style">
+.cm-topstrip{position:fixed;top:0;left:0;right:0;height:50px;z-index:100000;background:#0d2b4d;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;box-shadow:0 3px 14px rgba(0,0,0,.18);font-family:Segoe UI,Arial,sans-serif}
+.cm-topstrip .cm-back-btn{background:#ffffff22;color:#fff;border:0;border-radius:8px;padding:8px 12px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.cm-topstrip .cm-back-btn:hover{background:#ffffff3a}
+.cm-topstrip .cm-all-portals{position:static !important;right:auto !important;top:auto !important}
+.cm-topstrip .cm-all-portals .links{top:50px !important;bottom:auto !important}
+body{padding-top:50px}
+</style>
+<script src="erp-validation.js"></script>
 </head>
 <body>
-<button type="button" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back" style="position:fixed;right:170px;top:14px;z-index:99998;background:#173b67;color:#fff;border:0;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.2)">← Back</button>
+<div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
+<details><summary>☰ ERP Portals</summary><div class="links">
+<a href="dashboard.html">Dashboard</a>
+<a href="index.html">Employee Management</a>
+<a href="leave.html" class="leave-link">Leave Management</a>
+<a href="subcontractor.html">Sub Contractor</a>
+<a href="client.html">Client / Project</a>
+<a href="site.html">Site Management</a>
+<a href="timesheet.html">Timesheet</a>
+<a href="payroll.html">Payroll</a>
+<a href="approval.html">Approval Center</a>
+<a class="cicpa" href="cicpa.html">CICPA Management</a>
+<a href="validation.html">Validation & Controls</a>
+<a href="audit.html">Audit Trail</a>
+</div></details></div></div>
 
 <style id="cm-dashboard-shortcut-style">.cm-dashboard-shortcut{position:fixed;right:18px;bottom:18px;z-index:9999;background:#12344a;color:#fff!important;text-decoration:none;padding:10px 13px;border-radius:10px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 8px 22px #0002;border:1px solid #ffffff33}.cm-dashboard-shortcut:hover{background:#1976c9}</style>
 <a id="cmDashboardShortcut" class="cm-dashboard-shortcut" href="dashboard.html">⌂ ERP Dashboard</a>
@@ -447,7 +471,19 @@ async function uploadCentralTimesheet(){
  const clients=cget(CLIENT_KEY,[]),projects=cget(PROJECT_KEY,[]),cid=document.getElementById('centralClient').value,pid=document.getElementById('centralProject').value,client=clients.find(x=>String(x.id)===String(cid))?.name||'',project=projects.find(x=>String(x.id)===String(pid))?.name||'';
  const selected={clientId:cid,projectId:pid,client,project},batchId='TS-'+new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14), incoming=[],unmatched=new Set();let matched=0;
  for(let r=layout.start;r<rows.length;r++){const row=rows[r]||[],code=String(row[layout.codeCol]??'').trim();if(!code)continue;let emp=masters.company.find(e=>cnorm(e.code)===cnorm(code))||masters.sub.find(e=>cnorm(e.code)===cnorm(code));if(!emp){unmatched.add(code);continue}matched++;for(const dc of layout.dates){const pc=parseCell(row[dc.col]);if(!pc.has)continue;let rec={id:cuid(),batchId,month:ym,date:dc.date,empKey:emp.key,empCode:emp.code,name:emp.name||String(row[layout.nameCol]||''),craft:emp.craft||'',source:emp.source,subcontractor:emp.subcontractor||'',client:'',clientId:'',project:'',projectId:'',hours:Number(pc.hours||0),status:pc.status,note:document.getElementById('centralNote').value.trim(),uploadedAt:new Date().toISOString()};incoming.push(enrichCentralRecord(rec,emp,selected))}}
- let added=0,replaced=0,skipped=0,accepted=[];incoming.forEach(rec=>{const ix=st.records.findIndex(x=>cnorm(x.empCode)===cnorm(rec.empCode)&&x.date===rec.date&&String(x.projectId||'')===String(rec.projectId||''));if(ix>=0){if(mode==='replace'){st.records[ix]=rec;accepted.push(rec);replaced++}else skipped++}else{st.records.push(rec);accepted.push(rec);added++}});
+ let added=0,replaced=0,skipped=0,accepted=[];
+ if(window.CMV){
+   const MAX_HOURS=24;
+   let bad=incoming.filter(r=>Number(r.hours)<0||Number(r.hours)>MAX_HOURS);
+   if(bad.length){
+     const res=CMV.enforce('timesheet.hours.range', true, `${bad.length} row(s) have negative or unusually high hours (over ${MAX_HOURS}/day). Example: ${bad[0].empCode} on ${bad[0].date} = ${bad[0].hours} hrs. These rows will be skipped; the rest of the upload will still be processed.`);
+     if(!res.proceed){
+       const badKeys=new Set(bad.map(r=>r.empCode+'|'+r.date));
+       incoming=incoming.filter(r=>!badKeys.has(r.empCode+'|'+r.date));
+     }
+   }
+ }
+ incoming.forEach(rec=>{const ix=st.records.findIndex(x=>cnorm(x.empCode)===cnorm(rec.empCode)&&x.date===rec.date&&String(x.projectId||'')===String(rec.projectId||''));if(ix>=0){if(mode==='replace'){st.records[ix]=rec;accepted.push(rec);replaced++}else skipped++}else{st.records.push(rec);accepted.push(rec);added++}});
  const payrollCount=routePayroll(accepted,batchId),subCount=accepted.filter(x=>x.source==='Sub Contractor').length,projectCount=routeProjectHours(accepted,batchId),rateCount=accepted.filter(x=>Number(x.clientRateSnapshot||0)>0||Number(x.subRateSnapshot||0)>0||x.salaryRateFound).length;
  st.unmatched=[...new Set([...st.unmatched,...unmatched])];st.batches.unshift({id:batchId,at:new Date().toISOString(),month:ym,file:file.name,client,project,matched,added,replaced,skipped,payroll:payrollCount,sub:subCount,projectHours:projectCount,rateLinked:rateCount,unmatched:[...unmatched]});cset(CENTRAL_KEY,st);
  document.getElementById('centralStatus').className='central-status ok';document.getElementById('centralStatus').innerHTML=`<b>Core routing completed.</b> ${added} new, ${replaced} replaced, ${skipped} duplicate skipped. Payroll: ${payrollCount}. Sub Contractor: ${subCount}. Client/Project Hours: ${projectCount}. Rate-linked: ${rateCount}. Unmatched codes: ${unmatched.size}.`;
@@ -743,19 +779,6 @@ render();
 </script>
 <a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>
 
-<div class="cm-all-portals">
-<details><summary>☰ ERP Portals</summary><div class="links">
-<a href="dashboard.html">Dashboard</a>
-<a href="index.html">Employee Management</a>
-<a href="leave.html" class="leave-link">Leave Management</a>
-<a href="subcontractor.html">Sub Contractor</a>
-<a href="client.html">Client / Project</a>
-<a href="site.html">Site Management</a>
-<a href="timesheet.html">Timesheet</a>
-<a href="payroll.html">Payroll</a>
-<a href="approval.html">Approval Center</a>
-<a class="cicpa" href="cicpa.html">CICPA Management</a>
-<a href="audit.html">Audit Trail</a>
-</div></details></div>
+
 
 </body></html>
