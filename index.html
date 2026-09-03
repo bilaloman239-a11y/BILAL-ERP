@@ -1159,32 +1159,38 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
     <div class="profile-tabs">
       <button class="profile-tab active" data-profile-tab="overview">Personal</button>
       <button class="profile-tab" data-profile-tab="documents">Documents</button>
-      <button class="profile-tab" data-profile-tab="technical-certificates">Certificates</button>
-      <button class="profile-tab" data-profile-tab="current-project">Current Project</button>
-      <button class="profile-tab" data-profile-tab="movement">Movement</button>
-      <button class="profile-tab" data-profile-tab="timesheets">Timesheets</button>
-      <button class="profile-tab" data-profile-tab="salary">Salary</button>
+      <button class="profile-tab" data-profile-tab="current-project">Current Site</button>
+      <button class="profile-tab" data-profile-tab="movement">Movement History</button>
       <button class="profile-tab" data-profile-tab="leave">Leave</button>
+      <button class="profile-tab" data-profile-tab="timesheets">Timesheet</button>
+      <button class="profile-tab" data-profile-tab="salary">Payroll</button>
+      <button class="profile-tab" data-profile-tab="cicpa">CICPA</button>
+      <button class="profile-tab" data-profile-tab="approvals">Approvals</button>
+      <button class="profile-tab" data-profile-tab="audit">Audit History</button>
+      <button class="profile-tab" data-profile-tab="technical-certificates">Certificates</button>
       <button class="profile-tab" data-profile-tab="visa-ticket">Visa / Ticket</button>
-      <button class="profile-tab" data-profile-tab="history">Complete History</button>
       <button class="profile-tab" data-profile-tab="employment">Employment</button>
       <button class="profile-tab" data-profile-tab="emergency">Emergency</button>
       <button class="profile-tab" data-profile-tab="attachments">Attachments</button>
+      <button class="profile-tab" data-profile-tab="history">Complete History</button>
     </div>
     <div class="profile-body">
       <div id="profile-overview" class="profile-panel active"></div>
       <div id="profile-documents" class="profile-panel"></div>
-      <div id="profile-technical-certificates" class="profile-panel"></div>
       <div id="profile-current-project" class="profile-panel"></div>
       <div id="profile-movement" class="profile-panel"></div>
+      <div id="profile-leave" class="profile-panel"></div>
       <div id="profile-timesheets" class="profile-panel"></div>
       <div id="profile-salary" class="profile-panel"></div>
-      <div id="profile-leave" class="profile-panel"></div>
+      <div id="profile-cicpa" class="profile-panel"></div>
+      <div id="profile-approvals" class="profile-panel"></div>
+      <div id="profile-audit" class="profile-panel"></div>
+      <div id="profile-technical-certificates" class="profile-panel"></div>
       <div id="profile-visa-ticket" class="profile-panel"></div>
-      <div id="profile-history" class="profile-panel"></div>
       <div id="profile-employment" class="profile-panel"></div>
       <div id="profile-emergency" class="profile-panel"></div>
       <div id="profile-attachments" class="profile-panel"></div>
+      <div id="profile-history" class="profile-panel"></div>
     </div>
   </div>
 </div>
@@ -1817,8 +1823,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalNet=salaryRows.reduce((a,x)=>a+Number(x.net||0),0);
     $("profile-salary").innerHTML=`<div class="profile-section-title">Salary / Payroll History</div><div class="profile-kpi-grid"><div class="profile-kpi"><small>Payroll Months</small><b>${salaryRows.length}</b></div><div class="profile-kpi"><small>Total Net Recorded</small><b>${totalNet.toFixed(2)}</b></div><div class="profile-kpi"><small>Latest Month</small><b style="font-size:16px">${esc(salaryRows[0]?.month||"-")}</b></div><div class="profile-kpi"><small>Latest Net</small><b>${Number(salaryRows[0]?.net||0).toFixed(2)}</b></div></div>${salaryRows.length?`<div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Month</th><th>Normal H</th><th>NOT H</th><th>HOT H</th><th>Gross</th><th>Deduction</th><th>Net</th><th>Bank</th><th>Cash</th><th>Balance</th></tr></thead><tbody>${salaryRows.map(x=>`<tr><td><b>${esc(x.month||"-")}</b></td><td>${Number(x.normalH||0).toFixed(2)}</td><td>${Number(x.notH||0).toFixed(2)}</td><td>${Number(x.hotH||0).toFixed(2)}</td><td>${Number(x.gross||0).toFixed(2)}</td><td>${Number(x.deduction||0).toFixed(2)}</td><td><b>${Number(x.net||0).toFixed(2)}</b></td><td>${Number(x.payByBank||0).toFixed(2)}</td><td>${Number(x.payByCash||0).toFixed(2)}</td><td>${Number(x.balanceSalary||0).toFixed(2)}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history">No finalized payroll history found.</div>'}`;
 
-    const approvals=erpGet("cm_erp_approval_center_v1",{}), leaveItems=(approvals.items||[]).filter(x=>x.type==="Leave Approval" && [x.subject,x.ref,x.remarks].join(" ").toLowerCase().includes(String(e.employeeName||e.employeeCode||"").toLowerCase()));
-    $("profile-leave").innerHTML=leaveItems.length?`<div class="profile-section-title">Leave Approval History</div><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Date / Month</th><th>Reference</th><th>Subject</th><th>Status</th><th>Remarks</th></tr></thead><tbody>${leaveItems.map(x=>`<tr><td>${esc(x.date||"-")}</td><td>${esc(x.ref||"-")}</td><td>${esc(x.subject||"-")}</td><td><span class="status-chip">${esc(x.status||"Draft")}</span></td><td>${esc(x.remarks||"-")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history"><b>No connected leave records yet.</b><br>Leave module/approval records linked to this employee will appear here automatically.</div>';
+    const approvals=erpGet("cm_erp_approval_center_v1",{});
+    const leaveRecords=erpGet("cm_leave_records_v1",[]).filter(x=>employeeMatchCode(x,e)).sort((a,b)=>String(b.fromDate||"").localeCompare(String(a.fromDate||"")));
+    const leaveTotalDays=leaveRecords.reduce((a,x)=>a+Number(x.totalDays||0),0), leaveApproved=leaveRecords.filter(x=>String(x.status||"").toLowerCase()==="approved").length;
+    $("profile-leave").innerHTML=`<div class="profile-section-title">Leave History (this employee's own records — Leave Management module)</div><div class="profile-kpi-grid"><div class="profile-kpi"><small>Total Applications</small><b>${leaveRecords.length}</b></div><div class="profile-kpi"><small>Total Days</small><b>${leaveTotalDays.toFixed(1)}</b></div><div class="profile-kpi"><small>Approved</small><b>${leaveApproved}</b></div><div class="profile-kpi"><small>Latest From</small><b style="font-size:15px">${esc(leaveRecords[0]?.fromDate||"-")}</b></div></div>${leaveRecords.length?`<div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Remarks</th></tr></thead><tbody>${leaveRecords.map(x=>`<tr><td><b>${esc(x.leaveType||"-")}</b></td><td>${esc(x.fromDate||"-")}</td><td>${esc(x.toDate||"-")}</td><td>${Number(x.totalDays||0).toFixed(1)}</td><td><span class="status-chip">${esc(x.status||"Draft")}</span></td><td>${esc(x.remarks||"-")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history"><b>No leave records found for this employee.</b><br>Leave applications recorded against this Employee Code in Leave Management will appear here automatically.</div>'}`;
+
+    const cicpaRecords=erpGet("cicpa_records",[]).filter(x=>employeeMatchCode(x,e)).sort((a,b)=>String(b.expiryDate||"").localeCompare(String(a.expiryDate||"")));
+    $("profile-cicpa").innerHTML=`<div class="profile-section-title">CICPA Records</div><div class="profile-kpi-grid"><div class="profile-kpi"><small>Total CICPA Records</small><b>${cicpaRecords.length}</b></div><div class="profile-kpi"><small>Latest Expiry</small><b style="font-size:15px">${esc(cicpaRecords[0]?.expiryDate||"-")}</b></div></div>${cicpaRecords.length?`<div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>CICPA No.</th><th>Locations</th><th>Issue Date</th><th>Expiry Date</th><th>Source</th></tr></thead><tbody>${cicpaRecords.map(x=>`<tr><td><b>${esc(x.cicpaNo||"-")}</b></td><td>${esc((x.locations||[]).join(", ")||"-")}</td><td>${esc(x.issueDate||"-")}</td><td>${esc(x.expiryDate||"-")}</td><td>${esc(x.source||"-")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history"><b>No CICPA records found for this employee.</b><br>Records added in the CICPA Management portal against this Employee Code will appear here automatically.</div>'}`;
+
+    const approvalItems=(approvals.items||[]).filter(x=>String(x.ref||"").trim().toLowerCase()===String(e.employeeCode||"").trim().toLowerCase() || [x.subject,x.remarks].join(" ").toLowerCase().includes(String(e.employeeName||"").toLowerCase()) && e.employeeName).sort((a,b)=>String(b.updatedAt||b.date||"").localeCompare(String(a.updatedAt||a.date||"")));
+    $("profile-approvals").innerHTML=approvalItems.length?`<div class="profile-section-title">Approval Center — requests linked to this employee</div><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Type</th><th>Date</th><th>Subject</th><th>Status</th><th>Remarks</th></tr></thead><tbody>${approvalItems.map(x=>`<tr><td>${esc(x.type||"-")}</td><td>${esc(x.date||"-")}</td><td>${esc(x.subject||"-")}</td><td><span class="status-chip">${esc(x.status||"Draft")}</span></td><td>${esc(x.remarks||"-")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history"><b>No approval requests found for this employee.</b><br>Leave, mobilization, rate and other approvals raised against this Employee Code will appear here automatically.</div>';
+
+    const auditTrail=erpGet("cm_erp_audit_trail_v1",[]);
+    const empCodeLc=String(e.employeeCode||"").trim().toLowerCase(), empNameLc=String(e.employeeName||"").trim().toLowerCase();
+    const relevantAuditKeys=["cm_employee_portal_v3","cm_leave_records_v1","cicpa_records","cm_site_management_movements_v1","cm_central_timesheet_v1","cm_payroll_history_v1","cm_payroll_master_v1","cm_erp_approval_center_v1"];
+    const auditItems=(Array.isArray(auditTrail)?auditTrail:[]).filter(x=>{
+      if(!relevantAuditKeys.includes(x.storageKey))return false;
+      const text=[x.storageKey,...(x.changes||[]).flatMap(c=>[c.field,c.old,c.new])].join(" ").toLowerCase();
+      return (empCodeLc && text.includes(empCodeLc)) || (empNameLc && text.includes(empNameLc));
+    }).slice(0,300);
+    $("profile-audit").innerHTML=auditItems.length?`<div class="profile-section-title">Audit History — changes touching this employee</div><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Date / Time</th><th>User</th><th>Module</th><th>Action</th><th>Old → New Value</th></tr></thead><tbody>${auditItems.map(x=>`<tr><td>${x.at?new Date(x.at).toLocaleString():"-"}</td><td><b>${esc(x.user||"-")}</b></td><td><span class="status-chip">${esc(x.module||"-")}</span></td><td>${esc(x.action||"Updated")}</td><td>${(x.changes||[]).slice(0,6).map(c=>`<div><b>${esc(c.field||"value")}:</b> <span class="history-old">${esc(c.old||"-")}</span> → <span class="history-new">${esc(c.new||"-")}</span></div>`).join("")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history"><b>No audit history found for this employee yet.</b><br>Changes recorded in the central Audit Trail that mention this employee will appear here automatically.</div>';
 
     const visaKeys=["cm_visa_cases_v1","cm_candidate_visa_v1","cm_visa_ticket_v1"], visa=[]; visaKeys.forEach(k=>{const v=erpGet(k,[]);(Array.isArray(v)?v:(v.items||[])).forEach(x=>{if(employeeMatchCode(x,e)||String(x.employeeName||x.name||"").toLowerCase()===String(e.employeeName||"").toLowerCase())visa.push(x)})});
     $("profile-visa-ticket").innerHTML=visa.length?`<div class="profile-section-title">Visa / Ticket History</div><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Status</th><th>Visa Type</th><th>Applied</th><th>Flight Date</th><th>Reference</th><th>Remarks</th></tr></thead><tbody>${visa.map(x=>`<tr><td>${esc(x.status||x.visaStatus||"-")}</td><td>${esc(x.visaType||"-")}</td><td>${esc(x.appliedDate||x.visaAppliedDate||"-")}</td><td>${esc(x.flightDate||x.ticketDate||"-")}</td><td>${esc(x.referenceNo||x.ref||"-")}</td><td>${esc(x.remarks||"-")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history"><b>No connected Visa / Ticket records yet.</b><br>When Visa/Ticket module is connected, records will appear here automatically.</div>';
