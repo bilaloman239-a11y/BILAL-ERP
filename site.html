@@ -290,7 +290,7 @@ body{padding-top:50px}
 
 <script>
 const MOV='cm_site_management_movements_v1', EMP='cm_employee_portal_v3', SCEMP='sc_portal_employees_v1', SC='sc_portal_subcontractors_v1', CK='cm_client_portal_clients_v1', PK='cm_client_portal_projects_v1';
-let moves=[],clients=[],projects=[],subs=[],staff=[],companyStaffAll=[];
+let moves=[],clients=[],projects=[],subs=[],staff=[],companyStaffAll=[],leaveRecords=[];
 
 function get(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}}
 function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
@@ -307,10 +307,14 @@ function clientName(id){return clients.find(x=>String(x.id)===String(id))?.name|
 function project(id){return projects.find(x=>String(x.id)===String(id))}
 function projectName(id){return project(id)?.name||'-'}
 function active(key){return moves.find(x=>x.employeeKey===key&&!x.demobDate)}
+function onApprovedLeave(code,dateStr){
+ dateStr=dateStr||today();
+ return leaveRecords.find(l=>['Approved','On Leave'].includes(String(l.status||''))&&norm(l.empCode)===norm(code)&&l.startDate<=dateStr&&dateStr<=l.endDate);
+}
 function days(a,b){if(!a||!b)return 0;return Math.round((parseYMD(b)-parseYMD(a))/86400000)+1}
 
 function refresh(){
- moves=get(MOV,[]);clients=get(CK,[]);projects=get(PK,[]);subs=get(SC,[]);
+ moves=get(MOV,[]);clients=get(CK,[]);projects=get(PK,[]);subs=get(SC,[]);leaveRecords=get('cm_leave_records_v1',[]);
  let raw=get(EMP,{}), ea=Array.isArray(raw)?raw:(raw.employees||raw.employeeList||raw.data?.employees||[]);
  let sa=get(SCEMP,[]);
  staff=[]; companyStaffAll=[];
@@ -360,11 +364,13 @@ function showView(id,b){
 function renderAvailable(){
  let q=norm(aSearch.value);
  let rows=staff.filter(e=>!active(e.key)&&norm([e.name,e.code,e.des,e.sc].join(' ')).includes(q));
- aRows.innerHTML=rows.length?rows.map(e=>`<tr><td>${esc(e.code||'-')}</td><td><span class="link" onclick="openMob('${e.key}')">${esc(e.name)}</span></td><td>${esc(e.des||'-')}</td><td>${esc(e.source)}</td><td>${esc(e.sc||'-')}</td><td><span class="badge green">Available</span></td><td><button class="btn primary" onclick="openMob('${e.key}')">Mobilize</button></td></tr>`).join(''):'<tr><td colspan="7">No available manpower.</td></tr>'
+ aRows.innerHTML=rows.length?rows.map(e=>{const lv=onApprovedLeave(e.code);return `<tr><td>${esc(e.code||'-')}</td><td><span class="link" onclick="openMob('${e.key}')">${esc(e.name)}</span></td><td>${esc(e.des||'-')}</td><td>${esc(e.source)}</td><td>${esc(e.sc||'-')}</td><td>${lv?`<span class="badge orange" title="${esc(lv.leaveType||'Leave')}: ${esc(lv.startDate)} to ${esc(lv.endDate)}">On Leave</span>`:'<span class="badge green">Available</span>'}</td><td><button class="btn primary" onclick="openMob('${e.key}')">Mobilize</button></td></tr>`}).join(''):'<tr><td colspan="7">No available manpower.</td></tr>'
 }
 function openMob(key){
  refresh();let e=staff.find(x=>x.key===key);if(!e)return alert('Employee not found.');
  let a=active(key);if(a)return alert('This employee is already on site: '+clientName(a.clientId)+' / '+projectName(a.projectId)+'. Please demobilize first.');
+ const lv=onApprovedLeave(e.code);
+ if(lv && window.CMV && !CMV.enforce('site.mobilize.duringLeave', true, esc(e.name)+' ('+esc(e.code||'-')+') is on approved leave from '+lv.startDate+' to '+lv.endDate+' ('+(lv.leaveType||'Leave')+'). Mobilizing now will overlap with this leave.').proceed) return;
  mobKey.value=key;mobDate.value=today();mobInfo.innerHTML='<b>'+esc(e.name)+'</b> | '+esc(e.code||'-')+' | '+esc(e.des||'-');
  mobClient.innerHTML='<option value="">Select Client</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
  mobProject.innerHTML='<option value="">Select Client first</option>';mobSiteCraft.value='';mobLocation.value='';mobClientRate.value='';mobSubRate.value='';mobFood.value='';mobAcc.value='';mobRemarks.value='';

@@ -58,6 +58,19 @@ input:focus,select:focus,textarea:focus{border-color:#73a9d8;box-shadow:0 0 0 3p
 table{width:100%;border-collapse:collapse;min-width:1150px}th,td{padding:10px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px;vertical-align:top}th{background:#f7f9fc;color:#374151;white-space:nowrap}
 tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:pointer}
 .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}.green{background:#dcfce7;color:#166534}.red{background:#fee2e2;color:#991b1b}.orange{background:#ffedd5;color:#9a3412}.gray{background:#e5e7eb;color:#374151}.blue{background:#dbeafe;color:#1d4ed8}
+.wf-box{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:14px}
+.wf-lockbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:10px;margin-bottom:14px;font-weight:800}
+.wf-lockbar.locked{background:#fee2e2;color:#991b1b}
+.wf-lockbar.open{background:#eef4fa;color:var(--navy2)}
+.wf-progress{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.wf-step{flex:1;min-width:110px;padding:9px 10px;border-radius:9px;background:#f1f5f9;color:#64748b;font-size:11px;font-weight:800;text-align:center;border:2px solid transparent}
+.wf-step.done{background:#dcfce7;color:#166534}
+.wf-step.current{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+.wf-step.rejected{background:#fee2e2;color:#991b1b}
+.wf-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.wf-history{max-height:160px;overflow:auto;font-size:11px;color:#5c7186;border-top:1px solid #edf2f6;margin-top:10px;padding-top:8px}
+.wf-history .row{padding:4px 0;border-bottom:1px dashed #edf2f6}
+.wf-reopen-row{padding:10px;border:1px solid #fed7aa;background:#fff7ed;border-radius:9px;margin-top:10px;font-size:12px}
 .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.field label{display:block;font-size:12px;font-weight:750;margin-bottom:6px}.span2{grid-column:span 2}.span3{grid-column:span 3}
 .section-title{font-size:16px;font-weight:850;color:var(--navy2);padding-bottom:9px;border-bottom:2px solid #e9eff6;margin:0 0 14px}
 .notice{padding:11px 13px;border:1px solid #bfdbfe;background:#eff6ff;color:#1e40af;border-radius:9px;font-size:13px;margin-bottom:12px}
@@ -127,6 +140,7 @@ tr:hover td{background:#fbfdff}.link{color:var(--blue);font-weight:800;cursor:po
 body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
+<script src="erp-payroll-workflow.js"></script>
 </head>
 <body>
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -254,10 +268,11 @@ body{padding-top:50px}
 </section>
 
 <section id="payroll" class="view">
- <div class="page-head"><h2>Payroll Calculation</h2><div><button class="btn btn-light" onclick="exportPayrollExcel()">Export in Excel</button> <button class="btn btn-light" onclick="calculatePayroll()">Recalculate</button> <button class="btn btn-orange" onclick="reopenSelectedPayroll()">Reopen Finalized Payroll</button> <button class="btn btn-green" onclick="finalizePayroll()">Finalize Payroll</button></div></div>
+ <div class="page-head"><h2>Payroll Calculation</h2><div><button class="btn btn-light" onclick="exportPayrollExcel()">Export in Excel</button> <button class="btn btn-light" onclick="calculatePayroll()">Recalculate</button></div></div>
+ <div class="wf-box"><div id="workflowPanel"></div></div>
  <div class="box">
   <div class="form-grid">
-   <div class="field"><label>Payroll Month</label><input id="payMonth" type="month" onchange="calculatePayroll();renderPaymentSummary()"></div>
+   <div class="field"><label>Payroll Month</label><input id="payMonth" type="month" onchange="calculatePayroll();renderPaymentSummary();renderWorkflowPanel()"></div>
    <div class="field"><label>Company Filter</label><select id="payCompanyFilter" onchange="calculatePayroll()"><option value="">All Companies</option></select></div>
    <div class="field"><label>Payroll Status</label><input id="payStatusText" value="Draft" readonly></div>
    <div class="field"><label>Rule</label><input value="Balance Salary = Net Salary - Pay by Bank - Pay by Cash" readonly></div>
@@ -346,6 +361,8 @@ body{padding-top:50px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const EMP_KEY='cm_employee_portal_v3';
+const CENTRAL_TS_KEY='cm_central_timesheet_v1';
+const TS_LEAVE_SUMMARY_KEY='cm_timesheet_leave_summary_v1';
 const PAY_KEY='cm_payroll_master_v1';
 const DED_KEY='cm_payroll_deduction_ledger_v1';
 const TS_KEY='cm_payroll_timesheets_v1';
@@ -478,7 +495,12 @@ function saveSalarySetup(e){
  // hours split into Normal vs NOT/HOT, so recalculate every month that already has
  // timesheet entries for this employee instead of leaving old splits stale.
  const affectedMonths=[...new Set(timesheets.filter(x=>x.empKey===k).map(x=>x.date.slice(0,7)))];
- affectedMonths.forEach(ym=>recalculateEmployeeMonth(k,ym));
+ let skippedLocked=0;
+ affectedMonths.forEach(ym=>{
+   if(window.CMPW && CMPW.isLocked(ym)){ skippedLocked++; return; }
+   recalculateEmployeeMonth(k,ym);
+ });
+ if(skippedLocked) alert(skippedLocked+' finalized/locked month(s) were NOT recalculated. Request a reopen approval for those months first.');
  closeSalary();renderAll()
 }
 function renderRateHistory(){
@@ -507,6 +529,8 @@ function closeDeduction(){dedModal.classList.remove('show')}
 function saveDeduction(e){
  e.preventDefault();const emp=empByKey(dedEmp.value);if(!emp)return alert('Select employee.');
  const amt=Number(dedAmount.value);if(amt<=0)return alert('Amount must be greater than zero.');
+ const ym=String(dedDate.value||'').slice(0,7);
+ if(window.CMV && window.CMPW && !CMV.enforce('payroll.month.locked', CMPW.isLocked(ym), `Payroll month ${ym} is FINALIZED / LOCKED. Request a reopen approval before adding deductions for this month.`).proceed) return;
  const before=ledgerBalance(emp.key),after=before+amt;
  deductions.push({id:uid(),empKey:emp.key,date:dedDate.value,type:dedType.value,description:dedDesc.value.trim(),added:amt,recovery:0,balanceAfter:after,reference:dedRef.value.trim(),source:'Manual'});
  set(DED_KEY,deductions);closeDeduction();renderAll();calculatePayroll()
@@ -1278,8 +1302,44 @@ function exportPayrollExcel(){
  }
 }
 
+function computeTimesheetLeaveSummary(ym){
+ if(window.CMPW && CMPW.isLocked(ym)) return; // finalized month — counts stay frozen
+ const centralRaw=get(CENTRAL_TS_KEY,{}), records=Array.isArray(centralRaw.records)?centralRaw.records:[];
+ const monthRecords=records.filter(x=>String(x.date||'').startsWith(ym));
+ const byEmp={};
+ monthRecords.forEach(r=>{
+  const st=String(r.status||'').toUpperCase();
+  if(st!=='A' && st!=='M') return;
+  const ec=r.empCode||''; if(!ec) return;
+  if(!byEmp[ec]) byEmp[ec]={empCode:ec,empName:r.name||'',unpaidDays:0,medicalDays:0};
+  if(st==='A') byEmp[ec].unpaidDays++;
+  if(st==='M') byEmp[ec].medicalDays++;
+ });
+ let summary=get(TS_LEAVE_SUMMARY_KEY,[]);
+ summary=summary.filter(x=>x.month!==ym);
+ Object.values(byEmp).forEach(e=>{
+  summary.push({empCode:e.empCode,empName:e.empName,month:ym,unpaidDays:e.unpaidDays,medicalDays:e.medicalDays,totalDays:e.unpaidDays+e.medicalDays,source:'Timesheet Auto',updatedAt:new Date().toISOString()});
+ });
+ set(TS_LEAVE_SUMMARY_KEY,summary);
+ syncTimesheetLeaveIntoLeaveHistory(ym,Object.values(byEmp));
+}
+function syncTimesheetLeaveIntoLeaveHistory(ym,empList){
+ let records=get(LEAVE_KEY,[]);
+ records=records.filter(r=>!(r.source==='Timesheet Auto' && r.month===ym));
+ const [y,mo]=ym.split('-'); const lastDay=new Date(Number(y),Number(mo),0).getDate(), lastStr=ym+'-'+String(lastDay).padStart(2,'0');
+ empList.forEach(e=>{
+  if(e.unpaidDays>0){
+   records.push({id:'TSAUTO-A-'+e.empCode+'-'+ym,empCode:e.empCode,empName:e.empName,leaveType:'Unpaid Leave (Timesheet Auto)',startDate:ym+'-01',endDate:lastStr,totalDays:e.unpaidDays,unpaidDays:e.unpaidDays,status:'Approved',source:'Timesheet Auto',month:ym,reason:'Auto-calculated from '+e.unpaidDays+' "A" (Absent/Unpaid) day(s) in the '+ym+' timesheet.'});
+  }
+  if(e.medicalDays>0){
+   records.push({id:'TSAUTO-M-'+e.empCode+'-'+ym,empCode:e.empCode,empName:e.empName,leaveType:'Medical Leave (Timesheet Auto)',startDate:ym+'-01',endDate:lastStr,totalDays:e.medicalDays,status:'Approved',source:'Timesheet Auto',month:ym,reason:'Auto-calculated from '+e.medicalDays+' "M" (Medical) day(s) in the '+ym+' timesheet.'});
+  }
+ });
+ set(LEAVE_KEY,records);
+}
 function calculatePayroll(){
  const ym=payMonth.value||month();
+ if(window.CMPW) computeTimesheetLeaveSummary(ym);
  const existing=payHistory.find(x=>x.month===ym);
  payStatusText.value=existing?'Finalized':(getReopenSnapshot(ym)?'Reopened - Values Locked':'Draft');
  if(existing){
@@ -1307,6 +1367,10 @@ function calculatePayroll(){
  }else{
    currentPayroll=employees.map(e=>calcEmployeePayroll(e,ym)).filter(Boolean);
    currentPayroll.forEach(x=>{const p=prev[x.emp.key];if(p){x.allowance=p.allowance;x.allowanceText=p.allowanceText;x.deduct=Math.min(Number(p.deduct||0),x.balance)}});
+   if(window.CMPW && currentPayroll.length){
+     const st=CMPW.getMonthStatus(ym).stage;
+     if(st==='Payroll Ready') CMPW.advanceStage(ym,'Payroll Calculated','Auto-calculated from timesheet + salary setup for '+currentPayroll.length+' employee(s).');
+   }
  }
  const reopenNotice=getReopenSnapshot(ym)?`<tr><td colspan="19"><div class="warn" style="margin:0"><b>Reopened Payroll:</b> Previous finalized salary values are locked. Only Normal Hrs / NOT Hrs / HOT Hrs refresh from the latest timesheet.</div></td></tr>`:'';
  payRows.innerHTML=reopenNotice+currentPayroll.map((x,i)=>({x,i})).filter(z=>companyMatches(z.x.emp.key)).map(({x,i})=>{
@@ -1338,10 +1402,101 @@ function refreshPayrollRow(i){
 function setAllowance(i,v){currentPayroll[i].allowance=Math.max(0,Number(v||0));refreshPayrollRow(i)}
 function setAllowanceText(i,v){currentPayroll[i].allowanceText=v}
 function setDeduction(i,v){const x=currentPayroll[i];let n=Math.max(0,Number(v||0));if(n>x.balance){alert('Outstanding balance is only AED '+money(x.balance));n=x.balance}x.deduct=n;refreshPayrollRow(i)}
+function renderWorkflowPanel(){
+ const host=document.getElementById('workflowPanel'); if(!host||!window.CMPW) return;
+ const ym=payMonth.value||month();
+ const st=CMPW.getMonthStatus(ym);
+ const stage=st.stage, locked=!!st.locked, idx=CMPW.stageIndex(stage);
+ const pending=CMPW.pendingReopenFor(ym);
+ const steps=CMPW.STAGES.map((s,i)=>{
+   let cls='wf-step'; if(stage==='Rejected'&&st.rejectedFrom===s) cls+=' rejected'; else if(i<idx||stage==='Finalized'&&i<=idx) cls+=' done'; else if(i===idx&&stage!=='Rejected') cls+=' current';
+   return `<div class="${cls}">${CMPW.STAGE_ICON[s]||''} ${s}</div>`;
+ }).join('');
+ let actions='';
+ if(stage==='Rejected'){
+   actions=`<div class="wf-actions"><span class="badge red">↩️ Sent back from "${esc(st.rejectedFrom||'')}"</span> <button class="btn btn-light" onclick="wfResubmit()">Resubmit for Validation</button></div>`;
+ }else if(stage==='Uploaded'){
+   actions=`<div class="wf-actions"><button class="btn btn-primary" onclick="wfValidate()">✔️ Mark Validated</button></div>`;
+ }else if(stage==='Validated'){
+   actions=`<div class="wf-actions"><button class="btn btn-primary" onclick="wfSupervisorDecision(true)">👤 Supervisor Approve</button> <button class="btn btn-light" onclick="wfSupervisorDecision(false)">Reject</button></div>`;
+ }else if(stage==='Payroll Ready'){
+   actions=`<div class="wf-actions"><span class="badge blue">Click "Recalculate" above to run Payroll Calculation</span></div>`;
+ }else if(stage==='Payroll Calculated'){
+   actions=`<div class="wf-actions"><button class="btn btn-primary" onclick="wfAccountsCheck()">🧾 Accounts Checked</button></div>`;
+ }else if(stage==='Accounts Checked'){
+   actions=`<div class="wf-actions"><button class="btn btn-green" onclick="finalizePayroll()">🔒 Finalize & Lock</button></div>`;
+ }else if(stage==='Finalized'){
+   actions=pending?'':`<div class="wf-actions"><button class="btn btn-orange" onclick="wfRequestReopen()">Request Reopen</button></div>`;
+ }
+ const lockbar=`<div class="wf-lockbar ${locked?'locked':'open'}">${locked?`🔒 ${ym} — FINALIZED / LOCKED`:`🔓 ${ym} — ${esc(stage)}`}<span style="font-weight:600;font-size:11px">${locked?'No edits allowed until an approved reopen':''}</span></div>`;
+ const reopenPanel=pending?`<div class="wf-reopen-row"><b>Reopen Requested</b> by ${esc(pending.requestedBy)} on ${new Date(pending.requestedAt).toLocaleString()}<br>Reason: ${esc(pending.reason)}<div class="wf-actions" style="margin-top:8px"><button class="btn btn-primary" onclick="wfReopenDecision('${pending.id}',true)">Approve Reopen</button> <button class="btn btn-light" onclick="wfReopenDecision('${pending.id}',false)">Reject</button></div></div>`:'';
+ const hist=(st.history||[]).slice(0,15).map(h=>`<div class="row">${CMPW.STAGE_ICON[h.stage]||''} <b>${esc(h.stage)}</b> — ${esc(h.by)} · ${new Date(h.at).toLocaleString()}${h.remarks?' — '+esc(h.remarks):''}</div>`).join('');
+ host.innerHTML=lockbar+`<div class="wf-progress">${steps}</div>`+actions+reopenPanel+(hist?`<div class="wf-history">${hist}</div>`:'');
+}
+function wfValidate(){
+ const ym=payMonth.value||month();
+ const hasRecords=(timesheets||[]).some(x=>x.date&&x.date.startsWith(ym));
+ if(!hasRecords && !confirm('No timesheet records found for '+ym+' yet. Mark Validated anyway?'))return;
+ CMPW.advanceStage(ym,'Validated','Timesheet data checked for duplicates, employee codes, hours and missing data.');
+ renderWorkflowPanel();
+}
+function wfSupervisorDecision(approve){
+ const ym=payMonth.value||month();
+ if(approve){
+   const remarks=prompt('Supervisor approval remarks (optional):','')||'';
+   CMPW.advanceStage(ym,'Supervisor Approved',remarks);
+   CMPW.advanceStage(ym,'Payroll Ready','Approved timesheet released to Payroll.');
+ }else{
+   const reason=prompt('Reason for rejecting this month\'s timesheet (required):','');
+   if(!reason)return alert('A reason is required to reject.');
+   CMPW.rejectStage(ym,reason);
+ }
+ renderWorkflowPanel();
+}
+function wfResubmit(){
+ const ym=payMonth.value||month();
+ CMPW.advanceStage(ym,'Uploaded','Resubmitted after correction.');
+ renderWorkflowPanel();
+}
+function wfAccountsCheck(){
+ const ym=payMonth.value||month();
+ const remarks=prompt('Accounts verification remarks (optional):','')||'';
+ CMPW.advanceStage(ym,'Accounts Checked',remarks||'Amount verified by Accounts.');
+ renderWorkflowPanel();
+}
+function wfRequestReopen(){
+ const ym=payMonth.value||month();
+ const reason=prompt('Reason for requesting reopen of '+ym+' (required):','');
+ if(!reason)return alert('A reason is required to request reopen.');
+ CMPW.requestReopen(ym,reason);
+ alert('Reopen request submitted for approval. The month stays LOCKED until an authorized user approves it.');
+ renderWorkflowPanel();
+}
+function wfReopenDecision(id,approve){
+ const ym=payMonth.value||month();
+ if(approve){
+   const remarks=prompt('Approval remarks (optional):','')||'';
+   const existing=payHistory.find(x=>x.month===ym);
+   const beforeSummary=existing?('Finalized on '+new Date(existing.finalizedAt).toLocaleString()+' · Total Net AED '+existing.entries.reduce((a,x)=>a+Number(x.net||0),0).toFixed(2)):'';
+   CMPW.approveReopen(id,remarks,undefined,beforeSummary);
+   reopenPayrollMonth(ym,true);
+   renderAll();
+   alert('Reopen approved. '+ym+' is now unlocked for correction. Values remain locked except Normal/NOT/HOT hours until re-finalized.');
+ }else{
+   const remarks=prompt('Reason for rejecting the reopen request:','')||'';
+   CMPW.rejectReopen(id,remarks);
+   alert('Reopen request rejected.');
+ }
+ renderWorkflowPanel();
+}
 function finalizePayroll(){
  const ym=payMonth.value||month();if(payHistory.some(x=>x.month===ym))return alert('Payroll for this month is already finalized.');
+ if(window.CMPW){
+   const stage=CMPW.getMonthStatus(ym).stage;
+   if(!CMV.enforce('payroll.finalize.sequence', stage!=='Accounts Checked', `Payroll ${ym} is currently at "${stage}" stage. It must reach "Accounts Checked" (Validated → Supervisor Approved → Payroll Ready → Payroll Calculated → Accounts Checked) before it can be Finalized.`).proceed) return;
+ }
  if(!currentPayroll.length)calculatePayroll();if(!currentPayroll.length)return alert('No payroll data.');
- if(!confirm('Finalize '+ym+' payroll? This will post deduction recoveries to ledger and save payroll history.'))return;
+ if(!confirm('Finalize '+ym+' payroll? This will post deduction recoveries to ledger and save payroll history. The month will be LOCKED afterwards.'))return;
  const entries=currentPayroll.map(x=>{
   const gross=x.reopenLocked?Number(x.lockedGross||0):(x.normalAmt+x.notAmt+x.hotAmt+x.allowance);
   const net=x.reopenLocked?Number(x.lockedNet||0):(gross-x.deduct);
@@ -1351,13 +1506,20 @@ function finalizePayroll(){
   }
   const pay=getPayment(x.emp.key,ym); return {empKey:x.emp.key,employeeCode:x.emp.code,employeeName:x.emp.name,company:x.emp.company||'',salaryType:x.r.salaryType,normalH:x.normalH,notH:x.notH,hotH:x.hotH,normalAmt:x.normalAmt,notAmt:x.notAmt,hotAmt:x.hotAmt,allowance:x.allowance,allowanceText:x.allowanceText,deduction:x.deduct,gross,net,payByBank:Number(pay.bank||0),payByCash:Number(pay.cash||0),balanceSalary:net-Number(pay.bank||0)-Number(pay.cash||0),hourlyRateSnapshot:Number(x.r.hourlyRate||0),basicSalarySnapshot:Number(x.r.basicSalary||0),basicHoursSnapshot:Number(x.r.basicHours||8),notMultiplierSnapshot:Number(x.r.notMultiplier||1.25),hotMultiplierSnapshot:Number(x.r.hotMultiplier||1.5),deductionBalanceSnapshot:Number(x.balance||0)}
  });
- deductions && set(DED_KEY,deductions);payHistory.push({id:uid(),month:ym,finalizedAt:new Date().toISOString(),entries});set(HIST_KEY,payHistory);clearReopenSnapshot(ym);renderAll();alert('Payroll finalized successfully.')
+ const totalNet=entries.reduce((a,x)=>a+Number(x.net||0),0);
+ deductions && set(DED_KEY,deductions);payHistory.push({id:uid(),month:ym,finalizedAt:new Date().toISOString(),entries});set(HIST_KEY,payHistory);clearReopenSnapshot(ym);
+ if(window.CMPW){
+   CMPW.advanceStage(ym,'Finalized','Payroll finalized · Total Net AED '+totalNet.toFixed(2));
+   const openReopen=CMPW.approvedUnclosedReopenFor(ym);
+   if(openReopen) CMPW.recordRefinalize(ym,'Total Net after correction: AED '+totalNet.toFixed(2), CMV?CMV.normText(localStorage.getItem('cm_saved_email')||''):'' );
+ }
+ renderAll();renderWorkflowPanel();alert('Payroll finalized and month LOCKED successfully.')
 }
 function renderPayrollHistory(){
  const q=norm(histSearch.value),rows=[];payHistory.forEach(h=>(h.entries||[]).forEach(e=>rows.push({...e,month:h.month,finalizedAt:h.finalizedAt})));
  histRows.innerHTML=rows.filter(x=>norm([x.month,x.employeeName,x.employeeCode].join(' ')).includes(q)).sort((a,b)=>b.month.localeCompare(a.month)).map(x=>`<tr><td>${x.month}</td><td>${new Date(x.finalizedAt).toLocaleString()}</td><td>${esc(x.employeeName)} (${esc(x.employeeCode||'-')})</td><td>${money(x.gross)}</td><td>${money(x.deduction)}</td><td><b>${money(x.net)}</b></td><td>${money(x.allowance)}${x.allowanceText?' · '+esc(x.allowanceText):''}</td><td>${esc(x.salaryType)}</td></tr>`).join('')||'<tr><td colspan="8">No finalized payroll history.</td></tr>'
 }
-function renderAll(){loadEmployees();syncLeaveDeductions();fillEmployeeSelects();fillPayrollCompanyFilter();renderDashboard();renderEmployees();renderRateHistory();renderDeductions();renderTimesheet();renderHolidayReview();calculatePayroll();renderPayrollHistory();renderPaymentSummary()}
+function renderAll(){loadEmployees();syncLeaveDeductions();fillEmployeeSelects();fillPayrollCompanyFilter();renderDashboard();renderEmployees();renderRateHistory();renderDeductions();renderTimesheet();renderHolidayReview();calculatePayroll();renderPayrollHistory();renderPaymentSummary();renderWorkflowPanel()}
 tsMonth.value=month();payMonth.value=month();loadEmployees();renderAll();
 </script>
 <a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>

@@ -306,6 +306,7 @@ body{background:#f5f7fb}
 body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
+<script src="erp-payroll-workflow.js"></script>
 </head>
 <body>
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -337,6 +338,7 @@ body{padding-top:50px}
     <a class="nav" href="#leaveHistory">♙ Team Leaves</a>
     <a class="nav" href="#leaveHistory">▦ Leave Calendar</a>
     <a class="nav" href="#list">▥ Reports</a>
+    <a class="nav" href="#tsLeaveSummary">📊 Monthly Timesheet Leave Summary</a>
     <a class="nav" href="#form">♙ Employees</a>
     <a class="nav" href="#monthlyImport">⇧ Leave Import</a>
     <a class="nav" href="#monthlyImport">⚙ Leave Types</a>
@@ -735,6 +737,22 @@ body{padding-top:50px}
             <th>Leave Type</th><th>Start</th><th>End</th><th>Days</th><th>Ticket Arrangement</th><th>Company Sector</th><th>UAE → Home Ticket</th><th>Home → UAE Ticket</th><th>Calculation Basis</th><th>Status</th><th class="acc-col">Leave Salary</th><th class="acc-col">Paid Date</th><th class="acc-col">Paid Amount</th><th class="acc-col">Paid Days</th><th class="acc-col">Unpaid Days</th><th>Return Date</th><th>Action</th>
           </tr></thead>
           <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel" id="tsLeaveSummary">
+      <div class="toolbar">
+        <h2 style="margin:0">Monthly Timesheet Leave Summary</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="mini" style="align-self:center">Auto-calculated from "A" (Unpaid/Absent) and "M" (Medical) codes entered in the monthly timesheet — locked once that payroll month is finalized.</div>
+          <input id="tsSumQ" placeholder="Search employee, code, month..." oninput="renderTsLeaveSummary()">
+          <button class="btn light" type="button" onclick="exportTsLeaveSummaryCSV()">Export CSV</button>
+        </div>
+      </div>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>Employee Code</th><th>Employee Name</th><th>Month</th><th>Unpaid Leave Days</th><th>Medical Leave Days</th><th>Total Leave Days</th><th>Status</th></tr></thead>
+          <tbody id="tsSumRows"></tbody>
         </table>
       </div>
     </section>
@@ -1486,8 +1504,27 @@ function render(){
   renderVisualDashboard();
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-
-loadEmployees();toggleTicketSector();applyRoleAccess();refreshHistoryYears();renderHistory();render();renderSelectedEmployeeHistory('');renderVisualDashboard();
+function renderTsLeaveSummary(){
+  const host=document.getElementById('tsSumRows'); if(!host) return;
+  let list=[]; try{ list=JSON.parse(localStorage.getItem('cm_timesheet_leave_summary_v1'))||[]; }catch(e){}
+  const q=(document.getElementById('tsSumQ')?.value||'').trim().toLowerCase();
+  list=list.filter(x=>!q||[x.empCode,x.empName,x.month].join(' ').toLowerCase().includes(q));
+  list.sort((a,b)=>b.month.localeCompare(a.month)||String(a.empCode).localeCompare(String(b.empCode)));
+  host.innerHTML=list.length?list.map(x=>{
+    const locked=window.CMPW && CMPW.isLocked(x.month);
+    return `<tr><td><b>${esc(x.empCode)}</b></td><td>${esc(x.empName||'-')}</td><td>${esc(x.month)}</td><td>${x.unpaidDays||0}</td><td>${x.medicalDays||0}</td><td><b>${x.totalDays||0}</b></td><td>${locked?'<span class="badge red">🔒 Finalized</span>':'<span class="badge blue">Open</span>'}</td></tr>`;
+  }).join(''):'<tr><td colspan="7" class="empty">No timesheet-derived leave records yet. These are calculated automatically when Payroll processes a month\'s timesheet.</td></tr>';
+}
+function exportTsLeaveSummaryCSV(){
+  let list=[]; try{ list=JSON.parse(localStorage.getItem('cm_timesheet_leave_summary_v1'))||[]; }catch(e){}
+  if(!list.length) return alert('No data to export.');
+  const cols=['empCode','empName','month','unpaidDays','medicalDays','totalDays'];
+  const heads=['Employee Code','Employee Name','Month','Unpaid Leave Days','Medical Leave Days','Total Leave Days'];
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const csv=[heads.map(q).join(','),...list.map(r=>cols.map(c=>q(r[c])).join(','))].join('\r\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='Monthly_Timesheet_Leave_Summary.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+loadEmployees();toggleTicketSector();applyRoleAccess();refreshHistoryYears();renderHistory();render();renderSelectedEmployeeHistory('');renderVisualDashboard();renderTsLeaveSummary();
 </script>
 
 

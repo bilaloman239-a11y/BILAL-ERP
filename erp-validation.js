@@ -47,6 +47,8 @@
     // Payroll
     {key:'payroll.composite.unique',    module:'Payroll',       label:'Employee + Payroll Month/Year — composite UNIQUE',  def:'Block'},
     {key:'payroll.rates.negative',      module:'Payroll',       label:'Salary / rates — must not be negative',             def:'Block'},
+    {key:'payroll.month.locked',        module:'Payroll',       label:'Finalized/locked month — block edits (timesheet, deductions, rates)',def:'Block'},
+    {key:'payroll.finalize.sequence',   module:'Payroll',       label:'Finalize must follow Validated → Supervisor Approved → Accounts Checked in order',def:'Block'},
     // Leave
     {key:'leave.overlap',               module:'Leave',         label:'Same employee — overlapping leave dates',           def:'Block'},
     {key:'leave.ref.unique',            module:'Leave',         label:'Leave application / reference no. — UNIQUE',        def:'Block'},
@@ -59,6 +61,7 @@
     // Site / Mobilization
     {key:'site.assignment.duplicate',   module:'Site',          label:'Employee + Site + From Date — duplicate protection',def:'Warning'},
     {key:'mobilization.duplicate',      module:'Site',          label:'Employee + Project + Mobilization Date — duplicate protection',def:'Block'},
+    {key:'site.mobilize.duringLeave',   module:'Site',          label:'Mobilizing an employee who is on approved leave',   def:'Warning'},
     // Master Data
     {key:'master.designation.duplicate',module:'Master Data',   label:'Designation name — case-insensitive duplicate prevention',def:'Block'},
     {key:'master.nationality.duplicate',module:'Master Data',   label:'Nationality — case-insensitive duplicate prevention',def:'Block'},

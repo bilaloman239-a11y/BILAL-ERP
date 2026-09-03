@@ -287,6 +287,7 @@
 body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
+<script src="erp-payroll-workflow.js"></script>
 </head>
 <body>
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -405,7 +406,7 @@ function loadClientProjectSelectors(){
  c.innerHTML='<option value="">All / Not specified</option>'+cs.map(x=>`<option value="${String(x.id)}">${String(x.name||'')}</option>`).join('');
  const loadP=()=>{const cid=c.value;p.innerHTML='<option value="">All / Not specified</option>'+ps.filter(x=>!cid||String(x.clientId)===String(cid)).map(x=>`<option value="${String(x.id)}">${String(x.name||'')}</option>`).join('')};c.onchange=loadP;loadP();
 }
-function parseCell(v){if(v===null||v===undefined||v==='')return {has:false,hours:0,status:''};const t=String(v).trim();if(!t)return {has:false,hours:0,status:''};const n=Number(t);if(Number.isFinite(n))return {has:true,hours:n,status:n===0?'Off':'Worked'};const u=t.toUpperCase();if(['A','ABSENT'].includes(u))return {has:true,hours:0,status:'A'};if(['L','LEAVE'].includes(u))return {has:true,hours:0,status:'L'};if(['P','PRESENT'].includes(u))return {has:true,hours:0,status:'P'};return {has:true,hours:0,status:t}}
+function parseCell(v){if(v===null||v===undefined||v==='')return {has:false,hours:0,status:''};const t=String(v).trim();if(!t)return {has:false,hours:0,status:''};const n=Number(t);if(Number.isFinite(n))return {has:true,hours:n,status:n===0?'Off':'Worked'};const u=t.toUpperCase();if(['A','ABSENT'].includes(u))return {has:true,hours:0,status:'A'};if(['M','MEDICAL','MEDICAL LEAVE','SICK','SL'].includes(u))return {has:true,hours:0,status:'M'};if(['L','LEAVE'].includes(u))return {has:true,hours:0,status:'L'};if(['P','PRESENT'].includes(u))return {has:true,hours:0,status:'P'};return {has:true,hours:0,status:t}}
 function dayFromHeader(v,ym){
  if(v instanceof Date&&!isNaN(v))return `${v.getFullYear()}-${cpad(v.getMonth()+1)}-${cpad(v.getDate())}`;
  const t=String(v??'').trim(); if(!t)return null; const n=Number(t); if(Number.isInteger(n)&&n>=1&&n<=31)return ym+'-'+cpad(n);
@@ -467,6 +468,7 @@ function routePayroll(records,batchId){let ts=cget(PAYROLL_TS_KEY,[]),count=0;re
 function aggregateReportEmployees(records,ym){const map={};records.filter(x=>x.source==='Sub Contractor'&&x.date.startsWith(ym)).forEach(x=>{const k=x.empCode+'|'+x.subcontractor;if(!map[k])map[k]={row:0,sl:0,empNo:x.empCode,name:x.name,craft:x.craft||'',subcontractor:x.subcontractor||'Unassigned Sub Contractor',days:Array(31).fill(''),totalHours:0,rate:0,deduction:0,gross:0,vat:0,amount:0};const d=Number(x.date.slice(8,10));map[k].days[d-1]=x.status&&Number(x.hours||0)===0?x.status:Number(x.hours||0);map[k].totalHours+=Number(x.hours||0)});return Object.values(map).map((x,i)=>({...x,sl:i+1}))}
 async function uploadCentralTimesheet(){
  try{const ym=document.getElementById('centralMonth').value,file=document.getElementById('centralFile').files[0];if(!ym||!file)return alert('Please select Timesheet Month and file.');if(typeof XLSX==='undefined')throw new Error('Excel library did not load. Check internet connection or upload CSV after refreshing.');
+ if(window.CMV && window.CMPW && !CMV.enforce('payroll.month.locked', CMPW.isLocked(ym), `Payroll for ${ym} is already FINALIZED / LOCKED. Request a reopen approval in Payroll before uploading timesheet changes for this month.`).proceed) return;
  const buf=await file.arrayBuffer(), wb=XLSX.read(buf,{type:'array',cellDates:true}), ws=wb.Sheets[wb.SheetNames[0]], rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}),layout=detectLayout(rows,ym), masters=employeeMasters(), st=centralStore(), mode=document.getElementById('duplicateMode').value;
  const clients=cget(CLIENT_KEY,[]),projects=cget(PROJECT_KEY,[]),cid=document.getElementById('centralClient').value,pid=document.getElementById('centralProject').value,client=clients.find(x=>String(x.id)===String(cid))?.name||'',project=projects.find(x=>String(x.id)===String(pid))?.name||'';
  const selected={clientId:cid,projectId:pid,client,project},batchId='TS-'+new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14), incoming=[],unmatched=new Set();let matched=0;
@@ -498,8 +500,31 @@ function renderCentralRegister(){const host=document.getElementById('registerRow
 function renderBatches(){const h=document.getElementById('batchRows'),st=centralStore();if(!h)return;h.innerHTML=st.batches.slice(0,30).map(b=>`<tr><td>${new Date(b.at).toLocaleString()}</td><td>${b.month}</td><td>${b.client||'-'} / ${b.project||'-'}</td><td>${b.file}</td><td>${b.matched}</td><td>${b.payroll}</td><td>${b.sub}</td><td>${b.projectHours||0}</td><td>${b.rateLinked||0}</td><td>${(b.unmatched||[]).join(', ')||'-'}</td></tr>`).join('')||'<tr><td colspan="10" class="empty">No upload batches yet.</td></tr>'}
 function refreshCentralUI(){const st=centralStore();if(document.getElementById('rtCentral')){rtCentral.textContent=st.records.length;rtPayroll.textContent=cget(PAYROLL_TS_KEY,[]).length;rtSub.textContent=st.records.filter(x=>x.source==='Sub Contractor').length;rtProject.textContent=cget(PROJECT_HOURS_KEY,[]).length;rtRated.textContent=st.records.filter(x=>Number(x.clientRateSnapshot||0)>0||Number(x.subRateSnapshot||0)>0||x.salaryRateFound).length;rtUnmatched.textContent=st.unmatched.length}renderBatches();renderCentralRegister()}
 function exportCentralCSV(){const rows=filteredCentral();if(!rows.length)return alert('No records to export.');const cols=['date','empCode','name','source','subcontractor','client','project','craft','hours','clientRateSnapshot','subRateSnapshot','salaryCostEstimate','clientBillingEstimate','subcontractorPayableEstimate','status','batchId'];const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',csv=[cols.join(','),...rows.map(r=>cols.map(c=>q(r[c])).join(','))].join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='Central_Timesheet_'+(document.getElementById('regMonth').value||'All')+'.csv';a.click();URL.revokeObjectURL(a.href)}
-function clearCentralMonth(){const ym=document.getElementById('regMonth').value;if(!ym)return alert('Select month first.');if(!confirm('Clear central timesheet records for '+ym+'? Payroll finalized history is not deleted.'))return;const st=centralStore();st.records=st.records.filter(x=>!x.date.startsWith(ym));cset(CENTRAL_KEY,st);let ph=cget(PROJECT_HOURS_KEY,[]).filter(x=>!x.date.startsWith(ym));cset(PROJECT_HOURS_KEY,ph);refreshCentralUI();alert('Central and Client/Project hour records cleared for '+ym+'.')}
-const centralNow=new Date(), centralYm=centralNow.getFullYear()+'-'+cpad(centralNow.getMonth()+1);setTimeout(()=>{if(document.getElementById('centralMonth')&&!centralMonth.value)centralMonth.value=centralYm;if(document.getElementById('regMonth')&&!regMonth.value)regMonth.value=centralYm;if(document.getElementById('phMonth')&&!phMonth.value)phMonth.value=centralYm;loadClientProjectSelectors();['regMonth','regSource','regSearch'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderCentralRegister));['phMonth','phSearch'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderProjectHours));refreshCentralUI();renderProjectHours()},0);
+function clearCentralMonth(){const ym=document.getElementById('regMonth').value;if(!ym)return alert('Select month first.');if(window.CMV && window.CMPW && !CMV.enforce('payroll.month.locked', CMPW.isLocked(ym), `Payroll for ${ym} is already FINALIZED / LOCKED. Request a reopen approval in Payroll before clearing timesheet records for this month.`).proceed) return;if(!confirm('Clear central timesheet records for '+ym+'? Payroll finalized history is not deleted.'))return;const st=centralStore();st.records=st.records.filter(x=>!x.date.startsWith(ym));cset(CENTRAL_KEY,st);let ph=cget(PROJECT_HOURS_KEY,[]).filter(x=>!x.date.startsWith(ym));cset(PROJECT_HOURS_KEY,ph);refreshCentralUI();alert('Central and Client/Project hour records cleared for '+ym+'.')}
+function syncApprovedLeaveIntoTimesheet(){
+ const leaves=cget('cm_leave_records_v1',[]).filter(l=>['Approved','On Leave'].includes(String(l.status||'')));
+ if(!leaves.length) return;
+ const masters=employeeMasters(), st=centralStore();
+ let added=0;
+ leaves.forEach(l=>{
+  const emp=masters.company.find(e=>cnorm(e.code)===cnorm(l.empCode))||masters.sub.find(e=>cnorm(e.code)===cnorm(l.empCode));
+  if(!emp||!l.startDate||!l.endDate) return;
+  let d=new Date(l.startDate), end=new Date(l.endDate);
+  if(isNaN(d)||isNaN(end)||end<d) return;
+  let guard=0;
+  while(d<=end && guard<400){
+   const ds=d.toISOString().slice(0,10);
+   const exists=st.records.some(x=>cnorm(x.empCode)===cnorm(emp.code)&&x.date===ds);
+   if(!exists){
+    st.records.push({id:cuid(),batchId:'LEAVE-SYNC',month:ds.slice(0,7),date:ds,empKey:emp.key,empCode:emp.code,name:emp.name,craft:emp.craft||'',source:emp.source,subcontractor:emp.subcontractor||'',client:'',clientId:'',project:'',projectId:'',hours:0,status:'Leave',note:(l.leaveType||'Leave')+' (synced from Leave Management)',uploadedAt:new Date().toISOString()});
+    added++;
+   }
+   d.setDate(d.getDate()+1); guard++;
+  }
+ });
+ if(added) cset(CENTRAL_KEY, st);
+}
+const centralNow=new Date(), centralYm=centralNow.getFullYear()+'-'+cpad(centralNow.getMonth()+1);setTimeout(()=>{if(document.getElementById('centralMonth')&&!centralMonth.value)centralMonth.value=centralYm;if(document.getElementById('regMonth')&&!regMonth.value)regMonth.value=centralYm;if(document.getElementById('phMonth')&&!phMonth.value)phMonth.value=centralYm;loadClientProjectSelectors();['regMonth','regSource','regSearch'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderCentralRegister));['phMonth','phSearch'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderProjectHours));syncApprovedLeaveIntoTimesheet();refreshCentralUI();renderProjectHours()},0);
 const _centralInitial=centralStore(), _centralMonth=(_centralInitial.records.map(x=>x.month).filter(Boolean).sort().pop()||centralYm), _centralReport=aggregateReportEmployees(_centralInitial.records,_centralMonth);
 const employees=_centralReport.length?_centralReport:DATA.employees, adjustments=_centralReport.length?[]:DATA.adjustments, vatMap=DATA.vatMap;
 
