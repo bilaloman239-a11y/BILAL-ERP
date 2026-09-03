@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="cm-leave-audit">
+/* ===== Civil Master ERP Central Audit Trail ===== */
+(function(){
+ if(window.__cmAuditInstalled)return; window.__cmAuditInstalled=true;
+ const AUDIT_KEY='cm_erp_audit_trail_v1', nativeSet=Storage.prototype.setItem;
+ function parse(v){try{return JSON.parse(v)}catch(e){return v}}
+ function simple(v){if(v===undefined)return '';if(v===null)return 'null';if(typeof v==='object'){try{const x=JSON.stringify(v);return x.length>600?x.slice(0,600)+'…':x}catch(e){return '[object]'}}return String(v).slice(0,600)}
+ function diff(a,b,path='',out=[]){if(out.length>=80)return out;if(a===b)return out;if(a&&b&&typeof a==='object'&&typeof b==='object'){const keys=new Set([...Object.keys(a),...Object.keys(b)]);for(const k of keys){if(out.length>=80)break;diff(a[k],b[k],path?(path+'.'+k):k,out)}return out}out.push({field:path||'value',old:simple(a),new:simple(b)});return out}
+ function moduleName(){const t=document.title||location.pathname;if(/leave/i.test(t))return'Leave';if(/cicpa/i.test(t))return'CICPA';if(/employee/i.test(t))return'Employee';if(/client/i.test(t))return'Client / Project';if(/sub.?contract/i.test(t))return'Sub Contractor';if(/site/i.test(t))return'Site';if(/timesheet/i.test(t))return'Timesheet';if(/payroll/i.test(t))return'Payroll';if(/approval/i.test(t))return'Approval Center';if(/dashboard/i.test(t))return'Dashboard';return'ERP'}
+ function log(key,oldRaw,newRaw){if(key===AUDIT_KEY||/_backup$/i.test(key)||/^cm_logged_in/i.test(key)||/^cm_saved_email/i.test(key))return;if(oldRaw===newRaw)return;let changes=diff(parse(oldRaw),parse(newRaw));if(!changes.length)return;let trail=[];try{trail=JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]');if(!Array.isArray(trail))trail=[]}catch(e){trail=[]}trail.unshift({id:'AUD-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),at:new Date().toISOString(),user:localStorage.getItem('cm_saved_email')||localStorage.getItem('cm_current_user')||'Administrator',module:moduleName(),storageKey:key,action:oldRaw==null?'Created':'Updated',changes:changes.slice(0,80),url:location.pathname.split('/').pop()||''});if(trail.length>3000)trail=trail.slice(0,3000);nativeSet.call(localStorage,AUDIT_KEY,JSON.stringify(trail))}
+ Storage.prototype.setItem=function(key,value){const old=this.getItem(key);const result=nativeSet.call(this,key,value);try{if(this===localStorage)log(String(key),old,String(value))}catch(e){}return result};
+})();
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Civil Master ERP - Leave Management</title>
+<style>
+:root{
+  --navy:#12344a;--blue:#2e6fae;--orange:#f59e0b;--bg:#f4f7fb;
+  --card:#fff;--text:#1f2937;--muted:#6b7280;--line:#dbe4ef;
+  --green:#15803d;--red:#dc2626;--amber:#d97706;--purple:#6d5bc0
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app{display:grid;grid-template-columns:245px 1fr;min-height:100vh}
+.side{background:linear-gradient(180deg,#0f2f46,#12344a);color:#fff;padding:18px 14px;display:flex;flex-direction:column}
+.brand{padding:6px 10px 18px;border-bottom:1px solid #ffffff22;margin-bottom:14px}
+.brand b{font-size:20px}.brand small{display:block;color:#b9c9d6;margin-top:5px;font-size:10px;letter-spacing:1px}
+.nav{display:block;color:#eef7fc;text-decoration:none;padding:11px 12px;border-radius:8px;margin:3px 0;font-size:13px;font-weight:700}
+.nav:hover,.nav.active{background:#17465f}.nav.active{background:linear-gradient(90deg,#1976c9,#2e6fae)}
+.spacer{flex:1}.erp-links{border-top:1px solid #ffffff1f;padding-top:12px;margin-top:16px}
+.main{padding:22px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.top h1{margin:0;color:#173b67;font-size:27px}.top p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--blue);color:#fff}.light{background:#edf3f8;color:#173b67}.danger{background:#fee2e2;color:#991b1b}
+.cards{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;box-shadow:0 4px 14px rgba(36,91,149,.05)}
+.card small{color:var(--muted);font-weight:700}.card b{display:block;font-size:27px;color:#173b67;margin-top:7px}
+.card.warn b{color:var(--amber)}.card.ok b{color:var(--green)}.card.red b{color:var(--red)}.card.purple b{color:var(--purple)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:15px}
+.panel h2{margin:0 0 14px;color:#173b67;font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.field label{display:block;font-size:11px;font-weight:800;color:#4b5d70;margin-bottom:5px;text-transform:uppercase}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #cfdbe7;border-radius:8px;background:#fff}
+textarea{min-height:76px;resize:vertical}.full{grid-column:1/-1}
+.empbox{background:#f1f6fb;border:1px solid #d8e5f0;border-radius:9px;padding:11px}
+.actions{display:flex;gap:9px;margin-top:13px;flex-wrap:wrap}
+.toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+.toolbar input,.toolbar select{max-width:260px}
+.wrap{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:1000px;font-size:12px}
+th,td{padding:10px;border-bottom:1px solid #edf1f5;text-align:left;white-space:nowrap}
+th{background:#f1f5f9;color:#40576c}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900}
+.pending{background:#fff4df;color:#a35c00}.approved{background:#e8f7ee;color:#147542}.rejected{background:#fdeaea;color:#b42323}
+.onleave{background:#eeeafd;color:#5b47a8}.returned{background:#eaf3fb;color:#27608e}
+@media(max-width:1050px){.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.app{grid-template-columns:1fr}.side{display:none}.cards,.grid{grid-template-columns:1fr}.main{padding:14px}}
+
+.accounts-only{display:none;border:1px solid #cfe0ef;background:#f8fbfe}
+.accounts-only.show{display:block}
+.accounts-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.role-pill{padding:5px 9px;border-radius:999px;background:#eaf3fb;color:#27608e;font-size:10px;font-weight:900}
+.calc-note{font-size:11px;color:#6b7280;margin-top:6px}
+
+
+.import-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:15px}
+.dropzone{border:2px dashed #c9d8e6;border-radius:12px;padding:22px;text-align:center;background:#f8fbfe}
+.dropzone input{max-width:420px;margin-top:10px}
+.info-note{font-size:11px;color:#68798a;line-height:1.5}
+.master-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.master-row input{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:#eef4f9;border:1px solid #d6e2ec;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:700}
+.chip button{border:0;background:none;color:#a52323;cursor:pointer;font-weight:900}
+.history-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.mini{border:1px solid #e0e8f0;border-radius:10px;padding:12px;background:#fbfdff}
+.mini small{color:#738295;font-weight:700}.mini b{display:block;font-size:20px;color:#173b67;margin-top:4px}
+.import-result{margin-top:10px;padding:10px;border-radius:9px;display:none}
+.import-result.ok{display:block;background:#ecf8f0;color:#176b39;border:1px solid #cdebd7}
+.import-result.warn{display:block;background:#fff7e8;color:#8a5b00;border:1px solid #f1deb1}
+.import-result.err{display:block;background:#fff0f0;color:#a12626;border:1px solid #f3cece}
+@media(max-width:950px){.import-grid{grid-template-columns:1fr}.history-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+.leave-workspace{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:15px;align-items:start}
+.side-history{position:sticky;top:15px}
+.side-history .wrap{max-height:520px}
+.side-history table{min-width:760px}
+@media(max-width:1050px){.leave-workspace{grid-template-columns:1fr}.side-history{position:static}}
+
+
+.dashboard-hero{background:linear-gradient(135deg,#163b63,#255f93);color:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 8px 24px rgba(22,59,99,.14)}
+.dashboard-hero h2{margin:0;text-align:center;font-size:25px;letter-spacing:.3px}
+.dashboard-date{text-align:center;margin-top:5px;color:#d7e6f3;font-size:12px}
+.action-cards{display:grid;grid-template-columns:repeat(5,minmax(155px,1fr));gap:12px;margin-bottom:16px}
+.action-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;cursor:pointer;box-shadow:0 5px 16px rgba(36,91,149,.06);position:relative;overflow:hidden}
+.action-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:#64748b}
+.action-card.orange::before{background:#f59e0b}.action-card.blue::before{background:#2563eb}.action-card.green::before{background:#16a34a}.action-card.yellow::before{background:#eab308}.action-card.red::before{background:#dc2626}
+.action-card small{display:block;color:#65778a;font-weight:800;text-transform:uppercase;font-size:10px;line-height:1.3}
+.action-card b{display:block;font-size:30px;color:#173b67;margin-top:7px}
+.action-card span{font-size:10px;color:#7b8b99}
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.visual-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:15px}
+.visual-panel h3{margin:0 0 12px;color:#173b67;font-size:16px}
+.person-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #edf1f5}
+.person-row:last-child{border-bottom:0}
+.avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#dbe7f1;display:flex;align-items:center;justify-content:center;font-weight:900;color:#315b7d;flex:none}
+.person-main{min-width:0;flex:1}.person-main b{display:block;color:#173b67}.person-main small{display:block;color:#6d7e8e;margin-top:3px;white-space:normal}
+.remain{font-size:11px;font-weight:900;color:#b45309;white-space:nowrap}
+.move-row{display:grid;grid-template-columns:72px 1fr 80px 1fr 88px;gap:8px;align-items:center;margin:9px 0;font-size:11px}
+.bar-track{height:9px;background:#edf2f7;border-radius:999px;overflow:hidden}
+.bar-fill{height:100%;background:#5b87b0;border-radius:999px}
+.bar-fill.return{background:#6e9f7a}
+.return-btn{border:0;border-radius:7px;background:#e8f7ee;color:#147542;padding:6px 8px;font-size:10px;font-weight:900;cursor:pointer}
+.detail-drawer{display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:15px}
+.detail-drawer.show{display:block}
+.detail-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.detail-close{border:0;background:#eef3f7;border-radius:7px;padding:6px 9px;cursor:pointer}
+.status-flow{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.flow-step{padding:5px 8px;border-radius:999px;background:#eef3f7;color:#607284;font-size:10px;font-weight:800}
+.flow-step.active{background:#173b67;color:#fff}
+@media(max-width:1150px){.action-cards{grid-template-columns:repeat(2,1fr)}.dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.action-cards{grid-template-columns:1fr}.move-row{grid-template-columns:60px 1fr 65px}.move-row .retbar,.move-row .retlabel{display:none}}
+
+
+/* ===== Screenshot-style dashboard refresh ===== */
+:root{
+  --dash-navy:#072e59;
+  --dash-navy-2:#0b3e73;
+  --dash-blue:#1264cf;
+  --dash-soft:#f6f8fc;
+  --dash-border:#dfe6ef;
+}
+body{background:#f5f7fb}
+.app{grid-template-columns:178px 1fr}
+.side{
+  background:linear-gradient(180deg,#06294f 0%,#07345f 58%,#062b50 100%);
+  padding:18px 10px;
+  min-height:100vh;
+  position:sticky;top:0;align-self:start;
+}
+.brand{padding:4px 8px 17px;margin-bottom:10px}
+.brand b{font-size:15px;letter-spacing:.2px}
+.brand small{font-size:9px}
+.nav{padding:10px 10px;border-radius:7px;font-size:12px;font-weight:600;margin:2px 0}
+.nav.active{background:#0e61bd}
+.main{padding:18px 18px 24px;min-width:0}
+.top{margin-bottom:14px}
+.top h1{font-size:24px;color:#101828}
+.top p{color:#334155;font-size:12px}
+.dashboard-hero{display:none}
+.cards{display:none}
+
+/* Header controls */
+.dash-topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px}
+.dash-title h1{margin:0;font-size:25px;color:#0f172a}
+.dash-title .subdate{margin-top:7px;color:#334155;font-size:12px;display:flex;align-items:center;gap:8px}
+.dash-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dash-control,.dash-export{
+  min-height:38px;border:1px solid #cbd5e1;background:#fff;border-radius:7px;
+  padding:8px 12px;color:#0f172a;font-weight:700;font-size:12px;cursor:pointer
+}
+.dash-export{background:#092d60;color:#fff;border-color:#092d60}
+.date-range{min-width:220px}
+
+/* KPI cards */
+.action-cards{
+  grid-template-columns:repeat(5,minmax(150px,1fr));
+  gap:10px;margin-bottom:14px
+}
+.action-card{
+  min-height:150px;padding:18px 18px 14px 82px;border-radius:9px;
+  border:1px solid #dfe6ef;box-shadow:0 2px 9px rgba(15,23,42,.05);
+  position:relative
+}
+.action-card::before{left:0;right:0;top:auto;bottom:0;width:auto;height:4px}
+.action-card::after{
+  position:absolute;left:18px;top:28px;width:50px;height:50px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:25px;font-weight:900
+}
+.action-card.orange::after{content:"♿";background:linear-gradient(135deg,#ff9d00,#f46b00)}
+.action-card.blue::after{content:"▣";background:linear-gradient(135deg,#3285ff,#1764d9)}
+.action-card.green::after{content:"↔";background:linear-gradient(135deg,#38c965,#159447)}
+.action-card.yellow::after{content:"▦";background:linear-gradient(135deg,#ffc82f,#f1a500)}
+.action-card.red::after{content:"!";background:linear-gradient(135deg,#f24e59,#d92732)}
+.action-card small{font-size:11px;line-height:1.3}
+.action-card b{font-size:30px;margin-top:7px;color:#111827}
+.action-card span{display:block;margin-top:3px;color:#1f2937;font-size:11px}
+.kpi-view{margin-top:16px;color:#111827;font-size:10px;font-weight:800}
+
+/* Grid panels */
+.ss-grid-top{display:grid;grid-template-columns:1.05fr 1.05fr 1.05fr;gap:12px;margin-bottom:12px}
+.ss-grid-bottom{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:12px;margin-bottom:12px}
+.visual-panel{
+  border-radius:9px;border:1px solid var(--dash-border);box-shadow:0 2px 8px rgba(15,23,42,.04);
+  padding:0;overflow:hidden;margin:0;background:#fff
+}
+.ss-head{
+  display:flex;justify-content:space-between;align-items:center;padding:14px 16px 12px;
+  border-bottom:1px solid #e7edf4;color:#0b2860;font-weight:900;font-size:12px
+}
+.ss-head button{border:0;background:none;color:#075fc8;font-weight:800;font-size:10px;cursor:pointer}
+.visual-panel .wrap{border:0;border-radius:0}
+.visual-panel table{min-width:0;width:100%;font-size:10px}
+.visual-panel th{background:#fbfcfe;color:#475569;font-size:9px;padding:8px 10px}
+.visual-panel td{padding:8px 10px}
+.visual-panel tbody tr:hover{background:#f8fbff}
+.emp-cell{display:flex;align-items:center;gap:7px}
+.avatar,.avatar-sm{
+  width:28px;height:28px;border-radius:50%;object-fit:cover;background:#e2e8f0;
+  display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#315b7d;flex:none
+}
+.avatar-sm{width:26px;height:26px;font-size:10px}
+.emp-lines b{display:block;font-size:10px}.emp-lines span{display:block;color:#64748b;font-size:9px;margin-top:1px}
+.text-green{color:#13863d}.text-red{color:#d92d20}.text-blue{color:#155eef}.text-orange{color:#e36a00}
+.pill{display:inline-block;border-radius:6px;padding:5px 8px;font-size:9px;font-weight:800}
+.pill.green{background:#e9f8ef;color:#157347}.pill.blue{background:#eaf2ff;color:#245eb0}.pill.red{background:#feecec;color:#c21f2b}
+.pill.orange{background:#fff4df;color:#b35e00}
+
+/* Currently-on-leave compact cards */
+.current-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+.current-mini{padding:12px;border-right:1px solid #edf1f6;border-bottom:1px solid #edf1f6;cursor:pointer}
+.current-mini:nth-child(even){border-right:0}
+.current-mini .topline{display:flex;gap:8px;align-items:center}
+.current-mini .meta{font-size:9px;color:#475569;margin-top:8px;line-height:1.7}
+.current-mini .days-left{font-size:10px;font-weight:900;margin-top:8px}
+.current-mini .site{border-top:1px solid #edf1f6;margin-top:8px;padding-top:7px;font-size:9px;color:#475569}
+
+/* Chart */
+.movement-chart{padding:12px 14px 14px}
+.chart-legend{display:flex;justify-content:center;gap:16px;font-size:9px;margin-bottom:8px;color:#334155}
+.legend-dot{display:inline-block;width:11px;height:6px;border-radius:2px;margin-right:5px}
+.legend-go{background:#1f6ed4}.legend-return{background:#24a451}
+.chart-area{height:210px;display:flex;align-items:flex-end;gap:12px;padding:12px 8px 0;border-left:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+.chart-day{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:4px;height:100%;position:relative}
+.chart-bar{width:16px;border-radius:2px 2px 0 0;position:relative}
+.chart-bar.go{background:#1f6ed4}.chart-bar.ret{background:#24a451}
+.chart-bar span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:#111827}
+.chart-label{position:absolute;bottom:-21px;font-size:9px;color:#334155;white-space:nowrap}
+.chart-totals{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #edf1f6;margin-top:25px}
+.chart-total{padding:10px;text-align:center;font-size:9px}.chart-total b{display:block;font-size:17px;margin-top:3px}
+
+/* Right-side quick actions / summary */
+.quick-actions{display:grid;gap:8px;padding:12px 14px}
+.quick-actions button{
+  width:100%;border:1px solid #d8e1ec;background:#fff;border-radius:6px;min-height:36px;
+  text-align:left;padding:8px 12px;color:#0b2860;font-size:10px;font-weight:800;cursor:pointer
+}
+.quick-actions button.primary-q{background:#082f67;color:#fff;border-color:#082f67}
+.summary-list{padding:8px 14px 12px}
+.summary-row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #edf1f6;font-size:10px}
+.summary-row:last-child{border-bottom:0}.summary-row b{font-size:12px}
+.summary-total{background:#f4f7fb;border-radius:6px;padding:9px 10px;margin-top:8px;font-weight:900}
+
+/* Recent table */
+.ss-recent{margin-bottom:14px}
+.ss-recent table{min-width:900px}
+.ss-actions{display:flex;gap:5px}
+.ss-icon-btn{border:1px solid #d9e2ec;background:#fff;border-radius:5px;padding:4px 6px;font-size:10px;cursor:pointer;color:#0b2860}
+
+/* Keep forms/other sections lower and clean */
+.leave-workspace,.accounts-only,#monthlyImport,#leaveHistory,#list{margin-top:16px}
+.panel{border-radius:9px}
+.dashboard-grid{display:none}
+#dashboardFilteredPanel,#dashboardDetailDrawer{margin-top:12px}
+
+@media(max-width:1220px){
+  .action-cards{grid-template-columns:repeat(2,1fr)}
+  .ss-grid-top,.ss-grid-bottom{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .app{grid-template-columns:1fr}.side{display:none}.main{padding:12px}
+  .dash-topbar{flex-direction:column}.dash-controls{width:100%}.date-range{min-width:0;flex:1}
+  .action-cards{grid-template-columns:1fr}
+  .current-cards{grid-template-columns:1fr}
+  .current-mini{border-right:0}
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style id="cm-unified-nav-style">
+.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999;font-family:Segoe UI,Arial,sans-serif}
+.cm-all-portals details{position:relative}
+.cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800;font-size:12px;box-shadow:0 5px 18px #0002}
+.cm-all-portals summary::-webkit-details-marker{display:none}
+.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
+.cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font-weight:700;font-size:12px}
+.cm-all-portals a:hover{background:#eef4fa}
+.cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><b>▣ LEAVE PORTAL</b><small>CIVIL MASTER ERP</small></div>
+    <a class="nav active" href="#">⌂ Dashboard</a>
+    <a class="nav" href="#form">▣ Leave Applications</a>
+    <a class="nav" href="#leaveHistory">✓ My Leaves</a>
+    <a class="nav" href="#leaveHistory">♙ Team Leaves</a>
+    <a class="nav" href="#leaveHistory">▦ Leave Calendar</a>
+    <a class="nav" href="#list">▥ Reports</a>
+    <a class="nav" href="#form">♙ Employees</a>
+    <a class="nav" href="#monthlyImport">⇧ Leave Import</a>
+    <a class="nav" href="#monthlyImport">⚙ Leave Types</a>
+    <a class="nav" href="#accountsSection">✓ Approvals</a>
+    <div class="spacer"></div>
+    <div class="erp-links">
+<a class="nav" href="dashboard.html">ERP Dashboard</a>
+<a class="nav" href="index.html">Employee Management</a>
+<a class="nav" href="subcontractor.html">Sub Contractor</a>
+<a class="nav" href="client.html">Client / Project</a>
+<a class="nav" href="site.html">Site Management</a>
+<a class="nav" href="timesheet.html">Timesheet</a>
+<a class="nav" href="payroll.html">Payroll</a>
+<a class="nav" href="approval.html">Approval Center</a>
+<a class="nav" href="cicpa.html">CICPA Management</a>
+<a class="nav" href="audit.html">Audit Trail</a>
+</div>
+  </aside>
+
+  <main class="main">
+    
+    <div class="dash-topbar">
+      <div class="dash-title">
+        <h1>Leave Management Dashboard</h1>
+        <div class="subdate">▣ <span id="ssTodayLabel">Thursday, 03 September 2026</span></div>
+      </div>
+      <div class="dash-controls">
+        <button class="dash-control date-range" type="button" id="ssRangeBtn">03 Sep 2026 - 09 Sep 2026 &nbsp; ▣</button>
+        <button class="dash-control" type="button" onclick="document.getElementById('dashboardFilteredPanel').scrollIntoView({behavior:'smooth'})">▽ Filter</button>
+        <button class="dash-export" type="button" onclick="exportHistoryCsv()">⇩ Export</button>
+      </div>
+    </div>
+
+    <section class="action-cards">
+      <div class="action-card orange" onclick="showDashboardList('onleave')">
+        <small>CURRENTLY ON LEAVE</small><b id="dOnLeave">0</b><span>Employees</span><div class="kpi-view">View All →</div>
+      </div>
+      <div class="action-card blue" onclick="showDashboardList('going')">
+        <small>GOING ON LEAVE<br>NEXT 7 DAYS</small><b id="dGoing">0</b><span>Employees</span><div class="kpi-view">View All →</div>
+      </div>
+      <div class="action-card green" onclick="showDashboardList('returning')">
+        <small>RETURNING<br>NEXT 7 DAYS</small><b id="dReturning">0</b><span>Employees</span><div class="kpi-view">View All →</div>
+      </div>
+      <div class="action-card yellow" onclick="showDashboardList('ending')">
+        <small>LEAVE ENDING<br>NEXT 7 DAYS</small><b id="dEnding">0</b><span>Employees</span><div class="kpi-view">View All →</div>
+      </div>
+      <div class="action-card red" onclick="showDashboardList('overdue')">
+        <small>OVERDUE RETURN<br>(NOT JOINED)</small><b id="dOverdue">0</b><span>Employees</span><div class="kpi-view">View All →</div>
+      </div>
+    </section>
+
+    <div class="ss-grid-top">
+      <section class="visual-panel">
+        <div class="ss-head"><span>CURRENTLY ON LEAVE</span><button type="button" onclick="showDashboardList('onleave')">View All</button></div>
+        <div id="currentLeaveVisual" class="current-cards"></div>
+      </section>
+
+      <section class="visual-panel">
+        <div class="ss-head"><span>GOING ON LEAVE – NEXT 7 DAYS</span><button type="button" onclick="showDashboardList('going')">View All</button></div>
+        <div class="wrap">
+          <table>
+            <thead><tr><th>Employee</th><th>Leave Type</th><th>Start Date</th><th>Days</th></tr></thead>
+            <tbody id="upcomingLeaveRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="visual-panel">
+        <div class="ss-head"><span>RETURNING – NEXT 7 DAYS</span><button type="button" onclick="showDashboardList('returning')">View All</button></div>
+        <div class="wrap">
+          <table>
+            <thead><tr><th>Employee</th><th>Leave Type</th><th>Return Date</th><th>Status</th></tr></thead>
+            <tbody id="returningLeaveRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="ss-grid-bottom">
+      <section class="visual-panel">
+        <div class="ss-head"><span>LEAVE ENDING – NEXT 7 DAYS</span><button type="button" onclick="showDashboardList('ending')">View All</button></div>
+        <div class="wrap">
+          <table>
+            <thead><tr><th>Employee</th><th>Leave Type</th><th>End Date</th><th>Return Date</th></tr></thead>
+            <tbody id="endingLeaveRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="visual-panel">
+        <div class="ss-head"><span>7-DAY LEAVE MOVEMENT</span></div>
+        <div id="leaveMovementVisual" class="movement-chart"></div>
+      </section>
+
+      <section class="visual-panel">
+        <div class="ss-head"><span>OVERDUE RETURN (NOT JOINED)</span><button type="button" onclick="showDashboardList('overdue')">View All</button></div>
+        <div class="wrap">
+          <table>
+            <thead><tr><th>Employee</th><th>Leave Type</th><th>Expected Return</th><th>Days Overdue</th></tr></thead>
+            <tbody id="overdueLeaveRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="ss-grid-top" style="grid-template-columns:2.15fr .85fr;">
+      <section class="visual-panel ss-recent">
+        <div class="ss-head"><span>ALL LEAVE APPLICATIONS – RECENT</span><button type="button" onclick="document.getElementById('list').scrollIntoView({behavior:'smooth'})">View All</button></div>
+        <div class="wrap">
+          <table>
+            <thead><tr><th>Employee</th><th>Leave Type</th><th>Start Date</th><th>End Date</th><th>Total Days</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="recentLeaveRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div style="display:grid;gap:12px">
+        <section class="visual-panel">
+          <div class="ss-head"><span>QUICK ACTIONS</span></div>
+          <div class="quick-actions">
+            <button class="primary-q" type="button" onclick="document.getElementById('form').scrollIntoView({behavior:'smooth'})">＋ New Leave Application</button>
+            <button type="button" onclick="document.getElementById('monthlyImport').scrollIntoView({behavior:'smooth'})">⇧ Import Leave (Excel)</button>
+            <button type="button" onclick="document.getElementById('leaveHistory').scrollIntoView({behavior:'smooth'})">▣ Leave History</button>
+            <button type="button" onclick="document.getElementById('list').scrollIntoView({behavior:'smooth'})">▥ Leave Report</button>
+          </div>
+        </section>
+
+        <section class="visual-panel">
+          <div class="ss-head"><span>LEAVE SUMMARY (THIS MONTH)</span></div>
+          <div class="summary-list">
+            <div class="summary-row"><span>Annual Leave</span><b class="text-green" id="ssAnnualMonth">0</b></div>
+            <div class="summary-row"><span>Medical Leave</span><b class="text-red" id="ssMedicalMonth">0</b></div>
+            <div class="summary-row"><span>Unpaid Leave</span><b class="text-orange" id="ssUnpaidMonth">0</b></div>
+            <div class="summary-row"><span>Other Leave</span><b class="text-blue" id="ssOtherMonth">0</b></div>
+            <div class="summary-total">Total Leave Days <span style="float:right" id="ssTotalMonth">0</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="detail-drawer" id="dashboardDetailDrawer">
+      <div class="detail-head">
+        <div><h2 style="margin:0">Leave Details & Previous History</h2><div class="info-note" id="dashboardDetailCaption"></div></div>
+        <button class="detail-close" onclick="closeDashboardDetail()">✕ Close</button>
+      </div>
+      <div id="dashboardCurrentApplication"></div>
+      <div class="wrap" style="margin-top:12px">
+        <table>
+          <thead><tr><th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Remarks</th><th>Source</th></tr></thead>
+          <tbody id="dashboardPreviousRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="visual-panel" id="dashboardFilteredPanel" style="display:none">
+      <div class="ss-head"><span id="dashboardFilteredTitle">Filtered Employees</span><button type="button" onclick="dashboardFilteredPanel.style.display='none'">Close</button></div>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>Code</th><th>Employee</th><th>Leave Type</th><th>Start</th><th>End</th><th>Expected Return</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="dashboardFilteredRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+<div class="leave-workspace">
+    <section class="panel" id="form">
+      <h2>Add / Update Leave</h2>
+      <div class="grid">
+        <div class="field full">
+          <label>Select Employee *</label>
+          <select id="employee" onchange="pickEmployee()"></select>
+        </div>
+
+        <div class="field"><label>Employee Code</label><input id="empCode" readonly></div>
+        <div class="field"><label>Employee Name</label><input id="empName" readonly></div>
+        <div class="field"><label>Designation / Craft</label><input id="designation" readonly></div>
+
+        <div class="field"><label>Leave Type *</label>
+          <select id="leaveType">
+            <option>Annual Leave</option>
+            <option>Sick Leave</option>
+            <option>Emergency Leave</option>
+            <option>Unpaid Leave</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field"><label>Total Leave Days</label><input id="totalDays" readonly placeholder="Auto Calculated"></div>
+        <div class="field"><label>Leave Start Date *</label><input id="startDate" type="date" onchange="calcDays()"></div>
+        <div class="field"><label>Leave End Date *</label><input id="endDate" type="date" onchange="calcDays()"></div>
+
+        <div class="field"><label>Ticket Arrangement *</label>
+          <select id="ticketArrangement" onchange="toggleTicketSector();calcDays()">
+            <option value="Round Trip – Company Provided">Round Trip – Company Provided</option>
+            <option value="One Way – Company Provided">One Way – Company Provided</option>
+            <option value="Employee Arranged Ticket">Employee Arranged Ticket</option>
+            <option value="Not Applicable">Not Applicable</option>
+          </select>
+        </div>
+        <div class="field" id="ticketSectorField" style="display:none">
+          <label>Company Provided Sector *</label>
+          <select id="companyProvidedSector" onchange="toggleTicketDates();calcDays()">
+            <option value="">-- Select Sector --</option>
+            <option value="UAE → Home Country">UAE → Home Country</option>
+            <option value="Home Country → UAE">Home Country → UAE</option>
+          </select>
+        </div>
+
+        <div class="field" id="outboundTicketDateField">
+          <label>UAE → Home Country Ticket Date</label>
+          <input id="outboundTicketDate" type="date" onchange="calcDays()">
+        </div>
+        <div class="field" id="returnTicketDateField">
+          <label>Home Country → UAE Ticket Date</label>
+          <input id="returnTicketDate" type="date" onchange="calcDays()">
+        </div>
+
+        <div class="field"><label>Status *</label>
+          <select id="status">
+            <option>Pending</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+            <option>On Leave</option>
+            <option>Returned</option>
+          </select>
+        </div>
+        <div class="field"><label>Expected Return / Duty Join Date</label><input id="returnDate" type="date" onchange="renderVisualDashboard()"></div>
+        <div class="field"><label>Actual Joining Date</label><input id="actualJoiningDate" type="date"></div>
+
+        <div class="field full"><label>Reason / Remarks</label><textarea id="reason" placeholder="Enter leave reason or remarks"></textarea></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" onclick="saveLeave()">Save Leave</button>
+        <button class="btn light" onclick="clearForm()">Clear</button>
+      </div>
+    </section>
+
+
+    <section class="panel side-history" id="selectedEmployeeHistoryPanel">
+      <div class="toolbar">
+        <div>
+          <h2 style="margin:0">Previous Leave History</h2>
+          <div class="info-note" id="selectedHistoryCaption">Select employee to view previous history</div>
+        </div>
+      </div>
+      <div class="history-summary">
+        <div class="mini"><small>Annual</small><b id="selAnnual">0</b></div>
+        <div class="mini"><small>Medical</small><b id="selMedical">0</b></div>
+        <div class="mini"><small>Unpaid</small><b id="selUnpaid">0</b></div>
+        <div class="mini"><small>Total Days</small><b id="selTotal">0</b></div>
+      </div>
+      <div class="wrap">
+        <table>
+          <thead>
+            <tr><th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Remarks</th><th>Source</th></tr>
+          </thead>
+          <tbody id="selectedHistoryRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+    <section class="panel accounts-only" id="accountsSection">
+      <div class="accounts-head">
+        <h2 style="margin:0">Leave Salary Payment — Accounts Only</h2>
+        <span class="role-pill" id="roleBadge">Accounts / Admin</span>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label>Leave Salary Status</label>
+          <select id="leaveSalaryStatus">
+            <option>Pending</option>
+            <option>Paid</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Paid Date</label>
+          <input id="paidDate" type="date">
+        </div>
+        <div class="field">
+          <label>Paid Amount (AED)</label>
+          <input id="paidAmount" type="number" min="0" step="0.01" placeholder="0.00">
+        </div>
+
+        <div class="field">
+          <label>Paid Days</label>
+          <input id="paidDays" type="number" min="0" step="1" placeholder="0" oninput="calcUnpaidDays()">
+          <div class="calc-note">Manual entry by Accounts. Cannot exceed Total Leave Days.</div>
+        </div>
+        <div class="field">
+          <label>Unpaid Days</label>
+          <input id="unpaidDays" type="number" readonly placeholder="Auto Calculated">
+          <div class="calc-note">Unpaid Days = Total Leave Days − Paid Days</div>
+        </div>
+        <div class="field full">
+          <label>Payment Remarks</label>
+          <textarea id="paymentRemarks" placeholder="Optional payment remarks"></textarea>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="panel" id="monthlyImport">
+      <h2>Monthly Leave Import</h2>
+      <div class="import-grid">
+        <div>
+          <div class="dropzone">
+            <b>Upload Monthly Leave Excel</b>
+            <div class="info-note">
+              Required columns: Employee Code, Employee Name, Month, Leave Type, From Date, To Date, Total Days, Remarks
+            </div>
+            <input id="leaveImportFile" type="file" accept=".xlsx,.xls,.csv">
+            <div class="actions" style="justify-content:center">
+              <button class="btn primary" onclick="importMonthlyLeave()">Import Excel</button>
+              <button class="btn light" onclick="downloadLeaveTemplate()">Download Sample</button>
+            </div>
+          </div>
+          <div id="importResult" class="import-result"></div>
+          <div class="info-note" style="margin-top:10px">
+            Duplicate rule: same Employee Code + Leave Type + From Date + To Date will not be imported again.
+            Employee Code must match Employee Master.
+          </div>
+        </div>
+
+        <div>
+          <h2 style="font-size:16px">Leave Type Master</h2>
+          <div class="master-row">
+            <input id="newLeaveType" placeholder="Add new leave type">
+            <button class="btn primary" onclick="addLeaveTypeMaster()">Add</button>
+          </div>
+          <div id="leaveTypeChips" class="chips"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="leaveHistory">
+      <div class="toolbar">
+        <div>
+          <h2 style="margin:0">Employee Leave History</h2>
+          <div class="info-note">Monthly imported records + manually created leave records</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="historyEmployee" onchange="renderHistory()"></select>
+          <select id="historyYear" onchange="renderHistory()"><option value="">All Years</option></select>
+          <select id="historyMonth" onchange="renderHistory()">
+            <option value="">All Months</option>
+            <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+            <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+            <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+          <select id="historyType" onchange="renderHistory()"><option value="">All Leave Types</option></select>
+          <select id="historyStatus" onchange="renderHistory()">
+            <option value="">All Status</option>
+            <option>Pending</option><option>Approved</option><option>Rejected</option><option>On Leave</option><option>Returned</option>
+            <option>Imported</option>
+          </select>
+          <button class="btn light" onclick="exportHistoryCsv()">Export Excel</button>
+        </div>
+      </div>
+
+      <div class="history-summary">
+        <div class="mini"><small>Annual Leave Days</small><b id="hAnnual">0</b></div>
+        <div class="mini"><small>Medical Leave Days</small><b id="hMedical">0</b></div>
+        <div class="mini"><small>Unpaid Leave Days</small><b id="hUnpaid">0</b></div>
+        <div class="mini"><small>Total Leave Days</small><b id="hTotal">0</b></div>
+      </div>
+
+      <div class="wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Employee Code</th><th>Employee Name</th><th>Year</th><th>Month</th>
+            <th>Leave Type</th><th>From Date</th><th>To Date</th><th>Total Days</th><th>Status</th><th>Remarks</th><th>Source</th>
+          </tr></thead>
+          <tbody id="historyRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" id="list">
+      <div class="toolbar">
+        <h2 style="margin:0">Leave Register</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="q" placeholder="Search employee, code, leave type..." oninput="render()">
+          <select id="fStatus" onchange="render()">
+            <option value="">All Status</option>
+            <option>Pending</option><option>Approved</option><option>Rejected</option><option>On Leave</option><option>Returned</option>
+          </select>
+        </div>
+      </div>
+      <div class="wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Employee Code</th><th>Employee Name</th><th>Designation</th>
+            <th>Leave Type</th><th>Start</th><th>End</th><th>Days</th><th>Ticket Arrangement</th><th>Company Sector</th><th>UAE → Home Ticket</th><th>Home → UAE Ticket</th><th>Calculation Basis</th><th>Status</th><th class="acc-col">Leave Salary</th><th class="acc-col">Paid Date</th><th class="acc-col">Paid Amount</th><th class="acc-col">Paid Days</th><th class="acc-col">Unpaid Days</th><th>Return Date</th><th>Action</th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const KEY='cm_leave_records_v1';
+let editId=null;
+let records=load(KEY,[]);
+
+
+const IMPORT_KEY='cm_monthly_leave_history_v1';
+const LEAVE_TYPE_KEY='cm_leave_type_master_v1';
+let importedLeaves=load(IMPORT_KEY,[]);
+let leaveTypeMaster=load(LEAVE_TYPE_KEY,['Medical Leave','Unpaid Leave','Annual Leave']);
+
+function normDate(v){
+  if(v===null||v===undefined||v==='') return '';
+  if(v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  if(typeof v==='number' && window.XLSX && XLSX.SSF){
+    const d=XLSX.SSF.parse_date_code(v);
+    if(d) return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+  }
+  const s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  const d=new Date(s);
+  return isNaN(d)?'':d.toISOString().slice(0,10);
+}
+function monthCodeFromValue(v,fromDate){
+  if(v!==null&&v!==undefined&&String(v).trim()!==''){
+    const s=String(v).trim();
+    const map={january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',july:'07',august:'08',september:'09',october:'10',november:'11',december:'12',
+      jan:'01',feb:'02',mar:'03',apr:'04',jun:'06',jul:'07',aug:'08',sep:'09',sept:'09',oct:'10',nov:'11',dec:'12'};
+    if(map[s.toLowerCase()]) return map[s.toLowerCase()];
+    let n=Number(s);
+    if(n>=1&&n<=12) return String(n).padStart(2,'0');
+    let mm=s.match(/(\d{4})[-\/](\d{1,2})/); if(mm) return String(mm[2]).padStart(2,'0');
+  }
+  return fromDate?fromDate.slice(5,7):'';
+}
+function yearFromMonthValue(v,fromDate){
+  const s=String(v??'');
+  let m=s.match(/(20\d{2})/);
+  return m?m[1]:(fromDate?fromDate.slice(0,4):'');
+}
+function importKey(r){
+  return [String(r.empCode||'').trim().toLowerCase(),String(r.leaveType||'').trim().toLowerCase(),r.fromDate||'',r.toDate||''].join('|');
+}
+
+function load(k,f){try{const x=JSON.parse(localStorage.getItem(k)||'null');return Array.isArray(x)?x:f}catch(e){return f}}
+function allEmployees(){
+  const keys=['employee_master','employees','cm_employees','erp_employees','employeeData','employeesData'];
+  const subkeys=['subcontractor_employee_master','subcontractorEmployees','subcontractor_employees','subEmployees','scEmployees'];
+  let out=[];
+  [...keys,...subkeys].forEach(k=>{out.push(...load(k,[]))});
+  ['erp_portal_state','cm_erp_state','appState'].forEach(k=>{
+    try{
+      const s=JSON.parse(localStorage.getItem(k)||'null');
+      if(s&&typeof s==='object'){
+        if(Array.isArray(s.employees))out.push(...s.employees);
+        if(Array.isArray(s.subcontractorEmployees))out.push(...s.subcontractorEmployees);
+      }
+    }catch(e){}
+  });
+  if(!out.length) out=[
+    {employeeCode:'EMP-001',employeeName:'Sample Employee',designation:'Pipe Fitter'},
+    {employeeCode:'EMP-002',employeeName:'Sample Employee 2',designation:'Welder'}
+  ];
+  const seen=new Set();
+  return out.map((e,i)=>({
+    code:e.employeeCode||e.empCode||e.code||e.id||('EMP-'+(i+1)),
+    name:e.employeeName||e.name||e.fullName||'',
+    designation:e.designation||e.craft||e.actualDesignation||'',
+    site:e.currentSite||e.site||e.project||e.projectName||e.siteName||'',
+    photo:e.photo||e.photoUrl||e.profilePhoto||''
+  })).filter(e=>{
+    const k=e.code+'|'+e.name;
+    if(seen.has(k))return false;seen.add(k);return e.name||e.code;
+  });
+}
+const employees=allEmployees();
+
+function loadEmployees(){
+  employee.innerHTML='<option value="">-- Select Employee --</option>'+
+    employees.map((e,i)=>`<option value="${i}">${esc(e.code)} - ${esc(e.name)}</option>`).join('');
+  historyEmployee.innerHTML='<option value="">All Employees</option>'+
+    employees.map(e=>`<option value="${esc(e.code)}">${esc(e.code)} - ${esc(e.name)}</option>`).join('');
+  refreshLeaveTypeUI();
+}
+function pickEmployee(){
+  const i=employee.value;
+  empCode.value='';empName.value='';designation.value='';
+  if(i==='')return;
+  const e=employees[Number(i)];
+  empCode.value=e.code;empName.value=e.name;designation.value=e.designation;
+  historyEmployee.value=e.code;
+  renderSelectedEmployeeHistory(e.code);
+  renderHistory();
+}
+
+function refreshLeaveTypeUI(){
+  // Merge defaults + master, unique
+  const seen=new Set();
+  leaveTypeMaster=leaveTypeMaster.filter(x=>{
+    const k=String(x).trim().toLowerCase();
+    if(!k||seen.has(k)) return false; seen.add(k); return true;
+  });
+  localStorage.setItem(LEAVE_TYPE_KEY,JSON.stringify(leaveTypeMaster));
+
+  const current=leaveType.value;
+  leaveType.innerHTML=leaveTypeMaster.map(x=>`<option>${esc(x)}</option>`).join('');
+  if(leaveTypeMaster.includes(current)) leaveType.value=current;
+
+  historyType.innerHTML='<option value="">All Leave Types</option>'+
+    leaveTypeMaster.map(x=>`<option>${esc(x)}</option>`).join('');
+  leaveTypeChips.innerHTML=leaveTypeMaster.map((x,i)=>`<span class="chip">${esc(x)} <button onclick="removeLeaveTypeMaster(${i})">×</button></span>`).join('');
+}
+function addLeaveTypeMaster(){
+  const v=newLeaveType.value.trim();
+  if(!v) return;
+  if(leaveTypeMaster.some(x=>x.toLowerCase()===v.toLowerCase())) return alert('Leave Type already exists.');
+  leaveTypeMaster.push(v); newLeaveType.value=''; refreshLeaveTypeUI();
+}
+function removeLeaveTypeMaster(i){
+  const protectedTypes=['Medical Leave','Unpaid Leave','Annual Leave'];
+  if(protectedTypes.includes(leaveTypeMaster[i])) return alert('Default Leave Type cannot be deleted.');
+  leaveTypeMaster.splice(i,1); refreshLeaveTypeUI();
+}
+
+function downloadLeaveTemplate(){
+  const rows=[{
+    'Employee Code':'EMP-001','Employee Name':'Sample Employee','Month':'September 2026',
+    'Leave Type':'Medical Leave','From Date':'01-09-2026','To Date':'02-09-2026','Total Days':2,'Remarks':'Sample'
+  }];
+  if(window.XLSX){
+    const ws=XLSX.utils.json_to_sheet(rows);
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Leave Import');
+    XLSX.writeFile(wb,'Monthly_Leave_Import_Sample.xlsx');
+  }else{
+    const csv=Object.keys(rows[0]).join(',')+'\n'+Object.values(rows[0]).map(csvCell).join(',');
+    downloadText('Monthly_Leave_Import_Sample.csv',csv,'text/csv');
+  }
+}
+async function importMonthlyLeave(){
+  const file=leaveImportFile.files[0];
+  if(!file) return showImport('Please select Excel/CSV file.','err');
+  try{
+    let data=[];
+    if(file.name.toLowerCase().endsWith('.csv')){
+      const text=await file.text();
+      if(window.XLSX){
+        const wb=XLSX.read(text,{type:'string'});
+        data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+      }else{
+        return showImport('CSV/XLSX reader library is not available. Please open portal with internet connection.','err');
+      }
+    }else{
+      if(!window.XLSX) return showImport('Excel reader library is not available. Please open portal with internet connection.','err');
+      const ab=await file.arrayBuffer();
+      const wb=XLSX.read(ab,{type:'array',cellDates:true});
+      data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:true});
+    }
+    if(!data.length) return showImport('No rows found in file.','err');
+
+    const existing=new Set([
+      ...importedLeaves.map(importKey),
+      ...records.map(r=>importKey({empCode:r.empCode,leaveType:r.leaveType,fromDate:r.startDate,toDate:r.endDate}))
+    ]);
+
+    let added=0,duplicates=0,notMatched=0,invalid=0;
+    const empMap=new Map(employees.map(e=>[String(e.code).trim().toLowerCase(),e]));
+
+    data.forEach((row,idx)=>{
+      const get=(...keys)=>{
+        for(const k of keys){
+          const hit=Object.keys(row).find(x=>x.trim().toLowerCase()===k.toLowerCase());
+          if(hit!==undefined) return row[hit];
+        }
+        return '';
+      };
+      const code=String(get('Employee Code','Emp Code','EmployeeCode')).trim();
+      const name=String(get('Employee Name','Name')).trim();
+      const lt=String(get('Leave Type','LeaveType')).trim();
+      const from=normDate(get('From Date','Start Date','From'));
+      const to=normDate(get('To Date','End Date','To'));
+      const monthVal=get('Month');
+      const remarks=String(get('Remarks','Remark')).trim();
+
+      if(!code||!lt||!from||!to){invalid++;return}
+      const emp=empMap.get(code.toLowerCase());
+      if(!emp){notMatched++;return}
+      const key=importKey({empCode:code,leaveType:lt,fromDate:from,toDate:to});
+      if(existing.has(key)){duplicates++;return}
+
+      const a=new Date(from+'T00:00:00'),b=new Date(to+'T00:00:00');
+      const autoDays=Math.floor((b-a)/86400000)+1;
+      const supplied=Number(get('Total Days','Days'))||0;
+      const days=autoDays>0?autoDays:supplied;
+      if(days<=0){invalid++;return}
+
+      if(!leaveTypeMaster.some(x=>x.toLowerCase()===lt.toLowerCase())){
+        leaveTypeMaster.push(lt);
+      }
+
+      importedLeaves.push({
+        id:'IMP-'+Date.now()+'-'+idx,
+        empCode:emp.code,empName:emp.name||name,designation:emp.designation||'',
+        month:monthCodeFromValue(monthVal,from),year:yearFromMonthValue(monthVal,from),
+        leaveType:lt,fromDate:from,toDate:to,totalDays:days,remarks,
+        status:'Imported',source:'Monthly Excel Import',importedAt:new Date().toISOString()
+      });
+      existing.add(key);added++;
+    });
+
+    localStorage.setItem(IMPORT_KEY,JSON.stringify(importedLeaves));
+    refreshLeaveTypeUI(); refreshHistoryYears(); renderHistory(); render(); renderSelectedEmployeeHistory(empCode.value);
+    const msg=`Imported: ${added} | Duplicate skipped: ${duplicates} | Employee Code not matched: ${notMatched} | Invalid rows: ${invalid}`;
+    showImport(msg,(duplicates||notMatched||invalid)?'warn':'ok');
+  }catch(e){
+    console.error(e); showImport('Import failed: '+e.message,'err');
+  }
+}
+function showImport(msg,type){
+  importResult.className='import-result '+type; importResult.textContent=msg;
+}
+function combinedHistory(){
+  const manual=records.map(r=>({
+    id:'MAN-'+r.id,empCode:r.empCode,empName:r.empName,designation:r.designation||'',
+    year:(r.startDate||'').slice(0,4),month:(r.startDate||'').slice(5,7),
+    leaveType:r.leaveType,fromDate:r.startDate,toDate:r.endDate,totalDays:Number(r.totalDays||0),
+    remarks:r.reason||'',status:r.status||'',source:'Leave Form'
+  }));
+  return [...importedLeaves,...manual];
+}
+
+function renderSelectedEmployeeHistory(code){
+  const target=String(code||'').trim();
+  if(!target){
+    selectedHistoryCaption.textContent='Select employee to view previous history';
+    selectedHistoryRows.innerHTML='<tr><td colspan="7" style="text-align:center;color:#7b8b99;padding:24px">No employee selected</td></tr>';
+    selAnnual.textContent='0';selMedical.textContent='0';selUnpaid.textContent='0';selTotal.textContent='0';
+    return;
+  }
+
+  const e=employees.find(x=>String(x.code)===target);
+  selectedHistoryCaption.textContent=(e?`${e.code} - ${e.name}`:target);
+
+  const data=combinedHistory()
+    .filter(r=>String(r.empCode)===target)
+    .sort((a,b)=>(b.fromDate||'').localeCompare(a.fromDate||''));
+
+  selectedHistoryRows.innerHTML=data.map(r=>`<tr>
+    <td>${esc(r.leaveType||'-')}</td><td>${r.fromDate||'-'}</td><td>${r.toDate||'-'}</td>
+    <td>${Number(r.totalDays||0)}</td><td>${esc(r.status||'-')}</td><td>${esc(r.remarks||'-')}</td><td>${esc(r.source||'-')}</td>
+  </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:#7b8b99;padding:24px">No previous leave history</td></tr>';
+
+  const sum=t=>data.filter(r=>r.leaveType===t).reduce((a,r)=>a+Number(r.totalDays||0),0);
+  selAnnual.textContent=sum('Annual Leave');
+  selMedical.textContent=sum('Medical Leave');
+  selUnpaid.textContent=sum('Unpaid Leave');
+  selTotal.textContent=data.reduce((a,r)=>a+Number(r.totalDays||0),0);
+}
+
+function refreshHistoryYears(){
+  const years=[...new Set(combinedHistory().map(r=>r.year).filter(Boolean))].sort().reverse();
+  const cur=historyYear.value;
+  historyYear.innerHTML='<option value="">All Years</option>'+years.map(y=>`<option>${esc(y)}</option>`).join('');
+  if(years.includes(cur)) historyYear.value=cur;
+}
+function filteredHistory(){
+  const ec=historyEmployee.value,yr=historyYear.value,mo=historyMonth.value,lt=historyType.value,st=historyStatus.value;
+  return combinedHistory().filter(r=>
+    (!ec||r.empCode===ec)&&(!yr||r.year===yr)&&(!mo||r.month===mo)&&(!lt||r.leaveType===lt)&&(!st||r.status===st)
+  ).sort((a,b)=>(b.fromDate||'').localeCompare(a.fromDate||''));
+}
+function renderHistory(){
+  refreshHistoryYears();
+  const data=filteredHistory();
+  historyRows.innerHTML=data.map((r,i)=>`<tr>
+    <td>${i+1}</td><td>${esc(r.empCode)}</td><td><b>${esc(r.empName)}</b></td><td>${esc(r.year||'-')}</td>
+    <td>${esc(monthName(r.month))}</td><td>${esc(r.leaveType)}</td><td>${r.fromDate||'-'}</td><td>${r.toDate||'-'}</td>
+    <td>${Number(r.totalDays||0)}</td><td>${esc(r.status||'-')}</td><td>${esc(r.remarks||'-')}</td><td>${esc(r.source||'-')}</td>
+  </tr>`).join('')||'<tr><td colspan="12" style="text-align:center;color:#7b8b99;padding:28px">No leave history found</td></tr>';
+
+  const sum=t=>data.filter(r=>r.leaveType===t).reduce((a,r)=>a+Number(r.totalDays||0),0);
+  hAnnual.textContent=sum('Annual Leave');hMedical.textContent=sum('Medical Leave');hUnpaid.textContent=sum('Unpaid Leave');
+  hTotal.textContent=data.reduce((a,r)=>a+Number(r.totalDays||0),0);
+}
+function monthName(m){
+  const names={'01':'January','02':'February','03':'March','04':'April','05':'May','06':'June','07':'July','08':'August','09':'September','10':'October','11':'November','12':'December'};
+  return names[m]||m||'-';
+}
+function exportHistoryCsv(){
+  const data=filteredHistory();
+  if(!data.length) return alert('No history to export.');
+  const heads=['Employee Code','Employee Name','Year','Month','Leave Type','From Date','To Date','Total Days','Status','Remarks','Source'];
+  const lines=[heads.join(',')];
+  data.forEach(r=>lines.push([
+    r.empCode,r.empName,r.year,monthName(r.month),r.leaveType,r.fromDate,r.toDate,r.totalDays,r.status,r.remarks,r.source
+  ].map(csvCell).join(',')));
+  downloadText('Employee_Leave_History.csv','\ufeff'+lines.join('\n'),'text/csv;charset=utf-8');
+}
+function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function downloadText(name,text,type){
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+function setHistoryType(type){
+  historyType.value=type;renderHistory();scrollHistory();
+}
+function scrollHistory(){document.getElementById('leaveHistory').scrollIntoView({behavior:'smooth'})}
+
+function calcDays(){
+  totalDays.value='';
+  if(!startDate.value || !endDate.value) return;
+
+  let calcStart=startDate.value;
+  let calcEnd=endDate.value;
+
+  const outDate=outboundTicketDate.value;
+  const inDate=returnTicketDate.value;
+
+  // Priority 3: both ticket dates
+  if(outDate && inDate){
+    calcStart=outDate;
+    calcEnd=inDate;
+  }
+  // Priority 2: only UAE -> Home Country ticket date
+  else if(outDate){
+    calcStart=outDate;
+    calcEnd=endDate.value;
+  }
+  // Priority 1: no usable outbound ticket date
+  else{
+    calcStart=startDate.value;
+    calcEnd=endDate.value;
+  }
+
+  const a=new Date(calcStart+'T00:00:00');
+  const b=new Date(calcEnd+'T00:00:00');
+  const d=Math.floor((b-a)/86400000)+1;
+
+  totalDays.value=d>0?d:'';
+  if(typeof calcUnpaidDays==='function') calcUnpaidDays();
+}
+function toggleTicketSector(){
+  const type=ticketArrangement.value;
+  const oneWay=type==='One Way – Company Provided';
+  ticketSectorField.style.display=oneWay?'block':'none';
+  if(!oneWay)companyProvidedSector.value='';
+  if(oneWay){
+    if(companyProvidedSector.value==='UAE → Home Country') returnTicketDate.value='';
+    if(companyProvidedSector.value==='Home Country → UAE') outboundTicketDate.value='';
+  }
+  toggleTicketDates();
+}
+function toggleTicketDates(){
+  const type=ticketArrangement.value;
+  const sector=companyProvidedSector.value;
+
+  outboundTicketDateField.style.display='none';
+  returnTicketDateField.style.display='none';
+
+  if(type==='Round Trip – Company Provided'){
+    outboundTicketDateField.style.display='block';
+    returnTicketDateField.style.display='block';
+  }else if(type==='One Way – Company Provided'){
+    if(sector==='UAE → Home Country') outboundTicketDateField.style.display='block';
+    if(sector==='Home Country → UAE') returnTicketDateField.style.display='block';
+  }else if(type==='Employee Arranged Ticket'){
+    outboundTicketDateField.style.display='block';
+    returnTicketDateField.style.display='block';
+  }else if(type==='Not Applicable'){
+    outboundTicketDate.value='';
+    returnTicketDate.value='';
+  }
+  calcDays();
+}
+
+
+function currentRole(){
+  const candidates=[
+    localStorage.getItem('cm_current_role'),
+    localStorage.getItem('cm_user_role'),
+    localStorage.getItem('user_role'),
+    localStorage.getItem('role')
+  ].filter(Boolean);
+  let role=(candidates[0]||'').trim();
+
+  // Try common user/session JSON objects
+  if(!role){
+    ['cm_current_user','currentUser','userSession','cm_session'].some(k=>{
+      try{
+        const v=JSON.parse(localStorage.getItem(k)||'null');
+        if(v && typeof v==='object' && (v.role||v.userRole)){
+          role=String(v.role||v.userRole); return true;
+        }
+      }catch(e){}
+      return false;
+    });
+  }
+
+  // Prototype fallback: until login/roles are connected, open as Admin
+  if(!role) role='Admin';
+  return role;
+}
+function canAccessAccounts(){
+  const r=currentRole().toLowerCase();
+  return r==='accounts' || r==='account' || r==='accountant' || r==='admin' || r==='administrator';
+}
+function applyRoleAccess(){
+  const allowed=canAccessAccounts();
+  accountsSection.classList.toggle('show',allowed);
+  document.querySelectorAll('.acc-col').forEach(el=>el.style.display=allowed?'':'none');
+  if(allowed) roleBadge.textContent=currentRole()||'Admin';
+}
+function calcUnpaidDays(){
+  const total=Number(totalDays.value||0);
+  let paid=Number(paidDays.value||0);
+
+  if(paid < 0) paid=0;
+  if(total>=0 && paid>total){
+    paid=total;
+    paidDays.value=String(total);
+    alert('Paid Days cannot be more than Total Leave Days.');
+  }
+  unpaidDays.value = total ? String(Math.max(0,total-paid)) : '';
+}
+
+function saveLeave(){
+  if(employee.value==='')return alert('Please select employee.');
+  if(!startDate.value||!endDate.value)return alert('Please select leave dates.');
+  if(ticketArrangement.value==='One Way – Company Provided' && !companyProvidedSector.value)
+    return alert('Please select Company Provided Sector.');
+  calcDays();
+  if(!totalDays.value)return alert('End date must be on or after start date.');
+  if(canAccessAccounts()){
+    calcUnpaidDays();
+    if(Number(paidDays.value||0)>Number(totalDays.value||0))
+      return alert('Paid Days cannot be more than Total Leave Days.');
+  }
+  const obj={
+    id:editId||Date.now(),
+    empCode:empCode.value,empName:empName.value,designation:designation.value,
+    leaveType:leaveType.value,startDate:startDate.value,endDate:endDate.value,
+    totalDays:Number(totalDays.value),ticketArrangement:ticketArrangement.value,
+    companyProvidedSector:companyProvidedSector.value,
+    outboundTicketDate:outboundTicketDate.value,returnTicketDate:returnTicketDate.value,
+    status:status.value,returnDate:returnDate.value,actualJoiningDate:actualJoiningDate.value,
+    reason:reason.value.trim(),
+    leaveSalaryStatus: canAccessAccounts() ? leaveSalaryStatus.value : ((records.find(r=>r.id===editId)||{}).leaveSalaryStatus||'Pending'),
+    paidDate: canAccessAccounts() ? paidDate.value : ((records.find(r=>r.id===editId)||{}).paidDate||''),
+    paidAmount: canAccessAccounts() ? Number(paidAmount.value||0) : Number((records.find(r=>r.id===editId)||{}).paidAmount||0),
+    paidDays: canAccessAccounts() ? Number(paidDays.value||0) : Number((records.find(r=>r.id===editId)||{}).paidDays||0),
+    unpaidDays: canAccessAccounts() ? Number(unpaidDays.value||0) : Number((records.find(r=>r.id===editId)||{}).unpaidDays||0),
+    paymentRemarks: canAccessAccounts() ? paymentRemarks.value.trim() : ((records.find(r=>r.id===editId)||{}).paymentRemarks||'')
+  };
+  if(editId)records=records.map(r=>r.id===editId?obj:r);else records.unshift(obj);
+  localStorage.setItem(KEY,JSON.stringify(records));
+  const lastCode=empCode.value; clearForm(); render(); renderHistory(); renderSelectedEmployeeHistory(lastCode);
+}
+function editLeave(id){
+  const r=records.find(x=>x.id===id);if(!r)return;
+  editId=id;
+  const idx=employees.findIndex(e=>e.code===r.empCode&&e.name===r.empName);
+  employee.value=idx>=0?idx:'';
+  empCode.value=r.empCode;empName.value=r.empName;designation.value=r.designation;
+  leaveType.value=r.leaveType;startDate.value=r.startDate;endDate.value=r.endDate;
+  totalDays.value=r.totalDays;
+  ticketArrangement.value=r.ticketArrangement||'Not Applicable';
+  toggleTicketSector();
+  companyProvidedSector.value=r.companyProvidedSector||'';
+  outboundTicketDate.value=r.outboundTicketDate||'';
+  returnTicketDate.value=r.returnTicketDate||'';
+  toggleTicketDates();
+  calcDays();
+  status.value=r.status;returnDate.value=r.returnDate||'';actualJoiningDate.value=r.actualJoiningDate||'';reason.value=r.reason||'';
+  if(canAccessAccounts()){
+    leaveSalaryStatus.value=r.leaveSalaryStatus||'Pending';
+    paidDate.value=r.paidDate||'';
+    paidAmount.value=r.paidAmount??'';
+    paidDays.value=r.paidDays??'';
+    calcUnpaidDays();
+    paymentRemarks.value=r.paymentRemarks||'';
+  }
+  renderSelectedEmployeeHistory(r.empCode);
+  document.getElementById('form').scrollIntoView({behavior:'smooth'});
+}
+function deleteLeave(id){
+  if(!confirm('Delete this leave record?'))return;
+  records=records.filter(r=>r.id!==id);localStorage.setItem(KEY,JSON.stringify(records));render();renderHistory();renderSelectedEmployeeHistory(empCode.value);
+}
+function clearForm(){
+  editId=null;employee.value='';empCode.value='';empName.value='';designation.value='';
+  leaveType.value='Annual Leave';startDate.value='';endDate.value='';totalDays.value='';
+  status.value='Pending';returnDate.value='';actualJoiningDate.value='';ticketArrangement.value='Not Applicable';companyProvidedSector.value='';
+  outboundTicketDate.value='';returnTicketDate.value='';toggleTicketSector();reason.value='';
+  if(typeof leaveSalaryStatus!=='undefined'){
+    leaveSalaryStatus.value='Pending';paidDate.value='';paidAmount.value='';paidDays.value='';unpaidDays.value='';paymentRemarks.value='';
+  }
+  renderSelectedEmployeeHistory('');
+}
+function badge(s){
+  const c={'Pending':'pending','Approved':'approved','Rejected':'rejected','On Leave':'onleave','Returned':'returned'}[s]||'pending';
+  return `<span class="badge ${c}">${esc(s)}</span>`;
+}
+function setFilter(s){fStatus.value=s==='all'?'':s;render();document.getElementById('list').scrollIntoView({behavior:'smooth'})}
+
+function todayISO(){
+  const d=new Date(); return d.toISOString().slice(0,10);
+}
+function addDaysISO(iso,n){
+  const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10);
+}
+function dayDiff(a,b){
+  if(!a||!b) return null;
+  return Math.floor((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);
+}
+function leaveExpectedReturn(r){
+  return r.returnDate || (r.endDate ? addDaysISO(r.endDate,1) : '');
+}
+function dashboardState(r){
+  const today=todayISO(), expected=leaveExpectedReturn(r);
+  if(r.actualJoiningDate || r.status==='Returned') return 'Joined Duty';
+  if(expected && expected<today) return 'Overdue Return';
+  if(expected===today) return 'Due Today';
+  if(expected && dayDiff(today,expected)>=0 && dayDiff(today,expected)<=7) return 'Returning Soon';
+  if(r.startDate<=today && r.endDate>=today) return 'On Leave';
+  return r.status||'Pending';
+}
+function currentManualLeaves(){
+  return records.filter(r=>r.status!=='Rejected');
+}
+function dashboardBuckets(){
+  const today=todayISO(), next7=addDaysISO(today,7), arr=currentManualLeaves();
+  return {
+    onleave:arr.filter(r=>r.startDate<=today && r.endDate>=today && !r.actualJoiningDate && r.status!=='Returned'),
+    going:arr.filter(r=>r.startDate>today && r.startDate<=next7),
+    returning:arr.filter(r=>{const d=leaveExpectedReturn(r); return d>=today && d<=next7 && !r.actualJoiningDate && r.status!=='Returned'}),
+    ending:arr.filter(r=>r.endDate>=today && r.endDate<=next7 && !r.actualJoiningDate && r.status!=='Returned'),
+    overdue:arr.filter(r=>{const d=leaveExpectedReturn(r); return d && d<today && !r.actualJoiningDate && r.status!=='Returned'})
+  };
+}
+function employeeMeta(code){
+  const e=employees.find(x=>String(x.code)===String(code))||{};
+  return {site:e.site||'—',photo:e.photo||''};
+}
+function renderVisualDashboard(){
+  const today=todayISO(), b=dashboardBuckets(), next7=addDaysISO(today,7);
+  dOnLeave.textContent=b.onleave.length;
+  dGoing.textContent=b.going.length;
+  dReturning.textContent=b.returning.length;
+  dEnding.textContent=b.ending.length;
+  dOverdue.textContent=b.overdue.length;
+
+  const now=new Date();
+  const fullDate=now.toLocaleDateString(undefined,{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  if(typeof ssTodayLabel!=='undefined') ssTodayLabel.textContent=fullDate;
+  if(typeof ssRangeBtn!=='undefined'){
+    const e=new Date(); e.setDate(e.getDate()+6);
+    const f=d=>d.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'});
+    ssRangeBtn.textContent=`${f(now)} - ${f(e)}  ▣`;
+  }
+
+  currentLeaveVisual.innerHTML=b.onleave.slice(0,6).map(r=>{
+    const m=employeeMeta(r.empCode), rem=Math.max(0,dayDiff(today,r.endDate));
+    const av=m.photo?`<img class="avatar-sm" src="${esc(m.photo)}" alt="">`:`<span class="avatar-sm">${esc((r.empName||'?').slice(0,1))}</span>`;
+    return `<div class="current-mini" onclick="openDashboardDetail(${r.id})">
+      <div class="topline">${av}<div class="emp-lines"><b>${esc(r.empName)}</b><span>${esc(r.empCode)}</span></div></div>
+      <div class="meta"><span class="${leaveTypeClass(r.leaveType)}">${esc(r.leaveType)}</span><br>
+      <b>From:</b> ${fmtDashDate(r.startDate)}<br><b>To:</b> ${fmtDashDate(r.endDate)}</div>
+      <div class="days-left text-orange">${rem} Day${rem===1?'':'s'} Left</div>
+      <div class="site">${esc(m.site||'—')}</div>
+    </div>`;
+  }).join('')||'<div class="info-note" style="padding:16px">No employees currently on leave.</div>';
+
+  upcomingLeaveRows.innerHTML=b.going.slice(0,7).map(r=>{
+    const left=Math.max(0,dayDiff(today,r.startDate)),m=employeeMeta(r.empCode),av=m.photo?`<img class="avatar-sm" src="${esc(m.photo)}" alt="">`:`<span class="avatar-sm">${esc((r.empName||'?').slice(0,1))}</span>`;
+    return `<tr onclick="openDashboardDetail(${r.id})" style="cursor:pointer">
+      <td><div class="emp-cell">${av}<div class="emp-lines"><b>${esc(r.empCode)}</b><span>${esc(r.empName)}</span></div></div></td>
+      <td class="${leaveTypeClass(r.leaveType)}">${esc(r.leaveType)}</td>
+      <td>${fmtDashDate(r.startDate)}</td><td><span class="pill green">${left} Day${left===1?'':'s'}</span></td></tr>`;
+  }).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px;color:#7b8b99">No upcoming leave</td></tr>';
+
+  returningLeaveRows.innerHTML=b.returning.slice(0,7).map(r=>{
+    const m=employeeMeta(r.empCode),av=m.photo?`<img class="avatar-sm" src="${esc(m.photo)}" alt="">`:`<span class="avatar-sm">${esc((r.empName||'?').slice(0,1))}</span>`;
+    const exp=leaveExpectedReturn(r),diff=dayDiff(today,exp);
+    const label=diff===0?'Today':diff===1?'Tomorrow':`In ${diff} Days`;
+    return `<tr onclick="openDashboardDetail(${r.id})" style="cursor:pointer">
+      <td><div class="emp-cell">${av}<div class="emp-lines"><b>${esc(r.empCode)}</b><span>${esc(r.empName)}</span></div></div></td>
+      <td class="${leaveTypeClass(r.leaveType)}">${esc(r.leaveType)}</td><td>${fmtDashDate(exp)}</td><td><span class="pill blue">${label}</span></td></tr>`;
+  }).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px;color:#7b8b99">No returning employees</td></tr>';
+
+  if(typeof endingLeaveRows!=='undefined'){
+    endingLeaveRows.innerHTML=b.ending.slice(0,7).map(r=>{
+      const m=employeeMeta(r.empCode),av=m.photo?`<img class="avatar-sm" src="${esc(m.photo)}" alt="">`:`<span class="avatar-sm">${esc((r.empName||'?').slice(0,1))}</span>`;
+      return `<tr onclick="openDashboardDetail(${r.id})" style="cursor:pointer">
+        <td><div class="emp-cell">${av}<div class="emp-lines"><b>${esc(r.empCode)}</b><span>${esc(r.empName)}</span></div></div></td>
+        <td class="${leaveTypeClass(r.leaveType)}">${esc(r.leaveType)}</td><td>${fmtDashDate(r.endDate)}</td><td>${fmtDashDate(leaveExpectedReturn(r))}</td></tr>`;
+    }).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px;color:#7b8b99">No leave ending</td></tr>';
+  }
+
+  if(typeof overdueLeaveRows!=='undefined'){
+    overdueLeaveRows.innerHTML=b.overdue.slice(0,7).map(r=>{
+      const m=employeeMeta(r.empCode),av=m.photo?`<img class="avatar-sm" src="${esc(m.photo)}" alt="">`:`<span class="avatar-sm">${esc((r.empName||'?').slice(0,1))}</span>`;
+      const exp=leaveExpectedReturn(r),days=Math.max(0,-dayDiff(today,exp));
+      return `<tr onclick="openDashboardDetail(${r.id})" style="cursor:pointer">
+        <td><div class="emp-cell">${av}<div class="emp-lines"><b>${esc(r.empCode)}</b><span>${esc(r.empName)}</span></div></div></td>
+        <td class="${leaveTypeClass(r.leaveType)}">${esc(r.leaveType)}</td><td>${fmtDashDate(exp)}</td><td class="text-red"><b>${days} Day${days===1?'':'s'}</b></td></tr>`;
+    }).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px;color:#7b8b99">No overdue returns</td></tr>';
+  }
+
+  if(typeof recentLeaveRows!=='undefined'){
+    recentLeaveRows.innerHTML=records.slice(0,8).map(r=>`<tr>
+      <td><div class="emp-lines"><b>${esc(r.empCode)}</b><span>${esc(r.empName)}</span></div></td>
+      <td class="${leaveTypeClass(r.leaveType)}">${esc(r.leaveType)}</td><td>${fmtDashDate(r.startDate)}</td><td>${fmtDashDate(r.endDate)}</td>
+      <td>${Number(r.totalDays||0)}</td><td>${badge(r.status)}</td>
+      <td><div class="ss-actions"><button class="ss-icon-btn" onclick="openDashboardDetail(${r.id})">◉</button><button class="ss-icon-btn" onclick="editLeave(${r.id})">✎</button></div></td>
+    </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:20px;color:#7b8b99">No leave applications</td></tr>';
+  }
+
+  const hist=combinedHistory().filter(r=>r.year===today.slice(0,4)&&r.month===today.slice(5,7));
+  const sumType=t=>hist.filter(r=>String(r.leaveType).toLowerCase()===t.toLowerCase()).reduce((a,r)=>a+Number(r.totalDays||0),0);
+  const annual=sumType('Annual Leave'), medical=sumType('Medical Leave'), unpaid=sumType('Unpaid Leave');
+  const total=hist.reduce((a,r)=>a+Number(r.totalDays||0),0), other=Math.max(0,total-annual-medical-unpaid);
+  if(typeof ssAnnualMonth!=='undefined'){ssAnnualMonth.textContent=annual;ssMedicalMonth.textContent=medical;ssUnpaidMonth.textContent=unpaid;ssOtherMonth.textContent=other;ssTotalMonth.textContent=total}
+
+  renderMovement7Days();
+}
+
+function leaveTypeClass(type){
+  const t=String(type||'').toLowerCase();
+  if(t.includes('medical')||t.includes('sick'))return 'text-red';
+  if(t.includes('annual'))return 'text-green';
+  if(t.includes('unpaid'))return 'text-orange';
+  return 'text-blue';
+}
+function fmtDashDate(iso){
+  if(!iso)return '-';
+  const [y,m,d]=iso.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'});
+}
+function renderMovement7Days(){
+  const today=todayISO(), arr=currentManualLeaves(), days=[];
+  let max=1,totalGoing=0,totalReturn=0;
+  for(let i=0;i<7;i++){
+    const d=addDaysISO(today,i);
+    const g=arr.filter(r=>r.startDate===d).length;
+    const ret=arr.filter(r=>leaveExpectedReturn(r)===d).length;
+    max=Math.max(max,g,ret);totalGoing+=g;totalReturn+=ret;days.push({d,g,ret});
+  }
+  leaveMovementVisual.innerHTML=`<div class="chart-legend"><span><i class="legend-dot legend-go"></i>Going on Leave</span><span><i class="legend-dot legend-return"></i>Returning from Leave</span></div>
+    <div class="chart-area">${days.map(x=>`<div class="chart-day">
+      <div class="chart-bar go" style="height:${Math.max(4,(x.g/max)*155)}px"><span>${x.g}</span></div>
+      <div class="chart-bar ret" style="height:${Math.max(4,(x.ret/max)*155)}px"><span>${x.ret}</span></div>
+      <div class="chart-label">${fmtDashDate(x.d).replace(/ \d{4}$/,'')}</div>
+    </div>`).join('')}</div>
+    <div class="chart-totals"><div class="chart-total text-blue">Total Going on Leave<b>${totalGoing}</b></div><div class="chart-total text-green">Total Returning<b>${totalReturn}</b></div></div>`;
+}
+function showDashboardList(type){
+  const titles={onleave:'Currently On Leave',going:'Going on Leave – Next 7 Days',returning:'Returning – Next 7 Days',ending:'Leave Ending – Next 7 Days',overdue:'Overdue Return'};
+  const data=dashboardBuckets()[type]||[];
+  dashboardFilteredTitle.textContent=titles[type]||'Filtered Employees';
+  dashboardFilteredRows.innerHTML=data.map(r=>`<tr onclick="openDashboardDetail(${r.id})" style="cursor:pointer">
+    <td>${esc(r.empCode)}</td><td><b>${esc(r.empName)}</b></td><td>${esc(r.leaveType)}</td><td>${r.startDate}</td><td>${r.endDate}</td>
+    <td>${leaveExpectedReturn(r)||'-'}</td><td>${esc(dashboardState(r))}</td>
+    <td>${(!r.actualJoiningDate&&r.status!=='Returned'&&(type==='returning'||type==='overdue'))?`<button class="return-btn" onclick="event.stopPropagation();markReturned(${r.id})">Mark Returned</button>`:'View'}</td>
+  </tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#7b8b99">No records</td></tr>';
+  dashboardFilteredPanel.style.display='block';
+  dashboardFilteredPanel.scrollIntoView({behavior:'smooth'});
+}
+function markReturned(id){
+  const r=records.find(x=>x.id===id); if(!r)return;
+  const val=prompt('Enter Actual Joining Date (YYYY-MM-DD):',todayISO());
+  if(!val)return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(val))return alert('Please enter date as YYYY-MM-DD.');
+  r.actualJoiningDate=val; r.status='Returned';
+  localStorage.setItem(KEY,JSON.stringify(records));
+  render();renderHistory();renderVisualDashboard();renderSelectedEmployeeHistory(r.empCode);
+}
+function openDashboardDetail(id){
+  const r=records.find(x=>x.id===id);if(!r)return;
+  dashboardDetailDrawer.classList.add('show');
+  dashboardDetailCaption.textContent=`${r.empCode} - ${r.empName}`;
+  const st=dashboardState(r);
+  dashboardCurrentApplication.innerHTML=`<div class="empbox">
+    <b>${esc(r.leaveType)} • ${r.startDate} → ${r.endDate}</b>
+    <div class="info-note" style="margin-top:6px">Expected Return: ${leaveExpectedReturn(r)||'-'} • Actual Joining: ${r.actualJoiningDate||'-'} • Total Days: ${r.totalDays}</div>
+    <div class="status-flow">
+      ${['On Leave','Returning Soon','Due Today','Overdue Return','Joined Duty'].map(x=>`<span class="flow-step ${st===x?'active':''}">${x}</span>`).join('')}
+    </div>
+  </div>`;
+  const hist=combinedHistory().filter(x=>String(x.empCode)===String(r.empCode)).sort((a,b)=>(b.fromDate||'').localeCompare(a.fromDate||''));
+  dashboardPreviousRows.innerHTML=hist.map(x=>`<tr><td>${esc(x.leaveType||'-')}</td><td>${x.fromDate||'-'}</td><td>${x.toDate||'-'}</td><td>${Number(x.totalDays||0)}</td><td>${esc(x.status||'-')}</td><td>${esc(x.remarks||'-')}</td><td>${esc(x.source||'-')}</td></tr>`).join('')||
+  '<tr><td colspan="7" style="text-align:center;padding:20px;color:#7b8b99">No previous history</td></tr>';
+  dashboardDetailDrawer.scrollIntoView({behavior:'smooth'});
+}
+function closeDashboardDetail(){dashboardDetailDrawer.classList.remove('show')}
+
+function render(){
+  const query=(q.value||'').toLowerCase(),fs=fStatus.value;
+  const data=records.filter(r=>(!fs||r.status===fs)&&(!query||[r.empCode,r.empName,r.designation,r.leaveType,r.status].join(' ').toLowerCase().includes(query)));
+  rows.innerHTML=data.map((r,i)=>`<tr>
+    <td>${i+1}</td><td>${esc(r.empCode)}</td><td><b>${esc(r.empName)}</b></td><td>${esc(r.designation||'-')}</td>
+    <td>${esc(r.leaveType)}</td><td>${r.startDate}</td><td>${r.endDate}</td><td>${r.totalDays}</td>
+    <td>${esc(r.ticketArrangement||'Not Applicable')}</td><td>${esc(r.companyProvidedSector||'-')}</td>
+    <td>${r.outboundTicketDate||'-'}</td><td>${r.returnTicketDate||'-'}</td>
+    <td>${esc(
+      r.outboundTicketDate && r.returnTicketDate
+        ? 'Outbound Ticket → Return Ticket'
+        : r.outboundTicketDate
+          ? 'Outbound Ticket → Leave End'
+          : 'Leave Start → Leave End'
+    )}</td>
+    <td>${badge(r.status)}</td><td>${r.returnDate||'-'}</td><td>${r.actualJoiningDate||'-'}</td>
+    <td class="acc-col">${esc(r.leaveSalaryStatus||'Pending')}</td>
+    <td class="acc-col">${r.paidDate||'-'}</td>
+    <td class="acc-col">${Number(r.paidAmount||0).toFixed(2)}</td>
+    <td class="acc-col">${r.paidDays??0}</td>
+    <td class="acc-col">${r.unpaidDays??Math.max(0,Number(r.totalDays||0)-Number(r.paidDays||0))}</td>
+    <td><button class="btn light" onclick="editLeave(${r.id})">Edit</button> <button class="btn danger" onclick="deleteLeave(${r.id})">Delete</button></td>
+  </tr>`).join('')||'<tr><td colspan="22" style="text-align:center;color:#7b8b99;padding:28px">No leave records found</td></tr>';
+
+  const hist=combinedHistory();
+  const now=new Date(),cy=String(now.getFullYear()),cm=String(now.getMonth()+1).padStart(2,'0');
+  const monthHist=hist.filter(r=>r.year===cy&&r.month===cm);
+  sTotal.textContent=records.length+importedLeaves.length;
+  sPending.textContent=records.filter(r=>r.status==='Pending').length;
+  sMedicalMonth.textContent=monthHist.filter(r=>r.leaveType==='Medical Leave').reduce((a,r)=>a+Number(r.totalDays||0),0);
+  sUnpaidMonth.textContent=monthHist.filter(r=>r.leaveType==='Unpaid Leave').reduce((a,r)=>a+Number(r.totalDays||0),0);
+  sAnnual.textContent=hist.filter(r=>r.leaveType==='Annual Leave').reduce((a,r)=>a+Number(r.totalDays||0),0);
+  sLeaveDays.textContent=hist.reduce((a,r)=>a+Number(r.totalDays||0),0);
+  applyRoleAccess();
+  renderVisualDashboard();
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+loadEmployees();toggleTicketSector();applyRoleAccess();refreshHistoryYears();renderHistory();render();renderSelectedEmployeeHistory('');renderVisualDashboard();
+</script>
+
+<div class="cm-all-portals">
+<details>
+<summary>☰ ERP Portals</summary>
+<div class="links">
+<a href="dashboard.html">⌂ ERP Dashboard</a>
+<a href="index.html">👥 Employee Management</a>
+<a href="leave.html" class="leave-link">🏖 Leave Management</a>
+<a href="subcontractor.html">🏗 Sub Contractor</a>
+<a href="client.html">🏢 Client / Project</a>
+<a href="site.html">📍 Site Management</a>
+<a href="timesheet.html">🕒 Timesheet</a>
+<a href="payroll.html">💰 Payroll</a>
+<a href="approval.html">✓ Approval Center</a>
+<a href="cicpa.html">🛡 CICPA Management</a>
+<a href="audit.html">📋 Audit Trail</a>
+</div>
+</details>
+</div>
+
+</body>
+</html>

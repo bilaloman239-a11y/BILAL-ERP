@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CICPA Management Portal</title>
+
+<style>
+:root{
+  --navy:#0d2f54;
+  --navy2:#123f6f;
+  --blue:#124db8;
+  --orange:#ff8a00;
+  --green:#15803d;
+  --red:#ef2b2d;
+  --bg:#f5f8fc;
+  --card:#ffffff;
+  --text:#13243a;
+  --muted:#6b778c;
+  --border:#dbe3ee;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+.app{
+  display:grid;
+  grid-template-columns:260px minmax(0,1fr);
+  min-height:100vh;
+}
+.sidebar{
+  background:linear-gradient(180deg,#0b2d51 0%,#0f3c6b 100%);
+  color:#fff;
+  padding:18px 12px;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+}
+.brand-wrap{
+  background:#fff;
+  color:#0f3d77;
+  margin:-18px -12px 14px;
+  padding:16px 18px 14px;
+  border-bottom:1px solid #dbe3ee;
+}
+.brand{
+  font-size:26px;
+  font-weight:800;
+  letter-spacing:.4px;
+  line-height:1;
+}
+.brand-sub{
+  margin-top:5px;
+  font-size:11px;
+  font-weight:700;
+  color:#1c2b3d;
+  letter-spacing:.5px;
+}
+.navbtn{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#fff;
+  text-align:left;
+  padding:14px 16px;
+  border-radius:8px;
+  margin:4px 0;
+  cursor:pointer;
+  font-size:15px;
+  font-weight:700;
+}
+.navbtn:hover{background:rgba(255,255,255,.09)}
+.navbtn.active{
+  background:linear-gradient(90deg,#ff7a00,#ff991e);
+  box-shadow:0 4px 12px rgba(255,138,0,.25);
+}
+.sidebar-spacer{flex:1}
+.export-btn{
+  width:100%;
+  padding:13px 15px;
+  border:0;
+  border-radius:8px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-weight:700;
+  text-align:left;
+  cursor:pointer;
+}
+.sidebar-footer{
+  text-align:center;
+  font-size:11px;
+  line-height:1.6;
+  margin-top:16px;
+  color:#f3f6fa;
+}
+.main{
+  padding:0 12px 12px;
+  min-width:0;
+}
+.topbar{
+  height:72px;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  margin:0 -12px 10px;
+  padding:0 18px;
+  background:#fff;
+  border-bottom:1px solid #dfe6ef;
+}
+.topbar .title-center{
+  grid-column:2;
+  text-align:center;
+}
+.topbar h1{
+  margin:0;
+  font-size:29px;
+  color:#10294b;
+  font-weight:800;
+}
+.topbar-right{
+  grid-column:3;
+  justify-self:end;
+  font-size:13px;
+  font-weight:700;
+}
+.small{display:none}
+.topbar .primary{display:none}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(180px,1fr));
+  gap:10px;
+  margin:10px 0;
+}
+.card{
+  background:#fff;
+  border:1px solid #dce4ee;
+  border-radius:10px;
+  min-height:145px;
+  padding:18px 20px;
+  box-shadow:0 1px 3px rgba(15,35,60,.04);
+  cursor:pointer;
+  position:relative;
+}
+.card:hover{box-shadow:0 5px 16px rgba(20,50,80,.08)}
+.card .lbl{
+  font-size:15px;
+  color:#17243a;
+  font-weight:700;
+  padding-left:66px;
+  line-height:1.45;
+  min-height:42px;
+}
+.card .num{
+  font-size:31px;
+  font-weight:800;
+  margin:6px 0 0 66px;
+}
+.card:before{
+  content:"";
+  position:absolute;
+  left:20px;
+  top:25px;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  border:5px solid currentColor;
+  opacity:.95;
+}
+.card:after{
+  content:"View Details  →";
+  position:absolute;
+  left:20px;
+  bottom:15px;
+  color:#0e4ab7;
+  font-weight:700;
+  font-size:13px;
+}
+.card.activec{color:#164fc2}
+.card.warn15{color:#ff8a00}
+.card.warn7{color:#159447}
+.card.expired{color:#f02d2e}
+.card .lbl{color:#17243a}
+
+.panel{display:none}
+.panel.active{display:block}
+
+.dashboard-workspace{
+  display:grid;
+  grid-template-columns:minmax(420px, .82fr) minmax(540px,1.18fr);
+  gap:10px;
+  align-items:start;
+}
+.box{
+  background:#fff;
+  border:1px solid #dce4ee;
+  border-radius:9px;
+  padding:14px;
+  margin-top:10px;
+  box-shadow:0 1px 3px rgba(20,45,70,.03);
+}
+.box h2,.section-title{
+  font-size:16px;
+  color:#0d3fa0;
+  margin:0 0 12px;
+  padding-bottom:9px;
+  border-bottom:2px solid #2e67c7;
+  font-weight:800;
+}
+
+.form-card{
+  background:#fff;
+  border:1px solid #dce4ee;
+  border-radius:9px;
+  padding:14px;
+}
+.form-card h2{
+  font-size:16px;
+  color:#0d3fa0;
+  margin:0 0 12px;
+  padding-bottom:9px;
+  border-bottom:2px solid #2e67c7;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px 14px;
+}
+.grid>div:first-child{grid-column:1/-1}
+.employee-details{
+  grid-column:1/-1;
+  background:#f2f7fd;
+  border:1px solid #d8e6f7;
+  border-radius:8px;
+  padding:12px;
+}
+label{
+  font-size:12px;
+  font-weight:800;
+  color:#1d2f45;
+  display:block;
+  margin-bottom:6px;
+}
+input,select,textarea{
+  width:100%;
+  padding:10px 11px;
+  border:1px solid #c9d4e2;
+  border-radius:7px;
+  background:#fff;
+  color:#1c2d42;
+  outline:none;
+}
+input:focus,select:focus{border-color:#2f65c8;box-shadow:0 0 0 2px rgba(47,101,200,.08)}
+button.primary,button.secondary,button.danger{
+  border:0;
+  border-radius:7px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-weight:800;
+}
+.primary{background:#164fc2;color:#fff}
+.secondary{background:#eef3f8;color:#17365a;border:1px solid #d5deea!important}
+.danger{background:#fff0f0;color:#d32626}
+.actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+
+.location-row{
+  display:grid;
+  grid-template-columns:1fr 145px;
+  gap:8px;
+  margin-bottom:8px;
+}
+.tablewrap{overflow:auto;margin-top:8px}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:12px}
+th,td{padding:9px 10px;border:1px solid #e1e7ef;text-align:left;white-space:nowrap}
+th{background:#f0f3f7;color:#13283f;font-weight:800}
+.badge{
+  padding:4px 10px;
+  border-radius:6px;
+  font-size:11px;
+  font-weight:800;
+  display:inline-block;
+  min-width:86px;
+  text-align:center;
+}
+.b-green{background:#eff9ef;color:#168139;border:1px solid #bfe2c5}
+.b-red{background:#fff1f1;color:#e12626;border:1px solid #ffb7b7}
+.b-orange{background:#fff6e9;color:#e76f00;border:1px solid #ffc475}
+.b-gray{background:#edf1f5;color:#52606d}
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.toolbar input{max-width:340px}
+.existing-panel{
+  margin:0;
+  background:#fff;
+  border:1px solid #dce4ee;
+  border-radius:9px;
+  padding:14px;
+  min-height:100%;
+}
+.existing-panel h3{
+  font-size:16px;
+  color:#0d3fa0;
+  margin:0 0 12px;
+  padding-bottom:9px;
+  border-bottom:2px solid #2e67c7;
+}
+.existing-empty{color:#6b7280;font-size:13px;padding:12px 2px}
+.mini-table{width:100%;border-collapse:collapse;font-size:12px}
+.mini-table th,.mini-table td{padding:9px;border:1px solid #e2e7ee;text-align:left;white-space:nowrap}
+.mini-table th{background:#f0f3f7;color:#1f344c}
+
+.recent-box{margin-top:10px}
+.recent-box h2{
+  color:#0d3fa0;
+  font-size:15px;
+  border-bottom:2px solid #2e67c7;
+  padding-bottom:8px;
+}
+.note{
+  text-align:center;
+  font-size:12px;
+  padding:10px 0 2px;
+  color:#1c2a3b;
+}
+#register>.box{margin-top:10px}
+#locations>.box{margin-top:10px}
+
+@media(max-width:1100px){
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .dashboard-workspace{grid-template-columns:1fr}
+}
+@media(max-width:800px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-template-columns:1fr}
+  .topbar .title-center{grid-column:1}
+  .topbar-right{display:none}
+  .cards{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr}
+  .grid>div:first-child,.employee-details{grid-column:auto}
+}
+</style>
+
+
+<style id="cm-cicpa-link-style">
+.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999}
+.cm-all-portals details{position:relative}
+.cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 5px 18px #0002}
+.cm-all-portals summary::-webkit-details-marker{display:none}
+.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:230px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003}
+.cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font:700 12px Segoe UI,Arial,sans-serif}
+.cm-all-portals a:hover{background:#eef4fa}.cm-all-portals a.cicpa{background:#fff3df;color:#b55b00}
+</style>
+
+
+<script id="cm-cicpa-erp-bridge">
+(function(){
+ const COMPANY_KEYS=['employee_master','employees','cm_employees','erp_employees','employeeData','employeesData'];
+ const SUB_KEYS=['subcontractor_employee_master','subcontractorEmployees','subcontractor_employees','subEmployees','scEmployees'];
+ function arrFrom(k){try{const v=JSON.parse(localStorage.getItem(k)||'null');return Array.isArray(v)?v:[]}catch(e){return[]}}
+ function uniq(arr){
+   const seen=new Set(); return arr.filter(x=>{
+     const key=String(x.employeeCode||x.empCode||x.code||x.id||'')+'|'+String(x.employeeName||x.name||x.fullName||'');
+     if(!key.replace('|','')||seen.has(key))return false;seen.add(key);return true;
+   });
+ }
+ window.cmLoadCicpaEmployees=function(){
+   let co=[],sub=[];
+   COMPANY_KEYS.forEach(k=>co.push(...arrFrom(k)));
+   SUB_KEYS.forEach(k=>sub.push(...arrFrom(k)));
+   // Also inspect common ERP state objects without modifying them
+   ['erp_portal_state','cm_erp_state','appState'].forEach(k=>{
+     try{
+       const s=JSON.parse(localStorage.getItem(k)||'null');
+       if(s&&typeof s==='object'){
+         if(Array.isArray(s.employees))co.push(...s.employees);
+         if(Array.isArray(s.subcontractorEmployees))sub.push(...s.subcontractorEmployees);
+       }
+     }catch(e){}
+   });
+   return {company:uniq(co),sub:uniq(sub)};
+ };
+})();
+</script>
+
+
+<style id="cm-unified-nav-style">
+.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999;font-family:Segoe UI,Arial,sans-serif}
+.cm-all-portals details{position:relative}
+.cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800;font-size:12px;box-shadow:0 5px 18px #0002}
+.cm-all-portals summary::-webkit-details-marker{display:none}
+.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
+.cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font-weight:700;font-size:12px}
+.cm-all-portals a:hover{background:#eef4fa}
+.cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
+</style>
+
+</head>
+<body>
+<div class="app">
+  
+<aside class="sidebar">
+  <div class="brand-wrap">
+    <div class="brand">CICPA</div>
+    <div class="brand-sub">MANAGEMENT PORTAL</div>
+  </div>
+  <button class="navbtn active" data-panel="dashboard">⌂ &nbsp; Dashboard</button>
+  <button class="navbtn" data-panel="register">▣ &nbsp; CICPA Register</button>
+  <button class="navbtn" data-panel="locations">● &nbsp; CICPA Location Master</button>
+  <button class="navbtn" onclick="showPanel('dashboard')">▥ &nbsp; Reports</button>
+  <button class="navbtn" onclick="alert('Settings can be added later.')">⚙ &nbsp; Settings</button>
+  <button class="navbtn" onclick="location.href='dashboard.html'">⌂ &nbsp; ERP Dashboard</button>
+  <button class="navbtn" onclick="location.href='index.html'">👥 &nbsp; Employee Management</button>
+  <button class="navbtn" onclick="location.href='subcontractor.html'">▣ &nbsp; Sub Contractor</button>
+  <button class="navbtn" onclick="location.href='client.html'">▤ &nbsp; Client / Project</button>
+  <button class="navbtn" onclick="location.href='site.html'">⌖ &nbsp; Site</button>
+  <button class="navbtn" onclick="location.href='timesheet.html'">▦ &nbsp; Timesheet</button>
+  <button class="navbtn" onclick="location.href='payroll.html'">$ &nbsp; Payroll</button>
+  <button class="navbtn" onclick="location.href='approval.html'">✓ &nbsp; Approval Center</button>
+  <div class="sidebar-spacer"></div>
+  <button class="export-btn" onclick="exportCsv()">⇩ &nbsp; Export Data</button>
+  <div class="sidebar-footer">© 2026 CICPA Management Portal<br>All Rights Reserved.</div>
+</aside>
+
+
+  <main class="main">
+    
+<div class="topbar">
+  <div></div>
+  <div class="title-center">
+    <h1 id="pageTitle">CICPA Management</h1>
+    <div class="small">Company + Subcontractor Employee CICPA Tracking</div>
+  </div>
+  <div class="topbar-right" id="topDateTime"></div>
+</div>
+
+
+<section id="dashboard" class="panel active">
+  <div class="cards">
+    <div class="card activec" onclick="filterByStatus('active')"><div class="lbl">Total CICPA Active</div><div class="num" id="cActive">0</div></div>
+    <div class="card warn15" onclick="filterByStatus('15')"><div class="lbl">Near to Expire<br>Within 15 Days</div><div class="num" id="c15">0</div></div>
+    <div class="card warn7" onclick="filterByStatus('7')"><div class="lbl">Near to Expire<br>Within 7 Days</div><div class="num" id="c7">0</div></div>
+    <div class="card expired" onclick="filterByStatus('expired')"><div class="lbl">Expired</div><div class="num" id="cExpired">0</div></div>
+  </div>
+
+  <div class="dashboard-workspace">
+    <div class="form-card">
+      <h2>Add / Update CICPA</h2>
+      <div class="grid">
+        <div><label>Select Employee *</label><select id="employeeSelectDash" onchange="syncDashEmployee()"></select></div>
+        <div><label>Employee Code</label><input id="empCodeDash" readonly></div>
+        <div><label>Employee Name</label><input id="empNameDash" readonly></div>
+        <div><label>Nationality</label><input id="nationalityDash" readonly></div>
+        <div><label>Designation / Craft</label><input id="designationDash" readonly></div>
+        <div><label>CICPA # *</label><input id="cicpaNoDash" placeholder="Enter CICPA Number"></div>
+        <div><label>Issue Date *</label><input id="issueDateDash" type="date"></div>
+        <div><label>Expiry Date *</label><input id="expiryDateDash" type="date"></div>
+      </div>
+      <div style="margin-top:12px">
+        <label>CICPA Location *</label>
+        <div id="locationRowsDash"></div>
+        <button class="secondary" onclick="addLocationRowDash()">+ Add More Location</button>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="saveRecordDash()">▣ Save CICPA</button>
+        <button class="secondary" onclick="clearDashForm()">↻ Clear</button>
+      </div>
+    </div>
+
+    <div class="existing-panel">
+      <h3>Existing CICPA for Selected Employee</h3>
+      <div id="existingCicpaDash" class="existing-empty">Select an employee to view previously issued CICPA records.</div>
+    </div>
+  </div>
+
+  <div class="box recent-box">
+    <div class="toolbar">
+      <h2>Recent CICPA Records</h2>
+      <input id="searchInput" placeholder="Search employee, code, CICPA #, location..." oninput="renderTable()">
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th>S.No.</th><th>Employee Code</th><th>Employee Name</th><th>Designation/Craft</th>
+          <th>CICPA #</th><th>Location</th><th>Issue Date</th><th>Expiry Date</th><th>Status</th><th>Action</th>
+        </tr></thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="note">Note: Click on dashboard cards to view details.</div>
+</section>
+
+<section id="register" class="panel">
+      <div class="box">
+        <h2>Add / Update CICPA</h2>
+        <div class="grid">
+          <div><label>Select Employee</label><select id="employeeSelect" onchange="populateEmployee()"></select></div>
+          <div><label>Employee Code</label><input id="empCode" readonly></div>
+          <div><label>Employee Name</label><input id="empName" readonly></div>
+          <div><label>Nationality</label><input id="nationality" readonly></div>
+          <div><label>Designation / Craft</label><input id="designation" readonly></div>
+          <div><label>CICPA #</label><input id="cicpaNo" placeholder="Enter CICPA number"></div>
+          <div><label>Issue Date</label><input id="issueDate" type="date"></div>
+          <div><label>Expiry Date</label><input id="expiryDate" type="date"></div>
+        </div>
+
+        <div class="existing-panel">
+          <h3>Existing CICPA for Selected Employee</h3>
+          <div id="existingCicpaBox" class="existing-empty">Select an employee to view previously issued CICPA records.</div>
+        </div>
+
+        <div style="margin-top:18px">
+          <label>CICPA Location</label>
+          <div id="locationRows"></div>
+          <button class="secondary" onclick="addLocationRow()">+ Add More Location</button>
+        </div>
+
+        <div class="actions">
+          <button class="primary" onclick="saveRecord()">Save CICPA</button>
+          <button class="secondary" onclick="clearForm()">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="locations" class="panel">
+      <div class="box">
+        <h2>CICPA Location Master</h2>
+        <div class="location-row">
+          <input id="newLocation" placeholder="Enter CICPA location">
+          <button class="primary" onclick="addMasterLocation()">Add Location</button>
+        </div>
+        <div class="tablewrap"><table>
+          <thead><tr><th>#</th><th>Location Name</th><th>Action</th></tr></thead>
+          <tbody id="locationMasterBody"></tbody>
+        </table></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const defaultCompanyEmployees = [
+  {id:'C001',code:'C001',name:'Sample Company Employee',nationality:'India',designation:'Electrician',subcontractor:''},
+  {id:'C002',code:'C002',name:'Sample Supervisor',nationality:'Pakistan',designation:'Supervisor',subcontractor:''}
+];
+const defaultSubEmployees = [
+  {id:'S001',code:'S001',name:'Sample Subcontractor Employee',nationality:'Nepal',designation:'Helper',subcontractor:'Sample Subcontractor LLC'},
+  {id:'S002',code:'S002',name:'Sample Welder',nationality:'Bangladesh',designation:'Welder',subcontractor:'Sample Manpower LLC'}
+];
+
+const __erpPeople=window.cmLoadCicpaEmployees?window.cmLoadCicpaEmployees():{company:[],sub:[]};
+let companyEmployees = __erpPeople.company.length ? __erpPeople.company : (JSON.parse(localStorage.getItem('employee_master') || 'null') || defaultCompanyEmployees);
+let subEmployees = __erpPeople.sub.length ? __erpPeople.sub : (JSON.parse(localStorage.getItem('subcontractor_employee_master') || 'null') || defaultSubEmployees);
+let locations = JSON.parse(localStorage.getItem('cicpa_locations') || 'null') || ['Mussafah','Ruwais','Habshan'];
+let records = JSON.parse(localStorage.getItem('cicpa_records') || '[]');
+let editId = null;
+let dashboardFilter = 'all';
+
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active',x.dataset.panel===id));
+  document.getElementById('pageTitle').textContent = id==='dashboard'?'CICPA Management':id==='register'?'CICPA Register':'CICPA Location Master';
+  if(id==='locations') renderLocationMaster();
+  if(id==='register'){loadEmployeeOptions(); if(!document.querySelector('.loc-select')) addLocationRow();}
+}
+document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>showPanel(b.dataset.panel));
+
+function normalizeEmployee(e,i,sub=false){
+  return {
+    id:e.id || e.employeeId || e.code || e.employeeCode || ('EMP'+i),
+    code:e.code || e.employeeCode || e.empCode || '',
+    name:e.name || e.employeeName || e.fullName || '',
+    nationality:e.nationality || '',
+    designation:e.designation || e.craft || e.actualDesignation || '',
+    subcontractor: sub ? (e.subcontractor || e.subContractor || e.company || '') : ''
+  };
+}
+companyEmployees = companyEmployees.map((e,i)=>normalizeEmployee(e,i,false));
+subEmployees = subEmployees.map((e,i)=>normalizeEmployee(e,i,true));
+
+function getAllEmployees(){
+  return [
+    ...companyEmployees.map(e=>({...e, source:'company'})),
+    ...subEmployees.map(e=>({...e, source:'subcontractor'}))
+  ];
+}
+function loadEmployeeOptions(){
+  const arr=getAllEmployees();
+  const sel=document.getElementById('employeeSelect');
+  sel.innerHTML='<option value="">-- Select Employee --</option>'+
+    arr.map((e,i)=>`<option value="${i}">${escapeHtml(e.code)} - ${escapeHtml(e.name)}</option>`).join('');
+  populateEmployee();
+}
+function populateEmployee(){
+  const arr=getAllEmployees();
+  const idx=document.getElementById('employeeSelect').value;
+  const e=idx===''?null:arr[Number(idx)];
+  ['empCode','empName','nationality','designation'].forEach(id=>document.getElementById(id).value='');
+  if(!e)return;
+  empCode.value=e.code;
+  empName.value=e.name;
+  nationality.value=e.nationality;
+  designation.value=e.designation;
+  renderExistingCICPAForEmployee(e.code);
+}
+function renderExistingCicpa(){
+  const box=document.getElementById('existingCicpaBox'); if(!box)return;
+  const code=(document.getElementById('empCode').value||'').trim();
+  const src='';
+  if(!code){box.className='existing-empty';box.innerHTML='Select an employee to view previously issued CICPA records.';return;}
+  const list=records.filter(r=>r.empCode===code);
+  if(!list.length){box.className='existing-empty';box.innerHTML='No previous CICPA record found for this employee.';return;}
+  list.sort((a,b)=>String(b.expiryDate).localeCompare(String(a.expiryDate)));
+  box.className='';
+  box.innerHTML=`<div class="tablewrap"><table class="mini-table"><thead><tr><th>CICPA #</th><th>Location(s)</th><th>Issue Date</th><th>Expiry Date</th><th>Status</th></tr></thead><tbody>${list.map(r=>{const st=statusInfo(r);return `<tr><td><b>${escapeHtml(r.cicpaNo)}</b></td><td>${escapeHtml(r.locations.join(', '))}</td><td>${r.issueDate}</td><td><b>${r.expiryDate}</b></td><td><span class="badge ${st.cls}">${st.text}</span></td></tr>`}).join('')}</tbody></table></div>`;
+}
+
+
+function renderExistingCICPAForEmployee(code){
+  let panel=document.getElementById('existingCicpaMini');
+  if(!panel){
+    const box=document.querySelector('#register .box');
+    panel=document.createElement('div');
+    panel.id='existingCicpaMini';
+    panel.style.marginTop='16px';
+    panel.innerHTML='<h3 style="font-size:15px;margin:0 0 8px;color:#123b63">Existing CICPA for Selected Employee</h3><div class="tablewrap"><table><thead><tr><th>CICPA #</th><th>Location</th><th>Expiry Date</th><th>Status</th></tr></thead><tbody id="existingCicpaBody"></tbody></table></div>';
+    const grid=box.querySelector('.grid');
+    grid.insertAdjacentElement('afterend',panel);
+  }
+  const body=document.getElementById('existingCicpaBody');
+  const matches=records.filter(r=>r.empCode===code);
+  body.innerHTML=matches.length?matches.map(r=>{
+    const s=statusInfo(r);
+    return `<tr><td>${escapeHtml(r.cicpaNo)}</td><td>${escapeHtml((r.locations||[]).join(', '))}</td><td>${r.expiryDate}</td><td><span class="badge ${s.cls}">${s.text}</span></td></tr>`;
+  }).join(''):'<tr><td colspan="4" style="text-align:center;color:#788">No previous CICPA issued</td></tr>';
+}
+
+function addLocationRow(value=''){
+  const wrap=document.getElementById('locationRows');
+  const row=document.createElement('div');
+  row.className='location-row';
+  row.innerHTML=`<select class="loc-select">${'<option value="">-- Select CICPA Location --</option>'+locations.map(l=>`<option ${l===value?'selected':''}>${escapeHtml(l)}</option>`).join('')}</select>
+  <button class="danger" onclick="this.parentElement.remove()">Remove</button>`;
+  wrap.appendChild(row);
+}
+function addMasterLocation(){
+  const v=document.getElementById('newLocation').value.trim();
+  if(!v)return alert('Please enter location name.');
+  if(locations.some(x=>x.toLowerCase()===v.toLowerCase()))return alert('Location already exists.');
+  locations.push(v); saveLocations(); newLocation.value=''; renderLocationMaster();
+}
+function deleteLocation(i){
+  if(confirm('Delete this CICPA location?')){locations.splice(i,1);saveLocations();renderLocationMaster();}
+}
+function saveLocations(){localStorage.setItem('cicpa_locations',JSON.stringify(locations));}
+function renderLocationMaster(){
+  locationMasterBody.innerHTML=locations.map((l,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(l)}</td><td><button class="danger" onclick="deleteLocation(${i})">Delete</button></td></tr>`).join('');
+}
+function saveRecord(){
+  const idx=document.getElementById('employeeSelect').value;
+  if(idx==='')return alert('Please select employee.');
+  const selectedEmployee=getAllEmployees()[Number(idx)];
+  const source=selectedEmployee.source;
+  if(!cicpaNo.value.trim())return alert('Please enter CICPA number.');
+  if(!issueDate.value || !expiryDate.value)return alert('Please enter issue and expiry dates.');
+  const locs=[...document.querySelectorAll('.loc-select')].map(x=>x.value).filter(Boolean);
+  if(!locs.length)return alert('Please select at least one CICPA location.');
+  if(records.some(r=>r.cicpaNo.toLowerCase()===cicpaNo.value.trim().toLowerCase() && r.id!==editId)) return alert('Duplicate CICPA number.');
+
+  const obj={id:editId||Date.now(),source,empCode:empCode.value,empName:empName.value,nationality:nationality.value,
+    designation:designation.value,subcontractor:selectedEmployee.subcontractor||'',cicpaNo:cicpaNo.value.trim(),
+    issueDate:issueDate.value,expiryDate:expiryDate.value,locations:locs};
+  if(editId){records=records.map(r=>r.id===editId?obj:r)} else records.push(obj);
+  localStorage.setItem('cicpa_records',JSON.stringify(records));
+  clearForm(); updateDashboard(); showPanel('dashboard');
+}
+function clearForm(){
+  editId=null;cicpaNo.value='';issueDate.value='';expiryDate.value='';locationRows.innerHTML='';addLocationRow();
+  loadEmployeeOptions();
+}
+function editRecord(id){
+  const r=records.find(x=>x.id===id); if(!r)return;
+  showPanel('register'); editId=id; loadEmployeeOptions();
+  const arr=getAllEmployees();
+  const idx=arr.findIndex(e=>e.code===r.empCode && e.source===r.source);
+  employeeSelect.value=idx>=0?String(idx):''; populateEmployee();
+  cicpaNo.value=r.cicpaNo;issueDate.value=r.issueDate;expiryDate.value=r.expiryDate;
+  locationRows.innerHTML='';r.locations.forEach(l=>addLocationRow(l));
+}
+function deleteRecord(id){
+  if(confirm('Delete CICPA record?')){records=records.filter(r=>r.id!==id);localStorage.setItem('cicpa_records',JSON.stringify(records));updateDashboard();renderExistingCicpa();}
+}
+function daysLeft(dateStr){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const d=new Date(dateStr+'T00:00:00');
+  return Math.ceil((d-today)/86400000);
+}
+function statusInfo(r){
+  const d=daysLeft(r.expiryDate);
+  if(d<0)return {key:'expired',text:'Expired',cls:'b-red'};
+  if(d<=7)return {key:'7',text:'Within 7 Days',cls:'b-orange'};
+  if(d<=15)return {key:'15',text:'Within 15 Days',cls:'b-orange'};
+  return {key:'active',text:'Active',cls:'b-green'};
+}
+function filterByStatus(k){dashboardFilter=k;renderTable();}
+function updateDashboard(){
+  let a=0,d15=0,d7=0,e=0;
+  records.forEach(r=>{const d=daysLeft(r.expiryDate);if(d<0)e++;else{a++;if(d<=15)d15++;if(d<=7)d7++;}});
+  cActive.textContent=a;c15.textContent=d15;c7.textContent=d7;cExpired.textContent=e;renderTable();
+}
+function renderTable(){
+  const searchEl=document.getElementById('searchInput');
+  const q=(searchEl?.value||'').toLowerCase();
+  const data=records.filter(r=>{
+    const d=daysLeft(r.expiryDate);
+    let pass=true;
+    if(dashboardFilter==='active')pass=d>=0;
+    if(dashboardFilter==='expired')pass=d<0;
+    if(dashboardFilter==='15')pass=d>=0&&d<=15;
+    if(dashboardFilter==='7')pass=d>=0&&d<=7;
+    return pass && [r.empCode,r.empName,r.designation,r.cicpaNo,(r.locations||[]).join(' ')].join(' ').toLowerCase().includes(q);
+  });
+  const body=document.getElementById('recordsBody');
+  if(!body)return;
+  body.innerHTML=data.map((r,i)=>{
+    const s=statusInfo(r);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${escapeHtml(r.empCode)}</td>
+      <td>${escapeHtml(r.empName)}</td>
+      <td>${escapeHtml(r.designation||'-')}</td>
+      <td><b>${escapeHtml(r.cicpaNo)}</b></td>
+      <td>${escapeHtml((r.locations||[]).join(', '))}</td>
+      <td>${r.issueDate}</td>
+      <td>${r.expiryDate}</td>
+      <td><span class="badge ${s.cls}">${s.text}</span></td>
+      <td><button class="secondary" onclick="editRecord(${r.id})">View/Edit</button> <button class="danger" onclick="deleteRecord(${r.id})">Delete</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="10" style="text-align:center;color:#788;">No records found</td></tr>';
+}
+
+function refreshDashEmployeeOptions(){
+  const sel=document.getElementById('employeeSelectDash');
+  if(!sel)return;
+  const arr=getAllEmployees();
+  sel.innerHTML='<option value="">-- Select Employee --</option>'+
+    arr.map((e,i)=>`<option value="${i}">${escapeHtml(e.code)} - ${escapeHtml(e.name)}</option>`).join('');
+}
+function syncDashEmployee(){
+  const arr=getAllEmployees();
+  const idx=document.getElementById('employeeSelectDash').value;
+  const e=idx===''?null:arr[Number(idx)];
+  ['empCodeDash','empNameDash','nationalityDash','designationDash'].forEach(id=>document.getElementById(id).value='');
+  if(!e){
+    document.getElementById('existingCicpaDash').className='existing-empty';
+    document.getElementById('existingCicpaDash').innerHTML='Select an employee to view previously issued CICPA records.';
+    return;
+  }
+  empCodeDash.value=e.code;
+  empNameDash.value=e.name;
+  nationalityDash.value=e.nationality;
+  designationDash.value=e.designation;
+  renderExistingDash(e.code);
+}
+function renderExistingDash(code){
+  const box=document.getElementById('existingCicpaDash');
+  const list=records.filter(r=>r.empCode===code).sort((a,b)=>String(b.expiryDate).localeCompare(String(a.expiryDate)));
+  if(!list.length){
+    box.className='existing-empty';
+    box.innerHTML='No previous CICPA record found for this employee.';
+    return;
+  }
+  box.className='';
+  box.innerHTML=`<div class="tablewrap"><table class="mini-table"><thead><tr>
+    <th>CICPA #</th><th>Location</th><th>Issue Date</th><th>Expiry Date</th><th>Status</th><th>Action</th>
+  </tr></thead><tbody>${list.map(r=>{
+    const st=statusInfo(r);
+    return `<tr>
+      <td><b>${escapeHtml(r.cicpaNo)}</b></td>
+      <td>${escapeHtml((r.locations||[]).join(', '))}</td>
+      <td>${r.issueDate}</td><td>${r.expiryDate}</td>
+      <td><span class="badge ${st.cls}">${st.text}</span></td>
+      <td><button class="secondary" onclick="editRecord(${r.id})">View</button></td>
+    </tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+function addLocationRowDash(value=''){
+  const wrap=document.getElementById('locationRowsDash');
+  if(!wrap)return;
+  const row=document.createElement('div');
+  row.className='location-row';
+  row.innerHTML=`<select class="loc-select-dash"><option value="">-- Select Location --</option>${locations.map(l=>`<option ${l===value?'selected':''}>${escapeHtml(l)}</option>`).join('')}</select>
+  <button class="danger" onclick="this.parentElement.remove()">Remove</button>`;
+  wrap.appendChild(row);
+}
+function clearDashForm(){
+  ['cicpaNoDash','issueDateDash','expiryDateDash','empCodeDash','empNameDash','nationalityDash','designationDash'].forEach(id=>document.getElementById(id).value='');
+  employeeSelectDash.value='';
+  locationRowsDash.innerHTML='';
+  addLocationRowDash();
+  existingCicpaDash.className='existing-empty';
+  existingCicpaDash.innerHTML='Select an employee to view previously issued CICPA records.';
+}
+function saveRecordDash(){
+  const idx=employeeSelectDash.value;
+  if(idx==='')return alert('Please select employee.');
+  const e=getAllEmployees()[Number(idx)];
+  const no=cicpaNoDash.value.trim();
+  if(!no)return alert('Please enter CICPA number.');
+  if(!issueDateDash.value || !expiryDateDash.value)return alert('Please enter issue and expiry dates.');
+  const locs=[...document.querySelectorAll('.loc-select-dash')].map(x=>x.value).filter(Boolean);
+  if(!locs.length)return alert('Please select at least one CICPA location.');
+  if(records.some(r=>String(r.cicpaNo).toLowerCase()===no.toLowerCase()))return alert('Duplicate CICPA number.');
+  records.push({
+    id:Date.now(), source:e.source, empCode:e.code, empName:e.name,
+    nationality:e.nationality, designation:e.designation,
+    subcontractor:e.subcontractor||'', cicpaNo:no,
+    issueDate:issueDateDash.value, expiryDate:expiryDateDash.value, locations:locs
+  });
+  localStorage.setItem('cicpa_records',JSON.stringify(records));
+  updateDashboard();
+  renderExistingDash(e.code);
+  cicpaNoDash.value=''; issueDateDash.value=''; expiryDateDash.value='';
+  locationRowsDash.innerHTML=''; addLocationRowDash();
+}
+function exportCsv(){
+  const rows=[['Employee Code','Employee Name','Designation/Craft','CICPA #','Location','Issue Date','Expiry Date','Status']];
+  records.forEach(r=>rows.push([r.empCode,r.empName,r.designation,r.cicpaNo,(r.locations||[]).join(' | '),r.issueDate,r.expiryDate,statusInfo(r).text]));
+  const csv=rows.map(row=>row.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='CICPA_Records.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+function updateTopDateTime(){
+  const el=document.getElementById('topDateTime'); if(!el)return;
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  el.textContent=`▣  ${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}  ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+
+loadEmployeeOptions();addLocationRow();renderLocationMaster();refreshDashEmployeeOptions();addLocationRowDash();updateDashboard();updateTopDateTime();setInterval(updateTopDateTime,60000);
+</script>
+
+<div class="cm-all-portals">
+<details><summary>☰ ERP Portals</summary><div class="links">
+<a href="dashboard.html">Dashboard</a>
+<a href="index.html">Employee Management</a>
+<a href="subcontractor.html">Sub Contractor</a>
+<a href="client.html">Client / Project</a>
+<a href="site.html">Site Management</a>
+<a href="timesheet.html">Timesheet</a>
+<a href="payroll.html">Payroll</a>
+<a href="approval.html">Approval Center</a>
+<a class="cicpa" href="cicpa.html">CICPA Management</a>
+<a href="audit.html">Audit Trail</a>
+</div></details></div>
+
+</body>
+</html>

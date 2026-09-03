@@ -15,7 +15,7 @@
   }
   out.push({field:path||'value',old:simple(a),new:simple(b)});return out;
  }
- function moduleName(){const t=document.title||location.pathname; if(/employee/i.test(t))return'Employee';if(/client/i.test(t))return'Client / Project';if(/sub.?contract/i.test(t))return'Sub Contractor';if(/site/i.test(t))return'Site';if(/timesheet/i.test(t))return'Timesheet';if(/payroll/i.test(t))return'Payroll';if(/approval/i.test(t))return'Approval Center';if(/dashboard/i.test(t))return'Dashboard';return'ERP'}
+ function moduleName(){const t=document.title||location.pathname; if(/leave/i.test(t))return'Leave';if(/cicpa/i.test(t))return'CICPA';if(/employee/i.test(t))return'Employee';if(/client/i.test(t))return'Client / Project';if(/sub.?contract/i.test(t))return'Sub Contractor';if(/site/i.test(t))return'Site';if(/timesheet/i.test(t))return'Timesheet';if(/payroll/i.test(t))return'Payroll';if(/approval/i.test(t))return'Approval Center';if(/dashboard/i.test(t))return'Dashboard';return'ERP'}
  function log(key,oldRaw,newRaw){
   if(key===AUDIT_KEY||/_backup$/i.test(key)||/^cm_logged_in/i.test(key)||/^cm_saved_email/i.test(key))return;
   if(oldRaw===newRaw)return;
@@ -93,6 +93,29 @@ button,input,select{font:inherit}.shell{min-height:100vh;display:grid;grid-templ
 @media(max-width:900px){.erp-search-wrap{min-width:0;width:100%}.erp-search-menu{min-width:0;width:100%}}
 </style>
 
+
+<style id="cm-cicpa-link-style">
+.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999}
+.cm-all-portals details{position:relative}
+.cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 5px 18px #0002}
+.cm-all-portals summary::-webkit-details-marker{display:none}
+.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:230px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003}
+.cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font:700 12px Segoe UI,Arial,sans-serif}
+.cm-all-portals a:hover{background:#eef4fa}.cm-all-portals a.cicpa{background:#fff3df;color:#b55b00}
+</style>
+
+
+<style id="cm-unified-nav-style">
+.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999;font-family:Segoe UI,Arial,sans-serif}
+.cm-all-portals details{position:relative}
+.cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800;font-size:12px;box-shadow:0 5px 18px #0002}
+.cm-all-portals summary::-webkit-details-marker{display:none}
+.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
+.cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font-weight:700;font-size:12px}
+.cm-all-portals a:hover{background:#eef4fa}
+.cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
+</style>
+
 </head>
 <body>
 <script>(function(){var k='cm_logged_in_v3';if(sessionStorage.getItem(k)!=='1'&&localStorage.getItem(k)!=='1')location.replace('index.html');})();</script>
@@ -104,6 +127,7 @@ button,input,select{font:inherit}.shell{min-height:100vh;display:grid;grid-templ
  <a class="nav" href="approval.html"><i>✓</i>Approval Center</a>
  <div class="nav-title">Core Modules</div>
  <a class="nav" href="index.html"><i>👥</i>Employee Management</a>
+<a class="nav" href="leave.html"><i>🏖</i> Leave Management</a>
  <a class="nav" href="client.html"><i>🏢</i>Clients & Projects</a>
  <a class="nav" href="subcontractor.html"><i>🏗</i>Sub Contractors</a>
  <a class="nav" href="site.html"><i>📍</i>Site Management</a>
@@ -291,4 +315,19 @@ function logoutERP(){sessionStorage.removeItem('cm_logged_in_v3');localStorage.r
 document.querySelectorAll('.kpi').forEach(k=>k.addEventListener('click',()=>showDetail(k.dataset.detail)));const now=new Date();reportMonth.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');reportMonth.addEventListener('change',render);render();
 </script>
 <a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>
+
+<div class="cm-all-portals">
+<details><summary>☰ ERP Portals</summary><div class="links">
+<a href="dashboard.html">Dashboard</a>
+<a href="index.html">Employee Management</a>
+<a href="subcontractor.html">Sub Contractor</a>
+<a href="client.html">Client / Project</a>
+<a href="site.html">Site Management</a>
+<a href="timesheet.html">Timesheet</a>
+<a href="payroll.html">Payroll</a>
+<a href="approval.html">Approval Center</a>
+<a class="cicpa" href="cicpa.html">CICPA Management</a>
+<a href="audit.html">Audit Trail</a>
+</div></details></div>
+
 </body></html>
