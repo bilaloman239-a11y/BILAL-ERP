@@ -267,7 +267,7 @@ function universalIndex(){
    const unified=e.unifiedNumber||e.unifiedNo||'';
    const label=name(e)||('Employee '+code(e));
    const search=[code(e),name(e),e.employeeNameArabic,eid,passport,unified,e.company,e.idDesignation,craft(e),...(arr(e.documents).map(d=>[d.type,d.number].join(' ')))].join(' ');
-   out.push({type:'Employee',icon:'👤',title:label,sub:[code(e)&&('Code: '+code(e)),eid&&('EID: '+eid),passport&&('Passport: '+passport),e.company].filter(Boolean).join(' • '),search,href:'index.html'});
+   out.push({type:'Employee',icon:'👤',title:label,sub:[code(e)&&('Code: '+code(e)),eid&&('EID: '+eid),passport&&('Passport: '+passport),e.company].filter(Boolean).join(' • '),search,href:'index.html?empProfile='+encodeURIComponent(code(e))});
  });
  s.subemps.forEach(e=>{
    const sn=subName(e.subContractorId||e.subcontractorId,s.subs);

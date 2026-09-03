@@ -3198,7 +3198,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const savedEmail=localStorage.getItem("cm_saved_email"); if(savedEmail) $("loginEmail").value=savedEmail;
   renderAll();
-  if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1") openApp();
+  if(sessionStorage.getItem(SESSION_KEY)==="1" || localStorage.getItem(SESSION_KEY)==="1"){
+    openApp();
+    try{
+      const params=new URLSearchParams(location.search);
+      const wantCode=params.get("empProfile");
+      if(wantCode){
+        const idx=(data.employees||[]).findIndex(e=>String(e.employeeCode||"").trim().toLowerCase()===wantCode.trim().toLowerCase());
+        if(idx>-1) openEmployeeProfile(idx);
+        const url=new URL(location.href); url.searchParams.delete("empProfile"); history.replaceState({},"",url);
+      }
+    }catch(err){ console.warn("Auto-open profile skipped",err); }
+  }
 })();
 });
 </script>
