@@ -256,22 +256,22 @@
 </style>
 
 <style id="cm-cicpa-link-style">
-.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999}
+.cm-all-portals{position:fixed;right:14px;top:14px;z-index:99999}
 .cm-all-portals details{position:relative}
 .cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 5px 18px #0002}
 .cm-all-portals summary::-webkit-details-marker{display:none}
-.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:230px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003}
+.cm-all-portals .links{position:absolute;right:0;top:44px;width:230px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003}
 .cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font:700 12px Segoe UI,Arial,sans-serif}
 .cm-all-portals a:hover{background:#eef4fa}.cm-all-portals a.cicpa{background:#fff3df;color:#b55b00}
 </style>
 
 
 <style id="cm-unified-nav-style">
-.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999;font-family:Segoe UI,Arial,sans-serif}
+.cm-all-portals{position:fixed;right:14px;top:14px;z-index:99999;font-family:Segoe UI,Arial,sans-serif}
 .cm-all-portals details{position:relative}
 .cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800;font-size:12px;box-shadow:0 5px 18px #0002}
 .cm-all-portals summary::-webkit-details-marker{display:none}
-.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
+.cm-all-portals .links{position:absolute;right:0;top:44px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
 .cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font-weight:700;font-size:12px}
 .cm-all-portals a:hover{background:#eef4fa}
 .cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
@@ -279,6 +279,8 @@
 
 </head>
 <body>
+<button type="button" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back" style="position:fixed;right:170px;top:14px;z-index:99998;background:#173b67;color:#fff;border:0;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.2)">← Back</button>
+
 <style id="cm-dashboard-shortcut-style">.cm-dashboard-shortcut{position:fixed;right:18px;bottom:18px;z-index:9999;background:#12344a;color:#fff!important;text-decoration:none;padding:10px 13px;border-radius:10px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 8px 22px #0002;border:1px solid #ffffff33}.cm-dashboard-shortcut:hover{background:#1976c9}</style>
 <a id="cmDashboardShortcut" class="cm-dashboard-shortcut" href="dashboard.html">⌂ ERP Dashboard</a>
 <a class="cm-dashboard-shortcut" href="approval.html" style="margin-left:6px">✓ Approval Center</a>
@@ -286,7 +288,7 @@
 
 <div class="app">
 <aside class="side"><div class="brand">CIVIL MASTER<br><span>Central Timesheet Management</span></div><button class="navbtn active" onclick="showView('upload',this)">📥 Upload Timesheet</button><button class="navbtn" onclick="showView('register',this)">📋 Full Timesheet Register</button><button class="navbtn" onclick="showView('projectHours',this)">🏢 Client / Project Hours</button><button class="navbtn" onclick="showView('dashboard',this)">Dashboard</button><button class="navbtn" onclick="showView('summary',this)">Subcontractor Summary</button><button class="navbtn" onclick="showView('report',this)">Individual Timesheet Report</button><button class="navbtn" onclick="showView('employees',this)">Employee Details</button><button class="navbtn" onclick="showView('suppliers',this)">VAT / Supplier Info</button><div style="margin-top:30px;font-size:12px;color:#94a3b8;line-height:1.6">CIVIL MASTER<br>Sub Contractor Timesheet Management<br><b style="color:#fff">Local ERP Portal</b></div><div style="margin-top:18px;border-top:1px solid #334155;padding-top:12px;font-size:11px;color:#94a3b8">ERP MODULES</div>
-<button class="navbtn" onclick="location.href='index.html'">👥 Employee</button><button class="navbtn" onclick="location.href='client.html'">🏢 Client</button><button class="navbtn" onclick="location.href='subcontractor.html'">🏗 Sub Contractor</button><button class="navbtn" onclick="location.href='site.html'">📍 Site</button><button class="navbtn" onclick="location.href='payroll.html'">💵 Payroll</button></aside>
+<button class="navbtn" onclick="location.href='index.html'">👥 Employee</button><button class="navbtn" onclick="location.href='client.html'">🏢 Client</button><button class="navbtn" onclick="location.href='subcontractor.html'">🏗 Sub Contractor</button><button class="navbtn" onclick="location.href='site.html'">📍 Site</button><button class="navbtn" onclick="location.href='payroll.html'">💵 Payroll</button><button class="navbtn" onclick="location.href='cicpa.html'">🛡 CICPA</button><button class="navbtn" onclick="location.href='audit.html'">📋 Audit Trail</button></aside>
 <main class="main">
 <div class="topbar"><div class="title"><h1>Central Timesheet Management</h1><p>CIVIL MASTER · Upload once → Employee Code Match → Payroll + Sub Contractor + Client/Project Hours</p></div><div class="badge" id="selectedBadge">All Subcontractors</div></div>
 

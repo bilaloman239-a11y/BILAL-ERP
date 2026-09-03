@@ -95,22 +95,22 @@ button,input,select{font:inherit}.shell{min-height:100vh;display:grid;grid-templ
 
 
 <style id="cm-cicpa-link-style">
-.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999}
+.cm-all-portals{position:fixed;right:14px;top:14px;z-index:99999}
 .cm-all-portals details{position:relative}
 .cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 5px 18px #0002}
 .cm-all-portals summary::-webkit-details-marker{display:none}
-.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:230px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003}
+.cm-all-portals .links{position:absolute;right:0;top:44px;width:230px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003}
 .cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font:700 12px Segoe UI,Arial,sans-serif}
 .cm-all-portals a:hover{background:#eef4fa}.cm-all-portals a.cicpa{background:#fff3df;color:#b55b00}
 </style>
 
 
 <style id="cm-unified-nav-style">
-.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999;font-family:Segoe UI,Arial,sans-serif}
+.cm-all-portals{position:fixed;right:14px;top:14px;z-index:99999;font-family:Segoe UI,Arial,sans-serif}
 .cm-all-portals details{position:relative}
 .cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800;font-size:12px;box-shadow:0 5px 18px #0002}
 .cm-all-portals summary::-webkit-details-marker{display:none}
-.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
+.cm-all-portals .links{position:absolute;right:0;top:44px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
 .cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font-weight:700;font-size:12px}
 .cm-all-portals a:hover{background:#eef4fa}
 .cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
@@ -118,6 +118,8 @@ button,input,select{font:inherit}.shell{min-height:100vh;display:grid;grid-templ
 
 </head>
 <body>
+<button type="button" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back" style="position:fixed;right:170px;top:14px;z-index:99998;background:#173b67;color:#fff;border:0;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.2)">← Back</button>
+
 <script>(function(){var k='cm_logged_in_v3';if(sessionStorage.getItem(k)!=='1'&&localStorage.getItem(k)!=='1')location.replace('index.html');})();</script>
 <div class="shell">
 <aside class="side">
@@ -133,6 +135,8 @@ button,input,select{font:inherit}.shell{min-height:100vh;display:grid;grid-templ
  <a class="nav" href="site.html"><i>📍</i>Site Management</a>
  <a class="nav" href="timesheet.html"><i>🕒</i>Central Timesheet</a>
  <a class="nav" href="payroll.html"><i>💵</i>Payroll & Salary</a>
+ <a class="nav" href="cicpa.html"><i>🛡</i>CICPA Management</a>
+ <a class="nav" href="audit.html"><i>📋</i>Audit Trail</a>
  <div class="side-foot">Management Dashboard<br><b style="color:white">Live Browser Data</b><br>Employee • Project • Site • Timesheet • Payroll</div>
 </aside>
 <main class="main">
@@ -173,6 +177,8 @@ button,input,select{font:inherit}.shell{min-height:100vh;display:grid;grid-templ
   <a class="module" href="timesheet.html"><div class="micon">🕒</div><b>Central Timesheet</b><small>Upload once & route</small></a>
   <a class="module" href="payroll.html"><div class="micon">💵</div><b>Payroll & Salary</b><small>Salary processing</small></a>
   <a class="module" href="approval.html"><div class="micon">✅</div><b>Approval Center</b><small>Submit • Check • Approve • Lock</small></a>
+  <a class="module" href="cicpa.html"><div class="micon">🛡</div><b>CICPA Management</b><small>Company & subcontractor CICPA tracking</small></a>
+  <a class="module" href="audit.html"><div class="micon">📋</div><b>Audit Trail</b><small>Who changed what, old & new values</small></a>
  </div></div></section>
 </main></div>
 <script>

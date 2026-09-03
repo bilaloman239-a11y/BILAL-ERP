@@ -35,22 +35,22 @@
 </style>
 
 <style id="cm-cicpa-link-style">
-.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999}
+.cm-all-portals{position:fixed;right:14px;top:14px;z-index:99999}
 .cm-all-portals details{position:relative}
 .cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;box-shadow:0 5px 18px #0002}
 .cm-all-portals summary::-webkit-details-marker{display:none}
-.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:230px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003}
+.cm-all-portals .links{position:absolute;right:0;top:44px;width:230px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003}
 .cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font:700 12px Segoe UI,Arial,sans-serif}
 .cm-all-portals a:hover{background:#eef4fa}.cm-all-portals a.cicpa{background:#fff3df;color:#b55b00}
 </style>
 
 
 <style id="cm-unified-nav-style">
-.cm-all-portals{position:fixed;right:14px;bottom:14px;z-index:99999;font-family:Segoe UI,Arial,sans-serif}
+.cm-all-portals{position:fixed;right:14px;top:14px;z-index:99999;font-family:Segoe UI,Arial,sans-serif}
 .cm-all-portals details{position:relative}
 .cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800;font-size:12px;box-shadow:0 5px 18px #0002}
 .cm-all-portals summary::-webkit-details-marker{display:none}
-.cm-all-portals .links{position:absolute;right:0;bottom:44px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
+.cm-all-portals .links{position:absolute;right:0;top:44px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
 .cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font-weight:700;font-size:12px}
 .cm-all-portals a:hover{background:#eef4fa}
 .cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
@@ -58,11 +58,13 @@
 
 </head>
 <body>
+<button type="button" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back" style="position:fixed;right:170px;top:14px;z-index:99998;background:#173b67;color:#fff;border:0;border-radius:10px;padding:10px 13px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.2)">← Back</button>
+
 <script>(function(){var k='cm_logged_in_v3';if(sessionStorage.getItem(k)!=='1'&&localStorage.getItem(k)!=='1')location.replace('index.html');})();</script>
 <div class="shell"><aside class="side">
 <div class="brand"><div class="brand-main"><span class="b">CIVIL</span> <span class="o">MASTER</span></div><div class="brand-sub">INTEGRATED ERP MANAGEMENT SYSTEM</div></div>
 <div class="nav-title">Management</div><a class="nav" href="dashboard.html">⌂ ERP Dashboard</a><a class="nav active" href="approval.html">✓ Approval Center</a>
-<div class="nav-title">Core Modules</div><a class="nav" href="index.html">👥 Employee Management</a><a class="nav" href="client.html">🏢 Clients & Projects</a><a class="nav" href="subcontractor.html">🏗 Sub Contractors</a><a class="nav" href="site.html">📍 Site Management</a><a class="nav" href="timesheet.html">🕒 Central Timesheet</a><a class="nav" href="payroll.html">💵 Payroll & Salary</a>
+<div class="nav-title">Core Modules</div><a class="nav" href="index.html">👥 Employee Management</a><a class="nav" href="client.html">🏢 Clients & Projects</a><a class="nav" href="subcontractor.html">🏗 Sub Contractors</a><a class="nav" href="site.html">📍 Site Management</a><a class="nav" href="timesheet.html">🕒 Central Timesheet</a><a class="nav" href="payroll.html">💵 Payroll & Salary</a><a class="nav" href="cicpa.html">🛡 CICPA Management</a><a class="nav" href="audit.html">📋 Audit Trail</a>
 </aside><main class="main">
 <div class="top"><div class="title"><h1>ERP Approval Center</h1><p>One common control point for operational and financial approvals.</p></div><div><button class="btn light" onclick="syncSources()">↻ Sync Modules</button> <button class="btn primary" onclick="openNew()">+ New Approval Request</button></div></div>
 <section class="hero"><div><h2>Central Approval Workflow</h2><p>All approval types follow the same controlled sequence. Locked records are treated as completed and cannot move forward again.</p></div><div class="flow"><span class="step">Draft</span><span class="step">Submitted</span><span class="step">Checked</span><span class="step">Approved</span><span class="step">Locked</span></div></section>
