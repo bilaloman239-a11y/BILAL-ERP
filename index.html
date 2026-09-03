@@ -826,6 +826,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
+<script src="erp-action-center.js"></script>
 </head>
 <body>
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -841,6 +842,7 @@ body{padding-top:50px}
 <a href="approval.html">Approval Center</a>
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
+<a href="action-center.html">Action Center</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -1870,7 +1872,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const visaKeys=["cm_visa_cases_v1","cm_candidate_visa_v1","cm_visa_ticket_v1"], visa=[]; visaKeys.forEach(k=>{const v=erpGet(k,[]);(Array.isArray(v)?v:(v.items||[])).forEach(x=>{if(employeeMatchCode(x,e)||String(x.employeeName||x.name||"").toLowerCase()===String(e.employeeName||"").toLowerCase())visa.push(x)})});
     $("profile-visa-ticket").innerHTML=visa.length?`<div class="profile-section-title">Visa / Ticket History</div><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Status</th><th>Visa Type</th><th>Applied</th><th>Flight Date</th><th>Reference</th><th>Remarks</th></tr></thead><tbody>${visa.map(x=>`<tr><td>${esc(x.status||x.visaStatus||"-")}</td><td>${esc(x.visaType||"-")}</td><td>${esc(x.appliedDate||x.visaAppliedDate||"-")}</td><td>${esc(x.flightDate||x.ticketDate||"-")}</td><td>${esc(x.referenceNo||x.ref||"-")}</td><td>${esc(x.remarks||"-")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty-history"><b>No connected Visa / Ticket records yet.</b><br>When Visa/Ticket module is connected, records will appear here automatically.</div>';
 
-    renderProfileHistory(e, {moves,ts,salaryRows});
+    const payMasterAll=erpGet("cm_payroll_master_v1",{});
+    const salaryHistoryRows=(payMasterAll["e:"+e.employeeCode]?.history)||[];
+    renderProfileHistory(e, {moves,ts,salaryRows,salaryHistoryRows});
 
     document.querySelectorAll(".profile-tab").forEach(b=>b.classList.remove("active"));
     document.querySelectorAll(".profile-panel").forEach(p=>p.classList.remove("active"));
@@ -1885,15 +1889,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const byMonth={};(extra.ts||[]).forEach(t=>{const ym=String(t.date||"").slice(0,7);if(!ym)return;if(!byMonth[ym])byMonth[ym]={hours:0,count:0};byMonth[ym].hours+=Number(t.hours||0);byMonth[ym].count++});Object.entries(byMonth).forEach(([ym,v])=>combined.push({dateRaw:ym+'-31',date:ym,title:`Timesheet activity • ${v.hours.toFixed(2)} hrs`,by:"Central Timesheet",source:"Timesheet",changes:[{field:"Records",old:"",new:String(v.count)}]}));
     (extra.salaryRows||[]).forEach(x=>combined.push({dateRaw:x.finalizedAt||x.month||"",date:x.finalizedAt?new Date(x.finalizedAt).toLocaleString():x.month,title:`Payroll finalized • ${x.month}`,by:"Payroll",source:"Salary",changes:[{field:"Gross",old:"",new:Number(x.gross||0).toFixed(2)},{field:"Net",old:"",new:Number(x.net||0).toFixed(2)}]}));
     combined.sort((a,b)=>String(b.dateRaw||b.date||"").localeCompare(String(a.dateRaw||a.date||"")));
-    $("profile-history").innerHTML=`
+
+    const salHist=(extra.salaryHistoryRows||[]).slice().sort((a,b)=>String(b.effectiveFrom||"").localeCompare(String(a.effectiveFrom||"")));
+    const salaryTable=salHist.length?`
+      <div class="profile-section-title">Salary History</div>
+      <div class="profile-table-wrap" style="margin-bottom:16px"><table class="profile-table"><thead><tr><th>Salary / Rate</th><th>Effective From</th><th>Effective To</th><th>Status</th><th>Reason / Remarks</th><th>Changed By</th><th>Changed On</th></tr></thead><tbody>${salHist.map(h=>{
+        const isCurrent=!h.effectiveTo;
+        const val=h.salaryType==='Hourly'?`AED ${Number(h.hourlyRate||0).toFixed(2)}/hr`:`AED ${Number(h.basicSalary||0).toFixed(2)}/month`;
+        return `<tr><td><b>${esc(val)}</b></td><td>${esc(h.effectiveFrom||'-')}</td><td>${esc(h.effectiveTo||'—')}</td><td>${isCurrent?'<span class="status-chip">Current</span>':'<span class="status-chip" style="opacity:.6">Historical</span>'}</td><td>${esc(h.remarks||'-')}</td><td>${esc(h.changedBy||'-')}</td><td>${h.changedAt?new Date(h.changedAt).toLocaleString():'-'}</td></tr>`;
+      }).join('')}</tbody></table></div>`:'';
+
+    const stHist=safeStatusHistory(e).slice().sort((a,b)=>String(b.effectiveFrom||"").localeCompare(String(a.effectiveFrom||"")));
+    const statusTable=stHist.length?`
+      <div class="profile-section-title">Status History</div>
+      <div class="profile-table-wrap" style="margin-bottom:16px"><table class="profile-table"><thead><tr><th>Status</th><th>Effective From</th><th>Effective To</th><th>Current / Historical</th><th>Reason</th><th>Changed By</th><th>Changed On</th></tr></thead><tbody>${stHist.map(h=>{
+        const isCurrent=!h.effectiveTo;
+        return `<tr><td><b>${esc(h.status||'-')}</b></td><td>${esc(h.effectiveFrom||'-')}</td><td>${esc(h.effectiveTo||'—')}</td><td>${isCurrent?'<span class="status-chip">Current</span>':'<span class="status-chip" style="opacity:.6">Historical</span>'}</td><td>${esc(h.reason||'-')}</td><td>${esc(h.changedBy||'-')}</td><td>${h.changedOn?new Date(h.changedOn).toLocaleString():'-'}</td></tr>`;
+      }).join('')}</tbody></table></div>`:'';
+
+    $("profile-history").innerHTML=salaryTable+statusTable+`
       <div class="profile-section-title">Complete Employee History</div>
-      <div class="archive-note" style="margin-bottom:12px">Employee changes + movements + timesheet activity + finalized payroll in one timeline.</div>
+      <div class="archive-note" style="margin-bottom:12px">Employee changes + movements + timesheet activity + finalized payroll in one timeline. Salary and Status changes are also shown as dated history tables above — nothing is overwritten, each change adds a new record.</div>
       ${combined.length?`<div class="history-timeline">${combined.map(item=>`
         <div class="history-item">
           <div class="history-title">${esc(item.title||"Update")} <span class="status-chip" style="margin-left:6px">${esc(item.source||"ERP")}</span></div>
           <div class="history-meta">${esc(item.date||"")} · ${esc(item.by||"Administrator")}</div>
           ${(item.changes||[]).length?`<div class="history-change">${item.changes.map(c=>`<div><b>${esc(c.field)}:</b> <span class="history-old">${esc(c.old||"-")}</span> → <span class="history-new">${esc(c.new||"-")}</span></div>`).join("")}</div>`:""}
         </div>`).join("")}</div>`:'<div class="empty-history">No history yet.</div>'}`;
+  }
+  function safeStatusHistory(e){
+    if(!Array.isArray(e.statusHistory)) e.statusHistory=[];
+    return e.statusHistory;
   }
 
   document.querySelectorAll(".profile-tab").forEach(btn=>btn.addEventListener("click",()=>{
@@ -2377,6 +2403,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if(editingIndex===null){
       e.history=[];
+      e.statusHistory=[{id:"STH-"+Date.now().toString(36),status:e.status,effectiveFrom:e.joiningDate||new Date().toISOString().slice(0,10),effectiveTo:"",reason:e.status==="Inactive"?(e.inactiveReason||""):"Employee onboarded",changedBy:(localStorage.getItem("cm_saved_email")||localStorage.getItem("cm_current_user")||"Administrator"),changedOn:new Date().toISOString()}];
       addHistoryEvent(e,{
         type:"Employee Created",
         title:"Employee profile created",
@@ -2402,6 +2429,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }else{
       const oldEmployee=JSON.parse(JSON.stringify(data.employees[editingIndex]||{}));
       e.history=Array.isArray(oldEmployee.history)?oldEmployee.history:[];
+      e.statusHistory=Array.isArray(oldEmployee.statusHistory)?oldEmployee.statusHistory:[];
+      if(oldEmployee.status!==e.status){
+        const effFrom=(e.status==="Inactive"&&e.inactiveDate)?e.inactiveDate:new Date().toISOString().slice(0,10);
+        e.statusHistory.push({id:"STH-"+Date.now().toString(36),status:e.status,effectiveFrom:effFrom,effectiveTo:"",reason:e.status==="Inactive"?(e.inactiveReason||""):"Reactivated",changedBy:(localStorage.getItem("cm_saved_email")||localStorage.getItem("cm_current_user")||"Administrator"),changedOn:new Date().toISOString()});
+        const sortedSt=[...e.statusHistory].sort((a,b)=>a.effectiveFrom.localeCompare(b.effectiveFrom));
+        sortedSt.forEach((h,i)=>{ if(i<sortedSt.length-1){ const d=new Date(sortedSt[i+1].effectiveFrom); d.setDate(d.getDate()-1); h.effectiveTo=d.toISOString().slice(0,10); } else h.effectiveTo=""; });
+      }
 
       const fieldChanges=diffEmployee(oldEmployee,e);
       if(fieldChanges.length){

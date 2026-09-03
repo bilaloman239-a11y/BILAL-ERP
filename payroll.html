@@ -141,6 +141,7 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-payroll-workflow.js"></script>
+<script src="erp-action-center.js"></script>
 </head>
 <body>
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -156,6 +157,7 @@ body{padding-top:50px}
 <a href="approval.html">Approval Center</a>
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
+<a href="action-center.html">Action Center</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -218,7 +220,7 @@ body{padding-top:50px}
 <section id="rates" class="view">
  <div class="page-head"><h2>Salary / Rate History</h2></div>
  <div class="toolbar"><input id="rateSearch" class="search" placeholder="Search employee..." oninput="renderRateHistory()"></div>
- <div class="wrap"><table><thead><tr><th>Employee</th><th>Effective From</th><th>Salary Type</th><th>Hourly Rate</th><th>Basic Salary</th><th>Basic Hours</th><th>NOT Multiplier</th><th>HOT Multiplier</th><th>Remarks</th></tr></thead><tbody id="rateRows"></tbody></table></div>
+ <div class="wrap"><table><thead><tr><th>Employee</th><th>Effective From</th><th>Effective To</th><th>Status</th><th>Salary Type</th><th>Hourly Rate</th><th>Basic Salary</th><th>Basic Hours</th><th>NOT Multiplier</th><th>HOT Multiplier</th><th>Reason / Remarks</th><th>Changed By</th><th>Changed On</th></tr></thead><tbody id="rateRows"></tbody></table></div>
 </section>
 
 <section id="deductions" class="view">
@@ -489,7 +491,11 @@ function saveSalarySetup(e){
  if(salaryType.value==='Monthly'&&Number(basicSalary.value)<=0)return alert('Basic Salary required.');
  if(!payMaster[k])payMaster[k]={history:[]};
  if(payMaster[k].history.some(x=>x.effectiveFrom===salaryEffective.value))return alert('Salary setup already exists for this Effective From date.');
- payMaster[k].history.push({id:uid(),effectiveFrom:salaryEffective.value,salaryType:salaryType.value,hourlyRate:Number(hourlyRate.value||0),basicSalary:Number(basicSalary.value||0),basicHours:Number(basicHours.value),notMultiplier:Number(notMultiplier.value||1.25),hotMultiplier:Number(hotMultiplier.value||1.5),remarks:salaryRemarks.value.trim(),changedAt:new Date().toISOString()});
+ payMaster[k].history.push({id:uid(),effectiveFrom:salaryEffective.value,effectiveTo:'',salaryType:salaryType.value,hourlyRate:Number(hourlyRate.value||0),basicSalary:Number(basicSalary.value||0),basicHours:Number(basicHours.value),notMultiplier:Number(notMultiplier.value||1.25),hotMultiplier:Number(hotMultiplier.value||1.5),remarks:salaryRemarks.value.trim(),changedBy:(localStorage.getItem('cm_saved_email')||localStorage.getItem('cm_current_user')||'Administrator'),changedAt:new Date().toISOString()});
+ // Effective-Date History rule: never leave two records with an open-ended range —
+ // recompute the whole chain so the previous record's Effective To is capped to
+ // (new Effective From − 1 day) automatically, regardless of insert order.
+ recomputeEffectiveToChain(payMaster[k].history);
  set(PAY_KEY,payMaster);
  // A new/changed rate (e.g. Basic Hours) can change how already-entered timesheet
  // hours split into Normal vs NOT/HOT, so recalculate every month that already has
@@ -503,11 +509,25 @@ function saveSalarySetup(e){
  if(skippedLocked) alert(skippedLocked+' finalized/locked month(s) were NOT recalculated. Request a reopen approval for those months first.');
  closeSalary();renderAll()
 }
+function recomputeEffectiveToChain(historyArr){
+ const sorted=[...historyArr].sort((a,b)=>a.effectiveFrom.localeCompare(b.effectiveFrom));
+ sorted.forEach((h,i)=>{
+  if(i<sorted.length-1){
+   const d=new Date(sorted[i+1].effectiveFrom); d.setDate(d.getDate()-1);
+   h.effectiveTo=d.toISOString().slice(0,10);
+  }else{
+   h.effectiveTo='';
+  }
+ });
+}
 function renderRateHistory(){
  const q=norm(rateSearch.value),rows=[];
  allEmployees.forEach(e=>(payMaster[e.key]?.history||[]).forEach(h=>rows.push({...h,emp:e})));
  rows.sort((a,b)=>b.effectiveFrom.localeCompare(a.effectiveFrom));
- rateRows.innerHTML=rows.filter(x=>norm([x.emp.name,x.emp.code].join(' ')).includes(q)).map(x=>`<tr><td>${esc(x.emp.name)} (${esc(x.emp.code||'-')})</td><td>${esc(x.effectiveFrom)}</td><td>${esc(x.salaryType)}</td><td>${x.salaryType==='Hourly'?money(x.hourlyRate):'-'}</td><td>${x.salaryType==='Monthly'?money(x.basicSalary):'-'}</td><td>${x.basicHours}</td><td>${x.notMultiplier}</td><td>${x.hotMultiplier}</td><td>${esc(x.remarks||'-')}</td></tr>`).join('')||'<tr><td colspan="9">No salary/rate history.</td></tr>'
+ rateRows.innerHTML=rows.filter(x=>norm([x.emp.name,x.emp.code].join(' ')).includes(q)).map(x=>{
+   const isCurrent=!x.effectiveTo;
+   return `<tr><td>${esc(x.emp.name)} (${esc(x.emp.code||'-')})</td><td>${esc(x.effectiveFrom)}</td><td>${esc(x.effectiveTo||'—')}</td><td>${isCurrent?'<span class="badge green">Current</span>':'<span class="badge gray">Historical</span>'}</td><td>${esc(x.salaryType)}</td><td>${x.salaryType==='Hourly'?money(x.hourlyRate):'-'}</td><td>${x.salaryType==='Monthly'?money(x.basicSalary):'-'}</td><td>${x.basicHours}</td><td>${x.notMultiplier}</td><td>${x.hotMultiplier}</td><td>${esc(x.remarks||'-')}</td><td>${esc(x.changedBy||'-')}</td><td>${x.changedAt?new Date(x.changedAt).toLocaleString():'-'}</td></tr>`;
+ }).join('')||'<tr><td colspan="13">No salary/rate history.</td></tr>'
 }
 function fillEmployeeSelects(){
  const keepDedEmp=dedEmp.value,keepTsEmp=tsEmp.value,keepFilter=dedEmployeeFilter.value;
@@ -1497,6 +1517,13 @@ function finalizePayroll(){
  }
  if(!currentPayroll.length)calculatePayroll();if(!currentPayroll.length)return alert('No payroll data.');
  if(!confirm('Finalize '+ym+' payroll? This will post deduction recoveries to ledger and save payroll history. The month will be LOCKED afterwards.'))return;
+ const siteMovesSnap=get('cm_site_management_movements_v1',[]), clientsSnap=get('cm_client_portal_clients_v1',[]), projectsSnap=get('cm_client_portal_projects_v1',[]);
+ function siteSnapshotFor(empKey,ym){
+   const monthEnd=ym+'-31';
+   const m=siteMovesSnap.filter(x=>x.employeeKey===empKey && x.mobDate<=monthEnd && (!x.demobDate||x.demobDate>=ym+'-01')).sort((a,b)=>b.mobDate.localeCompare(a.mobDate))[0];
+   if(!m) return {client:'',project:'',site:''};
+   return {client:clientsSnap.find(c=>String(c.id)===String(m.clientId))?.name||'',project:projectsSnap.find(p=>String(p.id)===String(m.projectId))?.name||'',site:m.location||''};
+ }
  const entries=currentPayroll.map(x=>{
   const gross=x.reopenLocked?Number(x.lockedGross||0):(x.normalAmt+x.notAmt+x.hotAmt+x.allowance);
   const net=x.reopenLocked?Number(x.lockedNet||0):(gross-x.deduct);
@@ -1504,7 +1531,8 @@ function finalizePayroll(){
    const before=ledgerBalance(x.emp.key),amt=Math.min(x.deduct,Math.max(0,before));
    deductions.push({id:uid(),empKey:x.emp.key,date:ym+'-28',type:'Payroll Recovery',description:'Salary deduction for '+ym,added:0,recovery:amt,balanceAfter:before-amt,reference:'PAY-'+ym,source:'Payroll'})
   }
-  const pay=getPayment(x.emp.key,ym); return {empKey:x.emp.key,employeeCode:x.emp.code,employeeName:x.emp.name,company:x.emp.company||'',salaryType:x.r.salaryType,normalH:x.normalH,notH:x.notH,hotH:x.hotH,normalAmt:x.normalAmt,notAmt:x.notAmt,hotAmt:x.hotAmt,allowance:x.allowance,allowanceText:x.allowanceText,deduction:x.deduct,gross,net,payByBank:Number(pay.bank||0),payByCash:Number(pay.cash||0),balanceSalary:net-Number(pay.bank||0)-Number(pay.cash||0),hourlyRateSnapshot:Number(x.r.hourlyRate||0),basicSalarySnapshot:Number(x.r.basicSalary||0),basicHoursSnapshot:Number(x.r.basicHours||8),notMultiplierSnapshot:Number(x.r.notMultiplier||1.25),hotMultiplierSnapshot:Number(x.r.hotMultiplier||1.5),deductionBalanceSnapshot:Number(x.balance||0)}
+  const siteSnap=siteSnapshotFor(x.emp.key,ym);
+  const pay=getPayment(x.emp.key,ym); return {empKey:x.emp.key,employeeCode:x.emp.code,employeeName:x.emp.name,company:x.emp.company||'',salaryType:x.r.salaryType,normalH:x.normalH,notH:x.notH,hotH:x.hotH,normalAmt:x.normalAmt,notAmt:x.notAmt,hotAmt:x.hotAmt,allowance:x.allowance,allowanceText:x.allowanceText,deduction:x.deduct,gross,net,payByBank:Number(pay.bank||0),payByCash:Number(pay.cash||0),balanceSalary:net-Number(pay.bank||0)-Number(pay.cash||0),hourlyRateSnapshot:Number(x.r.hourlyRate||0),basicSalarySnapshot:Number(x.r.basicSalary||0),basicHoursSnapshot:Number(x.r.basicHours||8),notMultiplierSnapshot:Number(x.r.notMultiplier||1.25),hotMultiplierSnapshot:Number(x.r.hotMultiplier||1.5),deductionBalanceSnapshot:Number(x.balance||0),designationSnapshot:(empByKeyAny(x.emp.key)?.designation||empByKeyAny(x.emp.key)?.craft||x.emp.craft||''),clientSnapshot:siteSnap.client,projectSnapshot:siteSnap.project,siteSnapshot:siteSnap.site}
  });
  const totalNet=entries.reduce((a,x)=>a+Number(x.net||0),0);
  deductions && set(DED_KEY,deductions);payHistory.push({id:uid(),month:ym,finalizedAt:new Date().toISOString(),entries});set(HIST_KEY,payHistory);clearReopenSnapshot(ym);

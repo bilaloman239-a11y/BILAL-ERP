@@ -1,0 +1,172 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Civil Master ERP - Action Center</title>
+<style>*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f2f6fa;color:#29455d}
+.top{background:#123a64;color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+.top h2{margin:0;font-size:19px}.top a{color:#fff;text-decoration:none;background:#ffffff1f;padding:9px 12px;border-radius:9px;font-size:12px}
+.wrap{max-width:1400px;margin:auto;padding:20px}
+.hero{background:linear-gradient(135deg,#123a64,#246aa4);color:#fff;border-radius:18px;padding:21px;box-shadow:0 12px 30px #123a6425}
+.hero h1{margin:0 0 6px;font-size:24px}.hero p{margin:0;color:#d9e8f5;max-width:900px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.card{background:#fff;border:1px solid #dde7ef;border-radius:14px;padding:14px;cursor:pointer;transition:.15s}
+.card:hover{box-shadow:0 6px 16px #0001;transform:translateY(-1px)}
+.card.selected{border-color:#2e6fae;box-shadow:0 0 0 2px #2e6fae33}
+.card small{color:#7b8d9d;font-weight:800;text-transform:uppercase;font-size:10px}
+.card b{display:block;font-size:23px;color:#173f68;margin-top:5px}
+.toolbar{display:flex;gap:9px;align-items:center;background:#fff;border:1px solid #dde7ef;border-radius:14px;padding:12px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar input,.toolbar select{border:1px solid #cfdce7;border-radius:9px;padding:9px;background:#fff}
+.toolbar input{flex:1;min-width:220px}
+.btn{border:0;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer;background:#1c5c94;color:#fff;font-size:12px}
+.btn.light{background:#edf4f9;color:#28577d}
+.btn.green{background:#dcfce7;color:#166534}
+.btn.gray{background:#e5e7eb;color:#374151}
+.section{background:#fff;border:1px solid #dde7ef;border-radius:14px;margin-bottom:14px;overflow:hidden}
+.section-head{padding:12px 15px;font-weight:900;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.section-head span.cnt{font-size:11px;font-weight:800;background:#eef4fa;color:#28577d;padding:3px 9px;border-radius:999px}
+.item{padding:12px 15px;border-top:1px solid #edf2f6;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.item:first-child{border-top:0}
+.item-text{font-size:13px;color:#2c4863}
+.item-meta{font-size:11px;color:#8fa1b3;margin-top:3px}
+.item-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.status-chip{font-size:10px;font-weight:900;padding:3px 8px;border-radius:999px}
+.status-New{background:#fee2e2;color:#991b1b}
+.status-Acknowledged{background:#fff7d6;color:#8a6200}
+.status-In\ Progress{background:#dbeafe;color:#1d4ed8}
+.status-Resolved{background:#dcfce7;color:#166534}
+.empty{text-align:center;padding:30px;color:#8292a0}
+.notice{font-size:11px;color:#6f8192;margin-top:10px;line-height:1.6}
+@media(max-width:900px){.cards{grid-template-columns:1fr 1fr}}
+</style>
+<style id="cm-topstrip-style">
+.cm-topstrip{position:fixed;top:0;left:0;right:0;height:50px;z-index:100000;background:#0d2b4d;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;box-shadow:0 3px 14px rgba(0,0,0,.18);font-family:Segoe UI,Arial,sans-serif}
+.cm-topstrip .cm-back-btn{background:#ffffff22;color:#fff;border:0;border-radius:8px;padding:8px 12px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.cm-topstrip .cm-back-btn:hover{background:#ffffff3a}
+.cm-all-portals{font-family:Segoe UI,Arial,sans-serif}
+.cm-all-portals details{position:relative}
+.cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800;font-size:12px;box-shadow:0 5px 18px #0002}
+.cm-all-portals summary::-webkit-details-marker{display:none}
+.cm-all-portals .links{position:absolute;right:0;top:50px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
+.cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font-weight:700;font-size:12px}
+.cm-all-portals a:hover{background:#eef4fa}
+.cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
+body{padding-top:50px}
+</style>
+</head><body>
+<div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button>
+<div class="cm-all-portals"><details><summary>☰ ERP Portals</summary><div class="links">
+<a href="dashboard.html">⌂ ERP Dashboard</a>
+<a href="index.html">👥 Employee Management</a>
+<a href="leave.html" class="leave-link">🏖 Leave Management</a>
+<a href="subcontractor.html">🏗 Sub Contractor</a>
+<a href="client.html">🏢 Client / Project</a>
+<a href="site.html">📍 Site Management</a>
+<a href="timesheet.html">🕒 Timesheet</a>
+<a href="payroll.html">💰 Payroll</a>
+<a href="approval.html">✓ Approval Center</a>
+<a href="cicpa.html">🛡 CICPA Management</a>
+<a href="validation.html">🧩 Validation & Controls</a>
+<a href="action-center.html">🔔 Action Center</a>
+<a href="audit.html">📋 Audit Trail</a>
+</div></details></div></div>
+
+<div class="top"><h2>🔔 Central Notification / Action Center</h2><div><a href="dashboard.html">⌂ ERP Dashboard</a> <a href="audit.html">📋 Audit Trail</a></div></div>
+<div class="wrap">
+  <div class="hero">
+    <h1>One control tower for every open item across the ERP</h1>
+    <p>Every module (Employee, CICPA, Leave, Client, Subcontractor, Timesheet, Payroll, Site) feeds into this single list. Click any item's action button to open the exact record. Nothing is just dismissed — each item follows New → Acknowledged → In Progress → Resolved, and resolves itself automatically once the underlying issue is fixed.</p>
+  </div>
+
+  <div class="toolbar">
+    <select id="roleFilter" onchange="renderAll()">
+      <option value="Admin">All (Admin view)</option>
+      <option value="HR">HR — Employee Documents / Leave</option>
+      <option value="Site">Site Team — Mobilization / Manpower</option>
+      <option value="Payroll">Payroll — Timesheet / Rates</option>
+      <option value="Accounts">Accounts — Payroll Checks</option>
+    </select>
+    <input id="q" placeholder="Search employee, client, project, notification text..." oninput="renderAll()">
+    <select id="statusFilter" onchange="renderAll()">
+      <option value="">All Status</option>
+      <option>New</option><option>Acknowledged</option><option>In Progress</option><option>Resolved</option>
+    </select>
+    <label style="font-size:11px;color:#5c7186;display:flex;align-items:center;gap:6px">Due Soon window <input id="dueDays" type="number" min="1" style="width:60px" onchange="CMAC.setConfig({dueSoonDays:Number(dueDays.value||30)});renderAll()"> days</label>
+  </div>
+
+  <div class="cards" id="topCards"></div>
+
+  <div id="sections"></div>
+
+  <div class="notice">Role filters limit what each team sees so nobody has to scan through 100 irrelevant alerts. "All (Admin)" shows everything. Resolving an item records who resolved it and when — visible in Audit Trail as well, since every status change is a normal localStorage write.</div>
+</div>
+
+<script src="erp-validation.js"></script>
+<script src="erp-payroll-workflow.js"></script>
+<script src="erp-action-center.js"></script>
+<script>
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+let ACTIVE_TOP_FILTER='';
+
+function currentUser(){ return localStorage.getItem('cm_saved_email')||localStorage.getItem('cm_current_user')||'Administrator'; }
+
+function topCardDefs(list){
+  const c=id=>list.filter(id.fn).length;
+  return [
+    {key:'critical', label:'Critical', fn:n=>n.category==='critical'&&n.status!=='Resolved'},
+    {key:'dueSoon', label:'Due Soon', fn:n=>n.category==='dueSoon'&&n.status!=='Resolved'},
+    {key:'pendingApprovals', label:'Pending Approvals', fn:n=>n.category==='pending'&&n.status!=='Resolved'},
+    {key:'missingTimesheets', label:'Missing Timesheets', fn:n=>n.type==='Monthly Timesheet Missing'&&n.status!=='Resolved'},
+    {key:'returning7', label:'Returning ≤7 Days', fn:n=>n.type==='Returning Within 7 Days'&&n.status!=='Resolved'},
+    {key:'overdueReturn', label:'Overdue Return', fn:n=>n.type==='Leave Return Overdue'&&n.status!=='Resolved'},
+    {key:'idleAtCamp', label:'Idle at Camp', fn:n=>(n.type==='Demobilized – New Assignment Pending')&&n.status!=='Resolved'},
+    {key:'payrollPending', label:'Payroll Pending', fn:n=>n.module==='Payroll'&&n.category!=='dueSoon'&&n.status!=='Resolved'}
+  ];
+}
+
+function renderAll(){
+  const role=roleFilter.value;
+  let list=CMAC.syncStatusAndGet(role);
+  const q=(document.getElementById('q').value||'').trim().toLowerCase();
+  const sf=document.getElementById('statusFilter').value;
+  if(document.getElementById('dueDays') && !dueDays.value) dueDays.value=CMAC.getConfig().dueSoonDays;
+
+  const defs=topCardDefs(list);
+  document.getElementById('topCards').innerHTML=defs.map(d=>`<div class="card ${ACTIVE_TOP_FILTER===d.key?'selected':''}" onclick="toggleTopFilter('${d.key}')"><small>${esc(d.label)}</small><b>${list.filter(d.fn).length}</b></div>`).join('');
+
+  let filtered=list;
+  if(ACTIVE_TOP_FILTER){ const d=defs.find(x=>x.key===ACTIVE_TOP_FILTER); if(d) filtered=filtered.filter(d.fn); }
+  if(q) filtered=filtered.filter(n=>[n.text,n.employeeCode,n.employeeName,n.company,n.clientProjectSite,n.type].join(' ').toLowerCase().includes(q));
+  if(sf) filtered=filtered.filter(n=>n.status===sf);
+
+  const order=['critical','dueSoon','pending','missing','manpower'];
+  const host=document.getElementById('sections');
+  host.innerHTML=order.map(catKey=>{
+    const cat=CMAC.CATS[catKey];
+    const rows=filtered.filter(n=>n.category===catKey).sort((a,b)=>(a.daysRemaining??999)-(b.daysRemaining??999));
+    if(!rows.length && (q||sf||ACTIVE_TOP_FILTER)) return '';
+    return `<div class="section">
+      <div class="section-head"><span>${cat.icon} ${esc(cat.label)}</span><span class="cnt">${rows.length}</span></div>
+      ${rows.length?rows.map(n=>`
+        <div class="item">
+          <div>
+            <div class="item-text"><b>${esc(n.type)}</b> — ${esc(n.text)}</div>
+            <div class="item-meta">${n.employeeCode?esc(n.employeeCode)+' · ':''}${n.clientProjectSite?esc(n.clientProjectSite)+' · ':''}${n.dueDate?'Due: '+esc(n.dueDate)+' · ':''}${n.daysRemaining!==''&&n.daysRemaining!==undefined?(n.daysRemaining<0?Math.abs(n.daysRemaining)+' day(s) overdue · ':n.daysRemaining+' day(s) remaining · '):''}${esc(n.role)} · <span class="status-chip status-${esc(n.status)}">${esc(n.status)}</span>${n.resolvedBy?' · Resolved by '+esc(n.resolvedBy):''}</div>
+          </div>
+          <div class="item-actions">
+            <a class="btn light" href="${esc(n.href)}" target="_blank" rel="noopener">Open</a>
+            ${n.status==='New'?`<button class="btn light" onclick="act('${n.id}','Acknowledged')">Acknowledge</button>`:''}
+            ${n.status==='Acknowledged'||n.status==='New'?`<button class="btn light" onclick="act('${n.id}','In Progress')">Start</button>`:''}
+            ${n.status!=='Resolved'?`<button class="btn green" onclick="resolveItem('${n.id}')">Resolve</button>`:`<button class="btn gray" onclick="act('${n.id}','New')">Reopen</button>`}
+          </div>
+        </div>`).join(''):'<div class="empty">Nothing in this category right now.</div>'}
+    </div>`;
+  }).join('') || '<div class="empty">No notifications match this filter.</div>';
+}
+function toggleTopFilter(key){ ACTIVE_TOP_FILTER = ACTIVE_TOP_FILTER===key?'':key; renderAll(); }
+function act(id,status){ CMAC.setStatus(id,status,currentUser()); renderAll(); }
+function resolveItem(id){
+  const remarks=prompt('Resolution remarks (optional):','')||'';
+  CMAC.setStatus(id,'Resolved',currentUser(),remarks);
+  renderAll();
+}
+try{ const p=new URLSearchParams(location.search).get('top'); if(p) ACTIVE_TOP_FILTER=p; }catch(e){}
+renderAll();
+</script>
+</body></html>

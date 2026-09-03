@@ -127,6 +127,7 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-payroll-workflow.js"></script>
+<script src="erp-action-center.js"></script>
 </head>
 <body>
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -141,6 +142,7 @@ body{padding-top:50px}
 <a href="approval.html">Approval Center</a>
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
+<a href="action-center.html">Action Center</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -162,17 +164,19 @@ body{padding-top:50px}
  <a class="nav" href="cicpa.html"><i>🛡</i>CICPA Management</a>
  <a class="nav" href="audit.html"><i>📋</i>Audit Trail</a>
  <a class="nav" href="validation.html"><i>🧩</i>Validation & Controls</a>
+ <a class="nav" href="action-center.html"><i>🔔</i>Action Center</a>
  <div class="side-foot">Management Dashboard<br><b style="color:white">Live Browser Data</b><br>Employee • Project • Site • Timesheet • Payroll</div>
 </aside>
 <main class="main">
  <div class="topbar">
   <div class="title"><h1>Central ERP Dashboard</h1><p>Management overview, pending actions and drill-down lists from all ERP modules.</p></div>
-  <div class="top-actions"><div class="erp-search-wrap" id="erpSearchWrap"><div class="erp-search-box"><span class="erp-search-icon">⌕</span><input id="globalSearch" class="searchbox" autocomplete="off" placeholder="Search Employee Code / Name / Emirates ID / Passport / Client / Project / Subcontractor" oninput="universalSearch()" onkeydown="universalSearchKey(event)"><button id="erpSearchClear" class="erp-search-clear" type="button" onclick="clearUniversalSearch(event)">×</button></div><div id="erpSearchMenu" class="erp-search-menu"><div class="erp-search-head"><b>Universal ERP Search</b><span id="erpSearchMeta">Type to search all master records</span></div><div id="erpSearchResults" class="erp-search-results"></div><div class="erp-search-foot"><span>↑ ↓ Navigate · Enter Open</span><span>Employee • Client • Project • Subcontractor</span></div></div></div><input id="reportMonth" class="monthbox" type="month"><div class="notify-wrap"><button id="notifyBtn" class="notify-btn" type="button" onclick="toggleNotifications(event)" title="Notifications / Action Center">🔔<span id="notifyBadge" class="notify-badge zero">0</span></button><div id="notifyMenu" class="notify-menu"><div class="notify-head"><div><h4>Notification / Action Center</h4><small id="notifySub">Live ERP follow-up</small></div><button class="btn light" style="padding:6px 9px" onclick="event.stopPropagation();closeNotifications()">✕</button></div><div id="notifyList" class="notify-list"></div><div class="notify-foot"><span id="notifyFootText">No pending actions</span><button onclick="event.stopPropagation();showDetail('alerts');closeNotifications()">View all actions →</button></div></div></div><button class="btn light" onclick="render()">↻ Refresh</button><button class="btn orange" onclick="logoutERP()">Logout</button></div>
+  <div class="top-actions"><div class="erp-search-wrap" id="erpSearchWrap"><div class="erp-search-box"><span class="erp-search-icon">⌕</span><input id="globalSearch" class="searchbox" autocomplete="off" placeholder="Search Employee Code / Name / Emirates ID / Passport / Client / Project / Subcontractor" oninput="universalSearch()" onkeydown="universalSearchKey(event)"><button id="erpSearchClear" class="erp-search-clear" type="button" onclick="clearUniversalSearch(event)">×</button></div><div id="erpSearchMenu" class="erp-search-menu"><div class="erp-search-head"><b>Universal ERP Search</b><span id="erpSearchMeta">Type to search all master records</span></div><div id="erpSearchResults" class="erp-search-results"></div><div class="erp-search-foot"><span>↑ ↓ Navigate · Enter Open</span><span>Employee • Client • Project • Subcontractor • Action Center</span></div></div></div><input id="reportMonth" class="monthbox" type="month"><div class="notify-wrap"><button id="notifyBtn" class="notify-btn" type="button" onclick="toggleNotifications(event)" title="Notifications / Action Center">🔔<span id="notifyBadge" class="notify-badge zero">0</span></button><div id="notifyMenu" class="notify-menu"><div class="notify-head"><div><h4>Notification / Action Center</h4><small id="notifySub">Live ERP follow-up</small></div><button class="btn light" style="padding:6px 9px" onclick="event.stopPropagation();closeNotifications()">✕</button></div><div id="notifyList" class="notify-list"></div><div class="notify-foot"><span id="notifyFootText">No pending actions</span><button onclick="event.stopPropagation();location.href='action-center.html'">View all actions →</button></div></div></div><button class="btn light" onclick="render()">↻ Refresh</button><button class="btn orange" onclick="logoutERP()">Logout</button></div>
  </div>
  <section class="hero">
   <div><h2>Management Command Center</h2><p>Click any KPI card to open its exact filtered list below. Timesheet and payroll indicators follow the selected reporting month. Expiry monitoring includes employee and subcontractor records available in the current browser data.</p></div>
   <div class="hero-meta"><div class="meta-pill"><small>Reporting Period</small><b id="periodLabel">-</b></div><div class="meta-pill"><small>Last Refresh</small><b id="refreshLabel">-</b></div></div>
  </section>
+ <section class="panel" style="margin-top:15px"><div class="panel-head"><div><h3>Action Center</h3><small>Every open item across the ERP — click a card to open the full control tower</small></div><a href="action-center.html" class="btn light" style="text-decoration:none">Open Action Center →</a></div><div class="panel-body"><div class="kpis" id="acCards" style="margin:0"></div></div></section>
  <section class="kpis">
   <div class="kpi emp" data-detail="employees"><div class="kpi-top"><div class="label">Total Employees</div><div class="ico">👥</div></div><div class="value" id="kEmployees">0</div><div class="note" id="nEmployees">Employee Master</div></div>
   <div class="kpi site" data-detail="onsite"><div class="kpi-top"><div class="label">On Site</div><div class="ico">📍</div></div><div class="value" id="kOnsite">0</div><div class="note">Active mobilizations</div></div>
@@ -215,6 +219,7 @@ body{padding-top:50px}
   <a class="module" href="cicpa.html"><div class="micon">🛡</div><b>CICPA Management</b><small>Company & subcontractor CICPA tracking</small></a>
   <a class="module" href="audit.html"><div class="micon">📋</div><b>Audit Trail</b><small>Who changed what, old & new values</small></a>
   <a class="module" href="validation.html"><div class="micon">🧩</div><b>Validation & Controls</b><small>Block / Warning / Allow rules for every module</small></a>
+  <a class="module" href="action-center.html"><div class="micon">🔔</div><b>Action Center</b><small>Every open item across the ERP, in one place</small></a>
  </div></div></section>
 </main></div>
 <script>
@@ -262,6 +267,7 @@ function render(){STATE=buildState();const s=STATE; kEmployees.textContent=fmt(s
  const u=pct(s.onsite.length,s.pool.length),tc=pct(s.pool.length-s.tsPending.length,s.pool.length),sc=pct(s.companyPool.length-s.salaryMissing.length,s.companyPool.length);utilPct.textContent=u+'%';utilBar.style.width=u+'%';tsPct.textContent=tc+'%';tsBar.style.width=tc+'%';salaryPct.textContent=sc+'%';salaryBar.style.width=sc+'%';
  attentionLabel.textContent=s.alerts.length+' alerts';attentionRows.innerHTML=s.alerts.length?s.alerts.slice(0,5).map(a=>`<div class="alert-row" onclick="showDetail('${a.detail}')"><div class="alert-ico">${a.level==='red'?'⚠':'🔔'}</div><div><b>${esc(a.type)}</b><p>${esc(a.text)}</p></div><span class="badge ${a.level}">${a.count}</span></div>`).join(''):'<div class="empty">No major alerts for the selected month.</div>';
  renderNotificationCenter(s);
+ renderActionCenterCards();
  const [y,m]=s.ym.split('-');periodLabel.textContent=new Date(+y,+m-1,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});refreshLabel.textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});if(currentDetail)showDetail(currentDetail,true)}
 function detailDef(type){const s=STATE;switch(type){
  case 'employees': return ['Total Employees',`All employee master records (${s.activeEmp.length} active)`,['Employee Code','Employee Name','Designation','Company','Status'],s.allEmp.map(e=>[code(e),name(e),craft(e),e.company||e.companyName||'-',e.employeeStatus||e.status||'Active'])];
@@ -289,9 +295,31 @@ function showDetail(type,keepScroll=false){currentDetail=type;document.querySele
 function renderDetailRows(rows,type=currentDetail){detailRows.innerHTML=rows.length?rows.map(r=>{let cls='';if(type==='expiring'){const d=Number(r[5]);cls=d<0?'row-expired':d<=30?'row-soon':''}return '<tr class="'+cls+'">'+r.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>'}).join(''):'<tr><td class="empty" colspan="10">No records found.</td></tr>'}
 function filterCurrentDetail(){if(!currentDetail)return;const q=norm(detailSearch.value||globalSearch.value);renderDetailRows(!q?detailRowsRaw:detailRowsRaw.filter(r=>norm(r.join(' ')).includes(q)))}
 function closeDetail(){detailPanel.classList.remove('show');currentDetail='';document.querySelectorAll('.kpi').forEach(x=>x.classList.remove('selected'))}
+function renderActionCenterCards(){
+ const host=document.getElementById('acCards'); if(!host||!window.CMAC) return;
+ const list=CMAC.syncStatusAndGet('Admin');
+ const defs=[
+   {key:'critical',label:'Critical',fn:n=>n.category==='critical'&&n.status!=='Resolved'},
+   {key:'dueSoon',label:'Due Soon',fn:n=>n.category==='dueSoon'&&n.status!=='Resolved'},
+   {key:'pendingApprovals',label:'Pending Approvals',fn:n=>n.category==='pending'&&n.status!=='Resolved'},
+   {key:'missingTimesheets',label:'Missing Timesheets',fn:n=>n.type==='Monthly Timesheet Missing'&&n.status!=='Resolved'},
+   {key:'returning7',label:'Returning ≤7 Days',fn:n=>n.type==='Returning Within 7 Days'&&n.status!=='Resolved'},
+   {key:'overdueReturn',label:'Overdue Return',fn:n=>n.type==='Leave Return Overdue'&&n.status!=='Resolved'},
+   {key:'idleAtCamp',label:'Idle at Camp',fn:n=>n.type==='Demobilized – New Assignment Pending'&&n.status!=='Resolved'},
+   {key:'payrollPending',label:'Payroll Pending',fn:n=>n.module==='Payroll'&&n.category!=='dueSoon'&&n.status!=='Resolved'}
+ ];
+ host.innerHTML=defs.map(d=>`<div class="kpi" data-detail="__ac" onclick="location.href='action-center.html?top=${d.key}'" style="cursor:pointer"><div class="kpi-top"><div class="label">${esc(d.label)}</div><div class="ico">🔔</div></div><div class="value">${list.filter(d.fn).length}</div><div class="note">Action Center</div></div>`).join('');
+}
 function renderNotificationCenter(s){
  const badge=document.getElementById('notifyBadge'),list=document.getElementById('notifyList'),sub=document.getElementById('notifySub'),foot=document.getElementById('notifyFootText');if(!badge||!list)return;
- const total=s.alerts.reduce((n,a)=>n+Number(a.count||0),0);badge.textContent=total>99?'99+':String(total);badge.classList.toggle('zero',total===0);sub.textContent=s.alerts.length+' action categor'+(s.alerts.length===1?'y':'ies')+' • '+s.ym;foot.textContent=total?total+' item(s) need review':'No pending actions';
+ const acList=window.CMAC?CMAC.syncStatusAndGet('Admin').filter(n=>n.status!=='Resolved'):[];
+ const total=acList.length||s.alerts.reduce((n,a)=>n+Number(a.count||0),0);badge.textContent=total>99?'99+':String(total);badge.classList.toggle('zero',total===0);sub.textContent=(acList.length?acList.length+' open action item(s)':s.alerts.length+' action categor'+(s.alerts.length===1?'y':'ies'))+' • '+s.ym;foot.textContent=total?total+' item(s) need review':'No pending actions';
+ if(acList.length){
+   const catIcon={critical:'🔴',dueSoon:'🟠',pending:'🔵',missing:'🟣',manpower:'🟢'};
+   const top=acList.slice(0,8);
+   list.innerHTML=top.map(n=>`<div class="notify-item" onclick="location.href='action-center.html'"><div class="notify-icon">${catIcon[n.category]||'🔔'}</div><div><b>${esc(n.type)}</b><p>${esc(n.text)}</p></div><span class="notify-count ${n.category==='critical'?'red':n.category==='dueSoon'?'orange':'blue'}">${n.category==='critical'?'!':''}</span></div>`).join('');
+   return;
+ }
  const icon=a=>a.type.includes('Document')?'📄':a.type.includes('Timesheet')?'🕒':a.type.includes('Payroll')?'💵':a.type.includes('Rate')?'📊':a.type.includes('Salary')?'💰':a.type.includes('Unmatched')?'⚠️':'🔔';
  list.innerHTML=s.alerts.length?s.alerts.map(a=>`<div class="notify-item" onclick="showDetail('${a.detail}');closeNotifications()"><div class="notify-icon">${icon(a)}</div><div><b>${esc(a.type)}</b><p>${esc(a.text)}</p></div><span class="notify-count ${a.level}">${a.count}</span></div>`).join(''):'<div class="empty">✓ No pending ERP actions right now.</div>';
 }
@@ -340,6 +368,12 @@ function universalIndex(){
    const search=[title,x.tradeNo,x.tradeLicenseNo,x.vatNo,x.trn,x.contactPerson,x.person,x.mobile,x.email,x.address,primitiveSearchText(x)].join(' ');
    out.push({type:'Subcontractor',icon:'🏗',title,sub:[x.tradeNo&&('TL: '+x.tradeNo),x.vatNo&&('TRN: '+x.vatNo),x.status].filter(Boolean).join(' • '),search,href:'subcontractor.html'});
  });
+ if(window.CMAC){
+   CMAC.syncStatusAndGet('Admin').filter(n=>n.status!=='Resolved').forEach(n=>{
+     const search=[n.type,n.text,n.employeeCode,n.employeeName,n.company,n.clientProjectSite].join(' ');
+     out.push({type:'Action Center',icon:'🔔',title:n.type,sub:n.text,search,href:n.href||'action-center.html'});
+   });
+ }
  return out;
 }
 function searchScore(r,q){

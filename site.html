@@ -119,6 +119,7 @@ font:700 12px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#173b67}
 body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
+<script src="erp-action-center.js"></script>
 </head>
 <body>
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -134,6 +135,7 @@ body{padding-top:50px}
 <a href="approval.html">Approval Center</a>
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
+<a href="action-center.html">Action Center</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -158,6 +160,7 @@ body{padding-top:50px}
 <button type="button" class="cm-erp-link" data-view="history" onclick="showView('history',this)"><span class="cm-erp-icon">↔</span><span class="cm-erp-label">Movement History</span></button>
 <button type="button" class="cm-erp-link" data-view="reports" onclick="showView('reports',this)"><span class="cm-erp-icon">📊</span><span class="cm-erp-label">Monthly Reports</span></button>
 <button type="button" class="cm-erp-link" data-view="utilization" onclick="showView('utilization',this)"><span class="cm-erp-icon">⏱</span><span class="cm-erp-label">Utilization / Idle Manpower</span></button>
+<button type="button" class="cm-erp-link" data-view="requirement" onclick="showView('requirement',this)"><span class="cm-erp-icon">📐</span><span class="cm-erp-label">Site Requirement vs Actual</span></button>
 
 <div class="cm-erp-sidebar-title">Master Portals</div>
 <button class="cm-erp-link" type="button" onclick="location.href='index.html'"><span class="cm-erp-icon">👥</span><span class="cm-erp-label">Employee Management</span></button>
@@ -171,8 +174,18 @@ body{padding-top:50px}
 <div class="cards">
 <div class="card" data-dash-filter="available" role="button" tabindex="0">Available Manpower<br><b id="dAvail">0</b></div>
 <div class="card" data-dash-filter="onsite" role="button" tabindex="0">On-Site Manpower<br><b id="dSite">0</b></div>
+<div class="card" data-dash-filter="onLeave" role="button" tabindex="0">On Leave<br><b id="dOnLeave">0</b></div>
+<div class="card" data-dash-filter="mobToday" role="button" tabindex="0">Mobilized Today<br><b id="dMobToday">0</b></div>
+<div class="card" data-dash-filter="demobToday" role="button" tabindex="0">Demobilized Today<br><b id="dDemobToday">0</b></div>
+<div class="card" data-dash-filter="transfers" role="button" tabindex="0">Transfers This Month<br><b id="dTransfers">0</b></div>
+<div class="card" data-dash-filter="returning7" role="button" tabindex="0">Returning within 7 Days<br><b id="dReturning7">0</b></div>
 <div class="card" data-dash-filter="projects" role="button" tabindex="0">Active Projects<br><b id="dProjects">0</b></div>
 <div class="card" data-dash-filter="movements" role="button" tabindex="0">Movements This Month<br><b id="dMove">0</b></div>
+<div class="card" data-dash-filter="understaffed" role="button" tabindex="0">Projects Understaffed<br><b id="dUnderstaffed">0</b></div>
+</div>
+<div class="box" style="display:flex;gap:24px;flex-wrap:wrap">
+  <div><small style="color:#6b7280">Manpower Utilization</small><br><b id="dUtilPct" style="font-size:20px">0%</b></div>
+  <div><small style="color:#6b7280">Idle Manpower</small><br><b id="dIdlePct" style="font-size:20px">0%</b></div>
 </div>
 <div id="dashDetailPanel" class="box">
   <div id="dashDetailHead">
@@ -199,7 +212,7 @@ body{padding-top:50px}
 <section id="history" class="view">
 <h2>Movement History</h2>
 <div class="toolbar"><input id="hSearch" placeholder="Search employee, client, project..." aria-label="Search movement history" oninput="renderHistory()"><button class="btn light" type="button" onclick="hSearch.value='';renderHistory()">Clear</button></div>
-<div class="wrap"><table><thead><tr><th>Employee</th><th>Client</th><th>Project</th><th>Site Craft</th><th>Mobilized</th><th>Demobilized</th><th>Site Days</th><th>Status</th></tr></thead><tbody id="hRows"></tbody></table></div>
+<div class="wrap"><table><thead><tr><th>Employee</th><th>Movement</th><th>From</th><th>To (Client/Project)</th><th>Site Craft</th><th>Effective From</th><th>Effective To</th><th>Requested By</th><th>Approved By</th><th>Remarks</th><th>Status</th></tr></thead><tbody id="hRows"></tbody></table></div>
 </section>
 
 <section id="reports" class="view">
@@ -262,12 +275,27 @@ body{padding-top:50px}
   </div>
 </section>
 
+<section id="requirement" class="view">
+  <h2>Site Requirement vs Actual</h2>
+  <div class="box">
+    <div class="toolbar">
+      <select id="reqProject" aria-label="Project"></select>
+      <input id="reqCraft" placeholder="Craft (e.g. Pipe Fitter) — blank = Any Craft">
+      <input id="reqCount" type="number" min="0" placeholder="Required Count" style="max-width:160px">
+      <button class="btn primary" type="button" onclick="addRequirement()">Add / Update Requirement</button>
+    </div>
+    <div style="font-size:12px;color:#6b7280">Define required manpower per project (optionally by craft). Actual is calculated live from on-site mobilizations.</div>
+  </div>
+  <div class="wrap"><table><thead><tr><th>Project</th><th>Craft</th><th>Required</th><th>Mobilized (Actual)</th><th>Shortage / Surplus</th><th>Action</th></tr></thead><tbody id="reqRows"></tbody></table></div>
+</section>
+
 </div>
 </div>
 
 <div id="mobModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="mobTitle"><div class="modalbox"><h3 id="mobTitle">Site Mobilization</h3><div id="mobInfo" class="box"></div>
 <form onsubmit="saveMob(event)">
 <input type="hidden" id="mobKey">
+<input type="hidden" id="mobTransferFrom">
 <div class="grid">
 <div class="field"><label for="mobDate">Mobilization Date *</label><input id="mobDate" type="date" required></div>
 <div class="field"><label for="mobClient">Client *</label><select id="mobClient" required onchange="loadMobProjects()"></select></div>
@@ -278,7 +306,9 @@ body{padding-top:50px}
 <div class="field"><label for="mobSubRate">Sub Contractor Rate</label><input id="mobSubRate" type="number" step="0.01" min="0"></div>
 <div class="field"><label for="mobFood">Food Provided By</label><select id="mobFood"><option value="">Select</option><option>Company</option><option>Client</option><option>Sub Contractor</option><option>Employee / Self</option></select></div>
 <div class="field"><label for="mobAcc">Accommodation Provided By</label><select id="mobAcc"><option value="">Select</option><option>Company</option><option>Client</option><option>Sub Contractor</option><option>Employee / Self</option></select></div>
-<div class="field"><label for="mobRemarks">Remarks</label><textarea id="mobRemarks"></textarea></div>
+<div class="field"><label for="mobRequestedBy">Requested By</label><input id="mobRequestedBy" placeholder="Name"></div>
+<div class="field"><label for="mobApprovedBy">Approved By</label><input id="mobApprovedBy" placeholder="Name"></div>
+<div class="field"><label for="mobRemarks">Remarks / Reason</label><textarea id="mobRemarks"></textarea></div>
 </div><br>
 <button type="button" class="btn light" onclick="closeMob()">Cancel</button>
 <button class="btn primary">Mobilize</button>
@@ -289,7 +319,7 @@ body{padding-top:50px}
 </div></div>
 
 <script>
-const MOV='cm_site_management_movements_v1', EMP='cm_employee_portal_v3', SCEMP='sc_portal_employees_v1', SC='sc_portal_subcontractors_v1', CK='cm_client_portal_clients_v1', PK='cm_client_portal_projects_v1';
+const MOV='cm_site_management_movements_v1', EMP='cm_employee_portal_v3', SCEMP='sc_portal_employees_v1', SC='sc_portal_subcontractors_v1', CK='cm_client_portal_clients_v1', PK='cm_client_portal_projects_v1', SITE_REQ='cm_site_manpower_requirement_v1';
 let moves=[],clients=[],projects=[],subs=[],staff=[],companyStaffAll=[],leaveRecords=[];
 
 function get(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}}
@@ -371,10 +401,21 @@ function openMob(key){
  let a=active(key);if(a)return alert('This employee is already on site: '+clientName(a.clientId)+' / '+projectName(a.projectId)+'. Please demobilize first.');
  const lv=onApprovedLeave(e.code);
  if(lv && window.CMV && !CMV.enforce('site.mobilize.duringLeave', true, esc(e.name)+' ('+esc(e.code||'-')+') is on approved leave from '+lv.startDate+' to '+lv.endDate+' ('+(lv.leaveType||'Leave')+'). Mobilizing now will overlap with this leave.').proceed) return;
+ mobTransferFrom.value='';mobTitle.textContent='Site Mobilization';
  mobKey.value=key;mobDate.value=today();mobInfo.innerHTML='<b>'+esc(e.name)+'</b> | '+esc(e.code||'-')+' | '+esc(e.des||'-');
  mobClient.innerHTML='<option value="">Select Client</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
- mobProject.innerHTML='<option value="">Select Client first</option>';mobSiteCraft.value='';mobLocation.value='';mobClientRate.value='';mobSubRate.value='';mobFood.value='';mobAcc.value='';mobRemarks.value='';
+ mobProject.innerHTML='<option value="">Select Client first</option>';mobSiteCraft.value='';mobLocation.value='';mobClientRate.value='';mobSubRate.value='';mobFood.value='';mobAcc.value='';mobRemarks.value='';mobRequestedBy.value='';mobApprovedBy.value='';
  if(!clients.length)mobClient.innerHTML='<option value="">No Client available - add in Client Portal first</option>';
+ mobModal.classList.add('show')
+}
+function openTransfer(moveId){
+ refresh();const m=moves.find(x=>x.id===moveId);if(!m)return alert('Assignment not found.');
+ const e=staff.find(x=>x.key===m.employeeKey)||{key:m.employeeKey,name:m.employeeName,code:m.employeeCode,des:m.designation};
+ mobTransferFrom.value=moveId;mobTitle.textContent='Transfer Assignment';
+ mobKey.value=m.employeeKey;mobDate.value=today();
+ mobInfo.innerHTML='<b>'+esc(e.name)+'</b> | '+esc(e.code||'-')+' | '+esc(e.des||'-')+'<div class="mini" style="margin-top:6px">Currently at: <b>'+esc(clientName(m.clientId))+' / '+esc(projectName(m.projectId))+'</b> ('+esc(m.location||'-')+')</div>';
+ mobClient.innerHTML='<option value="">Select Client</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+ mobProject.innerHTML='<option value="">Select Client first</option>';mobSiteCraft.value=m.siteCraft||'';mobLocation.value='';mobClientRate.value=m.clientRate||'';mobSubRate.value=m.subRate||'';mobFood.value=m.foodBy||'';mobAcc.value=m.accBy||'';mobRemarks.value='';mobRequestedBy.value='';mobApprovedBy.value='';
  mobModal.classList.add('show')
 }
 function closeMob(){mobModal.classList.remove('show')}
@@ -382,15 +423,26 @@ function loadMobProjects(){let p=projects.filter(x=>String(x.clientId)===String(
 function loadLocation(){mobLocation.value=project(mobProject.value)?.location||''}
 function saveMob(e){
  e.preventDefault();refresh();let emp=staff.find(x=>x.key===mobKey.value);if(!emp)return alert('Employee not found.');
- if(active(emp.key))return alert('This employee is already on site. Please demobilize first.');
+ const transferId=mobTransferFrom.value;
+ const activeNow=active(emp.key);
+ if(!transferId && activeNow)return alert('This employee is already on site. Please demobilize first.');
+ if(transferId && !activeNow)return alert('Original assignment is no longer active. Please refresh.');
  if(!mobClient.value||!mobProject.value||!mobSiteCraft.value.trim())return alert('Client, Project and Site Craft are required.');
  let p=project(mobProject.value);if(!p||String(p.clientId)!==String(mobClient.value))return alert('Project does not belong to selected Client.');
- moves.push({id:uid(),employeeKey:emp.key,employeeCode:emp.code,employeeName:emp.name,designation:emp.des,source:emp.source,subcontractor:emp.sc,mobDate:mobDate.value,demobDate:'',clientId:mobClient.value,projectId:mobProject.value,siteCraft:mobSiteCraft.value.trim(),location:mobLocation.value,clientRate:Number(mobClientRate.value||0),subRate:Number(mobSubRate.value||0),foodBy:mobFood.value,accBy:mobAcc.value,mobRemarks:mobRemarks.value,demobRemarks:''});
+ if(transferId){
+   const oldMove=moves.find(x=>x.id===transferId);
+   if(oldMove){
+     const d=new Date(mobDate.value); d.setDate(d.getDate()-1);
+     oldMove.demobDate=d.toISOString().slice(0,10);
+     oldMove.demobRemarks='Transferred to '+clientName(mobClient.value)+' / '+projectName(mobProject.value);
+   }
+ }
+ moves.push({id:uid(),employeeKey:emp.key,employeeCode:emp.code,employeeName:emp.name,designation:emp.des,source:emp.source,subcontractor:emp.sc,movementType:transferId?'Transferred':'Mobilized',fromClientId:transferId?(moves.find(x=>x.id===transferId)?.clientId||''):'',fromProjectId:transferId?(moves.find(x=>x.id===transferId)?.projectId||''):'',mobDate:mobDate.value,demobDate:'',clientId:mobClient.value,projectId:mobProject.value,siteCraft:mobSiteCraft.value.trim(),location:mobLocation.value,clientRate:Number(mobClientRate.value||0),subRate:Number(mobSubRate.value||0),foodBy:mobFood.value,accBy:mobAcc.value,requestedBy:mobRequestedBy.value.trim(),approvedBy:mobApprovedBy.value.trim(),mobRemarks:mobRemarks.value,demobRemarks:'',createdBy:(localStorage.getItem('cm_saved_email')||localStorage.getItem('cm_current_user')||'Administrator'),createdAt:new Date().toISOString()});
  save();closeMob();showView('onsite')
 }
 function renderOnsite(){
  let q=norm(sSearch.value),rows=moves.filter(m=>!m.demobDate&&norm([m.employeeName,m.employeeCode,clientName(m.clientId),projectName(m.projectId),m.location].join(' ')).includes(q));
- sRows.innerHTML=rows.length?rows.map(m=>`<tr><td><b>${esc(m.employeeName)}</b></td><td>${esc(m.employeeCode||'-')}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.location||'-')}</td><td>${esc(m.mobDate)}</td><td>${Number(m.clientRate||0).toFixed(2)}</td><td>${Number(m.subRate||0).toFixed(2)}</td><td>${esc(m.foodBy||'-')}</td><td>${esc(m.accBy||'-')}</td><td><button class="btn orange" onclick="openDemob('${m.id}')">Demobilize</button></td></tr>`).join(''):'<tr><td colspan="12">No manpower on site.</td></tr>'
+ sRows.innerHTML=rows.length?rows.map(m=>`<tr><td><b>${esc(m.employeeName)}</b>${m.movementType==='Transferred'?' <span class="badge orange" style="font-size:9px">Transferred</span>':''}</td><td>${esc(m.employeeCode||'-')}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.location||'-')}</td><td>${esc(m.mobDate)}</td><td>${Number(m.clientRate||0).toFixed(2)}</td><td>${Number(m.subRate||0).toFixed(2)}</td><td>${esc(m.foodBy||'-')}</td><td>${esc(m.accBy||'-')}</td><td><button class="btn light" onclick="openTransfer('${m.id}')">Transfer</button> <button class="btn orange" onclick="openDemob('${m.id}')">Demobilize</button></td></tr>`).join(''):'<tr><td colspan="12">No manpower on site.</td></tr>'
 }
 function openDemob(id){let m=moves.find(x=>x.id===id);if(!m)return;demobId.value=id;demobDate.value=today();demobDate.min=m.mobDate;demobRemarks.value='';demobInfo.innerHTML='<b>'+esc(m.employeeName)+'</b><br>'+esc(clientName(m.clientId))+' / '+esc(projectName(m.projectId))+'<br>Mobilized: '+esc(m.mobDate);demobModal.classList.add('show')}
 function closeDemob(){demobModal.classList.remove('show')}
@@ -398,7 +450,11 @@ function saveDemob(e){e.preventDefault();let m=moves.find(x=>x.id===demobId.valu
 function renderHistory(){
   const q=norm(hSearch?.value||'');
   const rows=[...moves].reverse().filter(m=>norm([m.employeeName,m.employeeCode,clientName(m.clientId),projectName(m.projectId),m.siteCraft,m.location].join(' ')).includes(q));
-  hRows.innerHTML=rows.length?rows.map(m=>`<tr><td>${esc(m.employeeName)}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.mobDate)}</td><td>${esc(m.demobDate||'-')}</td><td>${m.demobDate?days(m.mobDate,m.demobDate):'-'}</td><td>${m.demobDate?'Demobilized':'On Site'}</td></tr>`).join(''):'<tr><td colspan="8">No movement history.</td></tr>'
+  hRows.innerHTML=rows.length?rows.map(m=>{
+    const from=m.movementType==='Transferred'?(clientName(m.fromClientId)+' / '+projectName(m.fromProjectId)):'-';
+    const status=m.demobDate?(m.movementType==='Transferred'?'Transferred Out':'Demobilized'):'Active';
+    return `<tr><td><b>${esc(m.employeeName)}</b> (${esc(m.employeeCode||'-')})</td><td><span class="badge ${m.movementType==='Transferred'?'orange':'primary'}">${esc(m.movementType||'Mobilized')}</span></td><td>${esc(from)}</td><td>${esc(clientName(m.clientId))} / ${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.mobDate)}</td><td>${esc(m.demobDate||'—')}</td><td>${esc(m.requestedBy||'-')}</td><td>${esc(m.approvedBy||'-')}</td><td>${esc(m.mobRemarks||m.demobRemarks||'-')}</td><td>${status}</td></tr>`;
+  }).join(''):'<tr><td colspan="11">No movement history.</td></tr>'
 }
 
 function overlap(m,ym){
@@ -457,6 +513,38 @@ function openDashboardDetails(filter){
     title.textContent='Movements This Month';
     sub.textContent=rows.length+' movement'+(rows.length===1?'':'s')+' in '+ym;
     body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Employee</th><th>Client</th><th>Project</th><th>Site Craft</th><th>Mobilized</th><th>Demobilized</th><th>Status</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${esc(m.employeeName)}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.mobDate||'-')}</td><td>${esc(m.demobDate||'-')}</td><td>${m.demobDate?'Demobilized':'On Site'}</td></tr>`).join('')}</tbody></table></div>`:'<div>No movements this month.</div>';
+  }else if(filter==='onLeave'){
+    const rows=staff.filter(x=>onApprovedLeave(x.code)).map(x=>({...x,lv:onApprovedLeave(x.code)}));
+    title.textContent='On Leave';
+    sub.textContent=rows.length+' employee'+(rows.length===1?'':'s')+' currently on approved leave';
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Code</th><th>Employee</th><th>Leave Type</th><th>From</th><th>To</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.code||'-')}</td><td><b>${esc(x.name)}</b></td><td>${esc(x.lv.leaveType||'-')}</td><td>${esc(x.lv.startDate)}</td><td>${esc(x.lv.endDate)}</td></tr>`).join('')}</tbody></table></div>`:'<div>No employees on leave.</div>';
+  }else if(filter==='mobToday'){
+    const rows=moves.filter(m=>m.mobDate===today());
+    title.textContent='Mobilized Today';
+    sub.textContent=rows.length+' employee'+(rows.length===1?'':'s')+' mobilized today';
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Employee</th><th>Client</th><th>Project</th><th>Site Craft</th></tr></thead><tbody>${rows.map(m=>`<tr><td><b>${esc(m.employeeName)}</b></td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td></tr>`).join('')}</tbody></table></div>`:'<div>No mobilizations today.</div>';
+  }else if(filter==='demobToday'){
+    const rows=moves.filter(m=>m.demobDate===today());
+    title.textContent='Demobilized Today';
+    sub.textContent=rows.length+' employee'+(rows.length===1?'':'s')+' demobilized today';
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Employee</th><th>Client</th><th>Project</th><th>Reason</th></tr></thead><tbody>${rows.map(m=>`<tr><td><b>${esc(m.employeeName)}</b></td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.demobRemarks||'-')}</td></tr>`).join('')}</tbody></table></div>`:'<div>No demobilizations today.</div>';
+  }else if(filter==='transfers'){
+    const rows=moves.filter(m=>m.movementType==='Transferred'&&(m.mobDate||'').startsWith(month()));
+    title.textContent='Transfers This Month';
+    sub.textContent=rows.length+' transfer'+(rows.length===1?'':'s')+' in '+month();
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Employee</th><th>From</th><th>To</th><th>Date</th></tr></thead><tbody>${rows.map(m=>`<tr><td><b>${esc(m.employeeName)}</b></td><td>${esc(clientName(m.fromClientId))} / ${esc(projectName(m.fromProjectId))}</td><td>${esc(clientName(m.clientId))} / ${esc(projectName(m.projectId))}</td><td>${esc(m.mobDate)}</td></tr>`).join('')}</tbody></table></div>`:'<div>No transfers this month.</div>';
+  }else if(filter==='returning7'){
+    const todayStr=today(), in7=addDaysStr(todayStr,7);
+    const rows=leaveRecords.filter(l=>['Approved','On Leave'].includes(String(l.status||''))&&l.endDate>=todayStr&&l.endDate<=in7);
+    title.textContent='Returning within 7 Days';
+    sub.textContent=rows.length+' employee'+(rows.length===1?'':'s')+' returning from leave soon';
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Code</th><th>Employee</th><th>Leave Type</th><th>Return Date</th></tr></thead><tbody>${rows.map(l=>`<tr><td>${esc(l.empCode||'-')}</td><td><b>${esc(l.empName||'-')}</b></td><td>${esc(l.leaveType||'-')}</td><td>${esc(l.endDate)}</td></tr>`).join('')}</tbody></table></div>`:'<div>No employees returning within 7 days.</div>';
+  }else if(filter==='understaffed'){
+    const req=get(SITE_REQ,[]), on=moves.filter(x=>!x.demobDate);
+    const rows=req.map(r=>({...r,actual:on.filter(m=>String(m.projectId)===String(r.projectId)&&(!r.craft||norm(m.siteCraft)===norm(r.craft))).length})).filter(r=>r.actual<Number(r.required||0));
+    title.textContent='Projects Understaffed';
+    sub.textContent=rows.length+' requirement line'+(rows.length===1?'':'s')+' below required manpower';
+    body.innerHTML=rows.length?`<div class="wrap"><table><thead><tr><th>Project</th><th>Craft</th><th>Required</th><th>Actual</th><th>Shortage</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(projectName(r.projectId))}</td><td>${esc(r.craft||'Any')}</td><td>${r.required}</td><td>${r.actual}</td><td><b style="color:#c2453a">${Number(r.required)-r.actual}</b></td></tr>`).join('')}</tbody></table></div>`:'<div>No understaffed requirement lines. Set requirements in Site Requirement.</div>';
   }
 
   panel.classList.add('show');
@@ -480,7 +568,28 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-function renderDash(){let on=moves.filter(x=>!x.demobDate);dAvail.textContent=staff.filter(x=>!active(x.key)).length;dSite.textContent=on.length;dProjects.textContent=new Set(on.map(x=>x.projectId)).size;dMove.textContent=moves.filter(x=>(x.mobDate||'').startsWith(month())||(x.demobDate||'').startsWith(month())).length;let map={};on.forEach(m=>{map[m.projectId]=(map[m.projectId]||0)+1});siteSummary.innerHTML=Object.keys(map).length?Object.entries(map).map(([id,c])=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>'+esc(projectName(id))+'</b> - '+c+' manpower</div>').join(''):'No manpower currently on site.'}
+function renderDash(){
+ let on=moves.filter(x=>!x.demobDate);
+ const todayStr=today();
+ dAvail.textContent=staff.filter(x=>!active(x.key)&&!onApprovedLeave(x.code)).length;
+ dSite.textContent=on.length;
+ dOnLeave.textContent=staff.filter(x=>onApprovedLeave(x.code)).length;
+ dMobToday.textContent=moves.filter(x=>x.mobDate===todayStr).length;
+ dDemobToday.textContent=moves.filter(x=>x.demobDate===todayStr).length;
+ dTransfers.textContent=moves.filter(x=>x.movementType==='Transferred'&&(x.mobDate||'').startsWith(month())).length;
+ const in7=addDaysStr(todayStr,7);
+ dReturning7.textContent=leaveRecords.filter(l=>['Approved','On Leave'].includes(String(l.status||''))&&l.endDate>=todayStr&&l.endDate<=in7).length;
+ dProjects.textContent=new Set(on.map(x=>x.projectId)).size;
+ dMove.textContent=moves.filter(x=>(x.mobDate||'').startsWith(month())||(x.demobDate||'').startsWith(month())).length;
+ const req=get(SITE_REQ,[]);
+ let understaffedCount=0;
+ req.forEach(r=>{const actual=on.filter(m=>String(m.projectId)===String(r.projectId)&&(!r.craft||norm(m.siteCraft)===norm(r.craft))).length; if(actual<Number(r.required||0)) understaffedCount++});
+ dUnderstaffed.textContent=understaffedCount;
+ const eligible=staff.length, onSiteCount=on.length;
+ dUtilPct.textContent=eligible?Math.round(onSiteCount/eligible*100)+'%':'0%';
+ dIdlePct.textContent=eligible?Math.round((eligible-onSiteCount)/eligible*100)+'%':'0%';
+ let map={};on.forEach(m=>{map[m.projectId]=(map[m.projectId]||0)+1});siteSummary.innerHTML=Object.keys(map).length?Object.entries(map).map(([id,c])=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>'+esc(projectName(id))+'</b> - '+c+' manpower</div>').join(''):'No manpower currently on site.'
+}
 function fillReportFilters(){
   const keepClient=rClient.value;
   const keepProject=rProject.value;
@@ -622,7 +731,43 @@ function exportUtilizationCSV(){
   URL.revokeObjectURL(a.href);
 }
 
-function renderAll(){refresh();fillReportFilters();renderAvailable();renderOnsite();renderHistory();renderReport();renderDash();renderUtilization()}
+function renderAll(){refresh();fillReportFilters();renderAvailable();renderOnsite();renderHistory();renderReport();renderDash();renderUtilization();renderRequirement()}
+function fillRequirementProjects(){
+  if(!document.getElementById('reqProject'))return;
+  const keep=reqProject.value;
+  reqProject.innerHTML='<option value="">Select Project</option>'+projects.map(p=>`<option value="${p.id}">${esc(clientName(p.clientId))} / ${esc(p.name)}</option>`).join('');
+  if(projects.some(p=>String(p.id)===keep))reqProject.value=keep;
+}
+function addRequirement(){
+  if(!reqProject.value)return alert('Select a project.');
+  const count=Number(reqCount.value);
+  if(!count||count<0)return alert('Enter a valid required count.');
+  const craft=reqCraft.value.trim();
+  let list=get(SITE_REQ,[]);
+  const existing=list.find(r=>String(r.projectId)===String(reqProject.value)&&norm(r.craft||'')===norm(craft));
+  if(existing){ existing.required=count; existing.updatedAt=new Date().toISOString(); }
+  else list.push({id:uid(),projectId:reqProject.value,craft,required:count,createdAt:new Date().toISOString()});
+  localStorage.setItem(SITE_REQ,JSON.stringify(list));
+  reqCraft.value='';reqCount.value='';
+  renderRequirement();renderDash();
+}
+function deleteRequirement(id){
+  if(!confirm('Remove this requirement line?'))return;
+  let list=get(SITE_REQ,[]).filter(r=>r.id!==id);
+  localStorage.setItem(SITE_REQ,JSON.stringify(list));
+  renderRequirement();renderDash();
+}
+function renderRequirement(){
+  if(!document.getElementById('reqRows'))return;
+  fillRequirementProjects();
+  const list=get(SITE_REQ,[]);
+  const on=moves.filter(x=>!x.demobDate);
+  reqRows.innerHTML=list.length?list.map(r=>{
+    const actual=on.filter(m=>String(m.projectId)===String(r.projectId)&&(!r.craft||norm(m.siteCraft)===norm(r.craft))).length;
+    const diff=actual-Number(r.required||0);
+    return `<tr><td>${esc(projectName(r.projectId))}</td><td>${esc(r.craft||'Any Craft')}</td><td><b>${r.required}</b></td><td>${actual}</td><td style="color:${diff<0?'#c2453a':'#166534'};font-weight:800">${diff<0?diff:'+'+diff}</td><td><button class="btn light" onclick="deleteRequirement('${r.id}')">Remove</button></td></tr>`;
+  }).join(''):'<tr><td colspan="6">No manpower requirement defined yet. Add one above.</td></tr>'
+}
 rMonth.value=month(); if(document.getElementById('uMonth')) uMonth.value=month(); refresh();renderAll();
 </script>
 <a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>
