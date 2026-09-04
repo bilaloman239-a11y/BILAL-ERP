@@ -873,8 +873,38 @@ body{padding-top:50px}
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
+
+<style id="cm-login-shell-guard">
+/* Login must remain a clean full-screen page.
+   The shared ERP shell becomes visible only after successful sign-in. */
+body.cm-login-locked{
+  padding:0 !important;
+  margin:0 !important;
+}
+body.cm-login-locked .cmsh-sidebar,
+body.cm-login-locked .cmsh-header,
+body.cm-login-locked .cm-topstrip,
+body.cm-login-locked .cm-all-portals,
+body.cm-login-locked .cm-dashboard-shortcut,
+body.cm-login-locked .cm-portal-nav{
+  display:none !important;
+}
+body.cm-login-locked #loginView{
+  display:grid !important;
+  min-height:100vh !important;
+  width:100% !important;
+  margin:0 !important;
+}
+body.cm-login-locked #appView{
+  display:none !important;
+}
+@media(max-width:800px){
+  body.cm-login-locked #loginView{display:grid !important}
+}
+</style>
+
 </head>
-<body data-cm-page="index">
+<body data-cm-page="index" class="cm-login-locked">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
@@ -1471,12 +1501,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openApp(){
+    document.body.classList.remove("cm-login-locked");
     $("loginView").classList.add("hidden");
     $("appView").classList.remove("hidden");
     sessionStorage.setItem(SESSION_KEY,"1");
     renderAll();
   }
   function closeApp(){
+    document.body.classList.add("cm-login-locked");
     $("appView").classList.add("hidden");
     $("loginView").classList.remove("hidden");
     sessionStorage.removeItem(SESSION_KEY);
@@ -1523,6 +1555,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("logoutButton").addEventListener("click",()=>{
     sessionStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(SESSION_KEY);
+    document.body.classList.add("cm-login-locked");
     location.reload();
   });
 
