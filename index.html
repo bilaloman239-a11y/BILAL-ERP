@@ -701,7 +701,52 @@ table tbody tr:nth-child(even):hover{background:#f4f9ff}
 .expiry-filter.active{box-shadow:0 4px 12px rgba(121,169,235,.18);font-weight:800}
 
 /* ---- Employee profile modal ---- */
-.profile-modal{backdrop-filter:blur(2px)}
+/* Shared ERP shell keeps a fixed sidebar/header above normal page content.
+   Keep the employee profile inside the usable content viewport so the
+   left side, tabs and fields are never hidden behind the shell. */
+.profile-modal{
+  backdrop-filter:blur(2px);
+  top:var(--cmsh-header-h,58px);
+  right:0;
+  bottom:0;
+  left:var(--cmsh-sidebar-w,246px);
+  padding:18px;
+  align-items:center;
+  justify-content:center;
+  z-index:99990;
+}
+.profile-shell{
+  width:min(1180px,calc(100vw - var(--cmsh-sidebar-w,246px) - 36px));
+  max-width:100%;
+  max-height:calc(100vh - var(--cmsh-header-h,58px) - 36px);
+}
+.profile-tabs{
+  flex-wrap:nowrap!important;
+  overflow-x:auto;
+  overflow-y:hidden;
+  white-space:nowrap;
+  scrollbar-width:thin;
+  padding:12px 16px;
+}
+.profile-tab{flex:0 0 auto}
+.profile-body{min-width:0}
+@media(max-width:900px){
+  .profile-modal{left:0;top:var(--cmsh-header-h,58px);padding:10px}
+  .profile-shell{width:calc(100vw - 20px);max-height:calc(100vh - var(--cmsh-header-h,58px) - 20px);border-radius:16px}
+  .profile-head{padding:14px 16px}
+  .profile-photo{width:58px;height:58px}
+  .profile-name{font-size:19px}
+  .profile-body{padding:14px}
+}
+@media(max-width:560px){
+  .profile-modal{top:0;padding:0;z-index:100000}
+  .profile-shell{width:100vw;max-height:100vh;height:100vh;border-radius:0;border:0}
+  .profile-head{gap:10px}
+  .profile-actions{width:100%}
+  .profile-actions .btn{flex:1;min-width:120px}
+  .profile-tabs{padding:10px 12px}
+}
+
 .profile-shell{
   box-shadow:0 40px 90px rgba(15,35,60,.28),0 4px 14px rgba(15,35,60,.08);
   animation:profilePop .22s ease;
