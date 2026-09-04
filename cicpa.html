@@ -428,6 +428,59 @@ body{padding-top:50px}
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
+
+<style id="cm-cicpa-display-fix">
+/* Shared ERP shell supplies the only left navigation. */
+body[data-cm-page="cicpa"] > .app{
+  display:block !important;
+  min-width:0 !important;
+}
+body[data-cm-page="cicpa"] > .app > aside.sidebar{
+  display:none !important;
+}
+body[data-cm-page="cicpa"] > .app > main.main{
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  padding:12px 18px 24px !important;
+}
+.cm-cicpa-tabs{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:0 0 12px;
+  padding:2px 0 10px;
+}
+.cm-cicpa-tabs .navbtn{
+  width:auto !important;
+  margin:0 !important;
+  padding:10px 15px !important;
+  border:1px solid #d7e2ef !important;
+  border-radius:9px !important;
+  background:#fff !important;
+  color:#23435f !important;
+  box-shadow:0 1px 3px rgba(15,35,60,.05) !important;
+  font-size:13px !important;
+  font-weight:800 !important;
+  white-space:nowrap;
+}
+.cm-cicpa-tabs .navbtn:hover{background:#eef5fb !important}
+.cm-cicpa-tabs .navbtn.active{
+  background:#1d65a6 !important;
+  border-color:#1d65a6 !important;
+  color:#fff !important;
+}
+body[data-cm-page="cicpa"] .topbar{
+  margin:0 0 10px !important;
+}
+@media(max-width:800px){
+  body[data-cm-page="cicpa"] > .app > main.main{padding:10px !important}
+  .cm-cicpa-tabs{flex-wrap:nowrap;overflow-x:auto}
+  .cm-cicpa-tabs .navbtn{flex:0 0 auto}
+}
+</style>
+
 </head>
 <body data-cm-page="cicpa">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -881,6 +934,36 @@ loadEmployeeOptions();addLocationRow();renderLocationMaster();refreshDashEmploye
 </script>
 
 
+
+
+<script id="cm-cicpa-display-fix-script">
+document.addEventListener('DOMContentLoaded', function(){
+  const app = document.querySelector('body[data-cm-page="cicpa"] > .app');
+  const side = app && app.querySelector(':scope > aside.sidebar');
+  const main = app && app.querySelector(':scope > main.main');
+  if(!side || !main) return;
+
+  const tabs = document.createElement('div');
+  tabs.className = 'cm-cicpa-tabs';
+  tabs.setAttribute('aria-label','CICPA module navigation');
+
+  // Keep only CICPA-local functions. ERP-wide links already exist in shared sidebar.
+  side.querySelectorAll('.navbtn').forEach(function(btn){
+    const panel = btn.getAttribute('data-panel');
+    const text = (btn.textContent || '').trim();
+    if(panel === 'dashboard' || panel === 'register' || panel === 'locations' ||
+       text.includes('Reports') || text.includes('Settings')){
+      tabs.appendChild(btn);
+    }
+  });
+
+  const topbar = main.querySelector(':scope > .topbar');
+  if(topbar) topbar.insertAdjacentElement('afterend', tabs);
+  else main.insertBefore(tabs, main.firstChild);
+
+  side.remove();
+});
+</script>
 
 <script src="erp-shell.js"></script>
 </body>
