@@ -827,8 +827,9 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
+<link rel="stylesheet" href="erp-shell.css">
 </head>
-<body>
+<body data-cm-page="index">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
@@ -843,6 +844,7 @@ body{padding-top:50px}
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
 <a href="action-center.html">Action Center</a>
+<a href="mis.html">Management Reports / MIS</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -1374,6 +1376,21 @@ document.addEventListener("DOMContentLoaded", () => {
   let workingTechnicalCertificates = [];
   let workingAttachments = [];
   let workingPhoto = "";
+
+  function uid(){return 'EMP-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)+'-'+Math.random().toString(36).slice(2,5)}
+
+  // Permanent internal Employee ID migration — Employee Code is a human-editable
+  // business field and must never be the cross-module relationship key. Every
+  // employee record gets a stable, immutable `id` here that never changes even
+  // if the Employee Code is later renamed. Existing records without one are
+  // backfilled once, in place, without touching anything else about them.
+  (function backfillEmployeeIds(){
+    let changed=false;
+    (data.employees||[]).forEach(e=>{
+      if(!e.id){ e.id=uid(); changed=true; }
+    });
+    if(changed){ try{ localStorage.setItem(DATA_KEY,JSON.stringify(data)); }catch(_e){} }
+  })();
 
   function saveData(){
     try{
@@ -2369,6 +2386,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const e={
+      id: editingIndex===null ? uid() : (data.employees[editingIndex]?.id || uid()),
       employeeCode:code,
       employeeName:name,
       employeeNameArabic:$("fEmployeeNameArabic").value.trim(),
@@ -2594,6 +2612,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const eid=makeDoc("Emirates ID",csvVal(rowObj,"Emirates ID No.","Emirates ID No","Emirates ID Number"),csvVal(rowObj,"Emirates ID Issue Date"),csvVal(rowObj,"Emirates ID Expiry","Emirates ID Expiry Date"));
     if(passport) docs.push(passport); if(eid) docs.push(eid);
     return {
+      id:uid(),
       employeeCode:code, employeeName:name,
       employeeNameArabic:csvVal(rowObj,"Employee Name Arabic","Arabic Name","Employee Name in Arabic"),
       unifiedNumber:csvVal(rowObj,"Unified Number","Unified No","Unified No."),
@@ -3272,5 +3291,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<script src="erp-shell.js"></script>
 </body>
 </html>

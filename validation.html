@@ -52,7 +52,8 @@ select.mode[data-mode="Allow with Approval"]{background:#eaf6ee;color:#20713f;bo
 .cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
 body{padding-top:50px}
 </style>
-</head><body>
+<link rel="stylesheet" href="erp-shell.css">
+</head><body data-cm-page="validation">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button>
 <div class="cm-all-portals"><details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">⌂ ERP Dashboard</a>
@@ -68,6 +69,7 @@ body{padding-top:50px}
 <a href="audit.html">📋 Audit Trail</a>
 <a href="validation.html">🧩 Validation & Controls</a>
 <a href="action-center.html">🔔 Action Center</a>
+<a href="mis.html">📈 Management Reports / MIS</a>
 </div></details></div></div>
 
 <div class="top"><h2>🧩 Validation & Controls Master</h2><div><a href="dashboard.html">⌂ ERP Dashboard</a> <a href="audit.html">📋 Audit Trail</a></div></div>
@@ -166,4 +168,5 @@ function ackQueue(id,status){
 }
 renderRules(); renderStats(); renderQueue();
 </script>
+<script src="erp-shell.js"></script>
 </body></html>

@@ -7,8 +7,8 @@
 
 <style>
 :root{
-  --navy:#0d2f54;
-  --navy2:#123f6f;
+  --navy:#0f2f46;
+  --navy2:#173b67;
   --blue:#124db8;
   --orange:#ff8a00;
   --green:#15803d;
@@ -261,7 +261,7 @@ button.primary,button.secondary,button.danger{
   cursor:pointer;
   font-weight:800;
 }
-.primary{background:#164fc2;color:#fff}
+.primary{background:#2e6fae;color:#fff}
 .secondary{background:#eef3f8;color:#17365a;border:1px solid #d5deea!important}
 .danger{background:#fff0f0;color:#d32626}
 .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
@@ -427,8 +427,9 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
+<link rel="stylesheet" href="erp-shell.css">
 </head>
-<body>
+<body data-cm-page="cicpa">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
@@ -443,6 +444,7 @@ body{padding-top:50px}
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
 <a href="action-center.html">Action Center</a>
+<a href="mis.html">Management Reports / MIS</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -880,5 +882,6 @@ loadEmployeeOptions();addLocationRow();renderLocationMaster();refreshDashEmploye
 
 
 
+<script src="erp-shell.js"></script>
 </body>
 </html>

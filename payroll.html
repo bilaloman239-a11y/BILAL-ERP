@@ -32,7 +32,7 @@
 <title>Payroll & Salary Management Portal</title>
 <style>
 :root{
- --navy:#12344a;--navy2:#173b67;--blue:#2e6fae;--orange:#f59e0b;--bg:#f4f7fb;
+ --navy:#0f2f46;--navy2:#173b67;--blue:#2e6fae;--orange:#f59e0b;--bg:#f4f7fb;
  --card:#fff;--text:#1f2937;--muted:#6b7280;--line:#dbe4ef;--green:#15803d;--red:#dc2626;--amber:#d97706
 }
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -142,8 +142,9 @@ body{padding-top:50px}
 <script src="erp-validation.js"></script>
 <script src="erp-payroll-workflow.js"></script>
 <script src="erp-action-center.js"></script>
+<link rel="stylesheet" href="erp-shell.css">
 </head>
-<body>
+<body data-cm-page="payroll">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
@@ -158,6 +159,7 @@ body{padding-top:50px}
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
 <a href="action-center.html">Action Center</a>
+<a href="mis.html">Management Reports / MIS</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -1554,5 +1556,6 @@ tsMonth.value=month();payMonth.value=month();loadEmployees();renderAll();
 
 
 
+<script src="erp-shell.js"></script>
 </body>
 </html>

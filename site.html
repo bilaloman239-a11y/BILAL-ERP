@@ -30,7 +30,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Site Management Portal</title>
 <style>
-body{margin:0;font-family:Segoe UI,Arial;background:#f4f7fb;color:#1f2937}header{background:#173b67;color:white;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}header h2{margin:0}.app{display:flex}.side{width:230px;background:#102d4f;min-height:calc(100vh - 64px);padding:15px}.side button{width:100%;padding:12px;margin:4px 0;border:0;border-radius:9px;background:transparent;color:white;text-align:left;font-weight:700;cursor:pointer}.side button:hover,.side button.active{background:#ffffff1a}.main{flex:1;padding:20px}.view{display:none}.view.active{display:block}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card,.box{background:white;border:1px solid #dbe4ef;border-radius:12px;padding:15px;margin-bottom:14px}.card b{font-size:28px;color:#173b67}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}input,select,textarea{padding:9px;border:1px solid #dbe4ef;border-radius:8px;width:100%;box-sizing:border-box}.toolbar input,.toolbar select{max-width:260px}table{width:100%;border-collapse:collapse;min-width:1000px;background:white}th,td{padding:10px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px}th{background:#f7f9fc}.wrap{overflow:auto;border:1px solid #dbe4ef;border-radius:10px}.btn{border:0;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer}.primary{background:#2e6fae;color:white}.orange{background:#f59e0b;color:white}.light{background:#edf3f8;color:#173b67}.green{background:#dcfce7;color:#166534}.badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:15px}.modal.show{display:flex}.modalbox{background:white;width:min(760px,96vw);max-height:90vh;overflow:auto;border-radius:14px;padding:18px}.link{color:#2e6fae;font-weight:800;cursor:pointer}@media(max-width:900px){.cards,.grid{grid-template-columns:1fr 1fr}.side{width:190px}}@media(max-width:650px){.app{display:block}.side{width:auto;min-height:auto}.cards,.grid{grid-template-columns:1fr}}
+body{margin:0;font-family:Segoe UI,Arial;background:#f4f7fb;color:#1f2937}header{background:#173b67;color:white;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}header h2{margin:0}.app{display:flex}.side{width:260px;background:#102d4f;min-height:calc(100vh - 64px);padding:15px}.side button{width:100%;padding:12px;margin:4px 0;border:0;border-radius:9px;background:transparent;color:white;text-align:left;font-weight:700;cursor:pointer}.side button:hover,.side button.active{background:#ffffff1a}.main{flex:1;padding:20px}.view{display:none}.view.active{display:block}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card,.box{background:white;border:1px solid #dbe4ef;border-radius:12px;padding:15px;margin-bottom:14px}.card b{font-size:28px;color:#173b67}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}input,select,textarea{padding:9px;border:1px solid #dbe4ef;border-radius:8px;width:100%;box-sizing:border-box}.toolbar input,.toolbar select{max-width:260px}table{width:100%;border-collapse:collapse;min-width:1000px;background:white}th,td{padding:10px;border-bottom:1px solid #edf1f5;text-align:left;font-size:13px}th{background:#f7f9fc}.wrap{overflow:auto;border:1px solid #dbe4ef;border-radius:10px}.btn{border:0;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer}.primary{background:#2e6fae;color:white}.orange{background:#f59e0b;color:white}.light{background:#edf3f8;color:#173b67}.green{background:#dcfce7;color:#166534}.badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:15px}.modal.show{display:flex}.modalbox{background:white;width:min(760px,96vw);max-height:90vh;overflow:auto;border-radius:14px;padding:18px}.link{color:#2e6fae;font-weight:800;cursor:pointer}@media(max-width:900px){.cards,.grid{grid-template-columns:1fr 1fr}.side{width:190px}}@media(max-width:650px){.app{display:block}.side{width:auto;min-height:auto}.cards,.grid{grid-template-columns:1fr}}
 </style>
 
 <style id="cm-portal-nav-style">
@@ -120,8 +120,9 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
+<link rel="stylesheet" href="erp-shell.css">
 </head>
-<body>
+<body data-cm-page="site">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
@@ -136,6 +137,7 @@ body{padding-top:50px}
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
 <a href="action-center.html">Action Center</a>
+<a href="mis.html">Management Reports / MIS</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -774,5 +776,6 @@ rMonth.value=month(); if(document.getElementById('uMonth')) uMonth.value=month()
 
 
 
+<script src="erp-shell.js"></script>
 </body>
 </html>

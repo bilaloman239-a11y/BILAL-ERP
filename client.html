@@ -150,8 +150,9 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
+<link rel="stylesheet" href="erp-shell.css">
 </head>
-<body>
+<body data-cm-page="client">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
@@ -166,6 +167,7 @@ body{padding-top:50px}
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
 <a href="action-center.html">Action Center</a>
+<a href="mis.html">Management Reports / MIS</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -521,5 +523,6 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 
+<script src="erp-shell.js"></script>
 </body>
 </html>

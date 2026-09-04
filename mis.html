@@ -1,0 +1,513 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Civil Master ERP - Management Reports / MIS Center</title>
+<style>*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f2f6fa;color:#29455d}
+.top{background:#123a64;color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+.top h2{margin:0;font-size:19px}.top a{color:#fff;text-decoration:none;background:#ffffff1f;padding:9px 12px;border-radius:9px;font-size:12px}
+.wrap{max-width:1500px;margin:auto;padding:20px}
+.hero{background:linear-gradient(135deg,#123a64,#246aa4);color:#fff;border-radius:18px;padding:21px;box-shadow:0 12px 30px #123a6425;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.hero h1{margin:0 0 6px;font-size:23px}.hero p{margin:0;color:#d9e8f5;max-width:760px;font-size:13px}
+.hero .ctl{display:flex;gap:8px;align-items:center;background:#ffffff18;padding:8px 12px;border-radius:12px}
+.hero .ctl input,.hero .ctl select{border:0;border-radius:8px;padding:8px;font-size:12px}
+.hero .badge{font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;background:#ffffff22}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0}
+.tab{background:#fff;border:1px solid #dde7ef;border-radius:10px;padding:9px 13px;font-size:12px;font-weight:800;color:#5c7186;cursor:pointer}
+.tab.active{background:#1c5c94;color:#fff;border-color:#1c5c94}
+.section{display:none}.section.active{display:block}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid #dde7ef;border-radius:14px;padding:14px;cursor:pointer}
+.kpi:hover{box-shadow:0 6px 16px #0001}
+.kpi small{color:#7b8d9d;font-weight:800;text-transform:uppercase;font-size:9.5px}
+.kpi b{display:block;font-size:20px;color:#173f68;margin-top:5px}
+.panel{background:#fff;border:1px solid #dde7ef;border-radius:14px;margin-bottom:16px;overflow:hidden}
+.panel-head{padding:12px 15px;border-bottom:1px solid #e5edf3;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.panel-head b{font-size:14px}
+.panel-body{padding:12px 15px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar input,.toolbar select{border:1px solid #cfdce7;border-radius:8px;padding:8px;font-size:12px}
+.btn{border:0;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer;background:#1c5c94;color:#fff;font-size:12px}
+.btn.light{background:#edf4f9;color:#28577d}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#eef4f9;color:#48667e;text-align:left;padding:8px;position:sticky;top:0}
+td{padding:8px;border-top:1px solid #edf2f6}
+.table-wrap{overflow:auto;max-height:60vh;border:1px solid #edf2f6;border-radius:10px}
+.bar-row{display:grid;grid-template-columns:160px 1fr 90px;gap:10px;align-items:center;padding:6px 0}
+.bar-track{background:#eef2f6;border-radius:6px;height:14px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,#2e6fae,#5aa0e0)}
+.bucket-expired{color:#c2453a;font-weight:900}
+.bucket-30{color:#c99a12;font-weight:900}
+.bucket-60{color:#2e6fae;font-weight:800}
+.bucket-90{color:#5c7186}
+.bucket-ok{color:#2d9151}
+.empty{text-align:center;padding:30px;color:#8292a0}
+.notice{font-size:11px;color:#6f8192;margin-top:10px;line-height:1.6}
+.snap-flag{font-size:10px;font-weight:900;padding:3px 8px;border-radius:999px}
+.snap-final{background:#dcfce7;color:#166534}
+.snap-prov{background:#fff7d6;color:#8a6200}
+.builder-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.checkline{display:flex;flex-wrap:wrap;gap:10px;font-size:12px}
+.checkline label{display:flex;gap:5px;align-items:center;background:#f4f8fb;padding:6px 9px;border-radius:8px}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.builder-grid{grid-template-columns:1fr 1fr}}
+</style>
+<style id="cm-topstrip-style">
+.cm-topstrip{position:fixed;top:0;left:0;right:0;height:50px;z-index:100000;background:#0d2b4d;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;box-shadow:0 3px 14px rgba(0,0,0,.18);font-family:Segoe UI,Arial,sans-serif}
+.cm-topstrip .cm-back-btn{background:#ffffff22;color:#fff;border:0;border-radius:8px;padding:8px 12px;font:700 12px Segoe UI,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.cm-topstrip .cm-back-btn:hover{background:#ffffff3a}
+.cm-all-portals{font-family:Segoe UI,Arial,sans-serif}
+.cm-all-portals details{position:relative}
+.cm-all-portals summary{list-style:none;cursor:pointer;background:#173b67;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800;font-size:12px;box-shadow:0 5px 18px #0002}
+.cm-all-portals summary::-webkit-details-marker{display:none}
+.cm-all-portals .links{position:absolute;right:0;top:50px;width:235px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:8px;box-shadow:0 12px 30px #0003;max-height:70vh;overflow:auto}
+.cm-all-portals a{display:block;text-decoration:none;color:#173b67;padding:9px 10px;border-radius:8px;font-weight:700;font-size:12px}
+.cm-all-portals a:hover{background:#eef4fa}
+.cm-all-portals a.leave-link{background:#eef5ff;color:#145db4}
+body{padding-top:50px}
+@media print{.cm-topstrip,.tabs,.hero .ctl,.toolbar,.top{display:none!important}.section{display:block!important}}
+</style>
+<link rel="stylesheet" href="erp-shell.css">
+</head><body data-cm-page="mis">
+<div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button>
+<div class="cm-all-portals"><details><summary>☰ ERP Portals</summary><div class="links">
+<a href="dashboard.html">⌂ ERP Dashboard</a>
+<a href="index.html">👥 Employee Management</a>
+<a href="leave.html" class="leave-link">🏖 Leave Management</a>
+<a href="subcontractor.html">🏗 Sub Contractor</a>
+<a href="client.html">🏢 Client / Project</a>
+<a href="site.html">📍 Site Management</a>
+<a href="timesheet.html">🕒 Timesheet</a>
+<a href="payroll.html">💰 Payroll</a>
+<a href="approval.html">✓ Approval Center</a>
+<a href="cicpa.html">🛡 CICPA Management</a>
+<a href="validation.html">🧩 Validation & Controls</a>
+<a href="action-center.html">🔔 Action Center</a>
+<a href="mis.html">📈 Management Reports / MIS</a>
+<a href="audit.html">📋 Audit Trail</a>
+</div></details></div></div>
+
+<div class="top"><h2>📈 Management Reports / MIS Center</h2><div><a href="dashboard.html">⌂ ERP Dashboard</a> <a href="action-center.html">🔔 Action Center</a></div></div>
+<div class="wrap">
+  <div class="hero">
+    <div><h1>One screen: manpower, cost and compliance</h1><p>Generated live from Employee, Site Movement, Timesheet, Payroll, Leave and CICPA records — nothing here is entered twice.</p></div>
+    <div class="ctl">
+      <span>Report Month</span>
+      <input id="reportYm" type="month" onchange="renderEverything()">
+      <span id="snapFlag" class="badge">-</span>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <section id="sec-exec" class="section">
+    <div class="kpis" id="execKpis"></div>
+    <div class="panel"><div class="panel-head"><b>Manpower by Client</b></div><div class="panel-body" id="chartManpowerClient"></div></div>
+    <div class="panel"><div class="panel-head"><b>Payroll Cost by Project</b></div><div class="panel-body" id="chartCostProject"></div></div>
+    <div class="panel"><div class="panel-head"><b>Document Expiry Buckets</b></div><div class="panel-body" id="chartExpiryBuckets"></div></div>
+  </section>
+
+  <section id="sec-manpower" class="section">
+    <div class="panel"><div class="panel-head"><b>Manpower Analysis — Client → Project → Site</b><div class="toolbar">
+      <select id="mpDesignation"><option value="">All Designations</option></select>
+      <select id="mpNationality"><option value="">All Nationalities</option></select>
+      <select id="mpSource"><option value="">All Sources</option><option>Company</option><option>Sub Contractor</option></select>
+      <select id="mpStatus"><option value="">All Statuses</option><option>Active (On Site)</option><option>Idle</option><option>On Leave</option></select>
+      <input id="mpSearch" placeholder="Search...">
+      <button class="btn light" onclick="renderManpower()">Apply</button>
+    </div></div><div class="panel-body"><div class="table-wrap"><table><thead><tr><th>Code</th><th>Name</th><th>Designation</th><th>Nationality</th><th>Source</th><th>Client</th><th>Project</th><th>Site</th><th>Status</th></tr></thead><tbody id="mpRows"></tbody></table></div></div></div>
+  </section>
+
+  <section id="sec-cost" class="section">
+    <div class="panel"><div class="panel-head"><b>Cost Analysis — <span id="costMonthLabel"></span></b><span id="costSnapFlag" class="snap-flag"></span></div>
+      <div class="panel-body">
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi"><small>Basic Salary</small><b id="costBasic">0</b></div>
+          <div class="kpi"><small>Allowances</small><b id="costAllow">0</b></div>
+          <div class="kpi"><small>Overtime (NOT+HOT)</small><b id="costOt">0</b></div>
+          <div class="kpi"><small>Total Manpower Cost</small><b id="costTotal">0</b></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Client</th><th>Project</th><th>Site</th><th>Employees</th><th>Basic</th><th>Allowances</th><th>OT</th><th>Subcontractor Cost</th><th>Total</th><th>Cost / Employee</th></tr></thead><tbody id="costRows"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-leave" class="section">
+    <div class="kpis" id="leaveKpis"></div>
+    <div class="panel"><div class="panel-head"><b>Leave Movement Detail</b></div><div class="panel-body"><div class="table-wrap"><table><thead><tr><th>Code</th><th>Name</th><th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Bucket</th></tr></thead><tbody id="leaveRows"></tbody></table></div></div></div>
+    <div class="panel"><div class="panel-head"><b>Monthly Leave Trend (Unpaid vs Medical)</b></div><div class="panel-body" id="chartLeaveTrend"></div></div>
+  </section>
+
+  <section id="sec-util" class="section">
+    <div class="panel"><div class="panel-head"><b>Utilization — <span id="utilMonthLabel"></span></b><div class="toolbar"><button class="btn light" onclick="location.href='site.html'">Open Site Utilization →</button></div></div>
+      <div class="panel-body">
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi"><small>Overall Utilization %</small><b id="utilOverall">0%</b></div>
+          <div class="kpi"><small>Idle Days (Company)</small><b id="utilIdleDays">0</b></div>
+          <div class="kpi"><small>Continuously Idle (30+ days)</small><b id="utilContIdle">0</b></div>
+          <div class="kpi"><small>Sites Reporting</small><b id="utilSites">0</b></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Client</th><th>Project</th><th>Employees</th><th>On-Site Days</th><th>Eligible Days</th><th>Utilization %</th></tr></thead><tbody id="utilRows"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-compliance" class="section">
+    <div class="panel"><div class="panel-head"><b>Compliance — Document Expiry</b></div><div class="panel-body">
+      <div class="table-wrap"><table><thead><tr><th>Employee</th><th>Document</th><th>Expiry Date</th><th>Days</th><th>Bucket</th></tr></thead><tbody id="compRows"></tbody></table></div>
+    </div></div>
+    <div class="panel"><div class="panel-head"><b>CICPA Coverage</b></div><div class="panel-body">
+      <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi"><small>Eligible Manpower</small><b id="cicpaEligible">0</b></div>
+        <div class="kpi"><small>Covered (Valid CICPA)</small><b id="cicpaCovered">0</b></div>
+        <div class="kpi"><small>Missing / Expired</small><b id="cicpaMissing">0</b></div>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Code</th><th>Name</th><th>CICPA Status</th><th>Expiry</th></tr></thead><tbody id="cicpaRows"></tbody></table></div>
+    </div></div>
+  </section>
+
+  <section id="sec-trends" class="section">
+    <div class="panel"><div class="panel-head"><b>Monthly Manpower Trend (Active Company Employees)</b></div><div class="panel-body" id="chartManpowerTrend"></div></div>
+    <div class="panel"><div class="panel-head"><b>Hires vs Exits</b></div><div class="panel-body" id="chartHiresExits"></div></div>
+    <div class="panel"><div class="panel-head"><b>Mobilized vs Demobilized</b></div><div class="panel-body" id="chartMobDemob"></div></div>
+    <div class="panel"><div class="panel-head"><b>Payroll Trend (Finalized Months)</b></div><div class="panel-body" id="chartPayrollTrend"></div></div>
+    <div class="panel"><div class="panel-head"><b>OT Trend (Finalized Months)</b></div><div class="panel-body" id="chartOtTrend"></div></div>
+    <div class="panel"><div class="panel-head"><b>Subcontractor Manpower / Cost Trend</b></div><div class="panel-body" id="chartSubTrend"></div></div>
+    <div class="notice">Budget vs Actual, Revenue/Invoice vs Manpower Cost and Project Gross Margin are intentionally left for a future release — this ERP does not currently capture budget figures or client invoice amounts anywhere, so those numbers would have to be entered manually rather than pulled live. Once a Budget/Invoice module exists, this Trends tab is the right place to add them.</div>
+  </section>
+
+  <section id="sec-builder" class="section">
+    <div class="panel"><div class="panel-head"><b>Custom Report Builder</b></div><div class="panel-body">
+      <div class="builder-grid">
+        <div><label style="font-size:11px;font-weight:800">From Date</label><input id="rbFrom" type="date"></div>
+        <div><label style="font-size:11px;font-weight:800">To Date</label><input id="rbTo" type="date"></div>
+        <div><label style="font-size:11px;font-weight:800">Client</label><select id="rbClient"><option value="">All</option></select></div>
+        <div><label style="font-size:11px;font-weight:800">Project</label><select id="rbProject"><option value="">All</option></select></div>
+        <div><label style="font-size:11px;font-weight:800">Designation</label><input id="rbDesignation" placeholder="Any"></div>
+        <div><label style="font-size:11px;font-weight:800">Subcontractor</label><select id="rbSub"><option value="">All</option></select></div>
+        <div><label style="font-size:11px;font-weight:800">Status</label><select id="rbStatus"><option value="">All</option><option>Active (On Site)</option><option>Idle</option><option>On Leave</option></select></div>
+        <div><label style="font-size:11px;font-weight:800">Employee Code Contains</label><input id="rbEmpCode" placeholder="Any"></div>
+      </div>
+      <div style="margin:12px 0"><b style="font-size:12px">Columns:</b><div class="checkline" id="rbColumns"></div></div>
+      <button class="btn" onclick="runReportBuilder()">Generate Report</button>
+      <button class="btn light" onclick="exportBuilderCSV()">Export CSV</button>
+      <button class="btn light" onclick="window.print()">Export / Print PDF</button>
+      <div class="table-wrap" style="margin-top:12px"><table><thead id="rbHead"></thead><tbody id="rbRows"></tbody></table></div>
+    </div></div>
+  </section>
+
+  <div class="notice">Snapshot Reporting: when the selected Report Month is already Finalized in Payroll, Cost Analysis and OT/Payroll trend figures are pulled from that month's locked payroll snapshot (salary rate, designation, Client/Project/Site as they were on that date) — not from today's current values. Non-finalized months are shown as "Provisional" and reflect current live data until that month is finalized.</div>
+</div>
+
+<script src="erp-validation.js"></script>
+<script src="erp-payroll-workflow.js"></script>
+<script src="erp-action-center.js"></script>
+<script>
+function get(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v??d; }catch(e){ return d; } }
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function norm(v){return String(v??'').trim().toLowerCase()}
+function money(n){return 'AED '+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}
+function today(){return new Date().toISOString().slice(0,10)}
+function parseYMD(s){const [y,m,d]=String(s||'').split('-').map(Number);return new Date(y,m-1,d||1)}
+function daysBetween(a,b){return Math.round((parseYMD(b)-parseYMD(a))/86400000)}
+function ymBounds(ym){const [y,m]=ym.split('-').map(Number);const start=new Date(y,m-1,1),end=new Date(y,m,0);const f=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');return {start:f(start),end:f(end),days:end.getDate()}}
+function overlapDays(fromDate,toDate,ym){const b=ymBounds(ym);let a=fromDate||'',z=toDate||b.end;if(!a)return 0;if(a<b.start)a=b.start;if(z>b.end)z=b.end;if(z<a)return 0;return daysBetween(a,z)+1}
+function addMonthsYm(ym,n){const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-1+n,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+
+// ---------- Data access ----------
+function employeesRaw(){const raw=get('cm_employee_portal_v3',{});return Array.isArray(raw)?raw:(raw.employees||raw.employeeList||raw.data?.employees||[])}
+function subEmployeesRaw(){const raw=get('sc_portal_employees_v1',{});return Array.isArray(raw)?raw:(raw.employees||raw.data?.employees||[])}
+function clientsAll(){return get('cm_client_portal_clients_v1',[])}
+function projectsAll(){return get('cm_client_portal_projects_v1',[])}
+function subsAll(){return get('sc_portal_subcontractors_v1',[])}
+function movesAll(){return get('cm_site_management_movements_v1',[])}
+function leavesAll(){return get('cm_leave_records_v1',[])}
+function payHistoryAll(){return get('cm_payroll_history_v1',[])}
+function payMasterAll(){return get('cm_payroll_master_v1',{})}
+function cicpaAll(){return get('cicpa_records',[])}
+function tsLeaveSummaryAll(){return get('cm_timesheet_leave_summary_v1',[])}
+function clientName(id){return clientsAll().find(c=>String(c.id)===String(id))?.name||'-'}
+function projectName(id){return projectsAll().find(p=>String(p.id)===String(id))?.name||'-'}
+function activeCompanyEmployees(){return employeesRaw().filter(e=>norm(e.employeeStatus||e.status||'Active')!=='inactive')}
+function activeSubEmployees(){return subEmployeesRaw().filter(e=>norm(e.status||'Active')!=='inactive')}
+function activeMovesNow(){return movesAll().filter(m=>!m.demobDate)}
+function onLeaveTodayMap(){const m=new Map();leavesAll().filter(l=>['Approved','On Leave'].includes(String(l.status||''))&&l.startDate<=today()&&today()<=l.endDate).forEach(l=>m.set(norm(l.empCode),l));return m}
+function isFinalized(ym){return window.CMPW?CMPW.isLocked(ym):false}
+
+// ---------- Tabs ----------
+const TABS=[['exec','Executive Summary'],['manpower','Manpower Analysis'],['cost','Cost Analysis'],['leave','Leave Movement'],['util','Utilization'],['compliance','Compliance'],['trends','Trend Analysis'],['builder','Report Builder']];
+function renderTabs(){
+  document.getElementById('tabs').innerHTML=TABS.map(([k,l],i)=>`<div class="tab ${i===0?'active':''}" data-tab="${k}" onclick="switchTab('${k}')">${esc(l)}</div>`).join('');
+}
+function switchTab(key){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===key));
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id==='sec-'+key));
+}
+
+// ---------- Executive Summary ----------
+function renderExec(ym){
+  const companyActive=activeCompanyEmployees(), subActive=activeSubEmployees();
+  const totalManpower=companyActive.length+subActive.length;
+  const onSite=activeMovesNow();
+  const onLeaveMap=onLeaveTodayMap();
+  const onLeaveCount=[...companyActive,...subActive].filter(e=>onLeaveMap.has(norm(e.employeeCode||e.empCode))).length;
+  const idle=totalManpower-onSite.length-onLeaveCount;
+  const finalized=isFinalized(ym);
+  const hist=payHistoryAll().find(h=>h.month===ym);
+  let payrollCost=0,otCost=0;
+  if(finalized&&hist){ payrollCost=hist.entries.reduce((a,x)=>a+Number(x.gross||0),0); otCost=hist.entries.reduce((a,x)=>a+Number(x.notAmt||0)+Number(x.hotAmt||0),0); }
+  const subCost=onSite.filter(m=>m.source==='Sub Contractor').reduce((a,m)=>a+Number(m.subRate||0)*overlapDays(m.mobDate,m.demobDate,ym),0);
+  const eligible=totalManpower||1;
+  const utilPct=Math.round(onSite.length/eligible*100);
+  const expiringDocs=window.CMAC?CMAC.scan().filter(n=>(n.category==='critical'||n.category==='dueSoon')&&/expired|expiring/i.test(n.type)).length:0;
+  const cicpa=cicpaAll();
+  const covered=new Set(cicpa.filter(r=>r.expiryDate>=today()).map(r=>norm(r.empCode)));
+  const cicpaCoveragePct=companyActive.length?Math.round(companyActive.filter(e=>covered.has(norm(e.employeeCode))).length/companyActive.length*100):0;
+
+  const cards=[
+    ['Total Manpower',totalManpower,'manpower'],
+    ['Active (On Site)',onSite.length,'manpower'],
+    ['Idle',Math.max(0,idle),'manpower'],
+    ['On Leave',onLeaveCount,'leave'],
+    ['Utilization %',utilPct+'%',null],
+    ['Payroll Cost',finalized?money(payrollCost):'Provisional',null],
+    ['OT Cost',finalized?money(otCost):'Provisional',null],
+    ['Subcontractor Cost',money(subCost),null],
+    ['Docs Expiring',expiringDocs,'compliance'],
+    ['CICPA Coverage',cicpaCoveragePct+'%','compliance']
+  ];
+  document.getElementById('execKpis').innerHTML=cards.map(([label,val,jump])=>`<div class="kpi" ${jump?`onclick="switchTab('${jump}')"`:''}><small>${esc(label)}</small><b>${esc(String(val))}</b></div>`).join('');
+
+  const byClient={}; onSite.forEach(m=>{const c=clientName(m.clientId);byClient[c]=(byClient[c]||0)+1});
+  renderBarChart('chartManpowerClient',byClient,v=>String(v));
+  let byProject={};
+  if(finalized&&hist){ hist.entries.forEach(x=>{const p=x.projectSnapshot||'Unassigned';byProject[p]=(byProject[p]||0)+Number(x.gross||0)}); }
+  renderBarChart('chartCostProject',byProject,v=>money(v));
+  const buckets=complianceBuckets();
+  const bucketCounts={Expired:buckets.filter(b=>b.bucket==='Expired').length,'≤30':buckets.filter(b=>b.bucket==='≤30').length,'31-60':buckets.filter(b=>b.bucket==='31-60').length,'61-90':buckets.filter(b=>b.bucket==='61-90').length};
+  renderBarChart('chartExpiryBuckets',bucketCounts,v=>String(v));
+}
+function renderBarChart(hostId,dataObj,fmt){
+  const host=document.getElementById(hostId); if(!host) return;
+  const entries=Object.entries(dataObj).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const max=Math.max(1,...entries.map(x=>x[1]));
+  host.innerHTML=entries.length?entries.map(([k,v])=>`<div class="bar-row"><div>${esc(k)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(3,v/max*100)}%"></div></div><div>${esc(fmt(v))}</div></div>`).join(''):'<div class="empty">No data.</div>';
+}
+
+// ---------- Manpower Analysis ----------
+function fillManpowerFilters(){
+  const desigs=new Set(),nats=new Set();
+  employeesRaw().forEach(e=>{if(e.actualDesignation||e.designation)desigs.add(e.actualDesignation||e.designation);if(e.nationality)nats.add(e.nationality)});
+  subEmployeesRaw().forEach(e=>{if(e.designation)desigs.add(e.designation);if(e.nationality)nats.add(e.nationality)});
+  mpDesignation.innerHTML='<option value="">All Designations</option>'+[...desigs].sort().map(d=>`<option>${esc(d)}</option>`).join('');
+  mpNationality.innerHTML='<option value="">All Nationalities</option>'+[...nats].sort().map(d=>`<option>${esc(d)}</option>`).join('');
+}
+function manpowerRows(){
+  const onSite=activeMovesNow(); const onLeaveMap=onLeaveTodayMap();
+  const bySiteKey=new Map(); onSite.forEach(m=>bySiteKey.set(norm(m.employeeCode),m));
+  const company=employeesRaw().filter(e=>norm(e.employeeStatus||e.status||'Active')!=='inactive').map(e=>{
+    const code=e.employeeCode||e.empCode||'', mv=bySiteKey.get(norm(code)), lv=onLeaveMap.get(norm(code));
+    return {code,name:e.employeeName||e.name||'',designation:e.actualDesignation||e.designation||'',nationality:e.nationality||'',source:'Company',client:mv?clientName(mv.clientId):'',project:mv?projectName(mv.projectId):'',site:mv?mv.location||'':'',status:lv?'On Leave':mv?'Active (On Site)':'Idle'};
+  });
+  const sub=subEmployeesRaw().filter(e=>norm(e.status||'Active')!=='inactive').map(e=>{
+    const code=e.employeeCode||e.code||'', mv=bySiteKey.get(norm(code)), lv=onLeaveMap.get(norm(code));
+    return {code,name:e.employeeName||e.name||'',designation:e.designation||'',nationality:e.nationality||'',source:'Sub Contractor',client:mv?clientName(mv.clientId):'',project:mv?projectName(mv.projectId):'',site:mv?mv.location||'':'',status:lv?'On Leave':mv?'Active (On Site)':'Idle'};
+  });
+  return [...company,...sub];
+}
+function renderManpower(){
+  const rows=manpowerRows().filter(r=>
+    (!mpDesignation.value||r.designation===mpDesignation.value) &&
+    (!mpNationality.value||r.nationality===mpNationality.value) &&
+    (!mpSource.value||r.source===mpSource.value) &&
+    (!mpStatus.value||r.status===mpStatus.value) &&
+    (!mpSearch.value||norm([r.code,r.name,r.client,r.project].join(' ')).includes(norm(mpSearch.value)))
+  );
+  mpRows.innerHTML=rows.length?rows.map(r=>`<tr><td><b>${esc(r.code)}</b></td><td><a href="index.html?empProfile=${encodeURIComponent(r.code)}" target="_blank">${esc(r.name)}</a></td><td>${esc(r.designation||'-')}</td><td>${esc(r.nationality||'-')}</td><td>${esc(r.source)}</td><td>${esc(r.client||'-')}</td><td>${esc(r.project||'-')}</td><td>${esc(r.site||'-')}</td><td>${esc(r.status)}</td></tr>`).join(''):'<tr><td colspan="9" class="empty">No matching manpower.</td></tr>';
+}
+
+// ---------- Cost Analysis ----------
+function renderCost(ym){
+  const finalized=isFinalized(ym);
+  costMonthLabel.textContent=ym; costSnapFlag.textContent=finalized?'🔒 Finalized Snapshot':'Provisional (live)'; costSnapFlag.className='snap-flag '+(finalized?'snap-final':'snap-prov');
+  const hist=payHistoryAll().find(h=>h.month===ym);
+  const moves=movesAll();
+  const map={};
+  if(finalized&&hist){
+    hist.entries.forEach(x=>{
+      const key=(x.clientSnapshot||'-')+' | '+(x.projectSnapshot||'-')+' | '+(x.siteSnapshot||'-');
+      if(!map[key])map[key]={client:x.clientSnapshot||'Unassigned',project:x.projectSnapshot||'-',site:x.siteSnapshot||'-',emp:0,basic:0,allow:0,ot:0,sub:0};
+      map[key].emp++; map[key].basic+=Number(x.normalAmt||0); map[key].allow+=Number(x.allowance||0); map[key].ot+=Number(x.notAmt||0)+Number(x.hotAmt||0);
+    });
+  }
+  moves.filter(m=>m.source==='Sub Contractor').forEach(m=>{
+    const od=overlapDays(m.mobDate,m.demobDate,ym); if(od<=0) return;
+    const key=clientName(m.clientId)+' | '+projectName(m.projectId)+' | '+(m.location||'-');
+    if(!map[key])map[key]={client:clientName(m.clientId),project:projectName(m.projectId),site:m.location||'-',emp:0,basic:0,allow:0,ot:0,sub:0};
+    map[key].sub+=Number(m.subRate||0)*od;
+  });
+  const rows=Object.values(map);
+  const totalBasic=rows.reduce((a,x)=>a+x.basic,0),totalAllow=rows.reduce((a,x)=>a+x.allow,0),totalOt=rows.reduce((a,x)=>a+x.ot,0),totalSub=rows.reduce((a,x)=>a+x.sub,0);
+  costBasic.textContent=money(totalBasic); costAllow.textContent=money(totalAllow); costOt.textContent=money(totalOt); costTotal.textContent=money(totalBasic+totalAllow+totalOt+totalSub);
+  costRows.innerHTML=rows.length?rows.map(r=>{const total=r.basic+r.allow+r.ot+r.sub;return `<tr><td>${esc(r.client)}</td><td>${esc(r.project)}</td><td>${esc(r.site)}</td><td>${r.emp||'-'}</td><td>${money(r.basic)}</td><td>${money(r.allow)}</td><td>${money(r.ot)}</td><td>${money(r.sub)}</td><td><b>${money(total)}</b></td><td>${r.emp?money(total/r.emp):'-'}</td></tr>`}).join(''):'<tr><td colspan="10" class="empty">No cost data for this month yet — finalize Payroll to see figures here.</td></tr>';
+}
+
+// ---------- Leave Movement ----------
+function bucketReturn(days){ if(days<0) return 'Overdue'; if(days<=7) return '≤7d'; if(days<=15) return '≤15d'; if(days<=30) return '≤30d'; return '>30d'; }
+function renderLeave(){
+  const leaves=leavesAll().filter(l=>['Approved','On Leave'].includes(String(l.status||'')));
+  const onNow=leaves.filter(l=>l.startDate<=today()&&today()<=l.endDate);
+  const overdue=leaves.filter(l=>l.endDate<today());
+  const returning7=leaves.filter(l=>{const d=daysBetween(today(),l.endDate);return d>=0&&d<=7});
+  const returning15=leaves.filter(l=>{const d=daysBetween(today(),l.endDate);return d>=0&&d<=15});
+  const returning30=leaves.filter(l=>{const d=daysBetween(today(),l.endDate);return d>=0&&d<=30});
+  const summary=tsLeaveSummaryAll();
+  const unpaidTotal=summary.reduce((a,x)=>a+Number(x.unpaidDays||0),0), medicalTotal=summary.reduce((a,x)=>a+Number(x.medicalDays||0),0);
+  leaveKpis.innerHTML=[
+    ['On Leave Now',onNow.length],['Overdue Return',overdue.length],['Returning ≤7d',returning7.length],['Returning ≤15d',returning15.length],['Returning ≤30d',returning30.length],['Unpaid Leave Days (Total)',unpaidTotal],['Medical Leave Days (Total)',medicalTotal]
+  ].map(([l,v])=>`<div class="kpi"><small>${esc(l)}</small><b>${esc(String(v))}</b></div>`).join('');
+  leaveRows.innerHTML=leaves.length?leaves.sort((a,b)=>String(b.startDate).localeCompare(a.startDate)).slice(0,300).map(l=>{
+    const days=daysBetween(today(),l.endDate);
+    return `<tr><td>${esc(l.empCode||'-')}</td><td>${esc(l.empName||'-')}</td><td>${esc(l.leaveType||'-')}</td><td>${esc(l.startDate)}</td><td>${esc(l.endDate)}</td><td>${l.totalDays||'-'}</td><td>${esc(l.status)}</td><td>${bucketReturn(days)}</td></tr>`;
+  }).join(''):'<tr><td colspan="8" class="empty">No leave records.</td></tr>';
+  const byMonth={}; summary.forEach(x=>{byMonth[x.month]=byMonth[x.month]||{u:0,m:0};byMonth[x.month].u+=Number(x.unpaidDays||0);byMonth[x.month].m+=Number(x.medicalDays||0)});
+  const months=Object.keys(byMonth).sort();
+  chartLeaveTrend.innerHTML=months.length?months.map(m=>`<div class="bar-row"><div>${esc(m)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,(byMonth[m].u+byMonth[m].m)*4)}%"></div></div><div>Unpaid ${byMonth[m].u} · Medical ${byMonth[m].m}</div></div>`).join(''):'<div class="empty">No timesheet-derived leave history yet.</div>';
+}
+
+// ---------- Utilization ----------
+function renderUtil(ym){
+  utilMonthLabel.textContent=ym;
+  const b=ymBounds(ym);
+  const moves=movesAll().filter(m=>m.source==='Company');
+  const companyEmpCodes=new Set(employeesRaw().filter(e=>norm(e.employeeStatus||e.status||'Active')!=='inactive').map(e=>norm(e.employeeCode||e.empCode)));
+  const byKey={};
+  moves.forEach(m=>{
+    const od=overlapDays(m.mobDate,m.demobDate,ym); if(od<=0) return;
+    const empKey=norm(m.employeeCode);
+    if(!byKey[empKey])byKey[empKey]={code:m.employeeCode,onSiteDays:0,client:clientName(m.clientId),project:projectName(m.projectId)};
+    byKey[empKey].onSiteDays+=od;
+  });
+  const eligibleDays=b.days;
+  const rowsByProj={};
+  Object.values(byKey).forEach(r=>{
+    const key=r.client+' | '+r.project;
+    if(!rowsByProj[key])rowsByProj[key]={client:r.client,project:r.project,emp:0,onSite:0,eligible:0};
+    rowsByProj[key].emp++; rowsByProj[key].onSite+=r.onSiteDays; rowsByProj[key].eligible+=eligibleDays;
+  });
+  const rows=Object.values(rowsByProj);
+  utilRows.innerHTML=rows.length?rows.map(r=>`<tr><td>${esc(r.client)}</td><td>${esc(r.project)}</td><td>${r.emp}</td><td>${r.onSite}</td><td>${r.eligible}</td><td><b>${r.eligible?Math.round(r.onSite/r.eligible*100):0}%</b></td></tr>`).join(''):'<tr><td colspan="6" class="empty">No on-site activity this month.</td></tr>';
+  const totalOnSite=Object.values(byKey).reduce((a,x)=>a+x.onSiteDays,0);
+  const totalEligible=companyEmpCodes.size*eligibleDays;
+  utilOverall.textContent=(totalEligible?Math.round(totalOnSite/totalEligible*100):0)+'%';
+  utilIdleDays.textContent=Math.max(0,totalEligible-totalOnSite);
+  utilContIdle.textContent=[...companyEmpCodes].filter(c=>!byKey[c]).length;
+  utilSites.textContent=new Set(Object.values(byKey).map(r=>r.project)).size;
+}
+
+// ---------- Compliance ----------
+function complianceBuckets(){
+  const out=[];
+  const bucketOf=days=>days<0?'Expired':days<=30?'≤30':days<=60?'31-60':days<=90?'61-90':'>90';
+  employeesRaw().forEach(e=>{
+    if(norm(e.employeeStatus||e.status||'Active')==='inactive') return;
+    (e.documents||[]).forEach(d=>{
+      if(!d.expiryDate) return;
+      const label=String(d.type||'Document');
+      if(!/passport|visa|emirates|eid|identity|labour|labor|work permit|insurance/i.test(label)) return;
+      const days=daysBetween(today(),d.expiryDate);
+      out.push({code:e.employeeCode||e.empCode,name:e.employeeName||e.name,doc:label,expiry:d.expiryDate,days,bucket:bucketOf(days)});
+    });
+  });
+  cicpaAll().forEach(r=>{
+    if(!r.expiryDate) return;
+    const days=daysBetween(today(),r.expiryDate);
+    out.push({code:r.empCode,name:r.empName,doc:'CICPA',expiry:r.expiryDate,days,bucket:bucketOf(days)});
+  });
+  return out;
+}
+function renderCompliance(){
+  const rows=complianceBuckets().sort((a,b)=>a.days-b.days);
+  const cls=b=>b==='Expired'?'bucket-expired':b==='≤30'?'bucket-30':b==='31-60'?'bucket-60':b==='61-90'?'bucket-90':'bucket-ok';
+  compRows.innerHTML=rows.length?rows.slice(0,400).map(r=>`<tr><td>${esc(r.code)} - ${esc(r.name)}</td><td>${esc(r.doc)}</td><td>${esc(r.expiry)}</td><td>${r.days}</td><td class="${cls(r.bucket)}">${esc(r.bucket)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No documents with expiry dates on file.</td></tr>';
+
+  const company=activeCompanyEmployees();
+  const cicpa=cicpaAll();
+  const covered=new Set(cicpa.filter(r=>r.expiryDate>=today()).map(r=>norm(r.empCode)));
+  cicpaEligible.textContent=company.length;
+  cicpaCovered.textContent=company.filter(e=>covered.has(norm(e.employeeCode))).length;
+  cicpaMissing.textContent=company.length-company.filter(e=>covered.has(norm(e.employeeCode))).length;
+  cicpaRows.innerHTML=company.map(e=>{
+    const code=norm(e.employeeCode);
+    const rec=cicpa.filter(r=>norm(r.empCode)===code).sort((a,b)=>String(b.expiryDate).localeCompare(a.expiryDate))[0];
+    const status=!rec?'Missing':rec.expiryDate<today()?'Expired':'Covered';
+    return `<tr><td>${esc(e.employeeCode)}</td><td>${esc(e.employeeName||e.name)}</td><td class="${status==='Covered'?'bucket-ok':status==='Expired'?'bucket-expired':'bucket-30'}">${status}</td><td>${esc(rec?.expiryDate||'-')}</td></tr>`;
+  }).join('')||'<tr><td colspan="4" class="empty">No active company employees.</td></tr>';
+}
+
+// ---------- Trends ----------
+function last12Months(){const out=[];let ym=today().slice(0,7);for(let i=11;i>=0;i--)out.push(addMonthsYm(ym,-i));return out}
+function renderTrends(){
+  const months=last12Months();
+  const moves=movesAll();
+  const manpowerByMonth={}; months.forEach(m=>{manpowerByMonth[m]=new Set(moves.filter(mv=>overlapDays(mv.mobDate,mv.demobDate,m)>0).map(mv=>norm(mv.employeeCode))).size});
+  renderBarChart('chartManpowerTrend',manpowerByMonth,v=>String(v));
+  const emps=employeesRaw();
+  const hiresByMonth={}, exitsByMonth={};
+  months.forEach(m=>{hiresByMonth[m]=0;exitsByMonth[m]=0});
+  emps.forEach(e=>{
+    const jm=(e.joiningDate||'').slice(0,7); if(hiresByMonth[jm]!==undefined) hiresByMonth[jm]++;
+    (e.statusHistory||[]).forEach(h=>{ if(h.status==='Inactive'){ const im=(h.effectiveFrom||'').slice(0,7); if(exitsByMonth[im]!==undefined) exitsByMonth[im]++; } });
+  });
+  renderBarChart('chartHiresExits',Object.fromEntries(months.map(m=>[m,hiresByMonth[m]])),v=>v+' hires');
+  document.getElementById('chartHiresExits').innerHTML+='<div style="margin-top:8px;font-size:11px;color:#8fa1b3">Exits by month:</div>'+months.map(m=>`<div class="bar-row"><div>${m}</div><div class="bar-track"><div class="bar-fill" style="background:#c2453a;width:${Math.min(100,exitsByMonth[m]*10)}%"></div></div><div>${exitsByMonth[m]}</div></div>`).join('');
+  const mobByMonth={},demobByMonth={}; months.forEach(m=>{mobByMonth[m]=moves.filter(mv=>(mv.mobDate||'').startsWith(m)).length;demobByMonth[m]=moves.filter(mv=>(mv.demobDate||'').startsWith(m)).length});
+  renderBarChart('chartMobDemob',mobByMonth,v=>v+' mobilized');
+  document.getElementById('chartMobDemob').innerHTML+='<div style="margin-top:8px;font-size:11px;color:#8fa1b3">Demobilized by month:</div>'+months.map(m=>`<div class="bar-row"><div>${m}</div><div class="bar-track"><div class="bar-fill" style="background:#c99a12;width:${Math.min(100,demobByMonth[m]*10)}%"></div></div><div>${demobByMonth[m]}</div></div>`).join('');
+  const hist=payHistoryAll();
+  const payByMonth={},otByMonth={};
+  months.forEach(m=>{const h=hist.find(x=>x.month===m);payByMonth[m]=h?h.entries.reduce((a,x)=>a+Number(x.gross||0),0):0;otByMonth[m]=h?h.entries.reduce((a,x)=>a+Number(x.notAmt||0)+Number(x.hotAmt||0),0):0});
+  renderBarChart('chartPayrollTrend',payByMonth,v=>money(v));
+  renderBarChart('chartOtTrend',otByMonth,v=>money(v));
+  const subByMonth={}; months.forEach(m=>{subByMonth[m]=moves.filter(mv=>mv.source==='Sub Contractor').reduce((a,mv)=>a+Number(mv.subRate||0)*overlapDays(mv.mobDate,mv.demobDate,m),0)});
+  renderBarChart('chartSubTrend',subByMonth,v=>money(v));
+}
+
+// ---------- Report Builder ----------
+const RB_COLUMNS=[['code','Employee Code'],['name','Employee Name'],['designation','Designation'],['nationality','Nationality'],['source','Source'],['client','Client'],['project','Project'],['site','Site'],['status','Status']];
+let RB_LAST_ROWS=[];
+function fillBuilderFilters(){
+  rbClient.innerHTML='<option value="">All</option>'+clientsAll().map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  rbProject.innerHTML='<option value="">All</option>'+projectsAll().map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  rbSub.innerHTML='<option value="">All</option>'+subsAll().map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  rbColumns.innerHTML=RB_COLUMNS.map(([k,l])=>`<label><input type="checkbox" value="${k}" checked>${esc(l)}</label>`).join('');
+}
+function runReportBuilder(){
+  let rows=manpowerRows();
+  if(rbClient.value) rows=rows.filter(r=>r.client===clientName(rbClient.value));
+  if(rbProject.value) rows=rows.filter(r=>r.project===projectName(rbProject.value));
+  if(rbDesignation.value) rows=rows.filter(r=>norm(r.designation).includes(norm(rbDesignation.value)));
+  if(rbStatus.value) rows=rows.filter(r=>r.status===rbStatus.value);
+  if(rbEmpCode.value) rows=rows.filter(r=>norm(r.code).includes(norm(rbEmpCode.value)));
+  RB_LAST_ROWS=rows;
+  const cols=[...document.querySelectorAll('#rbColumns input:checked')].map(c=>c.value);
+  rbHead.innerHTML='<tr>'+cols.map(c=>`<th>${esc(RB_COLUMNS.find(x=>x[0]===c)[1])}</th>`).join('')+'</tr>';
+  rbRows.innerHTML=rows.length?rows.map(r=>'<tr>'+cols.map(c=>`<td>${esc(r[c]||'-')}</td>`).join('')+'</tr>').join(''):`<tr><td colspan="${cols.length}" class="empty">No rows match this filter.</td></tr>`;
+}
+function exportBuilderCSV(){
+  if(!RB_LAST_ROWS.length) return alert('Generate the report first.');
+  const cols=[...document.querySelectorAll('#rbColumns input:checked')].map(c=>c.value);
+  const heads=cols.map(c=>RB_COLUMNS.find(x=>x[0]===c)[1]);
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const csv=[heads.map(q).join(','),...RB_LAST_ROWS.map(r=>cols.map(c=>q(r[c])).join(','))].join('\r\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='MIS_Custom_Report.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ---------- Master render ----------
+function renderEverything(){
+  const ym=reportYm.value||today().slice(0,7);
+  snapFlag.textContent=isFinalized(ym)?'🔒 Finalized Snapshot':'Provisional (Live)';
+  renderExec(ym); renderManpower(); renderCost(ym); renderLeave(); renderUtil(ym); renderCompliance(); renderTrends(); runReportBuilder();
+}
+renderTabs();
+fillManpowerFilters(); fillBuilderFilters();
+reportYm.value=today().slice(0,7);
+renderEverything();
+</script>
+<script src="erp-shell.js"></script>
+</body></html>

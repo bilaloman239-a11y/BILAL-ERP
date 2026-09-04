@@ -128,8 +128,9 @@ body{padding-top:50px}
 <script src="erp-validation.js"></script>
 <script src="erp-payroll-workflow.js"></script>
 <script src="erp-action-center.js"></script>
+<link rel="stylesheet" href="erp-shell.css">
 </head>
-<body>
+<body data-cm-page="dashboard">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
@@ -143,6 +144,7 @@ body{padding-top:50px}
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
 <a href="action-center.html">Action Center</a>
+<a href="mis.html">Management Reports / MIS</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -165,6 +167,7 @@ body{padding-top:50px}
  <a class="nav" href="audit.html"><i>📋</i>Audit Trail</a>
  <a class="nav" href="validation.html"><i>🧩</i>Validation & Controls</a>
  <a class="nav" href="action-center.html"><i>🔔</i>Action Center</a>
+ <a class="nav" href="mis.html"><i>📈</i>Management Reports / MIS</a>
  <div class="side-foot">Management Dashboard<br><b style="color:white">Live Browser Data</b><br>Employee • Project • Site • Timesheet • Payroll</div>
 </aside>
 <main class="main">
@@ -220,6 +223,7 @@ body{padding-top:50px}
   <a class="module" href="audit.html"><div class="micon">📋</div><b>Audit Trail</b><small>Who changed what, old & new values</small></a>
   <a class="module" href="validation.html"><div class="micon">🧩</div><b>Validation & Controls</b><small>Block / Warning / Allow rules for every module</small></a>
   <a class="module" href="action-center.html"><div class="micon">🔔</div><b>Action Center</b><small>Every open item across the ERP, in one place</small></a>
+  <a class="module" href="mis.html"><div class="micon">📈</div><b>Management Reports / MIS</b><small>Manpower, cost, compliance and trends in one screen</small></a>
  </div></div></section>
 </main></div>
 <script>
@@ -409,4 +413,5 @@ document.querySelectorAll('.kpi').forEach(k=>k.addEventListener('click',()=>show
 
 
 
+<script src="erp-shell.js"></script>
 </body></html>

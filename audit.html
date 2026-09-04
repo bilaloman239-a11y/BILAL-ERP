@@ -33,7 +33,8 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
-</head><body>
+<link rel="stylesheet" href="erp-shell.css">
+</head><body data-cm-page="audit">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
 <details><summary>☰ ERP Portals</summary><div class="links">
 <a href="dashboard.html">Dashboard</a>
@@ -48,6 +49,7 @@ body{padding-top:50px}
 <a class="cicpa" href="cicpa.html">CICPA Management</a>
 <a href="validation.html">Validation & Controls</a>
 <a href="action-center.html">Action Center</a>
+<a href="mis.html">Management Reports / MIS</a>
 <a href="audit.html">Audit Trail</a>
 </div></details></div></div>
 
@@ -55,4 +57,5 @@ body{padding-top:50px}
 <script>const KEY='cm_erp_audit_trail_v1';function get(){try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}function opts(){const a=get(),ms=[...new Set(a.map(x=>x.module).filter(Boolean))].sort(),us=[...new Set(a.map(x=>x.user).filter(Boolean))].sort();mod.innerHTML='<option value="">All Modules</option>'+ms.map(x=>`<option>${esc(x)}</option>`).join('');usr.innerHTML='<option value="">All Users</option>'+us.map(x=>`<option>${esc(x)}</option>`).join('')}function filtered(){const x=q.value.trim().toLowerCase(),m=mod.value,u=usr.value,d=date.value;return get().filter(a=>(!m||a.module===m)&&(!u||a.user===u)&&(!d||String(a.at||'').slice(0,10)===d)&&(!x||[a.user,a.module,a.storageKey,a.action,...(a.changes||[]).flatMap(c=>[c.field,c.old,c.new])].join(' ').toLowerCase().includes(x)))}function render(){const a=get(),today=new Date().toISOString().slice(0,10);sTotal.textContent=a.length;sToday.textContent=a.filter(x=>String(x.at||'').slice(0,10)===today).length;sUsers.textContent=new Set(a.map(x=>x.user).filter(Boolean)).size;sModules.textContent=new Set(a.map(x=>x.module).filter(Boolean)).size;const f=filtered();count.textContent=f.length+' record(s)';rows.innerHTML=f.length?f.slice(0,1200).map(x=>`<tr><td>${x.at?new Date(x.at).toLocaleString():'-'}</td><td><b>${esc(x.user||'-')}</b></td><td><span class="pill">${esc(x.module||'-')}</span></td><td>${esc(x.storageKey||'-')}</td><td>${esc(x.action||'Updated')}</td><td class="changes">${(x.changes||[]).map(c=>`<div class="change"><b>${esc(c.field||'value')}</b><br><span class="old">${esc(c.old||'-')}</span> → <span class="new">${esc(c.new||'-')}</span></div>`).join('')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">No audit records yet. New ERP changes will be recorded automatically.</td></tr>'}function clearFilters(){q.value='';mod.value='';usr.value='';date.value='';render()}opts();render();</script>
 
 
+<script src="erp-shell.js"></script>
 </body></html>
