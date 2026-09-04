@@ -150,6 +150,17 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
+
+<style id="client-display-fix">
+/* Client page uses the shared ERP shell only; remove duplicate inner sidebar. */
+body[data-cm-page="client"] .app{display:block!important;min-height:calc(100vh - 68px)}
+body[data-cm-page="client"] .content{width:100%!important;max-width:none!important;padding:20px 22px!important;overflow:visible!important}
+.client-local-tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px;padding:8px;background:#fff;border:1px solid #dbe3ee;border-radius:12px;box-shadow:0 3px 12px rgba(36,91,149,.05)}
+.client-local-tabs .client-tab{width:auto!important;min-width:120px!important;margin:0!important;padding:10px 14px!important;border:1px solid #dbe3ee!important;border-radius:9px!important;background:#f7fafd!important;color:#29455d!important;text-align:center!important;font-weight:700!important}
+.client-local-tabs .client-tab:hover{background:#eef5fb!important}
+.client-local-tabs .client-tab.active,.client-local-tabs .client-tab.cm-active{background:#1c5c94!important;color:#fff!important;border-color:#1c5c94!important}
+@media(max-width:720px){.client-local-tabs{overflow-x:auto;flex-wrap:nowrap}.client-local-tabs .client-tab{flex:0 0 auto}.content{padding:14px!important}}
+</style>
 <link rel="stylesheet" href="erp-shell.css">
 </head>
 <body data-cm-page="client">
@@ -192,24 +203,12 @@ body{padding-top:50px}
 <div class="cm-top-portal-strip"><div class="cm-portal-nav"><a href="index.html" class="">👥 Employee</a><a href="subcontractor.html" class="">🏗️ Sub Contractor</a><a href="client.html" class="cm-current">🏢 Client</a><a href="timesheet.html" class="">🕒 Timesheet</a><a href="payroll.html" class="">💵 Payroll</a></div></div>
 
 <div class="app">
-<aside class="sidebar">
-  <div class="cm-erp-sidebar-title">Launchpad</div>
-  <button class="nav-btn cm-erp-link cm-active active" data-view="dashboard"><span class="cm-erp-icon">⌂</span><span class="cm-erp-label">Dashboard</span></button>
-
-  <div class="cm-erp-sidebar-title">Sales & Projects</div>
-  <button class="nav-btn cm-erp-link" data-view="clients"><span class="cm-erp-icon">🏢</span><span class="cm-erp-label">Clients</span></button>
-  <button class="nav-btn cm-erp-link" data-view="projects"><span class="cm-erp-icon">📋</span><span class="cm-erp-label">Projects</span></button>
-  <button class="nav-btn cm-erp-link" type="button" onclick="location.href='site.html'"><span class="cm-erp-icon">📍</span><span class="cm-erp-label">Site Management</span></button>
-
-  <div class="cm-erp-sidebar-title">Human Capital</div>
-  <button class="nav-btn cm-erp-link" type="button" onclick="location.href='index.html'"><span class="cm-erp-icon">👥</span><span class="cm-erp-label">Employee Management</span></button>
-  <button class="nav-btn cm-erp-link" type="button" onclick="location.href='payroll.html'"><span class="cm-erp-icon">💵</span><span class="cm-erp-label">Payroll / Salary</span></button>
-
-  <div class="cm-erp-sidebar-title">Vendor Management</div>
-  <button class="nav-btn cm-erp-link" type="button" onclick="location.href='subcontractor.html'"><span class="cm-erp-icon">🏗</span><span class="cm-erp-label">Sub Contractors</span></button>
-<button class="nav-btn cm-erp-link" type="button" onclick="location.href='timesheet.html'"><span class="cm-erp-icon">🕒</span><span class="cm-erp-label">Timesheet Management</span></button></aside>
-
 <main class="content">
+  <div class="client-local-tabs" aria-label="Client Management navigation">
+    <button class="nav-btn client-tab active" data-view="dashboard">⌂ Dashboard</button>
+    <button class="nav-btn client-tab" data-view="clients">🏢 Clients</button>
+    <button class="nav-btn client-tab" data-view="projects">📋 Projects</button>
+  </div>
 <section id="dashboard" class="view active">
   <div class="page-head"><h2>Dashboard</h2></div>
   <div class="cards">
