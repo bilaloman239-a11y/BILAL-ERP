@@ -234,6 +234,75 @@ body{padding-top:50px}
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
+
+<!-- ===== DISPLAY FIX: remove duplicate internal sidebar, keep module tabs ===== -->
+<style id="cm-display-fix-v1">
+/* The shared ERP shell already provides the main left sidebar. */
+body[data-cm-page] .app > aside.sidebar{
+  display:none !important;
+}
+body[data-cm-page] .app{
+  display:block !important;
+  min-width:0 !important;
+}
+body[data-cm-page] .content{
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  padding:20px 22px 28px !important;
+  overflow:visible !important;
+}
+.cm-module-tabs{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  padding:10px 0 16px;
+  margin:0 0 4px;
+}
+.cm-module-tabs .nav-btn{
+  width:auto !important;
+  min-width:0 !important;
+  min-height:38px !important;
+  padding:9px 14px !important;
+  margin:0 !important;
+  border:1px solid #dbe4ef !important;
+  border-radius:9px !important;
+  background:#fff !important;
+  color:#29455d !important;
+  display:inline-flex !important;
+  align-items:center;
+  gap:7px;
+  font-size:12.5px !important;
+  font-weight:800 !important;
+  white-space:nowrap;
+  box-shadow:0 1px 3px #0000000a;
+}
+.cm-module-tabs .nav-btn:hover{
+  background:#eef4fa !important;
+}
+.cm-module-tabs .nav-btn.active{
+  background:#1c5c94 !important;
+  border-color:#1c5c94 !important;
+  color:#fff !important;
+}
+.cm-module-tabs .nav-btn .ico,
+.cm-module-tabs .nav-btn .cm-erp-icon{
+  width:auto !important;
+  min-width:0 !important;
+}
+@media(max-width:900px){
+  body[data-cm-page] .content{padding:14px !important}
+  .cm-module-tabs{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    scrollbar-width:thin;
+    padding-bottom:12px;
+  }
+  .cm-module-tabs .nav-btn{flex:0 0 auto !important}
+}
+</style>
+
 </head>
 <body data-cm-page="subcontractor">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -1246,5 +1315,27 @@ renderDashboard(); renderList(); renderMasters(); toggleConditional();
 
 
 <script src="erp-shell.js"></script>
+
+<script id="cm-subcontractor-display-fix">
+document.addEventListener('DOMContentLoaded', function(){
+  const app = document.querySelector('.app');
+  const side = app && app.querySelector(':scope > aside.sidebar');
+  const content = app && app.querySelector(':scope > main.content');
+  if(!side || !content) return;
+
+  const keepViews = new Set(['dashboard','employees','subcontractors','docmaster','techmaster']);
+  const tabs = document.createElement('div');
+  tabs.className = 'cm-module-tabs';
+  tabs.setAttribute('aria-label','Sub Contractor module navigation');
+
+  side.querySelectorAll('button.nav-btn[data-view]').forEach(function(btn){
+    if(keepViews.has(btn.getAttribute('data-view'))) tabs.appendChild(btn);
+  });
+
+  content.insertBefore(tabs, content.firstChild);
+  side.remove();
+});
+</script>
+
 </body>
 </html>
