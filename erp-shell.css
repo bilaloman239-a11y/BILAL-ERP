@@ -103,6 +103,15 @@ body{padding-top:var(--cmsh-header-h)!important;padding-left:var(--cmsh-sidebar-
 .cmsh-anchor{position:relative}
 
 .cmsh-overlay{position:fixed;inset:0;background:#0006;z-index:99996;display:none}
+
+/* ---------------- Deep-link record highlight (used by erp-shell.js) ---------------- */
+@keyframes cmshFlash{
+  0%{background:#fff3c4;box-shadow:0 0 0 2px #f5c518}
+  70%{background:#fff3c4;box-shadow:0 0 0 2px #f5c518}
+  100%{background:transparent;box-shadow:0 0 0 0 transparent}
+}
+.cmsh-hit{animation:cmshFlash 2.6s ease-out 1}
+tr.cmsh-hit td:first-child{border-left:3px solid #f59e0b}
 @media(max-width:900px){
   .cmsh-sidebar{transform:translateX(-100%)}
   body.cmsh-nav-open .cmsh-sidebar{transform:translateX(0)}

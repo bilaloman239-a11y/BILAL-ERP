@@ -233,6 +233,7 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
+<script src="erp-security.js"></script><script src="erp-masters.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
 
 <!-- ===== DISPLAY FIX: remove duplicate internal sidebar, keep module tabs ===== -->
@@ -303,6 +304,8 @@ body[data-cm-page] .content{
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="erp-import-staging.js"></script>
 </head>
 <body data-cm-page="subcontractor">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -388,7 +391,12 @@ body[data-cm-page] .content{
     <section id="subcontractors" class="view">
       <div class="page-head">
         <h2>Sub Contractors</h2>
-        <button class="btn btn-primary" onclick="openAddForm()">+ Add Sub Contractor</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-light" type="button" id="scImportSampleBtn">Download Import Sample</button>
+<button class="btn btn-light" type="button" id="scImportBtn">Import Excel / CSV</button>
+<input id="scImportFile" type="file" accept=".xlsx,.xls,.csv" style="display:none">
+<button class="btn btn-primary" onclick="openAddForm()">+ Add Sub Contractor</button>
+</div>
       </div>
       <div class="toolbar">
         <input id="searchBox" class="search" placeholder="Search name, trade license, VAT/TRN, emirate..." oninput="renderList()" />
@@ -1313,6 +1321,44 @@ renderDashboard(); renderList(); renderMasters(); toggleConditional();
 <a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>
 
 
+
+
+<script id="cmis-subcontractor-adapter">
+(function(){
+ if(!window.CMIS)return;
+ const gv=(o,...n)=>CMIS.getHeader(o,...n),n=v=>String(v??'').trim(),low=v=>n(v).toLowerCase();
+ CMIS.registerAdapter('subcontractor',{
+  title:'Sub Contractor Import Staging',
+  columns:[{key:'name',label:'Sub Contractor'},{key:'trade',label:'Trade License #'},{key:'expiry',label:'TL Expiry'},{key:'trn',label:'VAT / TRN'},{key:'emirate',label:'Emirate'},{key:'status',label:'Status'}],
+  prepare:async(file,ctx,h)=>{
+   const rows=await h.readObjects(file),tradeMap=new Map(subcontractors.map(x=>[low(x.tradeNo),x]).filter(x=>x[0])),trnMap=new Map(subcontractors.map(x=>[low(x.vatNo),x]).filter(x=>x[0])),batchTrade=new Set(),batchTrn=new Set();
+   return rows.map((r,i)=>{
+    const rec={id:uid(),name:n(gv(r,'Sub Contractor','Sub Contractor Name','Company Name','Name')),status:n(gv(r,'Status'))||'Active',tradeNo:n(gv(r,'Trade License #','Trade License No','Trade License Number')),tradeExpiry:n(gv(r,'Trade License Expiry','TL Expiry','Trade Expiry')),vatRegistered:n(gv(r,'VAT Registered','VAT Status'))||'Unregistered',vatNo:n(gv(r,'VAT / TRN','TRN','VAT No')),icvYes:n(gv(r,'ICV Available','ICV'))||'No',icvScore:n(gv(r,'ICV Score')),icvExpiry:n(gv(r,'ICV Expiry')),address:n(gv(r,'Address')),emirate:n(gv(r,'Emirate','State')),remarks:n(gv(r,'Remarks','Remark')),documents:[],updatedAt:new Date().toISOString()};
+    if(rec.vatNo)rec.vatRegistered='Registered';
+    const tr=low(rec.tradeNo),vr=low(rec.vatNo),ex=tradeMap.get(tr);
+    let status='New',issues=[],action='Import',actions=['Import','Skip'];
+    if(!rec.name||!rec.tradeNo||!rec.tradeExpiry){status='Error';issues.push('Sub Contractor Name, Trade License # and Trade License Expiry are required.');action='Skip';actions=['Skip']}
+    else if((tr&&batchTrade.has(tr))||(vr&&batchTrn.has(vr))){status='Duplicate';issues.push('Duplicate Trade License / TRN appears in this upload batch.');action='Skip';actions=['Skip']}
+    else if(ex){status='Matched';issues.push('Trade License matched an existing Sub Contractor.');action='Update Existing';actions=['Update Existing','Skip'];rec.id=ex.id}
+    else if(vr&&trnMap.has(vr)){status='Duplicate';issues.push('TRN already belongs to another Sub Contractor.');action='Skip';actions=['Skip']}
+    else if(rec.vatNo&&!/^\d{15}$/.test(rec.vatNo.replace(/\D/g,''))){status='Warning';issues.push('TRN is not 15 digits. Confirm if you still want to import.')}
+    if(tr)batchTrade.add(tr);if(vr)batchTrn.add(vr);
+    return {rowNo:r.__rowNo||i+2,status,issues,action,actions,normalized:rec,display:{name:rec.name,trade:rec.tradeNo,expiry:rec.tradeExpiry,trn:rec.vatNo,emirate:rec.emirate,status:rec.status}};
+   });
+  },
+  commit:async(rows,info)=>{
+   let added=0,updated=0;rows.forEach(r=>{const x=r.normalized;if(r.action==='Update Existing'){const ix=subcontractors.findIndex(s=>s.id===x.id);if(ix>=0){subcontractors[ix]={...subcontractors[ix],...x,id:subcontractors[ix].id,documents:subcontractors[ix].documents||[]};updated++}}else{subcontractors.push(x);added++}});
+   saveSubs();renderDashboard();renderList();
+   return {added,updated,message:`Sub Contractor import completed. New: ${added} | Updated: ${updated}`};
+  }
+ });
+ document.getElementById('scImportBtn')?.addEventListener('click',()=>document.getElementById('scImportFile')?.click());
+ document.getElementById('scImportFile')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(f)CMIS.stage('subcontractor',f,{});e.target.value=''});
+ document.getElementById('scImportSampleBtn')?.addEventListener('click',()=>CMIS.downloadCSV('Sub_Contractor_Import_Sample.csv',
+  ['Sub Contractor Name','Status','Trade License #','Trade License Expiry','VAT Registered','VAT / TRN','ICV Available','ICV Score','ICV Expiry','Address','Emirate','Remarks'],
+  ['Sample Manpower LLC','Active','CN-12345','2027-12-31','Registered','100000000000001','Yes','55','2027-12-31','Abu Dhabi','Abu Dhabi','Sample']));
+})();
+</script>
 
 <script src="erp-shell.js"></script>
 

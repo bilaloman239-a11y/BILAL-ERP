@@ -161,6 +161,7 @@ body[data-cm-page="client"] .content{width:100%!important;max-width:none!importa
 .client-local-tabs .client-tab.active,.client-local-tabs .client-tab.cm-active{background:#1c5c94!important;color:#fff!important;border-color:#1c5c94!important}
 @media(max-width:720px){.client-local-tabs{overflow-x:auto;flex-wrap:nowrap}.client-local-tabs .client-tab{flex:0 0 auto}.content{padding:14px!important}}
 </style>
+<script src="erp-security.js"></script><script src="erp-masters.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
 </head>
 <body data-cm-page="client">
@@ -522,6 +523,14 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 
+
+<script id="cm-master-client-bridge">
+document.addEventListener('DOMContentLoaded',function(){
+ if(!window.CMMASTER)return;
+ ['projectStatus','statusProject','pStatus'].forEach(id=>CMMASTER.bindSelect(id,'projectStatus',{blankLabel:'-- Select Status --'}));
+ ['clientEmirate','projectEmirate','state','emirate'].forEach(id=>CMMASTER.bindSelect(id,'emirate',{blankLabel:'-- Select Emirate --'}));
+});
+</script>
 <script src="erp-shell.js"></script>
 </body>
 </html>

@@ -427,6 +427,7 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
+<script src="erp-security.js"></script><script src="erp-masters.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
 
 <style id="cm-cicpa-display-fix">
@@ -481,6 +482,8 @@ body[data-cm-page="cicpa"] .topbar{
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="erp-import-staging.js"></script>
 </head>
 <body data-cm-page="cicpa">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -540,6 +543,11 @@ body[data-cm-page="cicpa"] .topbar{
 </div>
 
 
+<div class="cm-import-actionbar" style="display:flex;justify-content:flex-end;gap:8px;margin:6px 0 10px;flex-wrap:wrap">
+<button class="secondary" type="button" id="cicpaImportSampleBtn">Download Import Sample</button>
+<button class="primary" type="button" id="cicpaImportBtn">Import Excel / CSV</button>
+<input id="cicpaImportFile" type="file" accept=".xlsx,.xls,.csv" style="display:none">
+</div>
 <section id="dashboard" class="panel active">
   <div class="cards">
     <div class="card activec" onclick="filterByStatus('active')"><div class="lbl">Total CICPA Active</div><div class="num" id="cActive">0</div></div>
@@ -963,6 +971,48 @@ document.addEventListener('DOMContentLoaded', function(){
 
   side.remove();
 });
+</script>
+
+
+<script id="cmis-cicpa-adapter">
+(function(){
+ if(!window.CMIS)return;
+ const gv=(o,...n)=>CMIS.getHeader(o,...n),s=v=>String(v??'').trim(),low=v=>s(v).toLowerCase();
+ function nd(v){if(v instanceof Date&&!isNaN(v))return v.toISOString().slice(0,10);v=s(v);if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;const m=v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10)}
+ CMIS.registerAdapter('cicpa',{
+  title:'CICPA Import Staging',
+  columns:[{key:'code',label:'Employee Code'},{key:'name',label:'Employee Name'},{key:'no',label:'CICPA #'},{key:'loc',label:'Location(s)'},{key:'issue',label:'Issue Date'},{key:'expiry',label:'Expiry Date'}],
+  prepare:async(file,ctx,h)=>{
+   const rs=await h.readObjects(file),emps=getAllEmployees(),empMap=new Map(emps.map(e=>[low(e.code),e])),existingNo=new Map(records.map(r=>[low(r.cicpaNo),r])),batch=new Set();
+   return rs.map((r,i)=>{
+    const code=s(gv(r,'Employee Code','Emp Code')),emp=empMap.get(low(code)),no=s(gv(r,'CICPA #','CICPA No','CICPA Number')),issue=nd(gv(r,'Issue Date')),expiry=nd(gv(r,'Expiry Date'));
+    const locRaw=s(gv(r,'Location','Locations','CICPA Location')),locs=locRaw.split(/[|;,]/).map(x=>x.trim()).filter(Boolean);
+    const rec={id:Date.now()+i,source:emp?.source||'',empCode:emp?.code||code,empName:emp?.name||s(gv(r,'Employee Name','Name')),nationality:emp?.nationality||'',designation:emp?.designation||'',subcontractor:emp?.subcontractor||'',cicpaNo:no,issueDate:issue,expiryDate:expiry,locations:locs};
+    let status='New',issues=[],action='Import',actions=['Import','Skip'];const ex=existingNo.get(low(no));
+    if(!code||!no||!issue||!expiry||!locs.length){status='Error';issues.push('Employee Code, CICPA #, Issue Date, Expiry Date and Location are required.');action='Skip';actions=['Skip']}
+    else if(!emp){status='Error';issues.push('Employee Code not matched with Employee/Sub Contractor employee master.');action='Skip';actions=['Skip']}
+    else if(new Date(expiry)<new Date(issue)){status='Error';issues.push('Expiry Date is before Issue Date.');action='Skip';actions=['Skip']}
+    else if(batch.has(low(no))){status='Duplicate';issues.push('CICPA number appears more than once in this upload batch.');action='Skip';actions=['Skip']}
+    else if(ex){status='Matched';issues.push('CICPA number matched an existing record.');action='Update Existing';actions=['Update Existing','Skip'];rec.id=ex.id}
+    else{
+      const unknown=locs.filter(l=>!locations.some(x=>low(x)===low(l)));if(unknown.length){status='Warning';issues.push('New CICPA location(s) will be added to Location Master: '+unknown.join(', '))}
+    }
+    batch.add(low(no));
+    return {rowNo:r.__rowNo||i+2,status,issues,action,actions,normalized:rec,display:{code:rec.empCode,name:rec.empName,no,loc:locs.join(' | '),issue,expiry}};
+   });
+  },
+  commit:async(rows,info)=>{
+   let added=0,updated=0,newLoc=0;rows.forEach(r=>{const x=r.normalized;(x.locations||[]).forEach(l=>{if(!locations.some(v=>low(v)===low(l))){locations.push(l);newLoc++}});if(r.action==='Update Existing'){const ix=records.findIndex(v=>v.id===x.id);if(ix>=0){records[ix]=x;updated++}}else{records.push(x);added++}});
+   localStorage.setItem('cicpa_records',JSON.stringify(records));localStorage.setItem('cicpa_locations',JSON.stringify(locations));renderLocationMaster();loadEmployeeOptions();refreshDashEmployeeOptions();updateDashboard();
+   return {added,updated,newLoc,message:`CICPA import completed. New: ${added} | Updated: ${updated} | New Locations: ${newLoc}`};
+  }
+ });
+ document.getElementById('cicpaImportBtn')?.addEventListener('click',()=>document.getElementById('cicpaImportFile')?.click());
+ document.getElementById('cicpaImportFile')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(f)CMIS.stage('cicpa',f,{});e.target.value=''});
+ document.getElementById('cicpaImportSampleBtn')?.addEventListener('click',()=>CMIS.downloadCSV('CICPA_Import_Sample.csv',
+ ['Employee Code','Employee Name','CICPA #','Location','Issue Date','Expiry Date'],
+ ['CM-001','Sample Employee','CICPA-001','Mussafah | Ruwais','2026-09-01','2027-09-01']));
+})();
 </script>
 
 <script src="erp-shell.js"></script>

@@ -80,7 +80,7 @@
         const label=String(d.type||'Document');
         const isPassport=/passport/i.test(label), isVisa=/visa/i.test(label), isEid=/emirates|eid|identity/i.test(label);
         if(!isPassport && !isVisa && !isEid) return;
-        const href='index.html?empProfile='+encodeURIComponent(code);
+        const href='index.html?empProfile='+encodeURIComponent(code)+'&tab=documents&doc='+encodeURIComponent(label);
         if(days<0){
           push('critical', 'HR', label+' Expired', {id:'crit-doc-'+code+'-'+label+'-'+d.expiryDate, employeeCode:code, employeeName:name, dueDate:d.expiryDate, daysRemaining:days, text:`${code} – ${name} – ${label} expired ${Math.abs(days)} day(s) ago (on ${d.expiryDate}). Renew immediately.`, href, module:'Employee'});
         }else if(days<=dueDays){
@@ -93,7 +93,7 @@
     cicpa.forEach(r=>{
       if(!r.expiryDate) return;
       const days=daysBetween(today(),r.expiryDate);
-      const href='index.html?empProfile='+encodeURIComponent(r.empCode||'');
+      const href='cicpa.html?cicpaId='+encodeURIComponent(r.id);
       if(days<0){
         push('critical','HR','CICPA Expired',{id:'crit-cicpa-'+r.id, employeeCode:r.empCode, employeeName:r.empName, dueDate:r.expiryDate, daysRemaining:days, text:`${r.empCode} – ${r.empName} – CICPA (${r.cicpaNo||'-'}) expired ${Math.abs(days)} day(s) ago. Renew before site processing.`, href, module:'CICPA'});
       }else if(days<=dueDays){
@@ -106,7 +106,7 @@
       if(!['Approved','On Leave'].includes(String(l.status||''))) return;
       if(!l.endDate) return;
       const days=daysBetween(today(),l.endDate);
-      const href='leave.html';
+      const href='leave.html?leaveId='+encodeURIComponent(l.id);
       if(days<0){
         push('critical','HR','Leave Return Overdue',{id:'crit-leave-'+l.id, employeeCode:l.empCode, employeeName:l.empName, dueDate:l.endDate, daysRemaining:days, text:`${l.empCode} – ${l.empName} – leave return date (${l.endDate}) is overdue by ${Math.abs(days)} day(s).`, href, module:'Leave'});
       }else if(days<=RETURN_SOON_DAYS){
@@ -121,14 +121,14 @@
     clients.forEach(c=>{
       const exp=c.tradeExpiry; if(!exp) return;
       const days=daysBetween(today(),exp);
-      if(days<0) push('critical','Admin','Client Trade Licence Expired',{id:'crit-cl-'+c.id, company:c.name, dueDate:exp, daysRemaining:days, text:`${c.name} – Trade Licence expired ${Math.abs(days)} day(s) ago.`, href:'client.html', module:'Client'});
-      else if(days<=dueDays) push('dueSoon','Admin','Client Trade Licence Expiring',{id:'due-cl-'+c.id, company:c.name, dueDate:exp, daysRemaining:days, text:`${c.name} – Trade Licence expires in ${days} day(s).`, href:'client.html', module:'Client'});
+      if(days<0) push('critical','Admin','Client Trade Licence Expired',{id:'crit-cl-'+c.id, company:c.name, dueDate:exp, daysRemaining:days, text:`${c.name} – Trade Licence expired ${Math.abs(days)} day(s) ago.`, href:'client.html?clientId='+encodeURIComponent(c.id), module:'Client'});
+      else if(days<=dueDays) push('dueSoon','Admin','Client Trade Licence Expiring',{id:'due-cl-'+c.id, company:c.name, dueDate:exp, daysRemaining:days, text:`${c.name} – Trade Licence expires in ${days} day(s).`, href:'client.html?clientId='+encodeURIComponent(c.id), module:'Client'});
     });
     subs.forEach(s=>{
       const exp=s.tradeExpiry; if(!exp) return;
       const days=daysBetween(today(),exp);
-      if(days<0) push('critical','Admin','Subcontractor Licence Expired',{id:'crit-sc-'+s.id, company:s.name, dueDate:exp, daysRemaining:days, text:`${s.name} – Trade Licence expired ${Math.abs(days)} day(s) ago.`, href:'subcontractor.html', module:'Subcontractor'});
-      else if(days<=dueDays) push('dueSoon','Admin','Subcontractor Licence Expiring',{id:'due-sc-'+s.id, company:s.name, dueDate:exp, daysRemaining:days, text:`${s.name} – Trade Licence expires in ${days} day(s).`, href:'subcontractor.html', module:'Subcontractor'});
+      if(days<0) push('critical','Admin','Subcontractor Licence Expired',{id:'crit-sc-'+s.id, company:s.name, dueDate:exp, daysRemaining:days, text:`${s.name} – Trade Licence expired ${Math.abs(days)} day(s) ago.`, href:'subcontractor.html?scId='+encodeURIComponent(s.id), module:'Subcontractor'});
+      else if(days<=dueDays) push('dueSoon','Admin','Subcontractor Licence Expiring',{id:'due-sc-'+s.id, company:s.name, dueDate:exp, daysRemaining:days, text:`${s.name} – Trade Licence expires in ${days} day(s).`, href:'subcontractor.html?scId='+encodeURIComponent(s.id), module:'Subcontractor'});
     });
 
     // ---------- Payroll workflow (needs erp-payroll-workflow.js loaded) ----------
@@ -136,16 +136,16 @@
       const lastMonthYm=addDays(today().slice(0,8)+'01',-1).slice(0,7);
       const stage=CMPW.getMonthStatus(lastMonthYm).stage;
       if(stage!=='Finalized'){
-        push('critical','Payroll','Payroll Month Due',{id:'crit-pay-'+lastMonthYm, dueDate:lastMonthYm, text:`Payroll for ${lastMonthYm} is not yet Finalized (currently "${stage}").`, href:'payroll.html', module:'Payroll'});
+        push('critical','Payroll','Payroll Month Due',{id:'crit-pay-'+lastMonthYm, dueDate:lastMonthYm, text:`Payroll for ${lastMonthYm} is not yet Finalized (currently "${stage}").`, href:'payroll.html?view=payroll&month='+encodeURIComponent(lastMonthYm), module:'Payroll'});
       }
       const months=[...new Set([...centralRecords.map(x=>String(x.month||x.date||'').slice(0,7)), ...Object.keys(CMPW.allStatus())])].filter(Boolean);
       months.forEach(m=>{
         const st=CMPW.getMonthStatus(m).stage;
-        if(st==='Uploaded') push('pending','Payroll','Timesheet Supervisor Approval Pending',{id:'pend-tssup-'+m, dueDate:m, text:`Timesheet for ${m} is uploaded but not yet validated/supervisor-approved.`, href:'payroll.html', module:'Payroll'});
-        if(st==='Payroll Calculated') push('pending','Accounts','Payroll Accounts Check Pending',{id:'pend-acc-'+m, dueDate:m, text:`Payroll for ${m} is calculated and awaiting Accounts verification.`, href:'payroll.html', module:'Payroll'});
+        if(st==='Uploaded') push('pending','Payroll','Timesheet Supervisor Approval Pending',{id:'pend-tssup-'+m, dueDate:m, text:`Timesheet for ${m} is uploaded but not yet validated/supervisor-approved.`, href:'payroll.html?view=payroll&month='+encodeURIComponent(m), module:'Payroll'});
+        if(st==='Payroll Calculated') push('pending','Accounts','Payroll Accounts Check Pending',{id:'pend-acc-'+m, dueDate:m, text:`Payroll for ${m} is calculated and awaiting Accounts verification.`, href:'payroll.html?view=payroll&month='+encodeURIComponent(m), module:'Payroll'});
       });
       CMPW.reopenRequests().filter(r=>r.status==='Pending').forEach(r=>{
-        push('pending','Admin','Reopen Payroll Request Pending',{id:'pend-reopen-'+r.id, dueDate:r.month, text:`Reopen request for ${r.month} by ${r.requestedBy} is awaiting approval. Reason: ${r.reason}`, href:'payroll.html', module:'Payroll'});
+        push('pending','Admin','Reopen Payroll Request Pending',{id:'pend-reopen-'+r.id, dueDate:r.month, text:`Reopen request for ${r.month} by ${r.requestedBy} is awaiting approval. Reason: ${r.reason}`, href:'payroll.html?view=payroll&month='+encodeURIComponent(r.month), module:'Payroll'});
       });
     }
 
@@ -157,35 +157,35 @@
       if(!monthRecKeys.has(norm(code))) push('missing','Payroll','Monthly Timesheet Missing',{id:'miss-ts-'+code+'-'+ym, employeeCode:code, employeeName:e.employeeName||e.name, dueDate:ym, text:`${code} – ${e.employeeName||e.name} – no timesheet record for ${ym} yet.`, href:'index.html?empProfile='+encodeURIComponent(code), module:'Timesheet'});
     });
     unmatched.slice(0,50).forEach(code=>{
-      push('missing','Payroll','Timesheet Code Not Matched',{id:'miss-unmatched-'+code, text:`Uploaded timesheet code "${code}" does not match any Employee/Subcontractor master.`, href:'timesheet.html', module:'Timesheet'});
+      push('missing','Payroll','Timesheet Code Not Matched',{id:'miss-unmatched-'+code, text:`Uploaded timesheet code "${code}" does not match any Employee/Subcontractor master.`, href:'timesheet.html?unmatched='+encodeURIComponent(code), module:'Timesheet'});
     });
 
     // ---------- Salary rate missing ----------
     activeEmployees.forEach(e=>{
       const code=e.employeeCode||e.empCode||''; if(!code) return;
       const key='e:'+code;
-      if(!(payMaster[key]?.history||[]).length) push('missing','Payroll','Salary Rate Missing',{id:'miss-rate-'+code, employeeCode:code, employeeName:e.employeeName||e.name, text:`${code} – ${e.employeeName||e.name} – no salary/rate setup found for Payroll.`, href:'payroll.html', module:'Payroll'});
+      if(!(payMaster[key]?.history||[]).length) push('missing','Payroll','Salary Rate Missing',{id:'miss-rate-'+code, employeeCode:code, employeeName:e.employeeName||e.name, text:`${code} – ${e.employeeName||e.name} – no salary/rate setup found for Payroll.`, href:'payroll.html?view=rates&empCode='+encodeURIComponent(code), module:'Payroll'});
     });
 
     // ---------- Site: mobilization/transfer approval pending, manpower conflicts, shortage ----------
     const activeMoves=moves.filter(m=>!m.demobDate);
     moves.filter(m=>m.requestedBy && !m.approvedBy).forEach(m=>{
-      push('pending','Site','Mobilization / Transfer Approval Pending',{id:'pend-mob-'+m.id, employeeCode:m.employeeCode, employeeName:m.employeeName, clientProjectSite:clientName(m.clientId)+' / '+projectName(m.projectId), dueDate:m.mobDate, text:`${m.employeeCode} – ${m.employeeName} – ${m.movementType||'Mobilization'} to ${clientName(m.clientId)} / ${projectName(m.projectId)} requested by ${m.requestedBy}, awaiting approval.`, href:'site.html', module:'Site'});
+      push('pending','Site','Mobilization / Transfer Approval Pending',{id:'pend-mob-'+m.id, employeeCode:m.employeeCode, employeeName:m.employeeName, clientProjectSite:clientName(m.clientId)+' / '+projectName(m.projectId), dueDate:m.mobDate, text:`${m.employeeCode} – ${m.employeeName} – ${m.movementType||'Mobilization'} to ${clientName(m.clientId)} / ${projectName(m.projectId)} requested by ${m.requestedBy}, awaiting approval.`, href:'site.html?view=onsite&moveId='+encodeURIComponent(m.id), module:'Site'});
     });
     const leaveByCode=new Map(); leaves.filter(l=>['Approved','On Leave'].includes(String(l.status||''))&&l.startDate<=today()&&today()<=l.endDate).forEach(l=>leaveByCode.set(norm(l.empCode),l));
     activeMoves.forEach(m=>{
       const lv=leaveByCode.get(norm(m.employeeCode));
-      if(lv) push('manpower','Site','On Leave But Still Mobilized',{id:'mp-conflict-'+m.id, employeeCode:m.employeeCode, employeeName:m.employeeName, clientProjectSite:clientName(m.clientId)+' / '+projectName(m.projectId), text:`${m.employeeCode} – ${m.employeeName} – shows Mobilized at ${clientName(m.clientId)} / ${projectName(m.projectId)} but is also on approved leave (${lv.startDate} to ${lv.endDate}). Please verify.`, href:'site.html', module:'Site'});
+      if(lv) push('manpower','Site','On Leave But Still Mobilized',{id:'mp-conflict-'+m.id, employeeCode:m.employeeCode, employeeName:m.employeeName, clientProjectSite:clientName(m.clientId)+' / '+projectName(m.projectId), text:`${m.employeeCode} – ${m.employeeName} – shows Mobilized at ${clientName(m.clientId)} / ${projectName(m.projectId)} but is also on approved leave (${lv.startDate} to ${lv.endDate}). Please verify.`, href:'site.html?view=onsite&moveId='+encodeURIComponent(m.id), module:'Site'});
     });
     const recentlyDemob=moves.filter(m=>m.demobDate && daysBetween(m.demobDate,today())<=14 && daysBetween(m.demobDate,today())>=0);
     recentlyDemob.forEach(m=>{
       const stillInactive=!activeMoves.some(x=>x.employeeKey===m.employeeKey);
-      if(stillInactive) push('manpower','Site','Demobilized – New Assignment Pending',{id:'mp-idle-'+m.id, employeeCode:m.employeeCode, employeeName:m.employeeName, dueDate:m.demobDate, text:`${m.employeeCode} – ${m.employeeName} – demobilized on ${m.demobDate}, no new assignment yet (${daysBetween(m.demobDate,today())} day(s)).`, href:'site.html', module:'Site'});
+      if(stillInactive) push('manpower','Site','Demobilized – New Assignment Pending',{id:'mp-idle-'+m.id, employeeCode:m.employeeCode, employeeName:m.employeeName, dueDate:m.demobDate, text:`${m.employeeCode} – ${m.employeeName} – demobilized on ${m.demobDate}, no new assignment yet (${daysBetween(m.demobDate,today())} day(s)).`, href:'site.html?view=history&moveId='+encodeURIComponent(m.id), module:'Site'});
     });
     siteReq.forEach(r=>{
       const actual=activeMoves.filter(m=>String(m.projectId)===String(r.projectId)&&(!r.craft||norm(m.siteCraft)===norm(r.craft))).length;
       const shortage=Number(r.required||0)-actual;
-      if(shortage>0) push('manpower','Site','Project Manpower Shortage',{id:'mp-short-'+r.id, clientProjectSite:projectName(r.projectId)+(r.craft?' / '+r.craft:''), text:`${projectName(r.projectId)} – ${r.craft||'Any Craft'} – Required ${r.required} | Mobilized ${actual} | Shortage ${shortage}.`, href:'site.html', module:'Site'});
+      if(shortage>0) push('manpower','Site','Project Manpower Shortage',{id:'mp-short-'+r.id, clientProjectSite:projectName(r.projectId)+(r.craft?' / '+r.craft:''), text:`${projectName(r.projectId)} – ${r.craft||'Any Craft'} – Required ${r.required} | Mobilized ${actual} | Shortage ${shortage}.`, href:'site.html?view=requirement&reqId='+encodeURIComponent(r.id), module:'Site'});
     });
 
     return out;

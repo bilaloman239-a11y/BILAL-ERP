@@ -24,12 +24,14 @@
     {key:'validation',     href:'validation.html',      icon:'🧩', label:'Validation & Controls', group:'System'},
     {key:'action-center',  href:'action-center.html',   icon:'🔔', label:'Action Center',         group:'System'},
     {key:'mis',            href:'mis.html',             icon:'📈', label:'Management Reports / MIS', group:'System'},
-    {key:'audit',          href:'audit.html',           icon:'📋', label:'Audit Trail',           group:'System'}
+    {key:'audit',          href:'audit.html',           icon:'📋', label:'Audit Trail',           group:'System'},
+    {key:'users',          href:'users.html',           icon:'👤', label:'Users & Roles',         group:'System'},
+    {key:'settings',       href:'settings.html',        icon:'⚙', label:'Settings & Masters',    group:'System'}
   ];
   const SESSION_KEY='cm_logged_in_v3';
 
   function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-  function currentUser(){ return localStorage.getItem('cm_saved_email')||localStorage.getItem('cm_current_user')||'Administrator'; }
+  function currentUser(){ const u=window.CMSEC&&CMSEC.currentUser&&CMSEC.currentUser(); return u?(u.name||u.email||u.username):(localStorage.getItem('cm_saved_email')||localStorage.getItem('cm_current_user')||'Administrator'); }
   function initialsOf(name){
     const parts=String(name).replace(/@.*/,'').split(/[.\s_]+/).filter(Boolean);
     return ((parts[0]||'A')[0]+(parts[1]?parts[1][0]:'')).toUpperCase();
@@ -181,10 +183,11 @@
     const name=currentUser();
     const display=name.includes('@')?name.split('@')[0]:name;
     document.getElementById('cmshAvatar').textContent=initialsOf(name);
-    document.getElementById('cmshUserName').innerHTML=esc(display)+'<small>View profile</small>';
+    document.getElementById('cmshUserName').innerHTML=esc(display)+'<small>'+esc((window.CMSEC&&CMSEC.currentRole&&CMSEC.currentRole())||'User')+'</small>';
     document.getElementById('cmshLogout').addEventListener('click',()=>{
       sessionStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(SESSION_KEY);
+      if(window.CMSEC) CMSEC.logout();
       location.href='index.html';
     });
   }
@@ -206,6 +209,134 @@
     overlay.addEventListener('click',close);
   }
 
+  /* ---------------- Deep-link: open the exact record a notification points to ----------------
+     Action Center / bell links carry module-specific query params (e.g. leave.html?leaveId=..).
+     Each page already has its own "open/edit/view" function and, where relevant, its own
+     view-switcher — this just calls into those with the id from the URL, then scrolls to and
+     flashes the matching row/panel so the person lands on the exact record, not just the module
+     home screen. Safe to run on every page: it's a no-op when none of its params are present. */
+  function highlight(el){
+    if(!el) return;
+    el.classList.remove('cmsh-hit'); void el.offsetWidth; // restart animation if re-triggered
+    el.classList.add('cmsh-hit');
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(()=>el.classList.remove('cmsh-hit'),2700);
+  }
+  function highlightRow(selector){
+    const el=document.querySelector(selector);
+    if(el) highlight(el);
+    return el;
+  }
+  function highlightRowContaining(text,rowSelector){
+    if(!text) return null;
+    const rows=document.querySelectorAll(rowSelector||'tbody tr');
+    const needle=String(text).toLowerCase();
+    for(const row of rows){
+      if(row.textContent.toLowerCase().includes(needle)){ highlight(row); return row; }
+    }
+    return null;
+  }
+  function switchToView(viewId){
+    if(!viewId || !window.showView) return;
+    const btn=document.querySelector(`[data-view="${viewId}"]`);
+    try{ window.showView(viewId, btn||undefined); }catch(e){}
+  }
+  function cleanUrl(keys){
+    try{
+      const url=new URL(location.href);
+      keys.forEach(k=>url.searchParams.delete(k));
+      history.replaceState({},'',url);
+    }catch(e){}
+  }
+
+  const DEEPLINK={
+    cicpa(p){
+      const id=p.get('cicpaId'); if(!id) return;
+      if(typeof window.editRecord==='function') window.editRecord(id);
+      cleanUrl(['cicpaId']);
+    },
+    leave(p){
+      const id=p.get('leaveId'); if(!id) return;
+      if(typeof window.editLeave==='function') window.editLeave(id);
+      cleanUrl(['leaveId']);
+    },
+    client(p){
+      const id=p.get('clientId'); if(!id) return;
+      if(typeof window.viewClient==='function') window.viewClient(id);
+      cleanUrl(['clientId']);
+    },
+    subcontractor(p){
+      const id=p.get('scId'); if(!id) return;
+      if(typeof window.editSub==='function') window.editSub(id);
+      cleanUrl(['scId']);
+    },
+    payroll(p){
+      const view=p.get('view'), month=p.get('month'), empCode=p.get('empCode');
+      if(month && document.getElementById('payMonth')){
+        document.getElementById('payMonth').value=month;
+        if(typeof window.calculatePayroll==='function') window.calculatePayroll();
+        if(typeof window.renderWorkflowPanel==='function') window.renderWorkflowPanel();
+        if(typeof window.renderPaymentSummary==='function') window.renderPaymentSummary();
+      }
+      if(view) switchToView(view);
+      if(empCode && document.getElementById('rateSearch')){
+        document.getElementById('rateSearch').value=empCode;
+        if(typeof window.renderRateHistory==='function') window.renderRateHistory();
+        setTimeout(()=>highlightRow('#rateRows tr'),120);
+      }else if(month){
+        setTimeout(()=>highlightRow('#workflowPanel'),120);
+      }
+      cleanUrl(['view','month','empCode']);
+    },
+    site(p){
+      const view=p.get('view')||'onsite', moveId=p.get('moveId'), reqId=p.get('reqId');
+      switchToView(view);
+      setTimeout(()=>{
+        if(moveId) highlightRow(`tr[data-move-id="${moveId}"]`);
+        if(reqId) highlightRow(`tr[data-req-id="${reqId}"]`);
+      },150);
+      cleanUrl(['view','moveId','reqId']);
+    },
+    timesheet(p){
+      const code=p.get('unmatched'); if(!code) return;
+      switchToView && document.getElementById('batchRows');
+      setTimeout(()=>highlightRowContaining(code,'#batchRows tr'),150);
+      cleanUrl(['unmatched']);
+    },
+    index(p){
+      // empProfile is already handled by index.html itself (opens the profile modal);
+      // this only adds the tab-jump + document-row highlight on top of that.
+      const tab=p.get('tab'), doc=p.get('doc');
+      if(!tab && !doc) return;
+      const tryJump=(attemptsLeft)=>{
+        const modal=document.getElementById('employeeProfileModal');
+        if(modal && !modal.classList.contains('hidden')){
+          if(tab){
+            const btn=document.querySelector(`.profile-tab[data-profile-tab="${tab}"]`);
+            if(btn) btn.click();
+          }
+          if(doc){
+            setTimeout(()=>{
+              const docs=document.querySelectorAll('#profile-documents .profile-doc');
+              for(const d of docs){ if(d.textContent.toLowerCase().includes(String(doc).toLowerCase())){ highlight(d); break; } }
+            },100);
+          }
+          cleanUrl(['tab','doc']);
+        }else if(attemptsLeft>0){
+          setTimeout(()=>tryJump(attemptsLeft-1),200);
+        }
+      };
+      tryJump(15);
+    }
+  };
+
+  function runDeepLink(activeKey){
+    const handler=DEEPLINK[activeKey];
+    if(!handler) return;
+    const params=new URLSearchParams(location.search);
+    try{ handler(params); }catch(e){ console.warn('CMSH deep-link skipped',e); }
+  }
+
   function init(){
     const activeKey=currentPage();
     document.body.appendChild(buildSidebar(activeKey));
@@ -218,9 +349,10 @@
     wireMobileNav();
     refreshBell();
     setTimeout(refreshBell,800); // in case CMAC / employee data finished loading a beat later
+    runDeepLink(activeKey);
   }
 
-  window.CMSH={init};
+  window.CMSH={init, highlightRow, highlightRowContaining};
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
   else init();
 })();

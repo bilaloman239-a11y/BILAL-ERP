@@ -120,6 +120,7 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
+<script src="erp-security.js"></script><script src="erp-masters.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
 </head>
 <body data-cm-page="site">
@@ -444,7 +445,7 @@ function saveMob(e){
 }
 function renderOnsite(){
  let q=norm(sSearch.value),rows=moves.filter(m=>!m.demobDate&&norm([m.employeeName,m.employeeCode,clientName(m.clientId),projectName(m.projectId),m.location].join(' ')).includes(q));
- sRows.innerHTML=rows.length?rows.map(m=>`<tr><td><b>${esc(m.employeeName)}</b>${m.movementType==='Transferred'?' <span class="badge orange" style="font-size:9px">Transferred</span>':''}</td><td>${esc(m.employeeCode||'-')}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.location||'-')}</td><td>${esc(m.mobDate)}</td><td>${Number(m.clientRate||0).toFixed(2)}</td><td>${Number(m.subRate||0).toFixed(2)}</td><td>${esc(m.foodBy||'-')}</td><td>${esc(m.accBy||'-')}</td><td><button class="btn light" onclick="openTransfer('${m.id}')">Transfer</button> <button class="btn orange" onclick="openDemob('${m.id}')">Demobilize</button></td></tr>`).join(''):'<tr><td colspan="12">No manpower on site.</td></tr>'
+ sRows.innerHTML=rows.length?rows.map(m=>`<tr data-move-id="${m.id}"><td><b>${esc(m.employeeName)}</b>${m.movementType==='Transferred'?' <span class="badge orange" style="font-size:9px">Transferred</span>':''}</td><td>${esc(m.employeeCode||'-')}</td><td>${esc(clientName(m.clientId))}</td><td>${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.location||'-')}</td><td>${esc(m.mobDate)}</td><td>${Number(m.clientRate||0).toFixed(2)}</td><td>${Number(m.subRate||0).toFixed(2)}</td><td>${esc(m.foodBy||'-')}</td><td>${esc(m.accBy||'-')}</td><td><button class="btn light" onclick="openTransfer('${m.id}')">Transfer</button> <button class="btn orange" onclick="openDemob('${m.id}')">Demobilize</button></td></tr>`).join(''):'<tr><td colspan="12">No manpower on site.</td></tr>'
 }
 function openDemob(id){let m=moves.find(x=>x.id===id);if(!m)return;demobId.value=id;demobDate.value=today();demobDate.min=m.mobDate;demobRemarks.value='';demobInfo.innerHTML='<b>'+esc(m.employeeName)+'</b><br>'+esc(clientName(m.clientId))+' / '+esc(projectName(m.projectId))+'<br>Mobilized: '+esc(m.mobDate);demobModal.classList.add('show')}
 function closeDemob(){demobModal.classList.remove('show')}
@@ -455,7 +456,7 @@ function renderHistory(){
   hRows.innerHTML=rows.length?rows.map(m=>{
     const from=m.movementType==='Transferred'?(clientName(m.fromClientId)+' / '+projectName(m.fromProjectId)):'-';
     const status=m.demobDate?(m.movementType==='Transferred'?'Transferred Out':'Demobilized'):'Active';
-    return `<tr><td><b>${esc(m.employeeName)}</b> (${esc(m.employeeCode||'-')})</td><td><span class="badge ${m.movementType==='Transferred'?'orange':'primary'}">${esc(m.movementType||'Mobilized')}</span></td><td>${esc(from)}</td><td>${esc(clientName(m.clientId))} / ${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.mobDate)}</td><td>${esc(m.demobDate||'—')}</td><td>${esc(m.requestedBy||'-')}</td><td>${esc(m.approvedBy||'-')}</td><td>${esc(m.mobRemarks||m.demobRemarks||'-')}</td><td>${status}</td></tr>`;
+    return `<tr data-move-id="${m.id}"><td><b>${esc(m.employeeName)}</b> (${esc(m.employeeCode||'-')})</td><td><span class="badge ${m.movementType==='Transferred'?'orange':'primary'}">${esc(m.movementType||'Mobilized')}</span></td><td>${esc(from)}</td><td>${esc(clientName(m.clientId))} / ${esc(projectName(m.projectId))}</td><td>${esc(m.siteCraft||'-')}</td><td>${esc(m.mobDate)}</td><td>${esc(m.demobDate||'—')}</td><td>${esc(m.requestedBy||'-')}</td><td>${esc(m.approvedBy||'-')}</td><td>${esc(m.mobRemarks||m.demobRemarks||'-')}</td><td>${status}</td></tr>`;
   }).join(''):'<tr><td colspan="11">No movement history.</td></tr>'
 }
 
@@ -767,7 +768,7 @@ function renderRequirement(){
   reqRows.innerHTML=list.length?list.map(r=>{
     const actual=on.filter(m=>String(m.projectId)===String(r.projectId)&&(!r.craft||norm(m.siteCraft)===norm(r.craft))).length;
     const diff=actual-Number(r.required||0);
-    return `<tr><td>${esc(projectName(r.projectId))}</td><td>${esc(r.craft||'Any Craft')}</td><td><b>${r.required}</b></td><td>${actual}</td><td style="color:${diff<0?'#c2453a':'#166534'};font-weight:800">${diff<0?diff:'+'+diff}</td><td><button class="btn light" onclick="deleteRequirement('${r.id}')">Remove</button></td></tr>`;
+    return `<tr data-req-id="${r.id}"><td>${esc(projectName(r.projectId))}</td><td>${esc(r.craft||'Any Craft')}</td><td><b>${r.required}</b></td><td>${actual}</td><td style="color:${diff<0?'#c2453a':'#166534'};font-weight:800">${diff<0?diff:'+'+diff}</td><td><button class="btn light" onclick="deleteRequirement('${r.id}')">Remove</button></td></tr>`;
   }).join(''):'<tr><td colspan="6">No manpower requirement defined yet. Add one above.</td></tr>'
 }
 rMonth.value=month(); if(document.getElementById('uMonth')) uMonth.value=month(); refresh();renderAll();
@@ -776,6 +777,13 @@ rMonth.value=month(); if(document.getElementById('uMonth')) uMonth.value=month()
 
 
 
+
+<script id="cm-master-site-bridge">
+document.addEventListener('DOMContentLoaded',function(){
+ if(!window.CMMASTER)return;
+ ['mobStatus','mobilizationStatus','status'].forEach(id=>CMMASTER.bindSelect(id,'mobilizationStatus',{blankLabel:'-- Select Status --'}));
+});
+</script>
 <script src="erp-shell.js"></script>
 </body>
 </html>

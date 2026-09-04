@@ -289,7 +289,9 @@ body{padding-top:50px}
 <script src="erp-validation.js"></script>
 <script src="erp-payroll-workflow.js"></script>
 <script src="erp-action-center.js"></script>
+<script src="erp-security.js"></script><script src="erp-masters.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
+<script src="erp-import-staging.js"></script>
 </head>
 <body data-cm-page="timesheet">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -809,6 +811,62 @@ render();
 <a id="cm-audit-shortcut" href="audit.html" title="Open Audit Trail" style="position:fixed;left:14px;bottom:14px;z-index:99990;background:#153d67;color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;font:700 11px Arial;box-shadow:0 6px 18px rgba(0,0,0,.18)">🛡 Audit Trail</a>
 
 
+
+
+<script id="cmis-timesheet-adapter">
+(function(){
+ if(!window.CMIS)return;
+ CMIS.registerAdapter('timesheet',{
+  title:'Central Timesheet Import Staging',
+  columns:[{key:'code',label:'Employee Code'},{key:'name',label:'Employee Name'},{key:'date',label:'Date'},{key:'hours',label:'Hours'},{key:'source',label:'Source'},{key:'project',label:'Client / Project'}],
+  prepare:async(file,ctx,h)=>{
+   const ym=document.getElementById('centralMonth').value;if(!ym)throw new Error('Please select Timesheet Month first.');
+   if(window.CMPW&&CMPW.isLocked(ym))throw new Error(`Payroll for ${ym} is FINALIZED / LOCKED. Reopen the month before importing.`);
+   const rows=await h.readMatrix(file),layout=detectLayout(rows,ym),masters=employeeMasters(),st=centralStore();
+   const clients=cget(CLIENT_KEY,[]),projects=cget(PROJECT_KEY,[]),cid=document.getElementById('centralClient').value,pid=document.getElementById('centralProject').value;
+   const client=clients.find(x=>String(x.id)===String(cid))?.name||'',project=projects.find(x=>String(x.id)===String(pid))?.name||'',selected={clientId:cid,projectId:pid,client,project};
+   const mode=document.getElementById('duplicateMode').value,batchSeen=new Set(),out=[];
+   for(let rr=layout.start;rr<rows.length;rr++){
+    const row=rows[rr]||[],code=String(row[layout.codeCol]??'').trim();if(!code)continue;
+    const emp=masters.company.find(e=>cnorm(e.code)===cnorm(code))||masters.sub.find(e=>cnorm(e.code)===cnorm(code));
+    if(!emp){
+      out.push({rowNo:rr+1,status:'Error',issues:['Employee Code not matched with Company/Sub Contractor employee master.'],action:'Skip',actions:['Skip'],normalized:{},display:{code,name:String(row[layout.nameCol]||''),date:'-',hours:'-',source:'Unmatched',project:'-'}});
+      continue;
+    }
+    for(const dc of layout.dates){
+      const pc=parseCell(row[dc.col]);if(!pc.has)continue;
+      let rec={id:cuid(),batchId:'PENDING',month:ym,date:dc.date,empKey:emp.key,empCode:emp.code,name:emp.name||String(row[layout.nameCol]||''),craft:emp.craft||'',source:emp.source,subcontractor:emp.subcontractor||'',client:'',clientId:'',project:'',projectId:'',hours:Number(pc.hours||0),status:pc.status,note:document.getElementById('centralNote').value.trim(),uploadedAt:new Date().toISOString()};
+      rec=enrichCentralRecord(rec,emp,selected);
+      const key=cnorm(rec.empCode)+'|'+rec.date+'|'+String(rec.projectId||''),ex=st.records.find(x=>cnorm(x.empCode)===cnorm(rec.empCode)&&x.date===rec.date&&String(x.projectId||'')===String(rec.projectId||''));
+      let status='New',issues=[],action='Import',actions=['Import','Skip'];
+      if(Number(rec.hours)<0||Number(rec.hours)>24){status='Error';issues.push('Hours must be between 0 and 24 per day.');action='Skip';actions=['Skip']}
+      else if(batchSeen.has(key)){status='Duplicate';issues.push('Same Employee + Date + Project appears more than once in uploaded file.');action='Skip';actions=['Skip']}
+      else if(ex){if(mode==='replace'){status='Matched';issues.push('Existing timesheet row matched. It will update only after confirmation.');action='Update Existing';actions=['Update Existing','Skip'];rec._existingId=ex.id}else{status='Duplicate';issues.push('Existing timesheet row found; duplicate mode is Skip.');action='Skip';actions=['Skip']}}
+      else if(!rec.projectId){status='Warning';issues.push('No Client/Project assignment found. Payroll/Subcontractor routing can continue, but Project Hours will not be routed.')}
+      batchSeen.add(key);
+      out.push({rowNo:rr+1,status,issues,action,actions,normalized:rec,display:{code:rec.empCode,name:rec.name,date:rec.date,hours:rec.hours,source:rec.source,project:(rec.client||'-')+' / '+(rec.project||'-')}});
+    }
+   }
+   return out;
+  },
+  commit:async(rows,info)=>{
+   const st=centralStore(),ym=document.getElementById('centralMonth').value,batchId=info.batchId,accepted=[];let added=0,replaced=0;
+   rows.forEach(r=>{const rec={...r.normalized,batchId,uploadedAt:new Date().toISOString()};const ix=st.records.findIndex(x=>cnorm(x.empCode)===cnorm(rec.empCode)&&x.date===rec.date&&String(x.projectId||'')===String(rec.projectId||''));if(ix>=0&&r.action==='Update Existing'){rec.id=st.records[ix].id;st.records[ix]=rec;replaced++;accepted.push(rec)}else if(ix<0&&r.action==='Import'){st.records.push(rec);added++;accepted.push(rec)}});
+   const payrollCount=routePayroll(accepted,batchId),subCount=accepted.filter(x=>x.source==='Sub Contractor').length,projectCount=routeProjectHours(accepted,batchId),rateCount=accepted.filter(x=>Number(x.clientRateSnapshot||0)>0||Number(x.subRateSnapshot||0)>0||x.salaryRateFound).length;
+   st.batches.unshift({id:batchId,at:new Date().toISOString(),month:ym,client:document.getElementById('centralClient')?.selectedOptions?.[0]?.text||'',project:document.getElementById('centralProject')?.selectedOptions?.[0]?.text||'',file:info.file.name,matched:accepted.length,payroll:payrollCount,sub:subCount,projectHours:projectCount,rateLinked:rateCount,unmatched:info.allRows.filter(x=>x.status==='Error').map(x=>x.display.code).filter(Boolean)});
+   cset(CENTRAL_KEY,st);if(window.CMPW)CMPW.advanceStage(ym,'Uploaded','Timesheet staged import '+batchId);
+   const x=document.getElementById('centralStatus');if(x){x.className='central-status ok';x.textContent=`Staged import complete: ${added} new, ${replaced} updated. Batch ${batchId}.`}
+   document.getElementById('centralFile').value='';refreshCentralUI();
+   return {added,replaced,payrollCount,subCount,projectCount,message:`Timesheet import completed. New: ${added} | Updated: ${replaced} | Payroll routed: ${payrollCount}`};
+  }
+ });
+ window.uploadCentralTimesheet=function(){
+   const ym=document.getElementById('centralMonth').value,file=document.getElementById('centralFile').files[0];
+   if(!ym||!file)return alert('Please select Timesheet Month and file.');
+   CMIS.stage('timesheet',file,{month:ym});
+ };
+})();
+</script>
 
 <script src="erp-shell.js"></script>
 </body></html>

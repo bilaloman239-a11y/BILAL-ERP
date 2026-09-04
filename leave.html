@@ -308,7 +308,9 @@ body{padding-top:50px}
 <script src="erp-validation.js"></script>
 <script src="erp-payroll-workflow.js"></script>
 <script src="erp-action-center.js"></script>
+<script src="erp-security.js"></script><script src="erp-masters.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
+<script src="erp-import-staging.js"></script>
 </head>
 <body data-cm-page="leave">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -772,7 +774,8 @@ let records=load(KEY,[]);
 const IMPORT_KEY='cm_monthly_leave_history_v1';
 const LEAVE_TYPE_KEY='cm_leave_type_master_v1';
 let importedLeaves=load(IMPORT_KEY,[]);
-let leaveTypeMaster=load(LEAVE_TYPE_KEY,['Medical Leave','Unpaid Leave','Annual Leave']);
+let leaveTypeMaster=(window.CMMASTER?CMMASTER.list('leaveType'):load(LEAVE_TYPE_KEY,['Medical Leave','Unpaid Leave','Annual Leave']));
+if(window.CMMASTER)localStorage.setItem(LEAVE_TYPE_KEY,JSON.stringify(leaveTypeMaster));
 
 function normDate(v){
   if(v===null||v===undefined||v==='') return '';
@@ -870,6 +873,7 @@ function pickEmployee(){
 }
 
 function refreshLeaveTypeUI(){
+  if(window.CMMASTER){leaveTypeMaster=CMMASTER.list('leaveType');localStorage.setItem(LEAVE_TYPE_KEY,JSON.stringify(leaveTypeMaster));}
   // Merge defaults + master, unique
   const seen=new Set();
   leaveTypeMaster=leaveTypeMaster.filter(x=>{
@@ -1532,6 +1536,58 @@ loadEmployees();toggleTicketSector();applyRoleAccess();refreshHistoryYears();ren
 </script>
 
 
+
+
+<script id="cmis-leave-adapter">
+(function(){
+ if(!window.CMIS)return;
+ const gv=(o,...names)=>CMIS.getHeader(o,...names);
+ function nd(v){
+   if(v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+   if(typeof v==='number'&&window.XLSX&&XLSX.SSF){const d=XLSX.SSF.parse_date_code(v);if(d)return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`}
+   v=String(v??'').trim();if(!v)return'';
+   if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;
+   const m=v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+   const d=new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10);
+ }
+ CMIS.registerAdapter('leave',{
+  title:'Monthly Leave Import Staging',
+  columns:[{key:'code',label:'Employee Code'},{key:'name',label:'Employee Name'},{key:'type',label:'Leave Type'},{key:'from',label:'From Date'},{key:'to',label:'To Date'},{key:'days',label:'Days'}],
+  prepare:async(file,ctx,h)=>{
+   const dataRows=await h.readObjects(file),empMap=new Map(employees.map(e=>[String(e.code).trim().toLowerCase(),e]));
+   const existing=new Set([...importedLeaves.map(importKey),...records.map(r=>importKey({empCode:r.empCode,leaveType:r.leaveType,fromDate:r.startDate,toDate:r.endDate}))]);
+   const batch=new Set();
+   return dataRows.map((row,idx)=>{
+    const code=String(gv(row,'Employee Code','Emp Code','EmployeeCode')).trim(),name=String(gv(row,'Employee Name','Name')).trim();
+    const lt=String(gv(row,'Leave Type','LeaveType')).trim(),from=nd(gv(row,'From Date','Start Date','From')),to=nd(gv(row,'To Date','End Date','To'));
+    const monthVal=gv(row,'Month'),remarks=String(gv(row,'Remarks','Remark')).trim(),emp=empMap.get(code.toLowerCase());
+    const a=new Date(from+'T00:00:00'),b=new Date(to+'T00:00:00'),autoDays=from&&to?Math.floor((b-a)/86400000)+1:0;
+    const days=autoDays>0?autoDays:(Number(gv(row,'Total Days','Days'))||0),key=importKey({empCode:code,leaveType:lt,fromDate:from,toDate:to});
+    let status='New',issues=[],action='Import',actions=['Import','Skip'];
+    if(!code||!lt||!from||!to||days<=0){status='Error';issues.push('Employee Code, Leave Type and valid From/To dates are required.');action='Skip';actions=['Skip']}
+    else if(!emp){status='Error';issues.push('Employee Code not matched with Employee Master.');action='Skip';actions=['Skip']}
+    else if(existing.has(key)||batch.has(key)){status='Duplicate';issues.push('Duplicate: Employee Code + Leave Type + From Date + To Date already exists.');action='Skip';actions=['Skip']}
+    else if(!leaveTypeMaster.some(x=>x.toLowerCase()===lt.toLowerCase())){status='Warning';issues.push('New Leave Type will be added to Leave Type Master after confirmation.')}
+    batch.add(key);
+    const normalized={empCode:emp?.code||code,empName:emp?.name||name,designation:emp?.designation||'',month:monthCodeFromValue(monthVal,from),year:yearFromMonthValue(monthVal,from),leaveType:lt,fromDate:from,toDate:to,totalDays:days,remarks,status:'Imported',source:'Monthly Excel Import',importedAt:new Date().toISOString()};
+    return {rowNo:row.__rowNo||idx+2,status,issues,action,actions,normalized,display:{code,name:normalized.empName,type:lt,from,to,days}};
+   });
+  },
+  commit:async(rows,info)=>{
+   let added=0,types=0;rows.forEach((r,i)=>{const x=r.normalized;if(!leaveTypeMaster.some(v=>v.toLowerCase()===x.leaveType.toLowerCase())){leaveTypeMaster.push(x.leaveType);types++}importedLeaves.push({...x,id:'IMP-'+Date.now()+'-'+i,batchId:info.batchId});added++});
+   localStorage.setItem(IMPORT_KEY,JSON.stringify(importedLeaves));localStorage.setItem(LEAVE_TYPE_KEY,JSON.stringify(leaveTypeMaster));
+   refreshLeaveTypeUI();refreshHistoryYears();renderHistory();render();try{renderSelectedEmployeeHistory(empCode.value)}catch(e){}
+   showImport(`Staged import completed: ${added} row(s). Batch ${info.batchId}`,'ok');
+   return {added,types,message:`Leave import completed. Imported: ${added} | New leave types: ${types}`};
+  }
+ });
+ window.importMonthlyLeave=function(){
+   const file=document.getElementById('leaveImportFile')?.files?.[0];
+   if(!file)return showImport('Please select Excel/CSV file.','err');
+   CMIS.stage('leave',file,{});
+ };
+})();
+</script>
 
 <script src="erp-shell.js"></script>
 </body>

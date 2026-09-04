@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Civil Master ERP - Settings & Masters</title>
+<script src="erp-security.js"></script><script src="erp-masters.js"></script>
+<link rel="stylesheet" href="erp-shell.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f6fa;color:#29455d;font-family:Inter,Segoe UI,Arial,sans-serif}.wrap{max-width:1500px;margin:auto;padding:20px}
+.hero{background:linear-gradient(135deg,#123a64,#246aa4);color:#fff;border-radius:18px;padding:20px;margin-bottom:15px}.hero h1{margin:0 0 5px}.hero p{margin:0;color:#d9e8f5}
+.grid{display:grid;grid-template-columns:280px 1fr;gap:14px}.side,.main{background:#fff;border:1px solid #dbe5ed;border-radius:14px}.side{padding:10px}.mitem{width:100%;text-align:left;border:0;background:#fff;padding:10px 11px;border-radius:8px;font-weight:800;color:#365a78;cursor:pointer}.mitem.active{background:#1c5c94;color:#fff}
+.main{padding:14px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar input{flex:1;min-width:240px;border:1px solid #cad8e4;border-radius:8px;padding:9px}.btn{border:0;border-radius:8px;padding:9px 12px;font-weight:850;cursor:pointer;background:#1c5c94;color:#fff}.btn.light{background:#eaf1f7;color:#315a7d}.btn.danger{background:#fde7e6;color:#9e342f}
+table{width:100%;border-collapse:collapse;font-size:12px}th{background:#edf4f9;color:#526c82;text-align:left;padding:9px}td{padding:9px;border-top:1px solid #edf2f6}.pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#eaf3fb;color:#27608e;font-weight:900;font-size:10px}
+.notice{font-size:11px;color:#6e8193;margin-top:10px}@media(max-width:900px){.grid{grid-template-columns:1fr}}
+</style></head><body data-cm-page="settings">
+<div class="wrap"><div class="hero"><h1>⚙ ERP Settings / Masters Center</h1><p>One central source for Company, Branch, Emirate, Designation, Craft, Nationality, Leave Type, Attendance Code, Document Type, Certificate Type, Project Status, Employee Status, Payment Mode and Mobilization Status.</p></div>
+<div class="grid"><div class="side" id="masterMenu"></div><div class="main">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h2 id="title" style="margin:0"></h2><div class="notice" id="count"></div></div><span class="pill">Central Master</span></div>
+<div class="toolbar"><input id="newValue" placeholder="Add new value"><button class="btn" onclick="addValue()" data-cm-action="Add">Add</button><button class="btn light" onclick="resetMaster()" data-cm-action="Edit">Reset Default</button></div>
+<div style="overflow:auto"><table><thead><tr><th style="width:70px">#</th><th>Master Value</th><th style="width:230px">Action</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="notice">Changes here are shared across all connected ERP modules. Avoid deleting values already used in historical transactions unless you have migrated those records.</div>
+</div></div></div>
+<script>
+if(!CMSEC.session()||CMSEC.currentRole()!=='Admin'){document.body.innerHTML='<div style="padding:40px;font-family:Arial"><h2>Admin access required.</h2><a href="dashboard.html">Back to Dashboard</a></div>';throw new Error('Admin only')}
+const TYPES=Object.keys(CMMASTER.DEFAULTS);let active=TYPES[0];const $=id=>document.getElementById(id);
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function renderMenu(){$('masterMenu').innerHTML=TYPES.map(k=>`<button class="mitem ${k===active?'active':''}" onclick="pick('${k}')">${esc(CMMASTER.LABELS[k])}</button>`).join('')}
+function pick(k){active=k;renderMenu();render()}
+function render(){const a=CMMASTER.list(active);$('title').textContent=CMMASTER.LABELS[active];$('count').textContent=a.length+' value(s)';$('rows').innerHTML=a.map((v,i)=>`<tr><td>${i+1}</td><td><b>${esc(v)}</b></td><td><button class="btn light" onclick="editValue('${encodeURIComponent(v)}')">Edit</button> <button class="btn danger" onclick="deleteValue('${encodeURIComponent(v)}')">Delete</button></td></tr>`).join('')}
+function addValue(){try{CMMASTER.add(active,$('newValue').value);$('newValue').value='';render()}catch(e){alert(e.message)}}
+function editValue(v){v=decodeURIComponent(v);const n=prompt('Edit '+CMMASTER.LABELS[active]+' value:',v);if(n===null)return;try{CMMASTER.rename(active,v,n);render()}catch(e){alert(e.message)}}
+function deleteValue(v){v=decodeURIComponent(v);if(!confirm('Delete "'+v+'" from '+CMMASTER.LABELS[active]+'?'))return;CMMASTER.remove(active,v);render()}
+function resetMaster(){if(!confirm('Reset '+CMMASTER.LABELS[active]+' to default values?'))return;CMMASTER.reset(active);render()}
+renderMenu();render();
+</script><script src="erp-shell.js"></script></body></html>

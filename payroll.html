@@ -142,6 +142,7 @@ body{padding-top:50px}
 <script src="erp-validation.js"></script>
 <script src="erp-payroll-workflow.js"></script>
 <script src="erp-action-center.js"></script>
+<script src="erp-security.js"></script><script src="erp-masters.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
 
 <!-- ===== DISPLAY FIX: remove duplicate internal sidebar, keep module tabs ===== -->
@@ -1625,6 +1626,13 @@ tsMonth.value=month();payMonth.value=month();loadEmployees();renderAll();
 
 
 
+
+<script id="cm-master-payroll-bridge">
+document.addEventListener('DOMContentLoaded',function(){
+ if(!window.CMMASTER)return;
+ ['paymentMode','payMode'].forEach(id=>CMMASTER.bindSelect(id,'paymentMode',{blankLabel:'-- Select Payment Mode --'}));
+});
+</script>
 <script src="erp-shell.js"></script>
 
 <script id="cm-payroll-display-fix">

@@ -872,6 +872,7 @@ body{padding-top:50px}
 </style>
 <script src="erp-validation.js"></script>
 <script src="erp-action-center.js"></script>
+<script src="erp-security.js"></script><script src="erp-masters.js"></script>
 <link rel="stylesheet" href="erp-shell.css">
 
 <style id="cm-login-shell-guard">
@@ -903,6 +904,8 @@ body.cm-login-locked #appView{
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="erp-import-staging.js"></script>
 </head>
 <body data-cm-page="index" class="cm-login-locked">
 <div class="cm-topstrip"><button type="button" class="cm-back-btn" onclick="if(document.referrer){history.back()}else{location.href='dashboard.html'}" title="Go back">← Back</button><div class="cm-all-portals">
@@ -962,7 +965,7 @@ body.cm-login-locked #appView{
       <h2>Sign In</h2>
       <div class="sub">Enter your credentials to access your account</div>
       <div class="field"><label>Username / Email</label><input id="loginEmail" type="text" autocomplete="username" placeholder="e.g. admin or name@company.com"></div>
-      <div class="field"><label>Password</label><div class="password-wrap"><input id="loginPassword" type="password" value="Civil123@2024"><button class="eye" type="button" id="eyeBtn">👁️</button></div></div>
+      <div class="field"><label>Password</label><div class="password-wrap"><input id="loginPassword" type="password"><button class="eye" type="button" id="eyeBtn">👁️</button></div></div>
       <div class="options"><label><input id="rememberMe" type="checkbox" checked> Remember me</label><label><input id="keepSignedIn" type="checkbox"> Keep me signed in</label></div>
       <button id="loginButton" class="signin" type="button">Sign In</button>
       <div id="loginMessage" class="login-msg"></div>
@@ -1520,32 +1523,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if(msg) msg.textContent = "";
 
-    const normalized = loginId.toLowerCase();
-    const validLogin = (
-      normalized === ADMIN_USERNAME ||
-      normalized === ADMIN_EMAIL.toLowerCase()
-    );
-
-    if(validLogin && password === ADMIN_PASSWORD){
-      sessionStorage.setItem(SESSION_KEY,"1");
-
-      if($("keepSignedIn")?.checked){
-        localStorage.setItem(SESSION_KEY,"1");
-      }else{
-        localStorage.removeItem(SESSION_KEY);
-      }
-
-      if($("rememberMe")?.checked){
-        localStorage.setItem("cm_saved_email", loginId);
-      }else{
-        localStorage.removeItem("cm_saved_email");
-      }
-
+    const result = window.CMSEC ? CMSEC.login(loginId,password,$("keepSignedIn")?.checked) : {ok:false,message:"Security module not loaded."};
+    if(result.ok){
+      if($("rememberMe")?.checked){ localStorage.setItem("cm_saved_email", loginId); }
+      else{ localStorage.removeItem("cm_saved_email"); }
       openApp();
       return;
     }
-
-    if(msg) msg.textContent = "Invalid username/email or password.";
+    if(msg) msg.textContent = result.message || "Invalid username/email or password.";
   }
 
   $("loginButton").addEventListener("click",doLogin);
@@ -1555,6 +1540,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("logoutButton").addEventListener("click",()=>{
     sessionStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(SESSION_KEY);
+    if(window.CMSEC) CMSEC.logout();
     document.body.classList.add("cm-login-locked");
     location.reload();
   });
@@ -2831,19 +2817,9 @@ document.addEventListener("DOMContentLoaded", () => {
   $("chooseBulkUploadBtn")?.addEventListener("click",()=>$("bulkUploadFile")?.click());
   $("bulkUploadFile")?.addEventListener("change",e=>{
     const file=e.target.files?.[0]; if(!file) return;
-    const name=(file.name||"").toLowerCase();
-    const reader=new FileReader();
-    reader.onload=()=>{
-      try{
-        const text=String(reader.result||"");
-        const rows=name.endsWith(".csv")?parseCsv(text):parseSpreadsheetXml(text);
-        importEmployeeRows(rows);
-        $("bulkUploadModal")?.classList.add("hidden");
-      }catch(err){ console.error(err); alert("Bulk upload failed: "+(err?.message||"Invalid file.")); }
-      finally{ e.target.value=""; }
-    };
-    reader.onerror=()=>{ alert("Bulk upload failed: file could not be read."); e.target.value=""; };
-    reader.readAsText(file);
+    if(!window.CMIS){alert("Import Staging Engine not loaded.");e.target.value="";return;}
+    CMIS.stage("employee",file,{});
+    e.target.value="";
   });
 
   $("employeeSearch").addEventListener("input",renderEmployees);
@@ -3367,6 +3343,100 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 })();
 });
+</script>
+
+
+<script id="cmis-employee-adapter">
+(function(){
+ if(!window.CMIS) return;
+ const u=v=>normalizeUniqueNumber(v);
+ function docNo(emp,kind){
+   const d=(emp.documents||[]).find(x=>{
+     const t=String(x?.type||'').toLowerCase();
+     return kind==='passport'?t.includes('passport'):(t.includes('emirates')||t.includes('id card')||t==='eid'||t.includes('identity'));
+   }); return u(d?.number);
+ }
+ function mergeNonEmpty(target,src){
+   ['employeeName','employeeNameArabic','unifiedNumber','actualDesignation','nationality','gender','dob','maritalStatus','mobile','company','idDesignation','lineManager','joiningDate','status','inactiveReason','inactiveDate'].forEach(k=>{
+     if(src[k]!==undefined && String(src[k]??'').trim()!=='') target[k]=src[k];
+   });
+   target.emergency=target.emergency||{};
+   Object.keys(src.emergency||{}).forEach(k=>{if(String(src.emergency[k]??'').trim()!=='')target.emergency[k]=src.emergency[k]});
+   const docs=[...(target.documents||[])];
+   (src.documents||[]).forEach(nd=>{
+     if(!String(nd?.number||'').trim())return;
+     const ix=docs.findIndex(d=>String(d?.type||'').toLowerCase()===String(nd.type||'').toLowerCase());
+     if(ix>=0) docs[ix]={...docs[ix],...nd}; else docs.push(nd);
+   });
+   target.documents=docs;target.updatedAt=new Date().toISOString();
+ }
+ CMIS.registerAdapter('employee',{
+   title:'Employee Import Staging',
+   columns:[
+    {key:'code',label:'Employee Code'},{key:'name',label:'Employee Name'},
+    {key:'unified',label:'Unified Number'},{key:'passport',label:'Passport #'},
+    {key:'eid',label:'Emirates ID'},{key:'status',label:'Status'}
+   ],
+   prepare:async(file,ctx,h)=>{
+     const matrix=await h.readMatrix(file);
+     if(matrix.length<2) throw new Error('Excel sheet has no employee rows.');
+     const headers=(matrix[0]||[]).map(normHeader);
+     const seen=new Set();for(const x of headers){if(!x)continue;if(seen.has(x))throw new Error('Duplicate heading found: '+x);seen.add(x)}
+     const existing=data.employees||[];
+     const byCode=new Map(existing.map(e=>[u(e.employeeCode),e]).filter(x=>x[0]));
+     const byUnified=new Map(existing.map(e=>[u(e.unifiedNumber),e]).filter(x=>x[0]));
+     const byPass=new Map(existing.map(e=>[docNo(e,'passport'),e]).filter(x=>x[0]));
+     const byEid=new Map(existing.map(e=>[docNo(e,'eid'),e]).filter(x=>x[0]));
+     const batch={code:new Map(),unified:new Map(),pass:new Map(),eid:new Map()};
+     const out=[];
+     matrix.slice(1).forEach((cols,idx)=>{
+       if(!(cols||[]).some(v=>String(v??'').trim()!==''))return;
+       const obj={};headers.forEach((hh,i)=>obj[hh]=cols[i]??'');
+       const e=rowEmployee(obj), code=u(e.employeeCode), unified=u(e.unifiedNumber), pass=docNo(e,'passport'), eid=docNo(e,'eid');
+       let status='New',issues=[],action='Import',actions=['Import','Skip'],match=null;
+       if(!e.employeeCode||!e.employeeName){status='Error';issues.push('Employee Code and Employee Name are required.');action='Skip';actions=['Skip']}
+       else{
+         match=byCode.get(code)||null;
+         const conflict=(map,val)=>val&&map.has(val)&&map.get(val)!==match;
+         if(conflict(byUnified,unified)||conflict(byPass,pass)||conflict(byEid,eid)){
+           status='Duplicate';issues.push('Unified Number / Passport / Emirates ID already belongs to another employee.');action='Skip';actions=['Skip'];
+         }else if((code&&batch.code.has(code))||(unified&&batch.unified.has(unified))||(pass&&batch.pass.has(pass))||(eid&&batch.eid.has(eid))){
+           status='Duplicate';issues.push('Duplicate unique value appears more than once in this upload batch.');action='Skip';actions=['Skip'];
+         }else if(match){
+           status='Matched';issues.push('Employee Code matched an existing employee. Review before Update Existing.');action='Update Existing';actions=['Update Existing','Skip'];
+         }else if(!['active','inactive'].includes(String(e.status||'').toLowerCase())){
+           status='Warning';issues.push('Employee Status is not Active/Inactive; value will be imported as supplied.');
+         }
+       }
+       if(code)batch.code.set(code,idx);if(unified)batch.unified.set(unified,idx);if(pass)batch.pass.set(pass,idx);if(eid)batch.eid.set(eid,idx);
+       out.push({rowNo:idx+2,status,issues,action,actions,normalized:e,meta:{matchId:match?.id||''},display:{code:e.employeeCode,name:e.employeeName,unified:e.unifiedNumber,passport:pass,eid,status:e.status}});
+     });
+     return out;
+   },
+   commit:async(rows,info)=>{
+     let added=0,updated=0;
+     rows.forEach(r=>{
+       const e=r.normalized;
+       if(r.action==='Update Existing'){
+         const ex=(data.employees||[]).find(x=>u(x.employeeCode)===u(e.employeeCode));if(!ex)return;
+         const before={employeeName:ex.employeeName,status:ex.status};
+         mergeNonEmpty(ex,e);
+         addHistoryEvent(ex,{type:'Employee Updated',title:'Employee profile updated by staged bulk import',changes:[
+           {field:'Employee Name',old:before.employeeName,new:ex.employeeName},{field:'Status',old:before.status,new:ex.status}
+         ]});updated++;
+       }else{
+         addHistoryEvent(e,{type:'Employee Created',title:'Employee profile created by staged bulk import',changes:[
+           {field:'Employee Code',old:'',new:e.employeeCode},{field:'Employee Name',old:'',new:e.employeeName},{field:'Status',old:'',new:e.status}
+         ]});
+         data.employees.push(e);added++;
+       }
+     });
+     if(!saveData()) throw new Error('Employee data could not be saved.');
+     try{renderAll()}catch(e){}
+     return {added,updated,message:`Employee import completed. New: ${added} | Updated: ${updated}`};
+   }
+ });
+})();
 </script>
 
 <script src="erp-shell.js"></script>
