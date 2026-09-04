@@ -25,8 +25,8 @@ body[data-cm-page="validation"] .top,
 body[data-cm-page="action-center"] .top,
 body[data-cm-page="audit"] .top,
 body[data-cm-page="mis"] .top{display:none!important}
-aside.side{display:none!important}
-.shell{grid-template-columns:1fr!important}
+.side{display:none!important}
+.shell,.app{grid-template-columns:1fr!important}
 
 html{scroll-padding-top:calc(var(--cmsh-header-h) + 10px)}
 body{padding-top:var(--cmsh-header-h)!important;padding-left:var(--cmsh-sidebar-w)!important;min-height:100vh}
